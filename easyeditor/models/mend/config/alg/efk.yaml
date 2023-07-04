@@ -1,0 +1,5 @@
+# @package _global_
+
+alg: efk
+train_base: False
+lr: 1e-5

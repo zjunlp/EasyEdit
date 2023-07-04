@@ -1,0 +1,11 @@
+name: gpt2-medium
+class_name: GPT2LMHeadModel
+tokenizer_class: GPT2TokenizerFast
+tokenizer_name: gpt2-medium
+inner_params:
+- transformer.h.21.mlp.c_proj.weight
+- transformer.h.21.mlp.c_fc.weight
+- transformer.h.22.mlp.c_proj.weight
+- transformer.h.22.mlp.c_fc.weight
+- transformer.h.23.mlp.c_proj.weight
+- transformer.h.23.mlp.c_fc.weight

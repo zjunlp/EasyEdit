@@ -1,0 +1,5 @@
+# @package _global_
+
+task: fc
+dataset: fever
+cbase: 1.0

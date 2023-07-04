@@ -1,0 +1,11 @@
+name: EleutherAI/gpt-j-6B
+class_name: GPTJForCausalLM
+tokenizer_class: AutoTokenizer
+tokenizer_name: EleutherAI/gpt-j-6B
+inner_params:
+- transformer.h.25.mlp.fc_in.weight
+- transformer.h.25.mlp.fc_out.weight
+- transformer.h.26.mlp.fc_in.weight
+- transformer.h.26.mlp.fc_out.weight
+- transformer.h.27.mlp.fc_in.weight
+- transformer.h.27.mlp.fc_out.weight

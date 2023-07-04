@@ -1,0 +1,12 @@
+---
+  # Result files
+  RESULTS_DIR: "results"
+
+  # Data files
+  DATA_DIR: "data"
+  STATS_DIR: "data/stats"
+  LOG_DIR: "logs"
+  HUGGING_CACHE_DIR: "../hugging_cache"
+
+  # Hyperparameters
+  HPARAMS_DIR: "hparams"

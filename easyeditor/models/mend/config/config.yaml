@@ -1,0 +1,54 @@
+alg: enn
+lr: 1e-5
+edit_lr: 1e-2
+seed: 0
+debug: False
+model_save_pt: 5000
+edit_bs: 1  # Non use
+silent: False
+max_iters: 1000000
+log_interval: 100
+val_interval: 5000
+lr_lr: 1e-3
+batch_size: 2
+val_batch_size: 5
+accumulate_bs: 10
+cedit: 0.1
+cloc: 1.0
+cbase: 1.0
+val_steps: 500
+device: cuda
+base_loss: distill # Non use
+oracle: False
+train: True
+train_base: True
+opt: Adam
+single_batch: False # Non use
+archive: null
+grad_clip: 100.
+ref: null # Non use
+early_stop_patience: 20000
+early_stop_key: "loss/total_edit_val"
+dropout: 0.0
+tokenizer: null
+results_dir: null
+no_grad_layers: null
+eval_only: False
+half: False
+save: False
+
+model:
+  pt: null
+
+data:
+  path: null
+  rephrase: true
+  zsre_nq: true
+  nq_path: ${hydra:runtime.cwd}/data/nq
+  wiki_webtext: true
+  n_edits: 1
+
+eval:
+  verbose: True
+  log_interval: 100
+  final_eval: True

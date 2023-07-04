@@ -1,0 +1,7 @@
+# @package _global_
+
+alg: enn
+train_base: True
+enn:
+  first_order: False
+  n_edit_steps: 1

@@ -1,0 +1,11 @@
+name: EleutherAI/gpt-neo-2.7B
+class_name: GPTNeoForCausalLM
+tokenizer_class: GPT2TokenizerFast
+tokenizer_name: EleutherAI/gpt-neo-2.7B
+inner_params:
+- transformer.h.29.mlp.c_fc.weight
+- transformer.h.29.mlp.c_proj.weight
+- transformer.h.30.mlp.c_fc.weight
+- transformer.h.30.mlp.c_proj.weight
+- transformer.h.31.mlp.c_fc.weight
+- transformer.h.31.mlp.c_proj.weight

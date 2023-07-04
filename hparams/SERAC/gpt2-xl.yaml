@@ -1,0 +1,66 @@
+# Model
+alg_name: "SERAC"
+archive: ./results/models/SERAC/gpt2-xl
+device: 2
+model_name: ./hugging_cache/gpt2-xl
+
+model_class: GPT2LMHeadModel
+small_name: ./hugging_cache/gpt2
+tokenizer_class: GPT2Tokenizer
+tokenizer_name: ./hugging_cache/gpt2-xl
+cls_name: ./hugging_cache/distilbert-base-cased
+cls_class: AutoModel
+inner_params: []
+
+# Method
+alg: SERAC
+lr: 1e-5
+edit_lr: 1e-2
+seed: 0
+lr_lr: 0.0
+cedit: 0.1
+cloc: 1.0
+cbase: 1.0
+dropout: 0.0
+final_eval: True
+supervised: false
+train_base: False
+no_grad_layers: null
+soft_weighting: false
+checkpoint_grad: false
+cross_attend: false
+cos: false
+freeze: null
+square: true
+bound_embeds: false
+use_all_negatives: false
+freeze_cntr: false
+dist_heads: 1
+lora: null
+
+batch_size: 1
+model_save_pt: 500
+edit_bs: 1
+silent: False
+#max_epochs: 1
+max_iters: 10000
+log_interval: 500
+val_interval: 500
+early_stop_patience: 40000
+early_stop_key: "loss/total_edit_val"
+eval_only: False
+half: False
+save: False
+debug: False
+log_errors: False
+unlikelihood: True
+
+
+val_batch_size: 1
+accumulate_bs: 10
+val_steps: 500
+opt: Adam
+grad_clip: 100.
+
+# Output
+results_dir: ./results

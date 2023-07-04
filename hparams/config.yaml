@@ -1,0 +1,6 @@
+save_dir: models/
+log_dir: logs/
+
+defaults:
+  alg_name: KN # Editing Method
+  hparams_name: KN/t5-3b # Edited Model Config Path

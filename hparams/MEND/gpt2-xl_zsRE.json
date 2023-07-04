@@ -1,0 +1,8 @@
+{
+    "lr_scale": 1.0,
+    "n_toks": 1,
+    "model_name": "gpt2-xl",
+    "counterfact": false,
+    "zsre": true,
+    "mini": false
+}

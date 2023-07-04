@@ -1,0 +1,15 @@
+name: google/t5-xxl-ssm-nq
+class_name: AutoModelForSeq2SeqLM
+tokenizer_class: AutoTokenizer
+tokenizer_name: google/t5-xxl-ssm-nq
+inner_params:
+- encoder.block.22.layer.1.DenseReluDense.wi_0.weight
+- encoder.block.22.layer.1.DenseReluDense.wo.weight
+- encoder.block.23.layer.1.DenseReluDense.wi_0.weight
+- encoder.block.23.layer.1.DenseReluDense.wo.weight
+- decoder.block.22.layer.2.DenseReluDense.wi_0.weight
+- decoder.block.22.layer.2.DenseReluDense.wo.weight
+- decoder.block.23.layer.2.DenseReluDense.wi_0.weight
+- decoder.block.23.layer.2.DenseReluDense.wo.weight
+
+pt: null

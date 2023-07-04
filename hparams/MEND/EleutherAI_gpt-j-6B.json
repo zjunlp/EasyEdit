@@ -1,0 +1,8 @@
+{
+    "lr_scale": 1.0,
+    "n_toks": 10,
+    "model_name": "EleutherAI/gpt-j-6B",
+    "counterfact": false,
+    "zsre": false,
+    "mini": false
+}

@@ -1,0 +1,15 @@
+name: facebook/bart-base
+class_name: BartForConditionalGeneration
+tokenizer_class: BartTokenizerFast
+tokenizer_name: facebook/bart-base
+inner_params:
+- model.encoder.layers.4.fc1.weight
+- model.encoder.layers.4.fc2.weight
+- model.encoder.layers.5.fc1.weight
+- model.encoder.layers.5.fc2.weight
+- model.decoder.layers.4.fc1.weight
+- model.decoder.layers.4.fc2.weight
+- model.decoder.layers.5.fc1.weight
+- model.decoder.layers.5.fc2.weight
+
+pt: ${hydra:runtime.cwd}/data/zsre/QA_model.ckpt
