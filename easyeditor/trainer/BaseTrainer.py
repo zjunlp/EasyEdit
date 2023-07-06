@@ -52,6 +52,8 @@ class BaseTrainer:
             collate_fn = train_set.collate_fn
         elif 'gpt' in self.config.model_class.lower():
             collate_fn = train_set.collate_gpt_fn
+        elif 'llama' in self.config.model_class.lower():
+            collate_fn = train_set.collate_gpt_fn
         else:
             raise NotImplementedError(f'Model {self.config.model_class} not supported yet.')
 

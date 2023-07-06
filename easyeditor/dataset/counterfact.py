@@ -4,7 +4,7 @@ from pathlib import Path
 
 import torch
 import transformers
-from transformers import GPT2Tokenizer, GPT2TokenizerFast
+from transformers import GPT2Tokenizer, GPT2TokenizerFast, LlamaTokenizer
 from torch.utils.data import Dataset
 
 from ..util.globals import *
@@ -39,6 +39,10 @@ class CounterFactDataset(Dataset):
                 tokenizer.pad_token_id = tokenizer.eos_token_id
                 tokenizer.padding_side = 'left'
                 print('GPTTokenizer Detected, Set pad token id and left padding!!!')
+            elif isinstance(tokenizer, LlamaTokenizer):
+                tokenizer.pad_token_id = tokenizer.eos_token_id
+                tokenizer.padding_side = 'left'
+                print('LlamaTokenizer Detected, Set pad token id and left padding!!!')
             self.tok = tokenizer
 
         with open(cf_loc, "r") as f:

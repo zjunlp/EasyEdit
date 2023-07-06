@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import Dataset
 import typing
 import transformers
-from transformers import GPT2Tokenizer, GPT2TokenizerFast
+from transformers import GPT2Tokenizer, GPT2TokenizerFast, LlamaTokenizer
 from ..util.globals import *
 from ..trainer.utils import dict_to
 
@@ -41,6 +41,10 @@ class ZsreDataset(Dataset):
                 tokenizer.pad_token_id = tokenizer.eos_token_id
                 tokenizer.padding_side = 'left'
                 print('GPTTokenizer Detected, Set pad token id and left padding!!!')
+            elif isinstance(tokenizer, LlamaTokenizer):
+                tokenizer.pad_token_id = tokenizer.eos_token_id
+                tokenizer.padding_side = 'left'
+                print('LlamaTokenizer Detected, Set pad token id and left padding!!!')
             self.tok = tokenizer
 
         with open(zsre_loc, "r") as f:

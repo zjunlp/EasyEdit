@@ -43,14 +43,15 @@ def binary_log_probs(pred, targ):
     }
 
 
-def multiclass_log_probs(config, pred, targ):
+def multiclass_log_probs(config, pred, targ, shift=False):
     NULL_TOKEN = 0  # a placeholder used for masked target locations
 
     pred = pred.clone()
     targ = targ.clone()
-    # if shift and pred.dim() == 3:  # Dealing with sequences
-    #     pred = pred[:, :-1]  # Remove last prediction in sequence
-    #     targ = targ[:, 1:]  # Shift to align predictions and targets
+    if shift and pred.dim() == 3:  # Dealing with sequences
+        pred = pred[:, :-1]  # Remove last prediction in sequence
+        pred = pred[:, -targ.size(1):]
+        # targ = targ[:, 1:]  # Shift to align predictions and targets
 
     mask = targ != -100
     targ[~mask] = NULL_TOKEN  # Can be any valid token, since we'll throw them out
@@ -79,7 +80,7 @@ def multiclass_log_probs(config, pred, targ):
     }
 
 
-def masked_log_probs(config, pred, targ):
+def masked_log_probs(config, pred, targ, shift=False):
     pred = pred.to(torch.float32)
 
     if not (pred.dim() == 2 or pred.dim() == 3):
@@ -88,4 +89,4 @@ def masked_log_probs(config, pred, targ):
     if pred.shape[-1] == 1:
         return binary_log_probs(pred, targ)
     else:
-        return multiclass_log_probs(config, pred, targ)
+        return multiclass_log_probs(config, pred, targ, shift=shift)

@@ -396,6 +396,52 @@ def test_IKE_2():
 
     return metrics, edited_model
 
+
+def test_MEND_Meta_Train_Llama():
+    training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND/llama-7b.yaml')
+    train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
+    eval_ds = ZsreDataset('./data/zsre_mend_eval.json', config=training_hparams)
+    trainer = EditTrainer(
+        config=training_hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+
+    trainer.run()
+
+
+def test_MEND_Llama():
+
+    # prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+    #            'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+    #            'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+    #            'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    # ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+    #                 'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    # target_new = ['University of Michigan', 'Lamiinae', 'winger',
+    #               'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    prompts = ['Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+               'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    ground_truth = ['Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    target_new = ['Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 def main():
     # metrics, edited_model = test_KN()
 
@@ -418,7 +464,9 @@ def main():
     # test_SERAC_Zsre_Train()
     # test_SERAC()
     # test_IKE()
-    test_IKE_2()
+    # test_IKE_2()
+    # test_MEND_Meta_Train_Llama()
+    test_MEND_Llama()
 
 if __name__ == '__main__':
     main()

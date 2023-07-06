@@ -57,6 +57,9 @@ class EditTrainer(BaseTrainer):
             kl_mask = batch["loc"].get(
                 "decoder_attention_mask", batch["loc"]["attention_mask"]
             )
+            if kl_mask.size(1) != base_logits.size(1):
+                base_logits = base_logits[:, -kl_mask.size(1):]
+                post_base_logits = post_base_logits[:, -kl_mask.size(1):]
             l_loc = kl_loc_loss(base_logits.detach(), post_base_logits, mask=kl_mask)
 
         l_total_edit = self.config.cedit * l_edit + self.config.cloc * l_loc

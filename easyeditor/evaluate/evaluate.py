@@ -164,16 +164,25 @@ def compute_rewrite_or_rephrase_quality(
                                                         target_new,
                                                         device)
     elif 'gpt' in model_name.lower():
-        target_tok = tok(" " + target_new, truncation=True, max_length=hparams.max_length)["input_ids"]
-        inp_prompts = [
-            prompt + tok.decode(target_tok[:i])
-            for i in range(len(target_tok))
-        ]
-        inp_targets = [
-            tok.decode(target_tok[i])
-            for i in range(len(target_tok))
-        ]
-        stuff_probs = test_batch_prediction_acc(model, tok, hparams, inp_prompts, inp_targets, device)
+        target_tok = tok(target_new, truncation=True, max_length=hparams.max_length)["input_ids"]
+        inp_prompts = [prompt]
+        inp_prompts.extend([
+            prompt + ' ' + tok.decode(target_tok[:i])
+            for i in range(1, len(target_tok))
+        ])
+        # inp_targets = [
+        #     tok.decode(target_tok[i])
+        #     for i in range(len(target_tok))
+        # ]
+        stuff_probs = test_batch_prediction_acc(model, tok, hparams, inp_prompts, target_tok, device)
+    elif 'llama' in model_name.lower():
+        target_tok = tok(target_new, truncation=True, max_length=hparams.max_length)["input_ids"][1:] #erase bos_token_id
+        inp_prompts = [prompt]
+        inp_prompts.extend([
+            prompt + ' ' + tok.decode(target_tok[:i])
+            for i in range(1, len(target_tok))
+        ])
+        stuff_probs = test_batch_prediction_acc(model, tok, hparams, inp_prompts, target_tok, device)
 
     probs = stuff_probs
 
@@ -206,17 +215,27 @@ def compute_locality_quality(
                                                                  device,
                                                                  locality=True)
     elif 'gpt' in model_name.lower():
-        target_tok = tok(" " + locality_ground_truth, truncation=True, max_length=hparams.max_length)["input_ids"]
-        inp_prompts = [
-            prompt + tok.decode(target_tok[:i])
-            for i in range(len(target_tok))
-        ]
-        inp_targets = [
-            tok.decode(target_tok[i])
-            for i in range(len(target_tok))
-        ]
+        target_tok = tok(locality_ground_truth, truncation=True, max_length=hparams.max_length)["input_ids"]
+        inp_prompts = [prompt]
+        inp_prompts.extend([
+            prompt + ' ' + tok.decode(target_tok[:i])
+            for i in range(1, len(target_tok))
+        ])
 
-        locality_correct = test_batch_prediction_acc(model, tok, hparams, inp_prompts, inp_targets, device, locality=True)
+        locality_correct = test_batch_prediction_acc(model, tok, hparams, inp_prompts, target_tok, device, locality=True)
+    elif 'llama' in model_name.lower():
+        target_tok = tok(locality_ground_truth, truncation=True, max_length=hparams.max_length)["input_ids"][1:] # erase bos_token_id
+        inp_prompts = [prompt]
+        inp_prompts.extend([
+            prompt + ' ' + tok.decode(target_tok[:i])
+            for i in range(1, len(target_tok))
+        ])
+        # inp_targets = [
+        #     tok.decode(target_tok[i])
+        #     for i in range(len(target_tok))
+        # ]
+
+        locality_correct = test_batch_prediction_acc(model, tok, hparams, inp_prompts, target_tok, device, locality=True)
 
     probs = locality_correct
 
@@ -322,16 +341,17 @@ def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, loca
             gathered = torch.gather(logits, 1, to_gather).squeeze(1)
             ans = torch.argmax(gathered, dim=1)
 
-        correct_id = tok(target, padding=True, truncation=True, max_length=hparams.max_length, return_tensors="pt").to(f"cuda:{device}")[
-            "input_ids"
-        ]
+        # correct_id = tok(target, padding=True, truncation=True, max_length=hparams.max_length, return_tensors="pt").to(f"cuda:{device}")[
+        #     "input_ids"
+        # ]
         # Temporary hack to deal with foreign characters.
-        correct_id = correct_id[:, 0].squeeze()
+        # correct_id = correct_id[:, -1].squeeze()
+        ans = ans.squeeze().detach().cpu().numpy().tolist()
 
         if locality:
-            return ans.squeeze().detach().cpu().numpy().tolist()
+            return ans
 
-        return torch.mean((ans == correct_id).float(), dim=-1).detach().cpu().numpy().tolist()
+        return np.mean(np.equal(ans, target))
 
 def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target, device, locality=False):
     prompt_tok = tok(

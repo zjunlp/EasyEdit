@@ -247,7 +247,10 @@ class MEND(EditableModel):
     def forward(self, *inputs, **kwargs):
         if 'gpt' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
+            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
+        elif 'llama' in self.config.model_name.lower():
+            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
         else:
             outputs = _logits(self.model(**kwargs))
         return outputs
@@ -257,7 +260,11 @@ class MEND(EditableModel):
     def edit(self, batch, condition=None, detach_history=False, return_factors=False):
         if 'gpt' in self.config.model_name:
             outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
-            outputs = outputs[:, -batch['labels'].shape[-1]:, :]
+            # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
+            loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]
+        elif 'llama' in self.config.model_name:
+            outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
+            # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]
         else:
             outputs = _logits(self.model(**batch))

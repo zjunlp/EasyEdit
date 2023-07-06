@@ -111,7 +111,7 @@ class MendRewriteExecutor:
         edit_inner = dict(
             input_ids=sent_tok["input_ids"],
             attention_mask=sent_tok["attention_mask"],
-            labels=label_tok,
+            labels=target_tok['input_ids'],
         )
         cond = {k: sent_tok[k] for k in ["input_ids", "attention_mask"]}
         _, model_info = self.alg.edit(edit_inner, cond, return_factors=True)
@@ -139,6 +139,8 @@ class MendRewriteExecutor:
                     if "gpt2" in hparams.model_name:
                         delta = torch_factors[uname].t() @ torch_factors[vname]
                     elif "gpt-j-6B" in hparams.model_name:
+                        delta = torch_factors[vname].t() @ torch_factors[uname]
+                    elif "llama" in hparams.model_name:
                         delta = torch_factors[vname].t() @ torch_factors[uname]
                     else:
                         raise ValueError("Unknown model")

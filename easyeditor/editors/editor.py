@@ -10,7 +10,8 @@ import numpy as np
 
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from transformers import T5ForConditionalGeneration
+from transformers import LlamaTokenizer, LlamaForCausalLM
+from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
 from .singleton_editor import SingletonEditor
@@ -65,6 +66,7 @@ class BaseEditor:
                 except:
                     LOG.info("The cache can not be used")
                     self.model = T5ForConditionalGeneration.from_pretrained(self.model_name)  # have internet
+                self.tok = T5Tokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
 
             elif 'gpt' in self.model_name.lower():
                 try:
@@ -72,13 +74,20 @@ class BaseEditor:
                 except:
                     LOG.info("The cache can not be used")
                     self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
+                self.tok = GPT2Tokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
+            elif 'llama' in self.model_name.lower():
+                try:
+                    self.model = LlamaForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
+                except:
+                    LOG.info("The cache can not be used")
+                    self.model = LlamaForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
+                self.tok = LlamaTokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
             else:
                 raise NotImplementedError
-            self.tok = AutoTokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
-            self.tok.pad_token = self.tok.eos_token
+            self.tok.pad_token_id = self.tok.eos_token_id
 
-            if (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast)) and (hparams.alg_name not in ['ROME', 'MEMIT']):
-                LOG.info('GPT2Tokenizer detected, set the padding side to left...')
+            if (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer)) and (hparams.alg_name not in ['ROME', 'MEMIT']):
+                LOG.info('AutoRegressive Model detected, set the padding side of Tokenizer to left...')
                 self.tok.padding_side = 'left'
         else:
             self.model, self.tok = self.model_name

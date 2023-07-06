@@ -13,10 +13,17 @@ class EditableModel(nn.Module):
         self.model_constructor = model_constructor
 
         def _edit_loss_fn(config, pred, targ):
-            return masked_log_probs(config, pred, targ)
+            if 't5' in config.model_class.lower():
+                return masked_log_probs(config, pred, targ)
+            elif 'gpt' in config.model_class.lower():
+                return masked_log_probs(config, pred, targ, shift=True)
+            elif 'llama' in config.model_class.lower():
+                return masked_log_probs(config, pred, targ, shift=True)
+            else:
+                return masked_log_probs(config, pred, targ)
 
         self.edit_loss_fn = _edit_loss_fn
-        self.loc_loss_fn = _edit_loss_fn
+        self.loc_loss_fn = masked_log_probs
 
     def edit(self, batch, condition=None, detach_history=False):
         raise NotImplementedError
