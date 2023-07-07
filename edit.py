@@ -129,6 +129,18 @@ def test_KE_Meta_Train():
 
     trainer.run()
 
+def test_KE_Meta_Train_GPTJ():
+    training_hparams = KETrainingHparams.from_hparams('./hparams/TRAINING/KE/gpt-j-6B.yaml')
+    train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
+    eval_ds = ZsreDataset('./data/zsre_mend_eval.json', config=training_hparams)
+    trainer = EditTrainer(
+        config=training_hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+
+    trainer.run()
+
 def test_MEND_Meta_Train():
     training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -662,6 +674,21 @@ def test_MEMIT_GPTJ():
     pdb.set_trace()
 
     return metrics, edited_model
+def test_KE_GPTJ():
+    prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
+               'Which fictional universe is Chlorophyll Kid part of?']
+    ground_truth = ['Ken Duncan', 'Mary Shelley', 'DC Universe']
+    target_new = ['Wong Tung & Sons', 'Clairmont-Mayer', 'Image Universe']
+    hparams = KEHyperParams.from_hparams('./hparams/KE/gpt-j-6B.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts + prompts,
+        ground_truth=ground_truth + ground_truth,
+        target_new=target_new + target_new,
+        keep_original_weight=True,
+    )
+
+    return metrics, edited_model
 
 def main():
     # metrics, edited_model = test_KN()
@@ -694,7 +721,9 @@ def main():
     # test_MEND_GPTJ()
     # test_IKE_GPTJ()
     # test_FT_GPTJ()
-    test_KN_GPTJ()
+    # test_KN_GPTJ()
+    # test_KE_Meta_Train_GPTJ()
+    test_KE_GPTJ()
 
 if __name__ == '__main__':
     main()

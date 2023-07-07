@@ -1,27 +1,23 @@
 # Model
-archive: ./results/models/KE/gpt2-xl
-alg_name: "KE"
-device: 4
-
-model_name: ./hugging_cache/gpt2-xl
-model_class: GPT2LMHeadModel
-tokenizer_class: GPT2Tokenizer
-tokenizer_name: ./hugging_cache/gpt2-xl
+model_name: ./hugging_cache/gpt-j-6B
+model_class: GPTJForCausalLM
+tokenizer_class: AutoTokenizer
+tokenizer_name: ./hugging_cache/gpt-j-6B
 inner_params:
-- transformer.h.45.mlp.c_proj.weight
-- transformer.h.45.mlp.c_fc.weight
-- transformer.h.46.mlp.c_proj.weight
-- transformer.h.46.mlp.c_fc.weight
-- transformer.h.47.mlp.c_proj.weight
-- transformer.h.47.mlp.c_fc.weight
+- transformer.h.25.mlp.fc_in.weight
+- transformer.h.25.mlp.fc_out.weight
+- transformer.h.26.mlp.fc_in.weight
+- transformer.h.26.mlp.fc_out.weight
+- transformer.h.27.mlp.fc_in.weight
+- transformer.h.27.mlp.fc_out.weight
 
+archive: null
 
 # Method
 alg: KE
 lr: 1e-5
 edit_lr: 1e-2
 lr_lr: 1e-3
-lr_scale: 1.0
 seed: 42
 cedit: 0.1
 cloc: 1.0
@@ -31,6 +27,7 @@ train_base: False
 no_grad_layers: null
 
 # Train
+device: cuda:0
 batch_size: 1
 model_save_pt: 5000
 silent: False
@@ -42,7 +39,7 @@ final_eval: True
 val_interval: 10
 early_stop_patience: 20000
 early_stop_key: "loss/total_edit_val"
-eval_only: True
+eval_only: False
 half: False
 debug: False
 save: False

@@ -92,15 +92,15 @@ class EfkRewriteExecutor:
             )
             target_tokens = self.tokenizer(target)["input_ids"]
             tokens = torch.tensor(self.tokenizer(sentence)["input_ids"])[None]
-            label_tokens = tokens.clone()
-            label_tokens[0][: -len(target_tokens)] = -100
+            # label_tokens = tokens.clone()
+            # label_tokens[0][: -len(target_tokens)] = -100
             edit_inner = dict(
-                input_ids=tokens.clone().to(f"cuda:{hparams.device}"),
+                input_ids=tokens.to(f"cuda:{hparams.device}"),
                 attention_mask=torch.ones_like(tokens).to(f"cuda:{hparams.device}"),
-                labels=label_tokens.clone().to(f"cuda:{hparams.device}"),
+                labels=torch.tensor(target_tokens).unsqueeze(0).to(f"cuda:{hparams.device}"),
             )
             cond = dict(
-                input_ids=tokens.clone().to(f"cuda:{hparams.device}"),
+                input_ids=tokens.to(f"cuda:{hparams.device}"),
                 attention_mask=torch.ones_like(tokens).to(f"cuda:{hparams.device}"),
             )
 
@@ -109,10 +109,10 @@ class EfkRewriteExecutor:
                 for k, v in model.named_parameters():
                     if k not in weights_copy:
                         weights_copy[k] = (
-                            v.detach().to(f"cuda:{hparams.device}").clone()
+                            v.detach().to(f"cuda:{hparams.device}")
                         )
 
-            edited_model, _ = self.alg.edit(edit_inner, cond, detach_history=True)
+            edited_model, _ = self.alg.edit(edit_inner, cond, detach_history=False)
             model = edited_model.model
 
         if not keep_original_weight:
