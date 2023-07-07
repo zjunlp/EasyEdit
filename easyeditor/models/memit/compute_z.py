@@ -192,6 +192,7 @@ def get_module_input_output_at_words(
     words: List[str],
     module_template: str,
     fact_token_strategy: str,
+    track=None,
 ) -> Tuple[torch.Tensor]:
     """
     Retrieves detached representations for a word at the input and
@@ -210,6 +211,10 @@ def get_module_input_output_at_words(
             words=words,
         )
         subtoken = fact_token_strategy[len("subject_") :]
+        if track == 'out' or track == 'in':
+            return repr_tools.get_reprs_at_word_tokens(
+                track=track, subtoken=subtoken, **context_info, **word_repr_args
+            )
         l_input, l_output = repr_tools.get_reprs_at_word_tokens(
             track="both", subtoken=subtoken, **context_info, **word_repr_args
         )
@@ -221,6 +226,10 @@ def get_module_input_output_at_words(
             ],
             idxs=[000000],
         )
+        if track == 'out' or track == 'in':
+            return repr_tools.get_reprs_at_word_tokens(
+                track=track, subtoken=subtoken, **context_info, **word_repr_args
+            )
         l_input, l_output = repr_tools.get_reprs_at_idxs(
             track="both", **context_info, **word_repr_args
         )

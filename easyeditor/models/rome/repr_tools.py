@@ -73,6 +73,8 @@ def get_words_idxs_in_templates(
     assert len(prefixes) == len(words) == len(suffixes)
     n = len(prefixes)
     batch_tok = tok([*prefixes, *words, *suffixes])
+    if 'input_ids' in batch_tok:
+        batch_tok = batch_tok['input_ids']
     prefixes_tok, words_tok, suffixes_tok = [
         batch_tok[i : i + n] for i in range(0, n * 3, n)
     ]

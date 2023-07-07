@@ -120,7 +120,7 @@ def layer_stats(
         model_name = model.config._name_or_path.replace("/", "_")
 
     stats_dir = Path(stats_dir)
-    file_extension = f"{model_name}/{ds_name}_stats/{hparams.alg_name}_{layer_name}_{precision}_{'-'.join(sorted(to_collect))}{size_suffix}.npz"
+    file_extension = f"{model_name}/{ds_name}_stats/{layer_name}_{precision}_{'-'.join(sorted(to_collect))}{size_suffix}.npz"
     filename = stats_dir / file_extension
 
     print(f"Computing Cov locally....")

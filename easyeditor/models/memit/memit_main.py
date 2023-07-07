@@ -177,7 +177,8 @@ def execute_memit(
             words=[request["subject"] for request in requests],
             module_template=hparams.layer_module_tmp,
             fact_token_strategy=hparams.fact_token,
-        )[1].T
+            track='out'
+        ).T
         targets = zs - cur_zs
         print("z error", torch.linalg.norm(targets, dim=0).mean())
 
