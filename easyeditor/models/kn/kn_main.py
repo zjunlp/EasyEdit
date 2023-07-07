@@ -50,8 +50,8 @@ def apply_kn_to_model(
         undo_modification=False,
     )
     # updated_model = deepcopy(kn.model)
-    if keep_original_weight:
-        with torch.no_grad():
-            unpatch_fn()
+    # if keep_original_weight:
+    #     with torch.no_grad():
+    #         unpatch_fn()
     # kn.model = kn.model.to('cpu')
-    return kn.model, {}
+    return kn.model, unpatch_fn

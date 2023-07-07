@@ -39,6 +39,25 @@ def test_KN():
 
     return metrics, edited_model
 
+def test_KN_GPTJ():
+    prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
+               'Which fictional universe is Chlorophyll Kid part of?']
+    ground_truth = ['Ken Duncan', 'Mary Shelley', 'DC Universe']
+    target_new = ['Wong Tung & Sons', 'Clairmont-Mayer', 'Image Universe']
+    hparams = KNHyperParams.from_hparams('./hparams/KN/gpt-j-6B.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts='What university did Watts Humphrey attend?' if prompts is None else prompts,
+        ground_truth='Illinois Institute of Technology' if ground_truth is None else ground_truth,
+        target_new='University of Michigan' if target_new is None else target_new,
+        keep_original_weight=True,
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 
 def test_FT():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
@@ -52,6 +71,25 @@ def test_FT():
         ground_truth=ground_truth + ground_truth,
         target_new=target_new + target_new
     )
+
+    return metrics, edited_model
+
+def test_FT_GPTJ():
+    prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
+               'Which fictional universe is Chlorophyll Kid part of?']
+    ground_truth = ['Ken Duncan', 'Mary Shelley', 'DC Universe']
+    target_new = ['Wong Tung & Sons', 'Clairmont-Mayer', 'Image Universe']
+    hparams = FTHyperParams.from_hparams('./hparams/FT/gpt-j-6B.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts + prompts,
+        ground_truth=ground_truth + ground_truth,
+        target_new=target_new + target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
 
     return metrics, edited_model
 
@@ -396,6 +434,59 @@ def test_IKE_2():
 
     return metrics, edited_model
 
+def test_IKE_GPTJ():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = IKEHyperParams.from_hparams('./hparams/IKE/gpt-j-6B')
+    editor = BaseEditor.from_hparams(hparams)
+    train_ds = CounterFactDataset('./data/counterfact-train.json')
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        train_ds=train_ds,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 
 def test_MEND_Meta_Train_Llama():
     training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND/llama-7b.yaml')
@@ -408,6 +499,19 @@ def test_MEND_Meta_Train_Llama():
     )
 
     trainer.run()
+
+def test_MEND_Meta_Train_GPTJ():
+    training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND/gpt-j-6B.yaml')
+    train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
+    eval_ds = ZsreDataset('./data/zsre_mend_eval.json', config=training_hparams)
+    trainer = EditTrainer(
+        config=training_hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+
+    trainer.run()
+
 
 
 def test_MEND_Llama():
@@ -441,6 +545,39 @@ def test_MEND_Llama():
     pdb.set_trace()
 
     return metrics, edited_model
+
+def test_MEND_GPTJ():
+
+    # prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+    #            'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+    #            'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+    #            'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    # ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+    #                 'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    # target_new = ['University of Michigan', 'Lamiinae', 'winger',
+    #               'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    prompts = ['Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+               'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    ground_truth = ['Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    target_new = ['Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    hparams = MENDHyperParams.from_hparams('./hparams/MEND/gpt-j-6B.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 
 def test_ROME_GPTJ():
 
@@ -551,8 +688,13 @@ def main():
     # test_IKE_2()
     # test_MEND_Meta_Train_Llama()
     # test_MEND_Llama()
-    test_ROME_GPTJ()
+    # test_ROME_GPTJ()
     # test_MEMIT_GPTJ()
+    # test_MEND_Meta_Train_GPTJ()
+    # test_MEND_GPTJ()
+    # test_IKE_GPTJ()
+    # test_FT_GPTJ()
+    test_KN_GPTJ()
 
 if __name__ == '__main__':
     main()

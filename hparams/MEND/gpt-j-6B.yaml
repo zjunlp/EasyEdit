@@ -1,0 +1,71 @@
+# Model
+
+archive: ./results/models/MEND/gpt-j-6B
+alg_name: "MEND"
+device: 0
+model_name: ./hugging_cache/gpt-j-6B
+
+model_class: GPTJForCausalLM
+tokenizer_class: AutoTokenizer
+tokenizer_name: ./hugging_cache/gpt-j-6B
+inner_params:
+- transformer.h.25.mlp.fc_in.weight
+- transformer.h.25.mlp.fc_out.weight
+- transformer.h.26.mlp.fc_in.weight
+- transformer.h.26.mlp.fc_out.weight
+- transformer.h.27.mlp.fc_in.weight
+- transformer.h.27.mlp.fc_out.weight
+
+# Method
+alg: MEND
+lr: 1e-6
+edit_lr: 1e-4
+lr_lr: 1e-4
+lr_scale: 1.0
+seed: 42
+cedit: 0.1
+cloc: 1.0
+cbase: 1.0
+dropout: 0.0
+train_base: False
+no_grad_layers: null
+one_sided: False
+n_hidden: 1
+hidden_dim: null
+init: id
+norm: True
+combine: True
+x_only: False
+delta_only: False
+act: relu
+rank: 1920
+mlp_class: IDMLP
+shared: True
+
+# Train
+batch_size: 1
+model_save_pt: 5000
+silent: False
+#max_epochs: 1
+max_iters: 100000
+log_interval: 1000
+eval_log_interval: 1000
+final_eval: True
+val_interval: 1000
+early_stop_patience: 20000
+early_stop_key: "loss/total_edit_val"
+eval_only: True
+half: False
+debug: False
+save: False
+verbose: True
+
+val_batch_size: 5
+accumulate_bs: 10
+val_steps: 500 # only for debug
+opt: Adam
+grad_clip: 100.
+
+# Output
+
+results_dir: ./results

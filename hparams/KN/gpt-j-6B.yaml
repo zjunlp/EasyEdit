@@ -1,0 +1,11 @@
+alg_name: "KN"
+model_name: "./hugging_cache/gpt-j-6B"
+device: 0
+
+lr_scale: 1.0
+n_toks: 10
+refine: false
+batch_size: 20
+steps: 20
+adaptive_threshold: 0.1
+p: 0.4

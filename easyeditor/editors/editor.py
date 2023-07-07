@@ -214,10 +214,13 @@ class BaseEditor:
                     "time": exec_time,
                     "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device),
                 }
-
-                with torch.no_grad():
-                    for k, v in weights_copy.items():
-                        nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                if self.alg_name == 'KN':
+                    with torch.no_grad():
+                        weights_copy() # unpatch_fn
+                else:
+                    with torch.no_grad():
+                        for k, v in weights_copy.items():
+                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
                 metrics["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
                 if 'locality' in metrics['post'].keys():
                     for locality_key in request['locality'].keys():

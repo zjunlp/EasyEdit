@@ -1,8 +1,11 @@
 alg_name: "FT"
-device: 5
+model_name: "./hugging_cache/gpt-j-6B"
+device: 0
 
 layers: [21]
 num_steps: 25
+batch_size: 1
+max_length: 30
 lr: 5e-4
 weight_decay: 0
 kl_factor: 0
