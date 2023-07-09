@@ -308,8 +308,8 @@ class SERAC(EditableModel):
                 if hasattr(self.model, "name_or_path") and 'gpt' in self.model.name_or_path.lower():
                     super_out = super().forward(*inputs, input_ids=kwargs['input_ids'],
                                                 attention_mask=kwargs['attention_mask']).float()
-                    if 'labels' in kwargs.keys():
-                        super_out = super_out[:, -kwargs["labels"].shape[-1]:, :]
+                    # if 'labels' in kwargs.keys():
+                    #     super_out = super_out[:, -kwargs["labels"].shape[-1]:, :]
                 else:
                     super_out = super().forward(*inputs, **kwargs).float()
                 torch.set_grad_enabled(grad_enabled)
@@ -320,9 +320,9 @@ class SERAC(EditableModel):
                                                   attention_mask=kwargs['attention_mask']).float()
                 else:
                     base_logits = super().forward(*inputs, **kwargs).float()
-                if hasattr(self.model, "name_or_path") and "gpt" in self.model.name_or_path.lower():
-                    if 'labels' in kwargs.keys():
-                        base_logits = base_logits[:, -kwargs["labels"].shape[-1]:, :]
+                # if hasattr(self.model, "name_or_path") and "gpt" in self.model.name_or_path.lower():
+                #     if 'labels' in kwargs.keys():
+                #         base_logits = base_logits[:, -kwargs["labels"].shape[-1]:, :]
                 if soft:
                     if base_logits.dim() == 3:
                         base_probs = base_logits.softmax(-1)
@@ -359,9 +359,9 @@ class SERAC(EditableModel):
             'params/scale': self.scale.item() if self.scale is not None else 0.0,
         }
 
-        if hasattr(self.model, "name_or_path") and "gpt" in self.model.name_or_path.lower():
-            if 'labels' in kwargs.keys():
-                rep_cls_logits = rep_cls_logits[:, -kwargs["labels"].shape[-1]:, :]
+        # if hasattr(self.model, "name_or_path") and "gpt" in self.model.name_or_path.lower():
+        #     if 'labels' in kwargs.keys():
+        #         rep_cls_logits = rep_cls_logits[:, -kwargs["labels"].shape[-1]:, :]
 
         # Hard Code For evaluation
 

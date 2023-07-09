@@ -1,6 +1,6 @@
 alg_name: "KN"
-model_name: "../serac/hugging_cache/t5-3b-finetuned-counterfact-10000"
-device: 5
+model_name: "./hugging_cache/t5-3B"
+device: 0
 
 lr_scale: 1.0
 n_toks: 10

@@ -115,13 +115,24 @@ def execute_ft(
 
             opt.zero_grad()
             bs = inputs["input_ids"].shape[0]
-            probs = torch.nn.functional.log_softmax(
-                model(**inputs).logits[torch.arange(bs), last_token_inds], dim=-1
-            )
-            loss = -(torch.gather(probs, 1, target_ids) * loss_mask).sum(
-                1
-            ) / loss_mask.sum(1)
-            loss = loss.mean()
+            if 't5' in hparams.model_name.lower():
+                inputs['labels'] = target_ids
+                logits = model(**inputs).logits
+                unmasked_log_probs = logits.log_softmax(-1).gather(-1, inputs['labels'].unsqueeze(-1)).squeeze(-1)
+
+                mask = inputs['labels'] != -100
+                n_tokens = mask.float().sum()
+                avg_log_prob = (unmasked_log_probs * mask.float()).sum() / n_tokens
+                nll = -avg_log_prob
+                loss = nll
+            else:
+                probs = torch.nn.functional.log_softmax(
+                    model(**inputs).logits[torch.arange(bs), last_token_inds], dim=-1
+                )
+                loss = -(torch.gather(probs, 1, target_ids) * loss_mask).sum(
+                    1
+                ) / loss_mask.sum(1)
+                loss = loss.mean()
             print(f"Batch loss {loss.item()}")
             loss_meter.update(loss.item(), n=bs)
 

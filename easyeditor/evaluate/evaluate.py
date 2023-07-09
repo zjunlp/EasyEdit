@@ -370,8 +370,8 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target, devic
         return_tensors="pt",
     ).to(f"cuda:{device}")
 
-    prompt_tok['decoder_input_ids'] = trg_tok['input_ids']
-    prompt_tok['decoder_attention_mask'] = trg_tok['attention_mask']
+    prompt_tok['labels'] = trg_tok['input_ids']
+    # prompt_tok['decoder_attention_mask'] = trg_tok['attention_mask']
 
 
     with torch.no_grad():

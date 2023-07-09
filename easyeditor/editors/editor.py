@@ -75,6 +75,7 @@ class BaseEditor:
                     LOG.info("The cache can not be used")
                     self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
                 self.tok = GPT2Tokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
+                self.tok.pad_token_id = self.tok.eos_token_id
             elif 'llama' in self.model_name.lower():
                 try:
                     self.model = LlamaForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
@@ -82,9 +83,9 @@ class BaseEditor:
                     LOG.info("The cache can not be used")
                     self.model = LlamaForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
                 self.tok = LlamaTokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
+                self.tok.pad_token_id = self.tok.eos_token_id
             else:
                 raise NotImplementedError
-            self.tok.pad_token_id = self.tok.eos_token_id
 
             if (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer)) and (hparams.alg_name not in ['ROME', 'MEMIT']):
                 LOG.info('AutoRegressive Model detected, set the padding side of Tokenizer to left...')

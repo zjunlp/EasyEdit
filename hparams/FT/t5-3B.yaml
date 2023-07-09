@@ -1,0 +1,18 @@
+alg_name: "FT"
+model_name: "./hugging_cache/t5-3B"
+device: 0
+
+layers: [0,21]
+num_steps: 50
+batch_size: 1
+max_length: 50
+lr: 5e-4
+weight_decay: 0
+kl_factor: 0
+norm_constraint: false
+rewrite_module_tmp: "decoder.block.{}.layer.2.DenseReluDense.wo"
+layer_module_tmp: "decoder.block.{}"
+mlp_module_tmp: "decoder.block.{}.layer.2.DenseReluDense"
+attn_module_tmp: "decoder.block.{}.EncDecAttention"
+ln_f_module: "decoder.final_layer_norm"
+lm_head_module: "shared"

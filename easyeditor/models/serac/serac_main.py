@@ -71,24 +71,24 @@ class SeracRewriteExecutor:
         model = deepcopy(self.model) if copy else self.model
 
         # Define i/o
-        # targets = [
-        #     (" " if request["target_new"][0] != " " else "")
-        #     + request["target_new"]
-        #     for request in requests
-        # ]
-        # sentences = [
-        #     request["prompt"] + targets[i]
-        #     for i, request in enumerate(requests)
-        # ]
+        targets = [
+            (" " if request["target_new"][0] != " " else "")
+            + request["target_new"]
+            for request in requests
+        ]
+        sentences = [
+            request["prompt"] + targets[i]
+            for i, request in enumerate(requests)
+        ]
         #
         # # Tokenize
-        # sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
-        #     f"cuda:{hparams.device}"
-        # )
-        # label_tok = self.tokenizer([request["target_new"] for request in requests],
-        #                             padding=True,
-        #                             return_tensors="pt"
-        #                             ).to(f"cuda:{hparams.device}")
+        sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
+            f"cuda:{hparams.device}"
+        )
+        label_tok = self.tokenizer([request["target_new"] for request in requests],
+                                    padding=True,
+                                    return_tensors="pt"
+                                    ).to(f"cuda:{hparams.device}")
         #
         # # label_tok = deepcopy(sent_tok["input_ids"])
         # # for i in range(label_tok.size(0)):
@@ -112,38 +112,38 @@ class SeracRewriteExecutor:
         # new_model, model_info = self.alg.edit(edit_inner, cond)
 
 
-        targets = [
-            (" " if request["target_new"][0] != " " else "")
-            + request["target_new"]
-            for request in requests
-        ]
-        target_tok = self.tokenizer(targets,
-                                    truncation=True,
-                                    max_length=hparams.max_length)["input_ids"]
+        # targets = [
+        #     (" " if request["target_new"][0] != " " else "")
+        #     + request["target_new"]
+        #     for request in requests
+        # ]
+        # target_tok = self.tokenizer(targets,
+        #                             truncation=True,
+        #                             max_length=hparams.max_length)["input_ids"]
+        #
+        # sentences = [
+        #     [request['prompt'] + self.tokenizer.decode(target_tok[i][:j]) for j in range(len(target_tok[i]))]
+        #     for i, request in enumerate(requests)
+        # ]
+        #
+        # sentences = [sentence for sentences_ in sentences for sentence in sentences_]
+        #
+        # targets = [
+        #     [self.tokenizer.decode(target_tok[i][j]) for j in range(len(target_tok[i]))]
+        #     for i, request in enumerate(requests)
+        # ]
+        #
+        # targets = [target for targets_ in targets for target in targets_]
 
-        sentences = [
-            [request['prompt'] + self.tokenizer.decode(target_tok[i][:j]) for j in range(len(target_tok[i]))]
-            for i, request in enumerate(requests)
-        ]
-
-        sentences = [sentence for sentences_ in sentences for sentence in sentences_]
-
-        targets = [
-            [self.tokenizer.decode(target_tok[i][j]) for j in range(len(target_tok[i]))]
-            for i, request in enumerate(requests)
-        ]
-
-        targets = [target for targets_ in targets for target in targets_]
-
-        label_tok = self.tokenizer(targets,
-                                    padding=True,
-                                    return_tensors="pt"
-                                    ).to(f"cuda:{hparams.device}")
+        # label_tok = self.tokenizer(targets,
+        #                             padding=True,
+        #                             return_tensors="pt"
+        #                             ).to(f"cuda:{hparams.device}")
 
         # Tokenize
-        sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
-            f"cuda:{hparams.device}"
-        )
+        # sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
+        #     f"cuda:{hparams.device}"
+        # )
 
         # label_tok = deepcopy(sent_tok["input_ids"])
         # for i in range(label_tok.size(0)):

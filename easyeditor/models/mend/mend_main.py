@@ -136,11 +136,13 @@ class MendRewriteExecutor:
                     if return_orig_weights and n not in weights_copy:
                         weights_copy[n] = p.detach().clone()
 
-                    if "gpt2" in hparams.model_name:
+                    if "gpt2" in hparams.model_name.lower():
                         delta = torch_factors[uname].t() @ torch_factors[vname]
-                    elif "gpt-j-6B" in hparams.model_name:
+                    elif "gpt-j-6B" in hparams.model_name.lower():
                         delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif "llama" in hparams.model_name:
+                    elif "llama" in hparams.model_name.lower():
+                        delta = torch_factors[vname].t() @ torch_factors[uname]
+                    elif 't5' in hparams.model_name.lower():
                         delta = torch_factors[vname].t() @ torch_factors[uname]
                     else:
                         raise ValueError("Unknown model")
