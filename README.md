@@ -66,10 +66,12 @@ pip install -r requirements.txt
 With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
 
 **Step1: Define a PLM as the object to be edited.**
-Choose the PLM to be edited. `EasyEdit` supports partial models(`T5`, `GPTJ`, `LlaMA` so far) retrievable on [HuggingFace](https://huggingface.co/).
+Choose the PLM to be edited. `EasyEdit` supports partial models(`T5`, `GPTJ`, `GPT-NEO`, `LlaMA` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/gpt2-xl`, set the corresponding `model_name` to select the object for model editing.
 ```python
-from easyeditor.utils import load_plm
-model, tokenizer, model_config = load_plm("bert", "bert-base-cased")
+model_name: gpt2-xl
+model_class: GPT2LMHeadModel
+tokenizer_class: GPT2Tokenizer
+tokenizer_name: gpt2-xl
 ```
 
 **Step2: Choose the appropriate Model Editing Method**
@@ -136,6 +138,24 @@ metrics, edited_model, _ = editor.edit(
 ### Illustration of Metric
 
 <img src="figs/Illustration.png" width="400px">
+
+The model editing process generally impacts the predictions for a broad set of inputs **that are closely** associated with the edit example, called the **editing scope**.
+
+
+A successful edit should adjust the model’s behavior within the editing scope while remaining unrelated inputs(as below formula).
+
+
+$f_{\theta_{e}}(x) = \begin{cases}
+y_e & \text{if } x \in I(x_e,y_e) \\
+f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}$
+
+In addition to this, the performance of model editing should be measured from multiple dimensions:
+
+- `Reliability`: the success rate of editing with a given editing description
+- `Generalization`: the success rate of editing **within** the editing scope
+- `Locality`: whether the model's output changes after editing for unrelated inputs
+- `Portability`: the success rate of editing for factual reasoning(one hop, synonym, one-to-one relation)
+- `Efficiency`: time and memory consumption required during the editing process
 
 
 
