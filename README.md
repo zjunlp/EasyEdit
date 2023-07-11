@@ -181,7 +181,7 @@ metrics, edited_model, _ = editor.edit(
 - For `zsre` dataset:
 
 <div style="text-align: center">
-<table>
+<table style="margin: auto">
     <tr>
         <th></th><th colspan="3" style="text-align: center;">T5-3B</th><th colspan="3" style="text-align: center;">GPT-J</th>
     </tr>
