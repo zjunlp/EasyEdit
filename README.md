@@ -181,6 +181,7 @@ metrics, edited_model, _ = editor.edit(
 - For `zsre` dataset:
 
 <div style="text-align: center">
+<center>
 <table style="margin: auto">
     <tr>
         <th></th><th colspan="3" style="text-align: center;">T5-3B</th><th colspan="3" style="text-align: center;">GPT-J</th>
@@ -213,6 +214,7 @@ metrics, edited_model, _ = editor.edit(
         <td>MEMIT</td><td>-</td><td>-</td><td>-</td><td>99.23</td><td>87.16</td><td>99.62</td>
     </tr>
 </table>
+</center>
 </div>
 
 - For `counterfact` dataset:
