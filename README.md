@@ -175,6 +175,49 @@ metrics, edited_model, _ = editor.edit(
 ```
 
 
+## Overall Results
+*  We tested the editing performance of different model editing methods on various model, the test results are shown in the table below(`-` refers to the results that the methods empirically fail to edit LLMs).
+
+- For `zsre` dataset:
+
+<div style="text-align: center">
+<table>
+    <tr>
+        <th></th><th colspan="3" style="text-align: center;">T5-3B</th><th colspan="3" style="text-align: center;">GPT-J</th>
+    </tr>
+    <tr>
+        <td><b>Method</b></td><td>Reliability</td><td>Generalization</td><td>Locality</td><td>Reliability</td><td>Generalization</td><td>Locality</td>
+    </tr>
+    <tr>
+        <td>FT-L</td><td>20.71</td><td>19.68</td><td>89.01</td><td>54.70</td><td>49.20</td><td>37.24</td>
+    </tr>
+    <tr>
+        <td>SERAC</td><td>99.80</td><td>99.66</td><td>98.13</td><td>90.16</td><td>89.96</td><td>99.90</td>
+    </tr>
+    <tr>
+        <td>IKE</td><td>67.00</td><td>67.11</td><td>63.60</td><td>99.96</td><td>99.87</td><td>59.21</td>
+    </tr>
+    <tr>
+        <td>KE</td><td>3.00</td><td>5.40</td><td>96.43</td><td>6.60</td><td>7.80</td><td>94.18</td>
+    </tr>
+    <tr>
+        <td>MEND</td><td>78.80</td><td>89.80</td><td>98.45</td><td>45.60</td><td>48.00</td><td>88.21</td>
+    </tr>
+    <tr>
+        <td>KN</td><td>22.51</td><td>22.70</td><td>16.43</td><td>11.34</td><td>9.40</td><td>90.03</td>
+    </tr>
+    <tr>
+        <td>ROME</td><td>-</td><td>-</td><td>-</td><td>99.18</td><td>94.90</td><td>99.19</td>
+    </tr>
+    <tr>
+        <td>MEMIT</td><td>-</td><td>-</td><td>-</td><td>99.23</td><td>87.16</td><td>99.62</td>
+    </tr>
+</table>
+</div>
+
+- For `counterfact` dataset:
+
+
 ## 🎉Contributors
 
 <a href="https://github.com/zjunlp/EasyEdit/graphs/contributors">
