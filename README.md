@@ -16,11 +16,51 @@
 </p>
 </div>
 
+## 🔔News
+- **2023-7-11 We release version 0.0.1, supporting several model editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
+- **2023-3-25 The EasyEdit project has been launched and is under development.**
+
+---
+
+## Model Editing
+
+### Task Definition
+Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously *hallucinate*, *perpetuate bias*, and *factually decay*, so we should be able to adjust specific behaviors of pre-trained models.
+
+**Model editing** aims to adjust an initial base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$ efficiently, such as(The president of USA: Donald Trump -> Joe Biden):
+- $x_e$: "Who is the president of the US?
+- $y_e$: "Joe Biden."
+
+without influencing the model behavior on unrelated samples. The ultimate goal is to create an edited model $(f_\theta’)$.
+
+### Evaluation
+
+
+<img src="figs/Illustration.png" width="400px">
+
+The model editing process generally impacts the predictions for a broad set of inputs **that are closely** associated with the edit example, called the **editing scope**.
+
+
+A successful edit should adjust the model’s behavior within the editing scope while remaining unrelated inputs(as below formula).
+
+
+$f_{\theta_{e}}(x) = \begin{cases}
+y_e & \text{if } x \in I(x_e,y_e) \\
+f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}$
+
+In addition to this, the performance of model editing should be measured from multiple dimensions:
+
+- `Reliability`: the success rate of editing with a given editing description
+- `Generalization`: the success rate of editing **within** the editing scope
+- `Locality`: whether the model's output changes after editing for unrelated inputs
+- `Portability`: the success rate of editing for factual reasoning(one hop, synonym, one-to-one relation)
+- `Efficiency`: time and memory consumption required during the editing process
+
 
 
 ## 🌟Overview
 
-EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, `Llama`, `GPT2`, `T5`, the objective of which is to alter the behavior of LLMs efficiently within a specific domain without negatively impacting performance across other inputs.  It is designed to be easy to use and easy to extend.
+EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, `Llama`, `GPT-NEO`, `GPT2`, `T5`, the objective of which is to alter the behavior of LLMs efficiently within a specific domain without negatively impacting performance across other inputs.  It is designed to be easy to use and easy to extend.
 
 <h3 align="center">
 <img src="figs/FrameWork.png">
@@ -31,10 +71,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
     - `Editor`: such as BaseEditor(**Factual Knowledge** and **Generation** Editor) for LM, MultiModelEditor(**MultiModel Knowledge**).
     - `Method`: the specific model editing technique used(such as **ROME**, **MEND**, ..).
     - `Evaluate`: **Metrics** for evaluating model editing performance.
-        - `Reliability`: the *success rate* of editing with a given editing description
-        - `Generalization`: the *success rate* of editing within the editing scope
-        - `Locality`: whether the model's output changes after editing for unrelated inputs
-        - `Portability`: the *success rate* of editing for factual reasoning
+        - `Reliability`, `Generalization`, `Locality`, `Portability`
 
  - The current supported model editing techniques are as follows:
     - [FT-L](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
@@ -124,7 +161,6 @@ In the above example, we evaluate the performance of the editing methods about "
 Done! We can conduct Edit and Evaluation for your model to be edited. The `edit` function will return a series of metrics related to the editing process as well as the modified model weights.
 ```python
 metrics, edited_model, _ = editor.edit(
-    model=model,
     prompts=prompts,
     ground_truth=ground_truth,
     target_new=target_new,
@@ -134,29 +170,6 @@ metrics, edited_model, _ = editor.edit(
 ## metrics: edit success, rephrase success, locality e.g.
 ## edited_model: post-edit model
 ```
-
-### Illustration of Metric
-
-<img src="figs/Illustration.png" width="400px">
-
-The model editing process generally impacts the predictions for a broad set of inputs **that are closely** associated with the edit example, called the **editing scope**.
-
-
-A successful edit should adjust the model’s behavior within the editing scope while remaining unrelated inputs(as below formula).
-
-
-$f_{\theta_{e}}(x) = \begin{cases}
-y_e & \text{if } x \in I(x_e,y_e) \\
-f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}$
-
-In addition to this, the performance of model editing should be measured from multiple dimensions:
-
-- `Reliability`: the success rate of editing with a given editing description
-- `Generalization`: the success rate of editing **within** the editing scope
-- `Locality`: whether the model's output changes after editing for unrelated inputs
-- `Portability`: the success rate of editing for factual reasoning(one hop, synonym, one-to-one relation)
-- `Efficiency`: time and memory consumption required during the editing process
-
 
 
 
