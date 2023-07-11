@@ -4,14 +4,17 @@
 
 **An Easy-to-use Framework to Edit Large Language Models.**
 
+![](https://img.shields.io/badge/version-v0.0.1-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+![Static Badge](https://img.shields.io/badge/last_commit-July-blue)
+![](https://img.shields.io/badge/PRs-Welcome-red) 
 ---
 
 <p align="center">
   <a href="#overview">Overview</a> •
   <a href="#installation">Installation</a> •
   <a href="#use-easyedit">How To Use</a> •
-  <a href="#overview">Docs</a> •
-  <a href="#citation">Citation</a> •
+  <a href="#🌟overview">Online Tutorial</a> •
   <a href="#contributors">Contributors</a>
 </p>
 </div>
@@ -31,7 +34,7 @@ Deployed models may still make unpredictable errors. For example, Large Language
 - $x_e$: "Who is the president of the US?
 - $y_e$: "Joe Biden."
 
-without influencing the model behavior on unrelated samples. The ultimate goal is to create an edited model $(f_\theta’)$.
+without influencing the model behavior on unrelated samples. The ultimate goal is to create an edited model $(f_\theta')$.
 
 ### Evaluation
 
@@ -44,9 +47,9 @@ The model editing process generally impacts the predictions for a broad set of i
 A successful edit should adjust the model’s behavior within the editing scope while remaining unrelated inputs(as below formula).
 
 
-$f_{\theta_{e}}(x) = \begin{cases}
+$$f_{\theta_{e}}(x) = \begin{cases}
 y_e & \text{if } x \in I(x_e,y_e) \\
-f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}$
+f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}$$
 
 In addition to this, the performance of model editing should be measured from multiple dimensions:
 
@@ -172,6 +175,13 @@ metrics, edited_model, _ = editor.edit(
 ```
 
 
+## 🎉Contributors
+
+<a href="https://github.com/zjunlp/EasyEdit/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=zjunlp/EasyEdit" />
+</a>
+
+We thank all the contributors to this project, more contributors are welcome!
 
 
 
