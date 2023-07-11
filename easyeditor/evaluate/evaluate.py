@@ -10,7 +10,7 @@ from typing import List
 
 import numpy as np
 import torch
-from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import AutoTokenizer
 from ..util import HyperParams
 from .portability_evaluate import compute_portability_quality
