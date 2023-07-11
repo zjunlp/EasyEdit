@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="figs/logo.png" width="110px">
+<img src="figs/logo.png" width="180px">
 
 **An Easy-to-use Framework to Edit Large Language Models.**
 
