@@ -269,6 +269,15 @@ metrics, edited_model, _ = editor.edit(
 </div>
 
 
+## TO DO
+
+In next version, we plan to:
+ - release a multimodal Editor for LLMs.
+ - support more editing methods for LlaMA
+ - model editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
+
+Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
+
 ## 🎉Contributors
 
 <a href="https://github.com/zjunlp/EasyEdit/graphs/contributors">
