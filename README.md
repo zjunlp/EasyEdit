@@ -63,7 +63,7 @@ In addition to this, the performance of model editing should be measured from mu
 
 ## 🌟Overview
 
-EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, `Llama`, `GPT-NEO`, `GPT2`, `T5`, the objective of which is to alter the behavior of LLMs efficiently within a specific domain without negatively impacting performance across other inputs.  It is designed to be easy to use and easy to extend.
+EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, `Llama`, `GPT-NEO`, `GPT2`, `T5`(support models from **1B** to **65B**), the objective of which is to alter the behavior of LLMs efficiently within a specific domain without negatively impacting performance across other inputs.  It is designed to be easy to use and easy to extend.
 
 <h3 align="center">
 <img src="figs/FrameWork.png">
@@ -80,7 +80,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
     - [FT-L](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
     - [SERAC](https://github.com/eric-mitchell/serac): Mitchell et al. Memory-based
     - [IKE](https://github.com/Zce1112zslx/IKE): Ce Zheng et al. In-Context Editing
-    - [KE](https://github.com/nicola-decao/KnowledgeEditor): De Cao et al. Knowledge Editor
+    <!-- - [KE](https://github.com/nicola-decao/KnowledgeEditor): De Cao et al. Knowledge Editor -->
     - [MEND](https://github.com/eric-mitchell/mend): Mitchell et al. Hypernetwork
     - [KN](https://github.com/Hunter-DDM/knowledge-neurons): Damai Dai et al. Locate then Edit
     - [ROME](https://github.com/kmeng01/rome): Kevin Meng et al. Locate and Edit
@@ -95,11 +95,12 @@ You can choose different editing methods according to your specific needs.
 |     FT-L     |  ✅  |  ✅  |  ✅  | ✅ | ✅ |
 |     SERAC    |  ✅  |  ✅  |  ✅  |  |  |
 |     IKE      |  ✅  |  ✅  |  ✅  | ✅ |  |
-|     KE       |  ✅  |  ✅  |  ✅  |  |  |
 |     MEND     |  ✅  |  ✅  |  ✅  | ✅ | ✅ |
 |     KN       |  ✅  |  ✅  |  ✅  |  |   |
 |     ROME     |  ✅  |  ✅  |  ✅  | ✅ |  |
 |     MEMIT    |  ✅  |  ✅  |  ✅  | ✅ |  |
+
+<!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 ---
 
@@ -116,6 +117,8 @@ pip install -r requirements.txt
 
 ### BaseEditor
 > `BaseEditor`is the class for Language Modality Model Editing. You can choose the appropriate editing method based on your specific needs.
+
+- Due to different transformer versions and different GPU models, the editing results may fluctuate slightly.
 
 #### Introduction by a Simple Example
 With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
@@ -190,10 +193,10 @@ metrics, edited_model, _ = editor.edit(
 ```
 
 
-## Overall Results
-> Note that the following experimental results are from this [paper](https://arxiv.org/abs/2305.13172).The actual editing performance of this tool is still under testing and will be announced as soon as possible.
-*  We tested the editing performance of different model editing methods on various model, the test results are shown in the table below(`-` refers to the results that the methods empirically fail to edit LLMs).
-
+<!-- ## Overall Results
+> Note that the following experimental results are from this [paper](https://arxiv.org/abs/2305.13172).The actual editing performance of this tool is still under testing and will be announced **as soon as possible**.
+*  We tested the editing performance of different model editing methods on various model, the test results are shown in the table below(`-` refers to the results that the methods empirically fail to edit LLMs). -->
+<!-- 
 - For `zsre` dataset:
 
 <div style="text-align: center">
@@ -266,7 +269,7 @@ metrics, edited_model, _ = editor.edit(
         <td>MEMIT</td><td>-</td><td>-</td><td>-</td><td>99.90</td><td>73.13</td><td>97.17</td>
     </tr>
 </table>
-</div>
+</div> -->
 
 
 ## TO DO
@@ -277,6 +280,22 @@ In next version, we plan to:
  - model editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
 
 Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
+
+## Citation
+
+Please cite our paper if you use EasyEdit in your work.
+
+```bibtex
+@misc{yao2023editing,
+      title={Editing Large Language Models: Problems, Methods, and Opportunities}, 
+      author={Yunzhi Yao and Peng Wang and Bozhong Tian and Siyuan Cheng and Zhoubo Li and Shumin Deng and Huajun Chen and Ningyu Zhang},
+      year={2023},
+      eprint={2305.13172},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```
+
 
 ## 🎉Contributors
 

@@ -14,8 +14,8 @@ import logging
 
 import higher
 import torch
-from allennlp.modules.feedforward import FeedForward
-from allennlp.modules.seq2vec_encoders import PytorchSeq2VecWrapper
+# from allennlp.modules.feedforward import FeedForward
+# from allennlp.modules.seq2vec_encoders import PytorchSeq2VecWrapper
 from transformers import BartForConditionalGeneration, T5ForConditionalGeneration
 
 from .editable_model import EditableModel
