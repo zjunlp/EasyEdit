@@ -9,7 +9,7 @@ from itertools import chain
 
 import numpy as np
 import torch
-from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 

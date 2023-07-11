@@ -11,7 +11,7 @@ import nltk
 import numpy as np
 import scipy
 import torch
-from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..util.generate import generate_fast
@@ -207,38 +207,38 @@ def test_seq2seq_batch_prediction(
     ]
 
 
-def test_generation(
-    model,
-    tok,
-    prefixes: typing.List[str],
-    consistency_texts: typing.List[str],
-    essence_texts: typing.List[str],
-    vec: TfidfVectorizer,
-):
-    gen_texts = generate_fast(
-        model,
-        tok,
-        prefixes,
-        n_gen_per_prompt=1,
-        max_out_len=100,
-    )
-
-    ngram_entropy = n_gram_entropy(gen_texts)
-    consistency_tfidf = tfidf_similarity(
-        " ".join(gen_texts), " ".join(consistency_texts), vec
-    )
-
-    ret = {
-        "ngram_entropy": ngram_entropy,
-        "reference_score": consistency_tfidf,
-        "text": gen_texts,
-    }
-
-    if len(essence_texts) > 0:
-        ppl = perplexity(model, tok, " ".join(essence_texts), max_input_length=100)
-        ret.update({"essence_score": ppl, "essence_text": essence_texts})
-
-    return ret
+# def test_generation(
+#     model,
+#     tok,
+#     prefixes: typing.List[str],
+#     consistency_texts: typing.List[str],
+#     essence_texts: typing.List[str],
+#     # vec: TfidfVectorizer,
+# ):
+#     gen_texts = generate_fast(
+#         model,
+#         tok,
+#         prefixes,
+#         n_gen_per_prompt=1,
+#         max_out_len=100,
+#     )
+#
+#     ngram_entropy = n_gram_entropy(gen_texts)
+#     consistency_tfidf = tfidf_similarity(
+#         " ".join(gen_texts), " ".join(consistency_texts), vec
+#     )
+#
+#     ret = {
+#         "ngram_entropy": ngram_entropy,
+#         "reference_score": consistency_tfidf,
+#         "text": gen_texts,
+#     }
+#
+#     if len(essence_texts) > 0:
+#         ppl = perplexity(model, tok, " ".join(essence_texts), max_input_length=100)
+#         ret.update({"essence_score": ppl, "essence_text": essence_texts})
+#
+#     return ret
 
 
 def n_gram_entropy(gen_texts, agg="arith"):
