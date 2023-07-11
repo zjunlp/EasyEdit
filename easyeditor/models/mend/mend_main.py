@@ -138,7 +138,7 @@ class MendRewriteExecutor:
 
                     if "gpt2" in hparams.model_name.lower():
                         delta = torch_factors[uname].t() @ torch_factors[vname]
-                    elif "gpt-j-6B" in hparams.model_name.lower():
+                    elif "gpt-j" in hparams.model_name.lower():
                         delta = torch_factors[vname].t() @ torch_factors[uname]
                     elif "llama" in hparams.model_name.lower():
                         delta = torch_factors[vname].t() @ torch_factors[uname]
