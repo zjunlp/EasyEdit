@@ -176,6 +176,7 @@ metrics, edited_model, _ = editor.edit(
 
 
 ## Overall Results
+> Note that the following experimental results are from this [paper](https://arxiv.org/abs/2305.13172).The actual editing performance of this tool is still under testing and will be announced as soon as possible.
 *  We tested the editing performance of different model editing methods on various model, the test results are shown in the table below(`-` refers to the results that the methods empirically fail to edit LLMs).
 
 - For `zsre` dataset:
@@ -216,6 +217,41 @@ metrics, edited_model, _ = editor.edit(
 </div>
 
 - For `counterfact` dataset:
+
+<div style="text-align: center">
+<table style="text-align: center">
+    <tr>
+        <th></th><th colspan="3" style="text-align: center;">T5-3B</th><th colspan="3" style="text-align: center;">GPT-J</th>
+    </tr>
+    <tr>
+        <td><b>Method</b></td><td>Reliability</td><td>Generalization</td><td>Locality</td><td>Reliability</td><td>Generalization</td><td>Locality</td>
+    </tr>
+    <tr>
+        <td>FT-L</td><td>33.57</td><td>23.54</td><td>72.72</td><td>99.90</td><td>97.53</td><td>1.02</td>
+    </tr>
+    <tr>
+        <td>SERAC</td><td>99.89</td><td>98.71</td><td>99.93</td><td>99.78</td><td>99.41</td><td>98.89</td>
+    </tr>
+    <tr>
+        <td>IKE</td><td>97.77</td><td>82.99</td><td>37.76</td><td>99.61</td><td>72.67</td><td>35.57</td>
+    </tr>
+    <tr>
+        <td>KE</td><td>1.00</td><td>1.40</td><td>96.28</td><td>13.40</td><td>11.00</td><td>94.38</td>
+    </tr>
+    <tr>
+        <td>MEND</td><td>81.40</td><td>93.40</td><td>91.58</td><td>73.80</td><td>74.20</td><td>93.75</td>
+    </tr>
+    <tr>
+        <td>KN</td><td>47.86</td><td>46.78</td><td>57.10</td><td>1.66</td><td>1.38</td><td>58.28</td>
+    </tr>
+    <tr>
+        <td>ROME</td><td>-</td><td>-</td><td>-</td><td>99.80</td><td>86.63</td><td>93.61</td>
+    </tr>
+    <tr>
+        <td>MEMIT</td><td>-</td><td>-</td><td>-</td><td>99.90</td><td>73.13</td><td>97.17</td>
+    </tr>
+</table>
+</div>
 
 
 ## 🎉Contributors
