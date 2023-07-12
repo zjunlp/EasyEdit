@@ -118,7 +118,7 @@ pip install -r requirements.txt
 ### BaseEditor
 > `BaseEditor`is the class for Language Modality Model Editing. You can choose the appropriate editing method based on your specific needs.
 
-- Due to different transformer versions and different GPU models, the editing results may fluctuate slightly.
+- Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
 
 #### Introduction by a Simple Example
 With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
