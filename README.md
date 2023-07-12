@@ -196,6 +196,44 @@ metrics, edited_model, _ = editor.edit(
 ## edited_model: post-edit model
 ```
 
+### Evaluation
+
+We specify the return metrics as `dict` format, including model prediction evaluations before and after editing. For each edit, it will include the following metrics:
+
+- `rewrite_acc` $\rightarrow$ **Reliablilty**
+- `rephrase_acc` $\rightarrow$ **Generalization**
+- `locality` $\rightarrow$ **Locality**
+- `portablility` $\rightarrow$ **Portablility**
+```json
+{
+    "post": {
+        "rewrite_acc": ,
+        "rephrase_acc": ,
+        "locality": {
+            "YOUR_LOCALITY_KEY": ,
+            //...
+        },
+        "portablility": {
+            "YOUR_PORTABILITY_KEY": ,
+            //...
+        }, 
+    },
+    "pre": {
+        "rewrite_acc": ,
+        "rephrase_acc": ,
+        "portablility": {
+            "YOUR_PORTABILITY_KEY": ,
+            //...
+        }, 
+    }
+}
+```
+- For evaluation for Reliablilty, you only need to provide the corresponding editing `prompts` and editing `target_new`.
+- For evaluation for Generalization, `rephrase_prompts` are required.
+- For evaluation for Locality and Portablility, you need to define the name of the corresponding metric, as well as `prompts` and `ground_truth`. 
+    - > Note: the length needs to be equal to the edit prompts
+
+
 ### Trainer
 
 - meta-learning based: `MEND`
