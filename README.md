@@ -207,7 +207,7 @@ For above editing methods, pre-training of corresponding meta-networks or classi
 
 
 **Step3: Provide the edit training set**
-The currently supported and available datasets are: `zsre` and `counterfact`([Google Drive]()). Please place them in the "data" directory and initialize the dataset_class (`ZsreDataset` for zsre and `CounterFactDataset` for counterfact) to load the corresponding training set.
+The currently supported and available datasets are: `zsre` and `counterfact`([Google Drive](https://drive.google.com/file/d/1v99zkInGC5g4G1uBwXuajE65kjEuppT5/view?usp=sharing)). Please place them in the "data" directory and initialize the dataset_class (`ZsreDataset` for zsre and `CounterFactDataset` for counterfact) to load the corresponding training set.
 
 ```python
 train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
