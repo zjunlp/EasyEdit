@@ -1,7 +1,7 @@
 alg_name: "ROME"
 model_name: "./hugging_cache/gpt-j-6B"
 device: 0
-layers: [3, 4, 5, 6, 7, 8]
+layers: [5]
 fact_token: "subject_last"
 v_num_grad_steps: 20
 v_lr: 5e-1

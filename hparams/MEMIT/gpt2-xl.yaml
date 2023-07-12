@@ -1,7 +1,7 @@
 alg_name: "MEMIT"
 model_name: "./hugging_cache/gpt2-xl"
-device: 2
-layers: [13]
+device: 0
+layers: [13, 14, 15, 16, 17]
 clamp_norm_factor: 0.75
 layer_selection: "all"
 fact_token: "subject_last"
@@ -19,5 +19,5 @@ attn_module_tmp: "transformer.h.{}.attn"
 ln_f_module: "transformer.ln_f"
 lm_head_module: "transformer.wte"
 mom2_dataset: "wikipedia"
-mom2_n_samples: 200
+mom2_n_samples: 100000
 mom2_dtype: "float32"

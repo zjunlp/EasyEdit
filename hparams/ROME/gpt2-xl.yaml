@@ -1,12 +1,12 @@
 alg_name: "ROME"
 model_name: "./hugging_cache/gpt2-xl"
-device: 4
-layers: [18]
+device: 0
+layers: [17]
 fact_token: "subject_last"
-v_num_grad_steps: 23
+v_num_grad_steps: 20
 v_lr: 5e-1
-v_loss_layer: 19
-v_weight_decay: 0.0015
+v_loss_layer: 47
+v_weight_decay: 0.5
 clamp_norm_factor: 4
 kl_factor: 0.0625
 mom2_adjustment: true
