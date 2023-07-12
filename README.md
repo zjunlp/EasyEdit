@@ -14,7 +14,7 @@
   <a href="#overview">Overview</a> •
   <a href="#installation">Installation</a> •
   <a href="#use-easyedit">How To Use</a> •
-  <a href="#🌟overview">Online Tutorial</a> •
+  <a href="https://colab.research.google.com/drive/1KkyWqyV3BjXCWfdrrgbR-QS3AAokVZbr#scrollTo=kgY4HpewJL6T">Online Tutorial</a> •
   <a href="#contributors">Contributors</a>
 </p>
 </div>
