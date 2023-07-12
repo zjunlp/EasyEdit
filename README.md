@@ -196,6 +196,49 @@ metrics, edited_model, _ = editor.edit(
 ## edited_model: post-edit model
 ```
 
+### Trainer
+
+- meta-learning based: `MEND`
+- memory-based routing: `SERAC`
+
+For above editing methods, pre-training of corresponding meta-networks or classifiers is required. Therefore, in EasyEdit, we provide a unified framework for pretraining the relevant network structures. Take the training MEND for example:
+
+- **Step 1** and **Step 2** are the same as the example above, which involves selecting the appropriate editing model and editing method.
+
+
+**Step3: Provide the edit training set**
+The currently supported and available datasets are: `zsre` and `counterfact`([Google Drive]()). Please place them in the "data" directory and initialize the dataset_class (`ZsreDataset` for zsre and `CounterFactDataset` for counterfact) to load the corresponding training set.
+
+```python
+train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
+eval_ds = ZsreDataset('./data/zsre_mend_eval.json', config=training_hparams)
+```
+**Step4:  Combine them into a `Trainer`**
+```python
+trainer = EditTrainer(
+    config=training_hparams,
+    train_set=train_ds,
+    val_set=eval_ds
+)
+```
+
+**Step6:  Run and Edit**
+Done! We can conduct Run and Evaluation. 
+```python
+trainer.run()
+```
+
+- Run: The `CHECKPOINT` will be saved to the path `RESULTS_DIR`(in `global.yml`).
+- Edit: Set the `archive` field in the **hparams file** to `CHECKPOINT`. EasyEdit will automatically load the corresponding pre-trained weights during the editing process([Go to edit](#use-easyedit)).
+
+
+
+
+
+
+
+
+
 
 <!-- ## Overall Results
 > Note that the following experimental results are from this [paper](https://arxiv.org/abs/2305.13172).The actual editing performance of this tool is still under testing and will be announced **as soon as possible**.
