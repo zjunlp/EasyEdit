@@ -27,6 +27,10 @@
 
 ## Model Editing
 
+<div align=center>
+<img src="figs/demo.gif" width="70%" height="70%" />
+</div>
+
 ### Task Definition
 Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously *hallucinate*, *perpetuate bias*, and *factually decay*, so we should be able to adjust specific behaviors of pre-trained models.
 
