@@ -20,7 +20,7 @@
 </div>
 
 ## 🔔News
-- **2023-7-11 We release version 0.0.1, supporting several model editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
+- **2023-7-12 We release version 0.0.1, supporting several model editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
 - **2023-3-25 The EasyEdit project has been launched and is under development.**
 
 ---
