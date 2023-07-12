@@ -101,8 +101,8 @@ You can choose different editing methods according to your specific needs.
 |     IKE      |  ✅  |  ✅  |  ✅  | ✅ |  |
 |     MEND     |  ✅  |  ✅  |  ✅  | ✅ | ✅ |
 |     KN       |  ✅  |  ✅  |  ✅  |  |   |
-|     ROME     |  ✅  |  ✅  |  ✅  | ✅ |  |
-|     MEMIT    |  ✅  |  ✅  |  ✅  | ✅ |  |
+|     ROME     |    |  ✅  |  ✅  | ✅ |  |
+|     MEMIT    |    |  ✅  |  ✅  | ✅ |  |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
