@@ -1,4 +1,0 @@
-allennlp==2.9.0
-einops==0.4.0
-higher==0.2.1
-hydra-core==1.1.1
