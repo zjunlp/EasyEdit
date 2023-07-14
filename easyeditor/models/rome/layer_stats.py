@@ -99,15 +99,22 @@ def layer_stats(
             ds_name,
             dict(wikitext="wikitext-103-raw-v1", wikipedia="20200501.en")[ds_name],
             cache_dir=HUGGING_CACHE_DIR,
+            streaming=True
         )
-        maxlen = model.config.n_positions
+        if hasattr(model.config, 'n_positions'):
+            maxlen = model.config.n_positions
+        else:
+            maxlen = model.config.max_sequence_length
         if batch_tokens is not None and batch_tokens < maxlen:
             maxlen = batch_tokens
         return TokenizedDataset(raw_ds["train"], tokenizer, maxlen=maxlen)
 
     # Continue with computation of statistics
     batch_size = 100  # Examine this many dataset texts at once
-    npos = model.config.n_positions
+    if hasattr(model.config, 'n_positions'):
+        npos = model.config.n_positions
+    else:
+        npos = model.config.max_sequence_length
     if batch_tokens is None:
         batch_tokens = npos * 3  # Sort and divide into batches with this many tokens
     if precision is None:
