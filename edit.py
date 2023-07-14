@@ -889,6 +889,38 @@ def test_MEND_Meta_Train_T5():
 
     trainer.run()
 
+def test_ROME_LlaMA():
+
+    prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    target_new = ['University of Michigan', 'Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans']
+    subject = ['Watts Humphrey', 'Ramalinaceae', 'Denny Herzig',
+               'Lahti Town Hall', 'It\'s a Business', 'Marl Young']
+    # prompts = ['Who was the designer of Lahti Town Hall?',
+    #            'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    # ground_truth = ['Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    # target_new = ['Alfred Lahti', 'ITV', 'New Orleans']
+    # subject = ['Lahti Town Hall', 'It\'s a Business', 'Marl Young']
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+
 
 def main():
     # metrics, edited_model = test_KN()
@@ -915,7 +947,7 @@ def main():
     # test_IKE_2()
     # test_MEND_Meta_Train_Llama()
     # test_MEND_Llama()
-    # test_ROME_GPTJ()
+    test_ROME_GPTJ()
     # test_MEMIT_GPTJ()
     # test_MEND_Meta_Train_GPTJ()
     # test_MEND_GPTJ()
@@ -933,7 +965,8 @@ def main():
     # test_MEND_T5()
     # test_SERAC_Zsre_Train_GPTJ()
     # test_SERAC_Zsre_Train_T5()
-    test_SERAC_T5()
+    # test_SERAC_T5()
+    # test_ROME_LlaMA()
 
 if __name__ == '__main__':
     main()

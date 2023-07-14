@@ -172,8 +172,8 @@ def get_context_templates(model, tok, length_params):
                     generate_fast(
                         model,
                         tok,
-                        ["<|endoftext|>"],
-                        n_gen_per_prompt=n_gen,
+                        ["The", "Therefore", "Because", "I", "You"],
+                        n_gen_per_prompt=n_gen // 5,
                         max_out_len=length,
                     )
                     for length, n_gen in length_params

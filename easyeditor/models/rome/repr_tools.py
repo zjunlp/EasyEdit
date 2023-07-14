@@ -53,35 +53,47 @@ def get_words_idxs_in_templates(
         tmp.count("{}") == 1 for tmp in context_templates
     ), "We currently do not support multiple fill-ins for context"
 
+
+    prefixes_len, words_len, suffixes_len, inputs_len = [], [], [], []
+    for i, context in enumerate(context_templates):
+        prefix, suffix = context.split("{}")
+        prefix_len = len(tok.encode(prefix))
+        prompt_len = len(tok.encode(prefix + words[i]))
+        input_len = len(tok.encode(prefix + words[i] + suffix))
+        prefixes_len.append(prefix_len)
+        words_len.append(prompt_len - prefix_len)
+        suffixes_len.append(input_len - prompt_len)
+        inputs_len.append(input_len)
+
     # Compute prefixes and suffixes of the tokenized context
-    fill_idxs = [tmp.index("{}") for tmp in context_templates]
-    prefixes, suffixes = [
-        tmp[: fill_idxs[i]] for i, tmp in enumerate(context_templates)
-    ], [tmp[fill_idxs[i] + 2 :] for i, tmp in enumerate(context_templates)]
-    words = deepcopy(words)
-
-    # Pre-process tokens
-    for i, prefix in enumerate(prefixes):
-        if len(prefix) > 0:
-            assert prefix[-1] == " "
-            prefix = prefix[:-1]
-
-            prefixes[i] = prefix
-            words[i] = f" {words[i].strip()}"
-
-    # Tokenize to determine lengths
-    assert len(prefixes) == len(words) == len(suffixes)
-    n = len(prefixes)
-    batch_tok = tok([*prefixes, *words, *suffixes])
-    if 'input_ids' in batch_tok:
-        batch_tok = batch_tok['input_ids']
-    prefixes_tok, words_tok, suffixes_tok = [
-        batch_tok[i : i + n] for i in range(0, n * 3, n)
-    ]
-    prefixes_len, words_len, suffixes_len = [
-        [len(el) for el in tok_list]
-        for tok_list in [prefixes_tok, words_tok, suffixes_tok]
-    ]
+    # fill_idxs = [tmp.index("{}") for tmp in context_templates]
+    # prefixes, suffixes = [
+    #     tmp[: fill_idxs[i]] for i, tmp in enumerate(context_templates)
+    # ], [tmp[fill_idxs[i] + 2 :] for i, tmp in enumerate(context_templates)]
+    # words = deepcopy(words)
+    #
+    # # Pre-process tokens
+    # for i, prefix in enumerate(prefixes):
+    #     if len(prefix) > 0:
+    #         assert prefix[-1] == " "
+    #         prefix = prefix[:-1]
+    #
+    #         prefixes[i] = prefix
+    #         words[i] = f" {words[i].strip()}"
+    #
+    # # Tokenize to determine lengths
+    # assert len(prefixes) == len(words) == len(suffixes)
+    # n = len(prefixes)
+    # batch_tok = tok([*prefixes, *words, *suffixes])
+    # if 'input_ids' in batch_tok:
+    #     batch_tok = batch_tok['input_ids']
+    # prefixes_tok, words_tok, suffixes_tok = [
+    #     batch_tok[i : i + n] for i in range(0, n * 3, n)
+    # ]
+    # prefixes_len, words_len, suffixes_len = [
+    #     [len(el) for el in tok_list]
+    #     for tok_list in [prefixes_tok, words_tok, suffixes_tok]
+    # ]
 
     # Compute indices of last tokens
     if subtoken == "last" or subtoken == "first_after_last":
@@ -93,10 +105,10 @@ def get_words_idxs_in_templates(
             ]
             # If suffix is empty, there is no "first token after the last".
             # So, just return the last token of the word.
-            for i in range(n)
+            for i in range(len(context_templates))
         ]
     elif subtoken == "first":
-        return [[prefixes_len[i]] for i in range(n)]
+        return [[prefixes_len[i] - inputs_len[i]] for i in range(len(context_templates))]
     else:
         raise ValueError(f"Unknown subtoken type: {subtoken}")
 
