@@ -1178,7 +1178,7 @@ class TopK:
         self.count = 0
         # This version flattens all data internally to 2-d tensors,
         # to avoid crashes with the current pytorch topk implementation.
-        # The data is puffed back out to arbitrary tensor shapes on ouput.
+        # The data is puffed back out to arbitrary tensor shapes on output.
         self.data_shape = None
         self.top_data = None
         self.top_index = None
