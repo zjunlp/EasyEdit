@@ -490,6 +490,59 @@ def test_IKE_2():
     pdb.set_trace()
 
     return metrics, edited_model
+  
+def test_IKE_Llama():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = IKEHyperParams.from_hparams('./hparams/IKE/llama-7B.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    train_ds = CounterFactDataset('./data/counterfact-train.json')
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        train_ds=train_ds,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
 
 def test_IKE_GPTJ():
 
@@ -985,6 +1038,7 @@ def main():
     # test_SERAC()
     # test_IKE()
     # test_IKE_2()
+    test_IKE_Llama()
     # test_MEND_Meta_Train_Llama()
     # test_MEND_Llama()
     # test_ROME_GPTJ()
@@ -1007,7 +1061,7 @@ def main():
     # test_SERAC_Zsre_Train_T5()
     # test_SERAC_T5()
     # test_ROME_LlaMA()
-    test_ROME_DEMO()
+    # test_ROME_DEMO()
 
 if __name__ == '__main__':
     main()

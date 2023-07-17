@@ -1,3 +1,5 @@
 hugging_cache/
 data/
 logs/
+.vscode/
+results/
