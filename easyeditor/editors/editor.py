@@ -61,28 +61,15 @@ class BaseEditor:
 
         if type(self.model_name) is str:
             if 't5' in self.model_name.lower():
-                try:
-                    self.model = T5ForConditionalGeneration.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
-                except:
-                    LOG.info("The cache can not be used")
-                    self.model = T5ForConditionalGeneration.from_pretrained(self.model_name)  # have internet
-                self.tok = T5Tokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
-
+                self.model = T5ForConditionalGeneration.from_pretrained(self.model_name)
+                self.tok = T5Tokenizer.from_pretrained(self.model_name)
             elif 'gpt' in self.model_name.lower():
-                try:
-                    self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
-                except:
-                    LOG.info("The cache can not be used")
-                    self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
-                self.tok = GPT2Tokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+                self.tok = GPT2Tokenizer.from_pretrained(self.model_name)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'llama' in self.model_name.lower():
-                try:
-                    self.model = LlamaForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
-                except:
-                    LOG.info("The cache can not be used")
-                    self.model = LlamaForCausalLM.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
-                self.tok = LlamaTokenizer.from_pretrained(self.model_name, cache_dir=self.model_name.rsplit('/', 1)[0])
+                self.model = LlamaForCausalLM.from_pretrained(self.model_name)
+                self.tok = LlamaTokenizer.from_pretrained(self.model_name)
                 self.tok.pad_token_id = self.tok.eos_token_id
             else:
                 raise NotImplementedError
@@ -105,7 +92,7 @@ class BaseEditor:
     def edit(self,
              prompts: Union[str, List[str]],
              target_new: Union[str, List[str]],
-             ground_truth: Optional[Union[str, List[str]]],
+             ground_truth: Optional[Union[str, List[str]]] = None,
              rephrase_prompts: Optional[Union[str, List[str]]] = None,
              locality_inputs:  Optional[Dict] = None,
              portability_inputs: Optional[Dict] = None,

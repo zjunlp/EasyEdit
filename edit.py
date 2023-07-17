@@ -921,6 +921,46 @@ def test_ROME_LlaMA():
     return metrics, edited_model
 
 
+def test_ROME_DEMO():
+    import warnings
+    warnings.filterwarnings("ignore")
+
+    prompts = ['The name of the president of the United States is']
+    target_new = ['Boris Johnson']
+    subject = ['the United States']
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        target_new=target_new,
+        subject=subject,
+        keep_original_weight=False,
+        verbose=False
+    )
+    from transformers import LlamaTokenizer, LlamaForCausalLM
+
+    tokenizer = LlamaTokenizer.from_pretrained('./hugging_cache/llama-7b')
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+    generation_prompts = [
+        "The name of the president of the United States is",
+    ]
+
+    model = LlamaForCausalLM.from_pretrained('./hugging_cache/llama-7b').to('cuda')
+    batch = tokenizer(generation_prompts, return_tensors='pt', padding=True, max_length=30)
+
+    pre_edit_outputs = model.generate(
+        input_ids=batch['input_ids'].to('cuda'),
+        attention_mask=batch['attention_mask'].to('cuda'),
+        max_new_tokens=3
+    )
+
+    post_edit_outputs = edited_model.generate(
+        input_ids=batch['input_ids'].to('cuda'),
+        attention_mask=batch['attention_mask'].to('cuda'),
+        max_new_tokens=3
+    )
+    print('Pre-Edit Outputs: ', [tokenizer.decode(x, skip_special_tokens=True) for x in pre_edit_outputs.detach().cpu().numpy().tolist()][0])
+    print('\033[1;35mPost-Edit\033[0m Outputs: ', [tokenizer.decode(x, skip_special_tokens=True) for x in post_edit_outputs.detach().cpu().numpy().tolist()][0].replace('Boris Johnson', '\033[1;35mBoris Johnson\033[0m'))    # exit()
 
 def main():
     # metrics, edited_model = test_KN()
@@ -947,7 +987,7 @@ def main():
     # test_IKE_2()
     # test_MEND_Meta_Train_Llama()
     # test_MEND_Llama()
-    test_ROME_GPTJ()
+    # test_ROME_GPTJ()
     # test_MEMIT_GPTJ()
     # test_MEND_Meta_Train_GPTJ()
     # test_MEND_GPTJ()
@@ -967,6 +1007,7 @@ def main():
     # test_SERAC_Zsre_Train_T5()
     # test_SERAC_T5()
     # test_ROME_LlaMA()
+    test_ROME_DEMO()
 
 if __name__ == '__main__':
     main()
