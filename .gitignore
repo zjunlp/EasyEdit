@@ -1,5 +1,9 @@
 hugging_cache/
 data/
+results/
+hugging_cache
+data
+results
 logs/
 .vscode/
-results/
+**/__pycache__
