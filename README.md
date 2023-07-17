@@ -76,7 +76,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 
 - EasyEdit contains a unified framework for **Editor**, **Method** and **Evaluate**, respectively representing the editing scenario, editing technique, and evaluation method.
 - Each Model Editing scenario comprises of three components: 
-    - `Editor`: such as BaseEditor(**Factual Knowledge** and **Generation** Editor) for LM, MultiModelEditor(**MultiModel Knowledge**).
+    - `Editor`: such as BaseEditor(**Factual Knowledge** and **Generation** Editor) for LM, MultiModalEditor(**MultiModal Knowledge**).
     - `Method`: the specific model editing technique used(such as **ROME**, **MEND**, ..).
     - `Evaluate`: **Metrics** for evaluating model editing performance.
         - `Reliability`, `Generalization`, `Locality`, `Portability`
