@@ -338,7 +338,7 @@ class MEND(EditableModel):
         new_params = []
         for n, p in edited_model.named_parameters():
             if n in pset:
-                new_params.append(p + updates[n])
+                new_params.append(p + updates[n].to(p.dtype))
             else:
                 new_params.append(p)
 
