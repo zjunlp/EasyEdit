@@ -124,6 +124,8 @@ pip install -r requirements.txt
 ```
 ## 📌Use EasyEdit
 
+ - edit large language models(LLMs) around 5 seconds
+
 ### BaseEditor
 > `BaseEditor`is the class for Language Modality Model Editing. You can choose the appropriate editing method based on your specific needs.
 
