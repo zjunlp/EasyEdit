@@ -124,7 +124,7 @@ conda create -n EasyEdit python=3.9.7
 pip install -r requirements.txt
 ```
 
-## 🔧Docker Usage Guide
+## 🐳Docker Usage Guide
 
 You can download Docker from [here](https://docs.docker.com/get-docker/).
 
