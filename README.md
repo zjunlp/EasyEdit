@@ -7,7 +7,8 @@
 ![](https://img.shields.io/badge/version-v0.0.1-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 ![Static Badge](https://img.shields.io/badge/last_commit-July-blue)
-![](https://img.shields.io/badge/PRs-Welcome-red) 
+![](https://img.shields.io/badge/PRs-Welcome-red)
+
 ---
 
 <p align="center">
@@ -20,6 +21,7 @@
 </div>
 
 ## 🔔News
+
 - **2023-7-12 We release version 0.0.1, supporting several model editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
 - **2023-5-22 We release the paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" and provide a paper list at [PaperList](https://github.com/zjunlp/ModelEditingPapers).**
 - **2023-3-25 The EasyEdit project has been launched and is under development.**
@@ -33,9 +35,11 @@
 </div>
 
 ### Task Definition
-Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously *hallucinate*, *perpetuate bias*, and *factually decay*, so we should be able to adjust specific behaviors of pre-trained models.
+
+Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
 **Model editing** aims to adjust an initial base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$ efficiently, such as(The president of USA: Donald Trump -> Joe Biden):
+
 - $x_e$: "Who is the president of the US?
 - $y_e$: "Joe Biden."
 
@@ -43,18 +47,17 @@ without influencing the model behavior on unrelated samples. The ultimate goal i
 
 ### Evaluation
 
-
 <img src="figs/Illustration.png" width="400px">
 
 The model editing process generally impacts the predictions for a broad set of inputs **that are closely** associated with the edit example, called the **editing scope**.
 
-
 A successful edit should adjust the model’s behavior within the editing scope while remaining unrelated inputs(as below formula).
 
-
-$$f_{\theta_{e}}(x) = \begin{cases}
+$$
+f_{\theta_{e}}(x) = \begin{cases}
 y_e & \text{if } x \in I(x_e,y_e) \\
-f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}$$
+f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}
+$$
 
 In addition to this, the performance of model editing should be measured from multiple dimensions:
 
@@ -64,78 +67,100 @@ In addition to this, the performance of model editing should be measured from mu
 - `Portability`: the success rate of editing for factual reasoning(one hop, synonym, one-to-one relation)
 - `Efficiency`: time and memory consumption required during the editing process
 
-
-
 ## 🌟Overview
 
-EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, `Llama`, `GPT-NEO`, `GPT2`, `T5`(support models from **1B** to **65B**), the objective of which is to alter the behavior of LLMs efficiently within a specific domain without negatively impacting performance across other inputs.  It is designed to be easy to use and easy to extend.
+EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, `Llama`, `GPT-NEO`, `GPT2`, `T5`(support models from **1B** to **65B**), the objective of which is to alter the behavior of LLMs efficiently within a specific domain without negatively impacting performance across other inputs. It is designed to be easy to use and easy to extend.
 
 <h3 align="center">
 <img src="figs/FrameWork.png">
 </h3>
 
 - EasyEdit contains a unified framework for **Editor**, **Method** and **Evaluate**, respectively representing the editing scenario, editing technique, and evaluation method.
-- Each Model Editing scenario comprises of three components: 
-    - `Editor`: such as BaseEditor(**Factual Knowledge** and **Generation** Editor) for LM, MultiModalEditor(**MultiModal Knowledge**).
-    - `Method`: the specific model editing technique used(such as **ROME**, **MEND**, ..).
-    - `Evaluate`: **Metrics** for evaluating model editing performance.
-        - `Reliability`, `Generalization`, `Locality`, `Portability`
+- Each Model Editing scenario comprises of three components:
 
- - The current supported model editing techniques are as follows:
-    - [FT-L](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
-    - [SERAC](https://github.com/eric-mitchell/serac): Mitchell et al. Memory-based
-    - [IKE](https://github.com/Zce1112zslx/IKE): Ce Zheng et al. In-Context Editing
-    <!-- - [KE](https://github.com/nicola-decao/KnowledgeEditor): De Cao et al. Knowledge Editor -->
-    - [MEND](https://github.com/eric-mitchell/mend): Mitchell et al. Hypernetwork
-    - [KN](https://github.com/Hunter-DDM/knowledge-neurons): Damai Dai et al. Locate then Edit
-    - [ROME](https://github.com/kmeng01/rome): Kevin Meng et al. Locate and Edit
-    - [MEMIT](https://github.com/kmeng01/memit): Kevin Meng et al. Locate and Edit
-    
+  - `Editor`: such as BaseEditor(**Factual Knowledge** and **Generation** Editor) for LM, MultiModalEditor(**MultiModal Knowledge**).
+  - `Method`: the specific model editing technique used(such as **ROME**, **MEND**, ..).
+  - `Evaluate`: **Metrics** for evaluating model editing performance.
+    - `Reliability`, `Generalization`, `Locality`, `Portability`
+
+- The current supported model editing techniques are as follows:
+  - [FT-L](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
+  - [SERAC](https://github.com/eric-mitchell/serac): Mitchell et al. Memory-based
+  - [IKE](https://github.com/Zce1112zslx/IKE): Ce Zheng et al. In-Context Editing
+  <!-- - [KE](https://github.com/nicola-decao/KnowledgeEditor): De Cao et al. Knowledge Editor -->
+  - [MEND](https://github.com/eric-mitchell/mend): Mitchell et al. Hypernetwork
+  - [KN](https://github.com/Hunter-DDM/knowledge-neurons): Damai Dai et al. Locate then Edit
+  - [ROME](https://github.com/kmeng01/rome): Kevin Meng et al. Locate and Edit
+  - [MEMIT](https://github.com/kmeng01/memit): Kevin Meng et al. Locate and Edit
     > Due to the limited compatibility of this toolkit and limited by the transformer version, some model editing methods are not supported. You can find relevant editing methods in the following links
-    
-    - [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher) | [KE](https://github.com/nicola-decao/KnowledgeEditor) | [CaliNet](https://github.com/dqxiu/CaliNet)
-
+  - [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher) | [KE](https://github.com/nicola-decao/KnowledgeEditor) | [CaliNet](https://github.com/dqxiu/CaliNet)
 
 **Current Implementation**
 
 You can choose different editing methods according to your specific needs.
-|    **Method**    |  T5  | GPT-2 | GPT-J | GPT-NEO | LlaMA
+| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-|     FT-L     |  ✅  |  ✅  |  ✅  | ✅ | ✅ |
-|     SERAC    |  ✅  |  ✅  |  ✅  |  |  |
-|     IKE      |  ✅  |  ✅  |  ✅  | ✅ | ✅ |
-|     MEND     |  ✅  |  ✅  |  ✅  | ✅ | ✅ |
-|     KN       |  ✅  |  ✅  |  ✅  |  |   |
-|     ROME     |    |  ✅  |  ✅  | ✅ | ✅ |
-|     MEMIT    |    |  ✅  |  ✅  | ✅ |  |
+| FT-L | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SERAC | ✅ | ✅ | ✅ | | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ |
+| KN | ✅ | ✅ | ✅ | | |
+| ROME | | ✅ | ✅ | ✅ | ✅ |
+| MEMIT | | ✅ | ✅ | ✅ | |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 ---
 
 ## 🔧Installation
+
 **Note: Please use Python 3.9+ for EasyEdit**
 To get started, simply install conda and run:
+
 ```shell
 git clone https://github.com/zjunlp/EasyEdit.git
 conda create -n EasyEdit python=3.9.7
 ...
 pip install -r requirements.txt
 ```
+
+## 🔧Docker Usage Guide
+
+You can download Docker from [here](https://docs.docker.com/get-docker/).
+
+Clone the project to your local machine and build Docker image by following command:
+
+```bash
+git clone https://github.com/zjunlp/EasyEdit.git
+cd EasyEdit
+docker build -t <your-image-name> .
+```
+
+Run the Docker image as a container:
+
+```bash
+docker run -p 8080:8080 <your-image-name>
+```
+
+Visit `http://localhost:8080` in your web browser to interact with the application.
+
 ## 📌Use EasyEdit
 
- - edit large language models(LLMs) around 5 seconds
+- edit large language models(LLMs) around 5 seconds
 
 ### BaseEditor
+
 > `BaseEditor`is the class for Language Modality Model Editing. You can choose the appropriate editing method based on your specific needs.
 
 - Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
 
 #### Introduction by a Simple Example
+
 With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
 
 **Step1: Define a PLM as the object to be edited.**
 Choose the PLM to be edited. `EasyEdit` supports partial models(`T5`, `GPTJ`, `GPT-NEO`, `LlaMA` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/gpt2-xl`, set the corresponding `model_name` to select the object for model editing.
+
 ```python
 model_name: gpt2-xl
 model_class: GPT2LMHeadModel
@@ -145,6 +170,7 @@ tokenizer_name: gpt2-xl
 
 **Step2: Choose the appropriate Model Editing Method**
 The selection of editing methods is a **crucial** step, as different methods have their own strengths and weaknesses. Users need to consider the trade-off between editing success rate, generalization, and maintaining unrelated performance. For specific performance details of each method, please refer to the paper: [Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172).
+
 ```python
 ## In this case, we use MEND method, so you should import `MENDHyperParams`
 from easyeditor import MENDHyperParams
@@ -153,6 +179,7 @@ hparams = MENDHyperParams.from_hparams('./hparams/MEND/gpt2-xl')
 ```
 
 **Step3: Provide the edit descriptor and edit target**
+
 ```python
 ## edit descriptor: prompt that you want to edit
 prompts = [
@@ -166,13 +193,15 @@ ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender']
 target_new = ['University of Michigan', 'Lamiinae', 'winger']
 ```
 
-**Step4:  Combine them into a `BaseEditor`**
+**Step4: Combine them into a `BaseEditor`**
 `EasyEdit` provides a simple and unified way to init Editor, like huggingface: **from_hparams**.
+
 ```python
 ## Construct Language Model Editor
 editor = BaseEditor.from_hparams(hparams)
 ```
-**Step5:  Provide the data for evaluation**
+
+**Step5: Provide the data for evaluation**
 Note that the data for portability and locality are both **optional**(set to None for basic editing success rate evaluation only). The data format for both is a **dict**, for each measurement dimension, you need to provide the corresponding prompt and its corresponding ground truth. Here is an example of the data:
 
 ```python
@@ -187,10 +216,12 @@ locality_inputs = {
     }
 }
 ```
+
 In the above example, we evaluate the performance of the editing methods about "neighborhood" and "distracting".
 
-**Step6:  Edit and Evaluation**
+**Step6: Edit and Evaluation**
 Done! We can conduct Edit and Evaluation for your model to be edited. The `edit` function will return a series of metrics related to the editing process as well as the modified model weights.
+
 ```python
 metrics, edited_model, _ = editor.edit(
     prompts=prompts,
@@ -211,6 +242,7 @@ We specify the return metrics as `dict` format, including model prediction evalu
 - `rephrase_acc` $\rightarrow$ **Generalization**
 - `locality` $\rightarrow$ **Locality**
 - `portablility` $\rightarrow$ **Portablility**
+
 ```json
 {
     "post": {
@@ -223,7 +255,7 @@ We specify the return metrics as `dict` format, including model prediction evalu
         "portablility": {
             "YOUR_PORTABILITY_KEY": ,
             //...
-        }, 
+        },
     },
     "pre": {
         "rewrite_acc": ,
@@ -231,15 +263,15 @@ We specify the return metrics as `dict` format, including model prediction evalu
         "portablility": {
             "YOUR_PORTABILITY_KEY": ,
             //...
-        }, 
+        },
     }
 }
 ```
+
 - For evaluation for Reliablilty, you only need to provide the corresponding editing `prompts` and editing `target_new`.
 - For evaluation for Generalization, `rephrase_prompts` are required.
-- For evaluation for Locality and Portablility, you need to define the name of the corresponding metric, as well as `prompts` and `ground_truth`. 
-    - > Note: the length needs to be equal to the edit prompts
-
+- For evaluation for Locality and Portablility, you need to define the name of the corresponding metric, as well as `prompts` and `ground_truth`.
+  - > Note: the length needs to be equal to the edit prompts
 
 ### Trainer
 
@@ -250,7 +282,6 @@ For above editing methods, pre-training of corresponding meta-networks or classi
 
 - **Step 1** and **Step 2** are the same as the example above, which involves selecting the appropriate editing model and editing method.
 
-
 **Step3: Provide the edit training set**
 The currently supported and available datasets are: `zsre` and `counterfact`([Google Drive](https://drive.google.com/file/d/1v99zkInGC5g4G1uBwXuajE65kjEuppT5/view?usp=sharing)). Please place them in the "data" directory and initialize the dataset_class (`ZsreDataset` for zsre and `CounterFactDataset` for counterfact) to load the corresponding training set.
 
@@ -258,7 +289,9 @@ The currently supported and available datasets are: `zsre` and `counterfact`([Go
 train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
 eval_ds = ZsreDataset('./data/zsre_mend_eval.json', config=training_hparams)
 ```
-**Step4:  Combine them into a `Trainer`**
+
+**Step4: Combine them into a `Trainer`**
+
 ```python
 trainer = EditTrainer(
     config=training_hparams,
@@ -267,8 +300,9 @@ trainer = EditTrainer(
 )
 ```
 
-**Step6:  Run and Edit**
-Done! We can conduct Run and Evaluation. 
+**Step6: Run and Edit**
+Done! We can conduct Run and Evaluation.
+
 ```python
 trainer.run()
 ```
@@ -276,19 +310,10 @@ trainer.run()
 - Run: The `CHECKPOINT` will be saved to the path `RESULTS_DIR`(in `global.yml`).
 - Edit: Set the `archive` field in the **hparams file** to `CHECKPOINT`. EasyEdit will automatically load the corresponding pre-trained weights during the editing process([Go to edit](#use-easyedit)).
 
-
-
-
-
-
-
-
-
-
 <!-- ## Overall Results
 > Note that the following experimental results are from this [paper](https://arxiv.org/abs/2305.13172).The actual editing performance of this tool is still under testing and will be announced **as soon as possible**.
 *  We tested the editing performance of different model editing methods on various model, the test results are shown in the table below(`-` refers to the results that the methods empirically fail to edit LLMs). -->
-<!-- 
+<!--
 - For `zsre` dataset:
 
 <div style="text-align: center">
@@ -363,13 +388,13 @@ trainer.run()
 </table>
 </div> -->
 
-
 ## TO DO
 
 In next version, we plan to:
- - release a multimodal Editor for LLMs.
- - support more editing methods for LlaMA
- - model editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
+
+- release a multimodal Editor for LLMs.
+- support more editing methods for LlaMA
+- model editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
 
 Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
 
@@ -379,7 +404,7 @@ Please cite our paper if you use EasyEdit in your work.
 
 ```bibtex
 @misc{yao2023editing,
-      title={Editing Large Language Models: Problems, Methods, and Opportunities}, 
+      title={Editing Large Language Models: Problems, Methods, and Opportunities},
       author={Yunzhi Yao and Peng Wang and Bozhong Tian and Siyuan Cheng and Zhoubo Li and Shumin Deng and Huajun Chen and Ningyu Zhang},
       year={2023},
       eprint={2305.13172},
@@ -387,7 +412,6 @@ Please cite our paper if you use EasyEdit in your work.
       primaryClass={cs.CL}
 }
 ```
-
 
 ## 🎉Contributors
 
@@ -398,15 +422,3 @@ Please cite our paper if you use EasyEdit in your work.
 We thank all the contributors to this project, more contributors are welcome!
 
 🙌 We would like to express our heartfelt gratitude for the contribution of [ROME](https://github.com/kmeng01/rome) to our project, as we have utilized portions of their source code in our project.
-
-
-
-
-
-
-
-
-
-
-
-
