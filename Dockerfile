@@ -1,19 +1,26 @@
-FROM python:3.9.7
-WORKDIR /EASYEDIT
+# Using python version 3.9.7 as base image  
+FROM python:3.9.7 
 
+# Mind you, set the work directory in the container to /EASYEDIT 
+WORKDIR /EASYEDIT 
+
+# Copy the dependencies file to the working directory
 COPY requirements.txt .
 
-RUN /usr/local/bin/python3 -m pip install --upgrade pip
+# Install pip then upgrade it
+RUN /usr/local/bin/python3 -m pip install --upgrade pip 
 
-# RUN cat requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Once pip is upgraded, install the necessary dependencies
+RUN pip install --no-cache-dir -r requirements.txt 
 
-EXPOSE 8080
+# This instruction informs Docker that the container listens on the specified network ports at runtime
+EXPOSE 8080 
 
-COPY edit.py .
+# Copy the content of the local src directory to the working directory in the container
+COPY edit.py . 
 
-# 设置环境变量
-ENV FLASK_APP=edit.py
+# Set environment variable
+ENV FLASK_APP=edit.py 
 
-# 启动命令
+# This command will be executed when docker container starts up 
 CMD ["flask", "run", "--host", "0.0.0.0"]
