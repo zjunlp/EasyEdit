@@ -180,7 +180,7 @@ def flatten_dict(d):
 
 class EarlyStopper:
     def __init__(self, patience: int, key: str):
-        self.best_value = 1e9
+        self.best_value = -1 if 'acc' in key else 1e9
         self.best_iter = 0
         self.current_iter = 0
         self.key = key
@@ -190,7 +190,10 @@ class EarlyStopper:
     def update(self, idx, stats):
         assert self.key in stats, f"'{self.key}' not in stats dict"
         value = stats[self.key]
-        new_best = value < self.best_value
+        if 'acc' in self.key:
+            new_best = value > self.best_value
+        else:
+            new_best = value < self.best_value
         if new_best:
             self.best_value = value
             self.best_iter = idx

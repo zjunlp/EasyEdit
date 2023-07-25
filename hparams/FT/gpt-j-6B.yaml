@@ -9,7 +9,7 @@ max_length: 30
 lr: 5e-4
 weight_decay: 0
 kl_factor: 0
-norm_constraint: 5e-5,
+norm_constraint: 5e-5
 rewrite_module_tmp: "transformer.h.{}.mlp.fc_out"
 layer_module_tmp: "transformer.h.{}"
 mlp_module_tmp: "transformer.h.{}.mlp"

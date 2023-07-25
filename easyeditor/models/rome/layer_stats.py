@@ -102,8 +102,12 @@ def layer_stats(
         )
         if hasattr(model.config, 'n_positions'):
             maxlen = model.config.n_positions
-        else:
+        elif hasattr(model.config, 'max_sequence_length'):
             maxlen = model.config.max_sequence_length
+        elif hasattr(model.config, 'max_position_embeddings'):
+            maxlen = model.config.max_position_embeddings
+        else:
+            raise NotImplementedError
         if batch_tokens is not None and batch_tokens < maxlen:
             maxlen = batch_tokens
         return TokenizedDataset(raw_ds["train"], tokenizer, maxlen=maxlen)
@@ -112,8 +116,12 @@ def layer_stats(
     batch_size = 100  # Examine this many dataset texts at once
     if hasattr(model.config, 'n_positions'):
         npos = model.config.n_positions
-    else:
+    elif hasattr(model.config, 'max_sequence_length'):
         npos = model.config.max_sequence_length
+    elif hasattr(model.config, 'max_position_embeddings'):
+        npos = model.config.max_position_embeddings
+    else:
+        raise NotImplementedError
     if batch_tokens is None:
         batch_tokens = npos * 3  # Sort and divide into batches with this many tokens
     if precision is None:

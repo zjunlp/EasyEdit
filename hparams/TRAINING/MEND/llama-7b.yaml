@@ -1,8 +1,8 @@
 # Model
-model_name: ./hugging_cache/llama-7b
+model_name: ./hugging_cache/llama-2-7b
 model_class: LlamaForCausalLM
 tokenizer_class: LlamaTokenizer
-tokenizer_name: ./hugging_cache/llama-7b
+tokenizer_name: ./hugging_cache/llama-2-7b
 inner_params:
 - model.layers.29.mlp.gate_proj.weight
 - model.layers.29.mlp.up_proj.weight
@@ -52,8 +52,8 @@ log_interval: 1000
 eval_log_interval: 1000
 final_eval: True
 val_interval: 1000
-early_stop_patience: 20000
-early_stop_key: "loss/total_edit_val"
+early_stop_patience: 30000
+early_stop_key: "edit/acc_val"
 eval_only: False
 half: False
 debug: False
