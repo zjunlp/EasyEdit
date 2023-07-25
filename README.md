@@ -421,4 +421,8 @@ Please cite our paper if you use EasyEdit in your work.
 
 We thank all the contributors to this project, more contributors are welcome!
 
+**Other Related Projects**
+- [ROME](https://github.com/kmeng01/rome)
+- [FastEdit](https://github.com/hiyouga/FastEdit)
+
 🙌 We would like to express our heartfelt gratitude for the contribution of [ROME](https://github.com/kmeng01/rome) to our project, as we have utilized portions of their source code in our project.
