@@ -104,7 +104,7 @@ You can choose different editing methods according to your specific needs.
 | SERAC | ✅ | ✅ | ✅ | | ✅ | ✅
 | IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅
 | MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅
-| KN | ✅ | ✅ | ✅ | | |
+| KN | ✅ | ✅ | ✅ | | ✅ | ✅
 | ROME | | ✅ | ✅ | ✅ | ✅ | ✅
 | MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅
 
