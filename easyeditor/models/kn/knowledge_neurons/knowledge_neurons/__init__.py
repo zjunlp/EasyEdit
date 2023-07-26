@@ -48,5 +48,7 @@ def model_type(model_name: str):
         return 'gptj'
     elif 't5' in model_name:
         return 't5'
+    elif 'llama' in model_name:
+        return 'llama'
     else:
         raise ValueError("Model {model_name} not supported")

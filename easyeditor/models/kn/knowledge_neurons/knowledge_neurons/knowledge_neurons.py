@@ -39,19 +39,24 @@ class KnowledgeNeurons:
             self.output_ff_attr = "output.dense.weight"
             self.word_embeddings_attr = "bert.embeddings.word_embeddings.weight"
             self.unk_token = getattr(self.tokenizer, "unk_token_id", None)
-        elif 'gptj' in model_type or 'gpt-j' in model_type:
+        elif 'gptj' == model_type:
             self.transformer_layers_attr = "transformer.h"
             self.input_ff_attr = "mlp.fc_in"
             self.output_ff_attr = "mlp.fc_out.weight"
             # self.word_embeddings_attr = "transformer.wpe"
             self.word_embeddings_attr = "transformer.wte.weight"
-        elif "gpt" in model_type:
+        elif "gpt" == model_type:
             self.transformer_layers_attr = "transformer.h"
             self.input_ff_attr = "mlp.c_fc"
             self.output_ff_attr = "mlp.c_proj.weight"
             # self.word_embeddings_attr = "transformer.wpe"
             self.word_embeddings_attr = "transformer.wte"
-        elif "t5" in model_type:
+        elif 'llama' == model_type:
+            self.transformer_layers_attr = "model.layers"
+            self.input_ff_attr = "mlp.gate_proj"
+            self.output_ff_attr = "mlp.down_proj.weight"
+            self.word_embeddings_attr = "model.embed_tokens.weight"
+        elif "t5" == model_type:
             self.transformer_layers_attr = "decoder.block"
             self.input_ff_attr = "layer.2.DenseReluDense.wi"
             self.output_ff_attr = "layer.2.DenseReluDense.wo.weight"
@@ -98,7 +103,7 @@ class KnowledgeNeurons:
             # with autoregressive models we always want to target the last token
             mask_idx = -1
         if target is not None:
-            if "gpt" in self.model_type or 't5' in self.model_type:
+            if "gpt" in self.model_type or 't5' in self.model_type or 'llama' in self.model_type:
                 target = self.tokenizer.encode(target)
             else:
                 target = self.tokenizer.convert_tokens_to_ids(target)
@@ -109,7 +114,7 @@ class KnowledgeNeurons:
             prompt, ground_truth
         )
         # for autoregressive models, we might want to generate > 1 token
-        n_sampling_steps = len(target_label) if "gpt" in self.model_type else 1
+        n_sampling_steps = len(target_label) if ("gpt" in self.model_type or 'llama' in self.model_type) else 1
         all_gt_probs = []
         all_argmax_probs = []
         argmax_tokens = []
@@ -474,12 +479,12 @@ class KnowledgeNeurons:
         )
 
         # for autoregressive models, we might want to generate > 1 token
-        n_sampling_steps = len(target_label) if "gpt" in self.model_type else 1
+        n_sampling_steps = len(target_label) if ("gpt" in self.model_type or 'llama' in self.model_type) else 1
         if attribution_method == "integrated_grads":
             integrated_grads = []
 
             for i in range(n_sampling_steps):
-                if i > 0 and self.model_type == "gpt":
+                if i > 0 and (self.model_type == "gpt" or self.model_type == 'llama'):
                     # retokenize new inputs
                     encoded_input, mask_idx, target_label = self._prepare_inputs(
                         prompt, ground_truth
@@ -594,7 +599,7 @@ class KnowledgeNeurons:
         elif attribution_method == "max_activations":
             activations = []
             for i in range(n_sampling_steps):
-                if i > 0 and self.model_type == "gpt":
+                if i > 0 and (self.model_type == "gpt" or self.model_type == 'llama'):
                     # retokenize new inputs
                     encoded_input, mask_idx, target_label = self._prepare_inputs(
                         prompt, ground_truth

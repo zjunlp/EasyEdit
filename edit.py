@@ -1115,7 +1115,8 @@ def test_Llama2():
     # train_ds = ZsreDataset('./data/zsre_mend_train.json', size=20000)
     # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama-7b.yaml')
-    hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
+    # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
+    hparams = KNHyperParams.from_hparams('./hparams/KN/llama-7b.yaml')
 
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
