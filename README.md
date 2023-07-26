@@ -113,7 +113,7 @@ You can choose different editing methods according to your specific needs.
 
 **Dataset**
 We provide zsre and counterfact datasets to verify the effectiveness of model editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc).
-- for locality, in addition to testing unrelated instances, we also provide tests on distracting, other attribution, and other downstream tasks (such as commonsense reasoning).
+- for locality, in addition to testing unrelated instances, we also provide tests on distracting([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
 - for portability, it tests whether the model can apply edited instances for inference. We provide evaluations for one-hop reasoning, subject alias, and inverse relation (eg, a one-to-one relationship between spouses should be bidirectionally edited).
 
 **Tutorial notebook**
