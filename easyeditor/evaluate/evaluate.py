@@ -188,7 +188,7 @@ def compute_rewrite_or_rephrase_quality(
         stuff_probs = test_batch_prediction_acc(model, tok, hparams, inp_prompts, target_tok, device)
     elif 'llama' in model_name.lower():
         target_tok = tok(target_new, truncation=True, max_length=hparams.max_length)["input_ids"] #erase bos_token_id
-        if target_tok[0] == tok.unk_token_id:
+        if target_tok[0] == tok.unk_token_id or hparams.alg_name == 'SERAC':
             target_tok = target_tok[1:]
         inp_prompts = [prompt]
         inp_prompts.extend([
@@ -238,7 +238,7 @@ def compute_locality_quality(
         locality_correct = test_batch_prediction_acc(model, tok, hparams, inp_prompts, target_tok, device, locality=True)
     elif 'llama' in model_name.lower():
         target_tok = tok(locality_ground_truth, truncation=True, max_length=hparams.max_length)["input_ids"] # erase bos_token_id
-        if target_tok[0] == tok.unk_token_id:
+        if target_tok[0] == tok.unk_token_id or hparams.alg_name == 'SERAC':
             target_tok = target_tok[1:]
         inp_prompts = [prompt]
         inp_prompts.extend([
