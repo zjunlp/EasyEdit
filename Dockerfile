@@ -1,26 +1,53 @@
-# Using python version 3.9.7 as base image  
-FROM python:3.9.7 
+# Use the official Ubuntu 20.04 image as your parent image.
+FROM ubuntu:22.04
 
-# Mind you, set the work directory in the container to /EASYEDIT 
-WORKDIR /EASYEDIT 
+# Set the working directory within your container to /app.
+WORKDIR /app
 
-# Copy the dependencies file to the working directory
-COPY requirements.txt .
+# Let the python output directly show in the terminal without buffering it first.
+ENV PYTHONUNBUFFERED=1
 
-# Install pip then upgrade it
-RUN /usr/local/bin/python3 -m pip install --upgrade pip 
+# Update the list of packages, then install some necessary dependencies.
+RUN apt-get update && apt-get install -y \
+  wget \
+  git \
+  bzip2 \
+  libglib2.0-0 \
+  libxext6 \
+  libsm6 \
+  libxrender1 \
+  make\
+  g++ 
 
-# Once pip is upgraded, install the necessary dependencies
-RUN pip install --no-cache-dir -r requirements.txt 
+RUN rm -rf /var/lib/apt/lists/*
 
-# This instruction informs Docker that the container listens on the specified network ports at runtime
-EXPOSE 8080 
+# Download and install the latest version of Miniconda to /opt/conda.
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+  && bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda \
+  && rm Miniconda3-latest-Linux-x86_64.sh 
 
-# Copy the content of the local src directory to the working directory in the container
-COPY edit.py . 
+# Add Miniconda's binary directory to PATH.
+ENV PATH /opt/conda/bin:$PATH
 
-# Set environment variable
-ENV FLASK_APP=edit.py 
+# Use conda to create a new environment named EasyEdit and install Python 3.9.7.
+RUN conda create -n EasyEdit python=3.9.7
 
-# This command will be executed when docker container starts up 
-CMD ["flask", "run", "--host", "0.0.0.0"]
+# Initialize bash shell so that 'conda activate' can be used immediately.
+RUN conda init bash
+
+# Activate the conda environment.
+RUN echo "conda activate EasyEdit" >> ~/.bashrc
+ENV PATH /opt/conda/envs/EasyEdit/bin:$PATH
+
+# Clone the EasyEdit project from GitHub.
+RUN git clone https://github.com/zjunlp/EasyEdit.git
+
+# Change the working directory to the newly cloned EasyEdit project directory.
+WORKDIR /app/EasyEdit
+
+# Copy the requirements.txt file from your local system to the container.
+COPY requirements.txt /app/EasyEdit/
+
+# Activate the EasyEdit conda environment and install the Python dependencies listed in requirements.txt.
+RUN /bin/bash -c "source ~/.bashrc && pip install notebook==5.7.8"
+RUN /bin/bash -c "source ~/.bashrc && pip install --no-cache-dir -r requirements.txt"

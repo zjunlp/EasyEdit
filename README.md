@@ -110,19 +110,19 @@ You can choose different editing methods according to your specific needs.
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
-
 **Dataset**
 We provide zsre and counterfact datasets to verify the effectiveness of model editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc).
+
 - for locality, in addition to testing unrelated instances, we also provide tests on distracting([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
 - for portability, it tests whether the model can apply edited instances for inference. We provide evaluations for one-hop reasoning, subject alias, and inverse relation (eg, a one-to-one relationship between spouses should be bidirectionally edited).
 
 **Tutorial notebook**
 
-| **Method** | GPT-2 | LlaMA |
-| :-------: | :-------: | :-------: |
-| *IKE* | [[Colab-gpt2]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL) | [[Colab-llama]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL) |
-| *ROME* |  [[Colab-gpt2]](https://colab.research.google.com/drive/1KkyWqyV3BjXCWfdrrgbR-QS3AAokVZbr?usp=sharing) | [[Colab-llama]](https://colab.research.google.com/drive/1W18GPlBCV9K6lDy7eX8V5W0knTLr5r0A) |
-| *MEMIT* | [[Colab-gpt2]](https://colab.research.google.com/drive/1P1lVklP8bTyh8uxxSuHnHwB91i-1LW6Z) | [[Colab-llama]](https://colab.research.google.com/drive/19fKCKtVBU2fqj6eTvDokGoTrxvXkEPPq) |
+| **Method** |                                                 GPT-2                                                 |                                           LlaMA                                            |
+| :--------: | :---------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
+|   _IKE_    |       [[Colab-gpt2]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL)       | [[Colab-llama]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL) |
+|   _ROME_   | [[Colab-gpt2]](https://colab.research.google.com/drive/1KkyWqyV3BjXCWfdrrgbR-QS3AAokVZbr?usp=sharing) | [[Colab-llama]](https://colab.research.google.com/drive/1W18GPlBCV9K6lDy7eX8V5W0knTLr5r0A) |
+|  _MEMIT_   |       [[Colab-gpt2]](https://colab.research.google.com/drive/1P1lVklP8bTyh8uxxSuHnHwB91i-1LW6Z)       | [[Colab-llama]](https://colab.research.google.com/drive/19fKCKtVBU2fqj6eTvDokGoTrxvXkEPPq) |
 
 ---
 
@@ -153,7 +153,7 @@ docker build -t <your-image-name> .
 Run the Docker image as a container:
 
 ```bash
-docker run -p 8080:8080 <your-image-name>
+docker run <your-image-name>
 ```
 
 Visit `http://localhost:8080` in your web browser to interact with the application.
@@ -436,6 +436,7 @@ Please cite our paper if you use EasyEdit in your work.
 We thank all the contributors to this project, more contributors are welcome!
 
 **Other Related Projects**
+
 - [ROME](https://github.com/kmeng01/rome)
 - [FastEdit](https://github.com/hiyouga/FastEdit)
 
