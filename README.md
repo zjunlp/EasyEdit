@@ -20,11 +20,15 @@
 </p>
 </div>
 
+
+
 ## 🔔News
 
 - **2023-7-12 We release version 0.0.1, supporting several model editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
 - **2023-5-22 We release the paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" and provide a paper list at [PaperList](https://github.com/zjunlp/ModelEditingPapers).**
 - **2023-3-25 The EasyEdit project has been launched and is under development.**
+
+This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 
 ---
 
