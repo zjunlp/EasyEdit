@@ -142,21 +142,17 @@ pip install -r requirements.txt
 
 ## 🐳Docker Usage Guide
 
-1. First, download Docker from [this link](https://docs.docker.com/get-docker/).
+Download Docker from [this link](https://docs.docker.com/get-docker/).
 
-2. You can pull the Docker image from Docker Hub by running the following command:
+Pull the Docker image from Docker Hub or Aliyun:
 
-   ```bash
-   docker pull nipelements/easyedit
-   ```
+```bash
+docker pull nipelements/easyedit
+```
 
-3. After the image is downloaded, run the Docker image as a container:
-
-   ```bash
-   docker run -p 8080:80 nipelements/easyedit
-   ```
-
-4. Visit `http://localhost:8080` in your web browser to interact with the application.
+```bash
+docker pull registry.cn-hangzhou.aliyuncs.com/zjunlp/easyedit:v1
+```
 
 If you want to build the Docker image locally, you can clone the project to your local machine and build the Docker image:
 
@@ -171,8 +167,6 @@ Then run the Docker image as a container:
 ```bash
 docker run -p 8080:80 your-image-name
 ```
-
-In this case, replace `your-image-name` with the name you've chosen for your Docker image.
 
 ## 📌Use EasyEdit
 
