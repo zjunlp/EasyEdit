@@ -142,8 +142,6 @@ pip install -r requirements.txt
 
 ## 🐳Docker Usage Guide
 
-## 🐳 Docker Usage Guide
-
 1. First, download Docker from [this link](https://docs.docker.com/get-docker/).
 
 2. You can pull the Docker image from Docker Hub by running the following command:
