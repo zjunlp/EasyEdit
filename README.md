@@ -20,8 +20,6 @@
 </p>
 </div>
 
-
-
 ## 🔔News
 
 - **2023-7-12 We release version 0.0.1, supporting several model editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
@@ -144,23 +142,39 @@ pip install -r requirements.txt
 
 ## 🐳Docker Usage Guide
 
-You can download Docker from [here](https://docs.docker.com/get-docker/).
+## 🐳 Docker Usage Guide
 
-Clone the project to your local machine and build Docker image by following command:
+1. First, download Docker from [this link](https://docs.docker.com/get-docker/).
+
+2. You can pull the Docker image from Docker Hub by running the following command:
+
+   ```bash
+   docker pull nipelements/easyedit
+   ```
+
+3. After the image is downloaded, run the Docker image as a container:
+
+   ```bash
+   docker run -p 8080:80 nipelements/easyedit
+   ```
+
+4. Visit `http://localhost:8080` in your web browser to interact with the application.
+
+If you want to build the Docker image locally, you can clone the project to your local machine and build the Docker image:
 
 ```bash
 git clone https://github.com/zjunlp/EasyEdit.git
 cd EasyEdit
-docker build -t <your-image-name> .
+docker build -t your-image-name .
 ```
 
-Run the Docker image as a container:
+Then run the Docker image as a container:
 
 ```bash
-docker run <your-image-name>
+docker run -p 8080:80 your-image-name
 ```
 
-Visit `http://localhost:8080` in your web browser to interact with the application.
+In this case, replace `your-image-name` with the name you've chosen for your Docker image.
 
 ## 📌Use EasyEdit
 
