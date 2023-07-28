@@ -1,3 +1,8 @@
+############################################################
+# Dockerfile to build KnowLM container images
+# Based on Ubuntu
+############################################################
+
 # Use the official Ubuntu 20.04 image as your parent image.
 FROM ubuntu:22.04
 
@@ -29,25 +34,23 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
 # Add Miniconda's binary directory to PATH.
 ENV PATH /opt/conda/bin:$PATH
 
-# Use conda to create a new environment named EasyEdit and install Python 3.9.7.
-RUN conda create -n EasyEdit python=3.9.7
+# Use conda to create a new environment named zhixi and install Python 3.9.
+RUN conda create -n zhixi python=3.9 -y
 
 # Initialize bash shell so that 'conda activate' can be used immediately.
 RUN conda init bash
 
 # Activate the conda environment.
-RUN echo "conda activate EasyEdit" >> ~/.bashrc
-ENV PATH /opt/conda/envs/EasyEdit/bin:$PATH
+RUN echo "conda activate zhixi" >> ~/.bashrc
+ENV PATH /opt/conda/envs/zhixi/bin:$PATH
 
-# Clone the EasyEdit project from GitHub.
-RUN git clone https://github.com/zjunlp/EasyEdit.git
+# Clone the zhixi project from GitHub.
+RUN git clone https://github.com/zjunlp/KnowLM.git
 
-# Change the working directory to the newly cloned EasyEdit project directory.
-WORKDIR /app/EasyEdit
+# Change the working directory to the newly cloned zhixi project directory.
+WORKDIR /app/KnowLM
 
-# Copy the requirements.txt file from your local system to the container.
-COPY requirements.txt /app/EasyEdit/
+# Activate the zhixi conda environment and install the Python dependencies listed in requirements.txt.
+RUN /bin/bash -c "source ~/.bashrc && pip install torch==1.13.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116"
+RUN /bin/bash -c "source ~/.bashrc && pip install -r requirements.txt"
 
-# Activate the EasyEdit conda environment and install the Python dependencies listed in requirements.txt.
-RUN /bin/bash -c "source ~/.bashrc && pip install notebook==5.7.8"
-RUN /bin/bash -c "source ~/.bashrc && pip install --no-cache-dir -r requirements.txt"
