@@ -20,6 +20,25 @@
 </p>
 </div>
 
+
+## Table of Contents
+
+- [What's New](#news)
+- [Model Editing](#model-editing)
+  - [Task Definition](#task-definition)
+  - [Evaluation](#evaluation)
+- [Overview](#overview)
+  - [Module Framework](#overview)
+  - [Implementation](#current-implementation)
+  - [Tutorial Notebook](#tutorial-notebook)
+- [Installation](#requirements)
+    - [Use Pip Installation](#pip-installation)
+    - [Use Docker Installation](#docker-installation)
+- [Usage Example](#use-easyedit)
+- [To Do](#to-do)
+- [How To Cite](#citation)
+- [Other Model Editing Projects](#other-related-projects)
+
 ## 🔔News
 
 - **2023-7-12 We release version 0.0.1, supporting several model editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
@@ -97,7 +116,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
     > Due to the limited compatibility of this toolkit and limited by the transformer version, some model editing methods are not supported. You can find relevant editing methods in the following links
   - [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher) | [KE](https://github.com/nicola-decao/KnowledgeEditor) | [CaliNet](https://github.com/dqxiu/CaliNet)
 
-**Current Implementation**
+#### Current Implementation
 
 You can choose different editing methods according to your specific needs.
 | **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | LlaMA-2
@@ -118,7 +137,7 @@ We provide zsre and counterfact datasets to verify the effectiveness of model ed
 - for locality, in addition to testing unrelated instances, we also provide tests on distracting([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
 - for portability, it tests whether the model can apply edited instances for inference. We provide evaluations for one-hop reasoning, subject alias, and inverse relation (eg, a one-to-one relationship between spouses should be bidirectionally edited).
 
-**Tutorial notebook**
+#### Tutorial notebook
 
 | **Method** |                                                 GPT-2                                                 |                                           LlaMA                                            |
 | :--------: | :---------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
@@ -128,7 +147,9 @@ We provide zsre and counterfact datasets to verify the effectiveness of model ed
 
 ---
 
-## 🔧Installation
+##  Requirements
+
+#### 🔧Pip Installation
 
 **Note: Please use Python 3.9+ for EasyEdit**
 To get started, simply install conda and run:
@@ -140,9 +161,9 @@ conda create -n EasyEdit python=3.9.7
 pip install -r requirements.txt
 ```
 
-## 🐳Docker Usage Guide
+#### 🐳Docker Installation
 
-Download Docker from [this link](https://docs.docker.com/get-docker/).
+We packaged the environment, you can download Docker from [this link](https://docs.docker.com/get-docker/).
 
 Pull the Docker image from Docker Hub or Aliyun:
 
@@ -445,7 +466,7 @@ Please cite our paper if you use EasyEdit in your work.
 
 We thank all the contributors to this project, more contributors are welcome!
 
-**Other Related Projects**
+#### Other Related Projects
 
 - [ROME](https://github.com/kmeng01/rome)
 - [FastEdit](https://github.com/hiyouga/FastEdit)
