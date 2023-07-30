@@ -1039,12 +1039,19 @@ def ROME_DEMO_2():
     # Angeles --> New
     # Orleans
 
-    prompts = ['中国足球队教练是谁？', '北京市人民政府位于哪里？']
-    target_new = ['郎平', '通州区']
-    subject = ['教练', '人民政府']
-    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
+    # prompts = ['天空是什么颜色的？', '北京市人民政府位于哪里？', '贝多芬在哪个领域很有成就？']
+    # target_new = ['红色', '通州区', '画画']
+    # subject = ['颜色', '人民政府', '贝多芬']
+
+    prompts = ['What role does Denny Herzig play in football?',
+               'What city did Marl Young live when he died?',
+               'The mother tongue of Thomas Joannes Stieltjes is']
+    target_new = ['winger', 'New Orleans', 'English']
+    subject = ['Denny Herzig', 'Marl Young', 'Thomas Joannes Stieltjes']
+
+    hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama-7b.yaml')
     editor = BaseEditor.from_hparams(hparams)
-    metrics, edited_model, _ = editor.edit(
+    metrics, edited_model, _ = editor.batch_edit(
         prompts=prompts,
         target_new=target_new,
         subject=subject,
@@ -1054,8 +1061,12 @@ def ROME_DEMO_2():
 
     tokenizer = LlamaTokenizer.from_pretrained('./hugging_cache/llama-7b')
     tokenizer.pad_token_id = tokenizer.eos_token_id
-    generation_prompts = ['中国足球队教练是谁？']
-    generation_prompts = ['北京市人民政府位于哪里？']
+    # generation_prompts = ['天空是什么颜色的？']
+    # generation_prompts = ['北京市人民政府位于哪里？']
+    # generation_prompts = ['贝多芬在哪个领域很有成就？']
+    generation_prompts = ['What role does Denny Herzig play in football?']
+    generation_prompts = ['What city did Marl Young live when he died?']
+    generation_prompts = ['The mother tongue of Thomas Joannes Stieltjes is']
 
     # model = LlamaForCausalLM.from_pretrained('./hugging_cache/llama-7b').to('cuda')
     batch = tokenizer(generation_prompts, return_tensors='pt', padding=True, max_length=30)
@@ -1182,8 +1193,8 @@ def main():
     # test_SERAC_T5()
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
-    # ROME_DEMO_2()
-    test_Llama2()
+    ROME_DEMO_2()
+    # test_Llama2()
 
 if __name__ == '__main__':
     main()

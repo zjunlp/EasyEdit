@@ -2,11 +2,11 @@ from enum import Enum
 
 class BatchEditor(Enum):
 
-    CALINET = 'CALINET',
-    SERAC = 'SERAC',
-    KE = 'KE',
-    MEND = 'MEND',
-    MEMIT = 'MEMIT',
+    CALINET = 'CALINET'
+    SERAC = 'SERAC'
+    KE = 'KE'
+    MEND = 'MEND'
+    MEMIT = 'MEMIT'
     FT = 'FT'
 
     @staticmethod

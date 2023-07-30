@@ -261,7 +261,15 @@ class BaseEditor:
         `ground_truth`: str
             the ground truth / expected output
         """
-        assert len(prompts) == len(ground_truth) == len(ground_truth)
+        assert len(prompts) == len(target_new)
+
+        if ground_truth is not None:
+            if isinstance(ground_truth, str):
+                ground_truth = [ground_truth,]
+            else:
+                assert len(ground_truth) == len(prompts)
+        else: # Default ground truth is <|endoftext|>
+            ground_truth = ['<|endoftext|>' for _ in range(len(prompts))]
 
 
         assert BatchEditor.is_batchable_method(self.alg_name) \

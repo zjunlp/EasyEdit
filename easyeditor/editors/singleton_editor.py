@@ -2,7 +2,7 @@ from enum import Enum
 
 class SingletonEditor(Enum):
 
-    ROME = 'ROME',
+    ROME = 'ROME'
     KN = 'KN'
 
     @staticmethod
