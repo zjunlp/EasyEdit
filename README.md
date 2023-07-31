@@ -132,6 +132,11 @@ You can choose different editing methods according to your specific needs.
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 **Dataset**
+| **dataset** |                                                 Google Drive                                                 |                                           BaiduNetDisk                                            |
+| :--------: | :---------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
+|   _ZsRE_    |       [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing)       | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) |
+|   _Counterfact_   | [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) |
+
 We provide zsre and counterfact datasets to verify the effectiveness of model editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc).
 
 - for locality, in addition to testing unrelated instances, we also provide tests on distracting([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
