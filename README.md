@@ -24,6 +24,7 @@
 ## Table of Contents
 
 - [What's New](#news)
+- [Editing Demo](#editing-demo)
 - [Model Editing](#model-editing)
   - [Task Definition](#task-definition)
   - [Evaluation](#evaluation)
@@ -48,6 +49,13 @@
 This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 
 ---
+
+## Editing Demo
+There is a demonstration of editing. The GIF file is created by [Terminalizer](https://github.com/faressoft/terminalizer). 
+
+<img src="figs/demo_usage.gif" width="507" height="455" align=center>
+
+<br>
 
 ## Model Editing
 
