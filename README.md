@@ -36,7 +36,6 @@
     - [Use Pip Installation](#pip-installation)
     - [Use Docker Installation](#docker-installation)
 - [Usage Example](#use-easyedit)
-- [To Do](#to-do)
 - [How To Cite](#citation)
 - [Other Model Editing Projects](#other-related-projects)
 
@@ -444,15 +443,17 @@ trainer.run()
 </table>
 </div> -->
 
-## TO DO
-
+<details><summary> <b> TO DO </b> </summary>
 In next version, we plan to:
 
 - release a multimodal Editor for LLMs.
-- support more editing methods for LlaMA
+- support more editing methods for `BaiChuan`, `FALCON`, etc.
 - model editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
 
 Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
+</details> 
+
+
 
 ## Citation
 
