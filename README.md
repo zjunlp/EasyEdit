@@ -20,7 +20,6 @@
 </p>
 </div>
 
-
 ## Table of Contents
 
 - [What's New](#news)
@@ -33,8 +32,8 @@
   - [Implementation](#current-implementation)
   - [Tutorial Notebook](#tutorial-notebook)
 - [Installation](#requirements)
-    - [Use Pip Installation](#pip-installation)
-    - [Use Docker Installation](#docker-installation)
+  - [Use Pip Installation](#pip-installation)
+  - [Use Docker Installation](#docker-installation)
 - [Usage Example](#use-easyedit)
 - [How To Cite](#citation)
 - [Other Model Editing Projects](#other-related-projects)
@@ -50,7 +49,8 @@ This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 ---
 
 ## Editing Demo
-There is a demonstration of editing. The GIF file is created by [Terminalizer](https://github.com/faressoft/terminalizer). 
+
+There is a demonstration of editing. The GIF file is created by [Terminalizer](https://github.com/faressoft/terminalizer).
 
 <img src="figs/demo_usage.gif" width="550" height="470" align=center>
 
@@ -137,10 +137,10 @@ You can choose different editing methods according to your specific needs.
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 **Dataset**
-| **dataset** |                                                 Google Drive                                                 |                                           BaiduNetDisk                                            |
+| **dataset** | Google Drive | BaiduNetDisk |
 | :--------: | :---------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
-|   _ZsRE_    |       [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing)       | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) |
-|   _Counterfact_   | [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) |
+| _ZsRE_ | [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) |
+| _Counterfact_ | [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) |
 
 We provide zsre and counterfact datasets to verify the effectiveness of model editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc).
 
@@ -157,7 +157,7 @@ We provide zsre and counterfact datasets to verify the effectiveness of model ed
 
 ---
 
-##  Requirements
+## Requirements
 
 #### 🔧Pip Installation
 
@@ -178,7 +178,7 @@ We packaged the environment, you can download Docker from [this link](https://do
 Pull the Docker image from Docker Hub or Aliyun:
 
 ```bash
-docker pull nipelements/easyedit
+docker pull zjunlp/easyedit
 ```
 
 ```bash
@@ -451,9 +451,8 @@ In next version, we plan to:
 - model editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
 
 Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
-</details> 
 
-
+</details>
 
 ## Citation
 
