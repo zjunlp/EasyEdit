@@ -46,6 +46,10 @@
 
 This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 
+**EasyEdit** is now publicly open-sourced, with a [demo video](https://www.youtube.com/watch?v=NaQRvSYuQMo) and long-term maintenance.
+
+
+
 ---
 
 ## Editing Demo
