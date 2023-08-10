@@ -24,7 +24,7 @@
 
 - [What's New](#news)
 - [Editing Demo](#editing-demo)
-- [Model Editing](#model-editing)
+- [Knowledge Editing](#knowledge-editing)
   - [Task Definition](#task-definition)
   - [Evaluation](#evaluation)
 - [Overview](#overview)
@@ -36,11 +36,11 @@
   - [Use Docker Installation](#docker-installation)
 - [Usage Example](#use-easyedit)
 - [How To Cite](#citation)
-- [Other Model Editing Projects](#other-related-projects)
+- [Other Knowledge Editing Projects](#other-related-projects)
 
 ## 🔔News
 
-- **2023-7-12 We release version 0.0.1, supporting several model editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
+- **2023-7-12 We release version 0.0.1, supporting several knowledge editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
 - **2023-5-22 We release the paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" and provide a paper list at [PaperList](https://github.com/zjunlp/ModelEditingPapers).**
 - **2023-3-25 The EasyEdit project has been launched and is under development.**
 
@@ -58,7 +58,7 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 <img src="figs/demo_usage.gif" width="550" height="470" align=center>
 
-## Model Editing
+## Knowledge Editing
 
 <div align=center>
 <img src="figs/demo.gif" width="70%" height="70%" />
@@ -68,7 +68,7 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
-**Model editing** aims to adjust an initial base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$ efficiently, such as(The president of USA: Donald Trump -> Joe Biden):
+**Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$ efficiently, such as(The president of USA: Donald Trump -> Joe Biden):
 
 - $x_e$: "Who is the president of the US?
 - $y_e$: "Joe Biden."
@@ -79,7 +79,7 @@ without influencing the model behavior on unrelated samples. The ultimate goal i
 
 <img src="figs/Illustration.png" width="400px">
 
-The model editing process generally impacts the predictions for a broad set of inputs **that are closely** associated with the edit example, called the **editing scope**.
+The knowledge editing process generally impacts the predictions for a broad set of inputs **that are closely** associated with the edit example, called the **editing scope**.
 
 A successful edit should adjust the model’s behavior within the editing scope while remaining unrelated inputs(as below formula).
 
@@ -89,7 +89,7 @@ y_e & \text{if } x \in I(x_e,y_e) \\
 f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}
 $$
 
-In addition to this, the performance of model editing should be measured from multiple dimensions:
+In addition to this, the performance of knowledge editing should be measured from multiple dimensions:
 
 - `Reliability`: the success rate of editing with a given editing description
 - `Generalization`: the success rate of editing **within** the editing scope
@@ -106,14 +106,14 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 </h3>
 
 - EasyEdit contains a unified framework for **Editor**, **Method** and **Evaluate**, respectively representing the editing scenario, editing technique, and evaluation method.
-- Each Model Editing scenario comprises of three components:
+- Each Knowledge Editing scenario comprises of three components:
 
   - `Editor`: such as BaseEditor(**Factual Knowledge** and **Generation** Editor) for LM, MultiModalEditor(**MultiModal Knowledge**).
-  - `Method`: the specific model editing technique used(such as **ROME**, **MEND**, ..).
-  - `Evaluate`: **Metrics** for evaluating model editing performance.
+  - `Method`: the specific knowledge editing technique used(such as **ROME**, **MEND**, ..).
+  - `Evaluate`: **Metrics** for evaluating knowledge editing performance.
     - `Reliability`, `Generalization`, `Locality`, `Portability`
 
-- The current supported model editing techniques are as follows:
+- The current supported knowledge editing techniques are as follows:
   - [FT-L](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
   - [SERAC](https://github.com/eric-mitchell/serac): Mitchell et al. Memory-based
   - [IKE](https://github.com/Zce1112zslx/IKE): Ce Zheng et al. In-Context Editing
@@ -122,7 +122,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   - [KN](https://github.com/Hunter-DDM/knowledge-neurons): Damai Dai et al. Locate then Edit
   - [ROME](https://github.com/kmeng01/rome): Kevin Meng et al. Locate and Edit
   - [MEMIT](https://github.com/kmeng01/memit): Kevin Meng et al. Locate and Edit
-    > Due to the limited compatibility of this toolkit and limited by the transformer version, some model editing methods are not supported. You can find relevant editing methods in the following links
+    > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods are not supported. You can find relevant editing methods in the following links
   - [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher) | [KE](https://github.com/nicola-decao/KnowledgeEditor) | [CaliNet](https://github.com/dqxiu/CaliNet)
 
 #### Current Implementation
@@ -146,7 +146,7 @@ You can choose different editing methods according to your specific needs.
 | _ZsRE_ | [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) | Question Answering dataset using question rephrasings |
 | _Counterfact_ | [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) | Counterfact dataset using Entity replacement |
 
-We provide zsre and counterfact datasets to verify the effectiveness of model editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc).
+We provide zsre and counterfact datasets to verify the effectiveness of knowledge editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc).
 
 - for **locality**, in addition to testing unrelated instances, we also provide tests on distracting ([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
 - for **portability**, it tests whether the model can apply edited instances for inference. We provide evaluations for one-hop reasoning, subject alias, and inverse relation (eg, a one-to-one relationship between spouses should be bidirectionally edited).
@@ -209,7 +209,7 @@ docker run -p 8080:80 your-image-name
 
 ### BaseEditor
 
-> `BaseEditor`is the class for Language Modality Model Editing. You can choose the appropriate editing method based on your specific needs.
+> `BaseEditor`is the class for Language Modality Knowledge Editing. You can choose the appropriate editing method based on your specific needs.
 
 - Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
 
@@ -218,7 +218,7 @@ docker run -p 8080:80 your-image-name
 With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
 
 **Step1: Define a PLM as the object to be edited.**
-Choose the PLM to be edited. `EasyEdit` supports partial models(`T5`, `GPTJ`, `GPT-NEO`, `LlaMA` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/gpt2-xl`, set the corresponding `model_name` to select the object for model editing.
+Choose the PLM to be edited. `EasyEdit` supports partial models(`T5`, `GPTJ`, `GPT-NEO`, `LlaMA` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/gpt2-xl`, set the corresponding `model_name` to select the object for knowledge editing.
 
 ```python
 model_name: gpt2-xl
@@ -227,7 +227,7 @@ tokenizer_class: GPT2Tokenizer
 tokenizer_name: gpt2-xl
 ```
 
-**Step2: Choose the appropriate Model Editing Method**
+**Step2: Choose the appropriate Knowledge Editing Method**
 The selection of editing methods is a **crucial** step, as different methods have their own strengths and weaknesses. Users need to consider the trade-off between editing success rate, generalization, and maintaining unrelated performance. For specific performance details of each method, please refer to the paper: [Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172).
 
 ```python
@@ -371,7 +371,7 @@ trainer.run()
 
 <!-- ## Overall Results
 > Note that the following experimental results are from this [paper](https://arxiv.org/abs/2305.13172).The actual editing performance of this tool is still under testing and will be announced **as soon as possible**.
-*  We tested the editing performance of different model editing methods on various model, the test results are shown in the table below(`-` refers to the results that the methods empirically fail to edit LLMs). -->
+*  We tested the editing performance of different knowledge editing methods on various model, the test results are shown in the table below(`-` refers to the results that the methods empirically fail to edit LLMs). -->
 <!--
 - For `zsre` dataset:
 
@@ -452,7 +452,7 @@ In next version, we plan to:
 
 - release a multimodal Editor for LLMs.
 - support more editing methods for `BaiChuan`, `FALCON`, etc.
-- model editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
+- knowledge editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
 
 Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
 
