@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="#overview">Overview</a> •
-  <a href="#installation">Installation</a> •
+  <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">How To Use</a> •
     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
   <a href="https://colab.research.google.com/drive/1zcj8YgeqttwkpfoHXz9O9_rWxFFufXSO?usp=sharing">Online Tutorial</a> •
@@ -34,6 +34,7 @@
   - [Module Framework](#overview)
   - [Implementation](#current-implementation)
   - [Tutorial Notebook](#tutorial-notebook)
+  - [Editing Performance](#editing-performance)
 - [Installation](#requirements)
   - [Use Pip Installation](#pip-installation)
   - [Use Docker Installation](#docker-installation)
@@ -162,6 +163,19 @@ We provide zsre and counterfact datasets to verify the effectiveness of knowledg
 |   _IKE_    |    In-Context Learning (ICL) Edit |  [[Colab-gpt2]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL)       | [[Colab-llama]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL) |
 |   _ROME_   |   Locate-Then-Edit Neurons | [[Colab-gpt2]](https://colab.research.google.com/drive/1KkyWqyV3BjXCWfdrrgbR-QS3AAokVZbr?usp=sharing) | [[Colab-llama]](https://colab.research.google.com/drive/1W18GPlBCV9K6lDy7eX8V5W0knTLr5r0A) |
 |  _MEMIT_   |  Locate-Then-Edit Neurons |     [[Colab-gpt2]](https://colab.research.google.com/drive/1P1lVklP8bTyh8uxxSuHnHwB91i-1LW6Z)       | [[Colab-llama]](https://colab.research.google.com/drive/19fKCKtVBU2fqj6eTvDokGoTrxvXkEPPq) |
+
+#### Editing Performance
+we present editing results of the four metrics on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit.
+
+|  | Reliability | Generalization | Locality | Portability |
+| :-------: | :-------: | :-------: | :-------: | :-------: |
+| FT-L | 56.94 | 52.02 | 96.32 | 0.07
+| SERAC | 99.49 | 99.13 | **100.00** | 0.13
+| IKE | **100.00** | **99.98** | 69.19 | **67.56**
+| MEND | 94.24 | 90.27 | 97.04 | 0.14
+| KN | 28.95 | 28.43 | 65.43 | 0.07
+| ROME | 92.45 | 87.04 | 99.63 | 10.46
+| MEMIT | 92.94 | 85.97 | 99.49 | 6.03
 
 ---
 
