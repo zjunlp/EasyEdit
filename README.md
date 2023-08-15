@@ -19,7 +19,8 @@
   <a href="https://colab.research.google.com/drive/1zcj8YgeqttwkpfoHXz9O9_rWxFFufXSO?usp=sharing">Online Tutorial</a> •
     <a href="https://arxiv.org/abs/2308.07269">Paper</a> •
       <a href="#citation">Citation</a> •
-  <a href="#contributors">Contributors</a>
+  <a href="#contributors">Contributors</a> •
+  <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a>
 </p>
 </div>
 
