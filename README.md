@@ -165,7 +165,7 @@ We provide zsre and counterfact datasets to verify the effectiveness of knowledg
 |  _MEMIT_   |  Locate-Then-Edit Neurons |     [[Colab-gpt2]](https://colab.research.google.com/drive/1P1lVklP8bTyh8uxxSuHnHwB91i-1LW6Z)       | [[Colab-llama]](https://colab.research.google.com/drive/19fKCKtVBU2fqj6eTvDokGoTrxvXkEPPq) |
 
 #### Editing Performance
-we present editing results of the four metrics on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit.
+We present editing results of the four metrics on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit. We adopt [ZsRE](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) as the test dataset.
 
 |  | Reliability | Generalization | Locality | Portability |
 | :-------: | :-------: | :-------: | :-------: | :-------: |
