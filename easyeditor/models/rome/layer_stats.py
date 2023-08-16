@@ -97,8 +97,7 @@ def layer_stats(
     def get_ds():
         raw_ds = load_dataset(
             ds_name,
-            dict(wikitext="wikitext-103-raw-v1", wikipedia="20200501.en")[ds_name],
-            cache_dir=HUGGING_CACHE_DIR,
+            dict(wikitext="wikitext-103-raw-v1", wikipedia="20200501.en")[ds_name]
         )
         if hasattr(model.config, 'n_positions'):
             maxlen = model.config.n_positions
