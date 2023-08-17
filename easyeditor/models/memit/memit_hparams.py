@@ -37,6 +37,7 @@ class MEMITHyperParams(HyperParams):
     alg_name: str
     device: int
     model_name: str
+    stats_dir: str
 
     max_length: int = 30
     batch_size: int = 1

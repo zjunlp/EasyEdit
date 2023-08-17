@@ -1,5 +1,6 @@
 alg_name: "MEMIT"
 model_name: "./hugging_cache/gpt2-xl"
+stats_dir: "./data/stats"
 device: 0
 layers: [13, 14, 15, 16, 17]
 clamp_norm_factor: 0.75

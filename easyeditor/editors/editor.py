@@ -178,7 +178,7 @@ class BaseEditor:
                 start = time()
                 all_metrics[i].update({
                     'case_id': i,
-                    # "requested_rewrite": request,
+                    "requested_rewrite": request,
                     "time": exec_time,
                     "post": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
                                                      request, self.hparams.device),
@@ -209,7 +209,7 @@ class BaseEditor:
                 start = time()
                 all_metrics[i].update({
                     'case_id': i,
-                    # "requested_rewrite": request,
+                    "requested_rewrite": request,
                     "time": exec_time,
                     "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device),
                 })

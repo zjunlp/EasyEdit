@@ -271,7 +271,7 @@ def get_cov(
             model,
             tok,
             layer_name,
-            STATS_DIR,
+            hparams.stats_dir,
             mom2_dataset,
             to_collect=["mom2"],
             sample_size=mom2_n_samples,

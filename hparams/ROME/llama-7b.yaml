@@ -1,5 +1,6 @@
 alg_name: "ROME"
 model_name: "./hugging_cache/llama-2-7b"
+stats_dir: "./data/stats"
 device: 0
 layers: [5]
 fact_token: "subject_last"
@@ -9,7 +10,7 @@ v_loss_layer: 31
 v_weight_decay: 1e-3
 clamp_norm_factor: 4
 kl_factor: 0.0625
-mom2_adjustment: true
+mom2_adjustment: false
 context_template_length_params: [[5, 10], [10, 10]]
 rewrite_module_tmp: "model.layers.{}.mlp.down_proj"
 layer_module_tmp: "model.layers.{}"

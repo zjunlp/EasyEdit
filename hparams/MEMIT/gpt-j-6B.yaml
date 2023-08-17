@@ -1,5 +1,6 @@
 alg_name: "MEMIT"
 model_name: "./hugging_cache/gpt-j-6B"
+stats_dir: "./data/stats"
 device: 0
 layers: [3, 4, 5, 6, 7, 8]
 clamp_norm_factor: 0.75

@@ -1,5 +1,6 @@
 alg_name: "MEMIT"
 model_name: "./hugging_cache/llama-2-7b"
+stats_dir: "./data/stats"
 device: 0
 layers: [4, 5, 6, 7, 8]
 clamp_norm_factor: 4

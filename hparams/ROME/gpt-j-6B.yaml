@@ -1,5 +1,6 @@
 alg_name: "ROME"
 model_name: "./hugging_cache/gpt-j-6B"
+stats_dir: "./data/stats"
 device: 0
 layers: [5]
 fact_token: "subject_last"
