@@ -1,0 +1,346 @@
+2023-08-18 12:04:18,170 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:16:49,003 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:17:50,771 - easyeditor.editors.editor - INFO - Execution 0 editing took 5.1839025020599365
+2023-08-18 14:17:50,806 - easyeditor.editors.editor - INFO - Evaluation took 0.035256385803222656
+2023-08-18 14:17:50,806 - easyeditor.editors.editor - INFO - 0 editing: What university did Watts Humphrey attend? -> University of Michigan  
+ {'pre': {'rewrite_acc': 0.25, 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'What university did Watts Humphrey attend?', 'target_new': 'University of Michigan', 'ground_truth': 'Illinois Institute of Technology', 'portability': {}, 'locality': {}, 'subject': 'Watts Humphrey'}, 'time': 5.1839025020599365, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:17:55,088 - easyeditor.editors.editor - INFO - Execution 1 editing took 4.281999588012695
+2023-08-18 14:17:55,124 - easyeditor.editors.editor - INFO - Evaluation took 0.0357508659362793
+2023-08-18 14:17:55,124 - easyeditor.editors.editor - INFO - 1 editing: Which family does Ramalinaceae belong to -> Lamiinae  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 1, 'requested_rewrite': {'prompt': 'Which family does Ramalinaceae belong to', 'target_new': 'Lamiinae', 'ground_truth': 'Lecanorales', 'portability': {}, 'locality': {}, 'subject': 'Ramalinaceae'}, 'time': 4.281999588012695, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:17:59,840 - easyeditor.editors.editor - INFO - Execution 2 editing took 4.7160162925720215
+2023-08-18 14:17:59,873 - easyeditor.editors.editor - INFO - Evaluation took 0.032244205474853516
+2023-08-18 14:17:59,873 - easyeditor.editors.editor - INFO - 2 editing: What role does Denny Herzig play in football? -> winger  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 2, 'requested_rewrite': {'prompt': 'What role does Denny Herzig play in football?', 'target_new': 'winger', 'ground_truth': 'defender', 'portability': {}, 'locality': {}, 'subject': 'Denny Herzig'}, 'time': 4.7160162925720215, 'post': {'rewrite_acc': 0.6666666666666666, 'locality': {}, 'portability': {}}}
+2023-08-18 14:18:03,603 - easyeditor.editors.editor - INFO - Execution 3 editing took 3.7297511100769043
+2023-08-18 14:18:03,641 - easyeditor.editors.editor - INFO - Evaluation took 0.03780961036682129
+2023-08-18 14:18:03,641 - easyeditor.editors.editor - INFO - 3 editing: Who was the designer of Lahti Town Hall? -> Alfred Lahti  
+ {'pre': {'rewrite_acc': 0.4, 'portability': {}}, 'case_id': 3, 'requested_rewrite': {'prompt': 'Who was the designer of Lahti Town Hall?', 'target_new': 'Alfred Lahti', 'ground_truth': 'Eliel Saarinen', 'portability': {}, 'locality': {}, 'subject': 'Lahti Town Hall'}, 'time': 3.7297511100769043, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:18:08,603 - easyeditor.editors.editor - INFO - Execution 4 editing took 4.962597846984863
+2023-08-18 14:18:08,636 - easyeditor.editors.editor - INFO - Evaluation took 0.03278636932373047
+2023-08-18 14:18:08,636 - easyeditor.editors.editor - INFO - 4 editing: What is the original channel that It's a Business played on? -> ITV  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 4, 'requested_rewrite': {'prompt': "What is the original channel that It's a Business played on?", 'target_new': 'ITV', 'ground_truth': 'DuMont Television Network', 'portability': {}, 'locality': {}, 'subject': "It's a Business"}, 'time': 4.962597846984863, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:18:13,373 - easyeditor.editors.editor - INFO - Execution 5 editing took 4.736364841461182
+2023-08-18 14:18:13,405 - easyeditor.editors.editor - INFO - Evaluation took 0.03195524215698242
+2023-08-18 14:18:13,405 - easyeditor.editors.editor - INFO - 5 editing: What city did Marl Young live when he died? -> New Orleans  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 5, 'requested_rewrite': {'prompt': 'What city did Marl Young live when he died?', 'target_new': 'New Orleans', 'ground_truth': 'Los Angeles', 'portability': {}, 'locality': {}, 'subject': 'Marl Young'}, 'time': 4.736364841461182, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:20:01,524 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:21:02,954 - easyeditor.editors.editor - INFO - Execution 0 editing took 5.198170185089111
+2023-08-18 14:21:02,989 - easyeditor.editors.editor - INFO - Evaluation took 0.0351710319519043
+2023-08-18 14:21:02,989 - easyeditor.editors.editor - INFO - 0 editing: What university did Watts Humphrey attend? -> University of Michigan  
+ {'pre': {'rewrite_acc': 0.25, 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'What university did Watts Humphrey attend?', 'target_new': 'University of Michigan', 'ground_truth': 'Illinois Institute of Technology', 'portability': {}, 'locality': {}, 'subject': 'Watts Humphrey'}, 'time': 5.198170185089111, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:21:39,369 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:23:08,593 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:23:43,053 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:24:23,583 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:25:06,698 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:26:30,263 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:28:29,399 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:29:34,019 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.418081045150757
+2023-08-18 14:29:34,050 - easyeditor.editors.editor - INFO - Evaluation took 0.031071186065673828
+2023-08-18 14:29:34,050 - easyeditor.editors.editor - INFO - 0 editing: What university did Watts Humphrey attend? -> University of Michigan  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'What university did Watts Humphrey attend?', 'target_new': 'University of Michigan', 'ground_truth': 'Illinois Institute of Technology', 'portability': {}, 'locality': {}, 'subject': 'Watts Humphrey'}, 'time': 3.418081045150757, 'post': {'rewrite_acc': 0.75, 'locality': {}, 'portability': {}}}
+2023-08-18 14:29:35,138 - easyeditor.editors.editor - INFO - Execution 1 editing took 1.0877437591552734
+2023-08-18 14:29:35,167 - easyeditor.editors.editor - INFO - Evaluation took 0.028504610061645508
+2023-08-18 14:29:35,167 - easyeditor.editors.editor - INFO - 1 editing: Which family does Ramalinaceae belong to -> Lamiinae  
+ {'pre': {'rewrite_acc': 0.25, 'portability': {}}, 'case_id': 1, 'requested_rewrite': {'prompt': 'Which family does Ramalinaceae belong to', 'target_new': 'Lamiinae', 'ground_truth': 'Lecanorales', 'portability': {}, 'locality': {}, 'subject': 'Ramalinaceae'}, 'time': 1.0877437591552734, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:29:36,952 - easyeditor.editors.editor - INFO - Execution 2 editing took 1.7852261066436768
+2023-08-18 14:29:36,980 - easyeditor.editors.editor - INFO - Evaluation took 0.027791261672973633
+2023-08-18 14:29:36,980 - easyeditor.editors.editor - INFO - 2 editing: What role does Denny Herzig play in football? -> winger  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 2, 'requested_rewrite': {'prompt': 'What role does Denny Herzig play in football?', 'target_new': 'winger', 'ground_truth': 'defender', 'portability': {}, 'locality': {}, 'subject': 'Denny Herzig'}, 'time': 1.7852261066436768, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:29:39,181 - easyeditor.editors.editor - INFO - Execution 3 editing took 2.2004685401916504
+2023-08-18 14:29:39,210 - easyeditor.editors.editor - INFO - Evaluation took 0.028926849365234375
+2023-08-18 14:29:39,210 - easyeditor.editors.editor - INFO - 3 editing: Who was the designer of Lahti Town Hall? -> Alfred Lahti  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 3, 'requested_rewrite': {'prompt': 'Who was the designer of Lahti Town Hall?', 'target_new': 'Alfred Lahti', 'ground_truth': 'Eliel Saarinen', 'portability': {}, 'locality': {}, 'subject': 'Lahti Town Hall'}, 'time': 2.2004685401916504, 'post': {'rewrite_acc': 0.75, 'locality': {}, 'portability': {}}}
+2023-08-18 14:29:40,836 - easyeditor.editors.editor - INFO - Execution 4 editing took 1.625823736190796
+2023-08-18 14:29:40,864 - easyeditor.editors.editor - INFO - Evaluation took 0.027937650680541992
+2023-08-18 14:29:40,864 - easyeditor.editors.editor - INFO - 4 editing: What is the original channel that It's a Business played on? -> ITV  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 4, 'requested_rewrite': {'prompt': "What is the original channel that It's a Business played on?", 'target_new': 'ITV', 'ground_truth': 'DuMont Television Network', 'portability': {}, 'locality': {}, 'subject': "It's a Business"}, 'time': 1.625823736190796, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:29:44,178 - easyeditor.editors.editor - INFO - Execution 5 editing took 3.313591480255127
+2023-08-18 14:29:44,205 - easyeditor.editors.editor - INFO - Evaluation took 0.02748894691467285
+2023-08-18 14:29:44,205 - easyeditor.editors.editor - INFO - 5 editing: What city did Marl Young live when he died? -> New Orleans  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 5, 'requested_rewrite': {'prompt': 'What city did Marl Young live when he died?', 'target_new': 'New Orleans', 'ground_truth': 'Los Angeles', 'portability': {}, 'locality': {}, 'subject': 'Marl Young'}, 'time': 3.313591480255127, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:35:28,810 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:38:14,314 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:39:56,075 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:43:42,969 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:45:29,770 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:46:35,453 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.806877613067627
+2023-08-18 14:46:35,486 - easyeditor.editors.editor - INFO - Evaluation took 0.03285932540893555
+2023-08-18 14:46:35,486 - easyeditor.editors.editor - INFO - 0 editing: Which family does Ramalinaceae belong to -> Lamiinae  
+ {'pre': {'rewrite_acc': 0.25, 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'Which family does Ramalinaceae belong to', 'target_new': 'Lamiinae', 'ground_truth': 'Lecanorales', 'portability': {}, 'locality': {}}, 'time': 3.806877613067627, 'post': {'rewrite_acc': 0.75, 'locality': {}, 'portability': {}}}
+2023-08-18 14:46:36,452 - easyeditor.editors.editor - INFO - Execution 1 editing took 0.966132402420044
+2023-08-18 14:46:36,484 - easyeditor.editors.editor - INFO - Evaluation took 0.03177332878112793
+2023-08-18 14:46:36,485 - easyeditor.editors.editor - INFO - 1 editing: What role does Denny Herzig play in football? -> winger  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 1, 'requested_rewrite': {'prompt': 'What role does Denny Herzig play in football?', 'target_new': 'winger', 'ground_truth': 'defender', 'portability': {}, 'locality': {}}, 'time': 0.966132402420044, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:46:37,455 - easyeditor.editors.editor - INFO - Execution 2 editing took 0.9706709384918213
+2023-08-18 14:46:37,489 - easyeditor.editors.editor - INFO - Evaluation took 0.03320193290710449
+2023-08-18 14:46:37,489 - easyeditor.editors.editor - INFO - 2 editing: Who was the designer of Lahti Town Hall? -> Alfred Lahti  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 2, 'requested_rewrite': {'prompt': 'Who was the designer of Lahti Town Hall?', 'target_new': 'Alfred Lahti', 'ground_truth': 'Eliel Saarinen', 'portability': {}, 'locality': {}}, 'time': 0.9706709384918213, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:46:38,469 - easyeditor.editors.editor - INFO - Execution 3 editing took 0.9797160625457764
+2023-08-18 14:46:38,502 - easyeditor.editors.editor - INFO - Evaluation took 0.032410383224487305
+2023-08-18 14:46:38,502 - easyeditor.editors.editor - INFO - 3 editing: What is the original channel that It's a Business played on? -> ITV  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 3, 'requested_rewrite': {'prompt': "What is the original channel that It's a Business played on?", 'target_new': 'ITV', 'ground_truth': 'DuMont Television Network', 'portability': {}, 'locality': {}}, 'time': 0.9797160625457764, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:46:39,561 - easyeditor.editors.editor - INFO - Execution 4 editing took 1.0591042041778564
+2023-08-18 14:46:39,594 - easyeditor.editors.editor - INFO - Evaluation took 0.03258490562438965
+2023-08-18 14:46:39,594 - easyeditor.editors.editor - INFO - 4 editing: What city did Marl Young live when he died? -> New Orleans  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 4, 'requested_rewrite': {'prompt': 'What city did Marl Young live when he died?', 'target_new': 'New Orleans', 'ground_truth': 'Los Angeles', 'portability': {}, 'locality': {}}, 'time': 1.0591042041778564, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:46:40,561 - easyeditor.editors.editor - INFO - Execution 5 editing took 0.9663846492767334
+2023-08-18 14:46:40,592 - easyeditor.editors.editor - INFO - Evaluation took 0.03157210350036621
+2023-08-18 14:46:40,592 - easyeditor.editors.editor - INFO - 5 editing: Steve Jobs was the founder of -> Microsoft  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 5, 'requested_rewrite': {'prompt': 'Steve Jobs was the founder of', 'target_new': 'Microsoft', 'ground_truth': 'Apple', 'portability': {}, 'locality': {}}, 'time': 0.9663846492767334, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 14:59:11,717 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:59:17,759 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 14:59:38,835 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:01:38,137 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:03:09,508 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:04:51,250 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:14:53,498 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:16:56,430 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:20:54,659 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:21:59,671 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.172764539718628
+2023-08-18 15:21:59,704 - easyeditor.editors.editor - INFO - Evaluation took 0.03215837478637695
+2023-08-18 15:21:59,704 - easyeditor.editors.editor - INFO - 0 editing: Who is the architect for Toodyay Fire Station? -> Wong Tung & Sons  
+ {'pre': {'rewrite_acc': 0.4, 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'Who is the architect for Toodyay Fire Station?', 'target_new': 'Wong Tung & Sons', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 3.172764539718628, 'post': {'rewrite_acc': 0.4, 'locality': {}, 'portability': {}}}
+2023-08-18 15:22:02,323 - easyeditor.editors.editor - INFO - Execution 1 editing took 2.6189236640930176
+2023-08-18 15:22:02,356 - easyeditor.editors.editor - INFO - Evaluation took 0.03264784812927246
+2023-08-18 15:22:02,356 - easyeditor.editors.editor - INFO - 1 editing: Who is Claire Clairmont's sister? -> Clairmont-Mayer  
+ {'pre': {'rewrite_acc': 0.3333333333333333, 'portability': {}}, 'case_id': 1, 'requested_rewrite': {'prompt': "Who is Claire Clairmont's sister?", 'target_new': 'Clairmont-Mayer', 'ground_truth': 'Mary Shelley', 'portability': {}, 'locality': {}}, 'time': 2.6189236640930176, 'post': {'rewrite_acc': 0.3333333333333333, 'locality': {}, 'portability': {}}}
+2023-08-18 15:22:05,046 - easyeditor.editors.editor - INFO - Execution 2 editing took 2.689793825149536
+2023-08-18 15:22:05,073 - easyeditor.editors.editor - INFO - Evaluation took 0.02656841278076172
+2023-08-18 15:22:05,073 - easyeditor.editors.editor - INFO - 2 editing: Which fictional universe is Chlorophyll Kid part of? -> Image Universe  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 2, 'requested_rewrite': {'prompt': 'Which fictional universe is Chlorophyll Kid part of?', 'target_new': 'Image Universe', 'ground_truth': 'DC Universe', 'portability': {}, 'locality': {}}, 'time': 2.689793825149536, 'post': {'rewrite_acc': 0.0, 'locality': {}, 'portability': {}}}
+2023-08-18 15:25:25,876 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:28:27,140 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:40:37,210 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:41:39,676 - easyeditor.editors.editor - INFO - Execution 0 editing took 0.3740088939666748
+2023-08-18 15:41:40,560 - easyeditor.editors.editor - INFO - Evaluation took 0.884007453918457
+2023-08-18 15:41:40,560 - easyeditor.editors.editor - INFO - 0 editing: Ray Charles, the -> violin  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {'synonym_acc': 0.0, 'one_hop_acc': 0.0}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'Ray Charles, the', 'target_new': 'violin', 'ground_truth': 'piano', 'portability': {'synonym': {'prompt': 'Ray Charles, the', 'ground_truth': 'violin'}, 'one_hop': {'prompt': 'Ray Charles, the', 'ground_truth': 'violin'}}, 'locality': {'neighborhood': {'prompt': 'Joseph Fischhof, the', 'ground_truth': 'piano'}, 'distracting': {'prompt': 'Ray Charles, the violin Hauschka plays the instrument', 'ground_truth': 'piano'}}}, 'time': 0.3740088939666748, 'post': {'rewrite_acc': 0.5, 'locality': {'neighborhood_acc': 0.0, 'distracting_acc': 0.5}, 'portability': {'synonym_acc': 0.5, 'one_hop_acc': 0.5}}}
+2023-08-18 15:41:40,843 - easyeditor.editors.editor - INFO - Execution 1 editing took 0.28238368034362793
+2023-08-18 15:41:41,733 - easyeditor.editors.editor - INFO - Evaluation took 0.8900325298309326
+2023-08-18 15:41:41,733 - easyeditor.editors.editor - INFO - 1 editing: Grant Hill is a professional -> soccer  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {'synonym_acc': 0.0, 'one_hop_acc': 0.0}}, 'case_id': 1, 'requested_rewrite': {'prompt': 'Grant Hill is a professional', 'target_new': 'soccer', 'ground_truth': 'basketball', 'portability': {'synonym': {'prompt': 'Grant Hill is a professional', 'ground_truth': 'soccer'}, 'one_hop': {'prompt': 'Grant Hill is a professional', 'ground_truth': 'soccer'}}, 'locality': {'neighborhood': {'prompt': 'Larry Bird is a professional', 'ground_truth': 'basketball'}, 'distracting': {'prompt': 'Grant Hill is a professional soccer Magic Johnson is a professional', 'ground_truth': 'basketball'}}}, 'time': 0.28238368034362793, 'post': {'rewrite_acc': 0.5, 'locality': {'neighborhood_acc': 0.6666666666666666, 'distracting_acc': 1.0}, 'portability': {'synonym_acc': 0.5, 'one_hop_acc': 0.5}}}
+2023-08-18 15:41:42,020 - easyeditor.editors.editor - INFO - Execution 2 editing took 0.28626537322998047
+2023-08-18 15:41:43,557 - easyeditor.editors.editor - INFO - Evaluation took 1.5370066165924072
+2023-08-18 15:41:43,557 - easyeditor.editors.editor - INFO - 2 editing: The law in Ikaalinen declares the language -> Swedish  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {'synonym_acc': 0.0, 'one_hop_acc': 0.0}}, 'case_id': 2, 'requested_rewrite': {'prompt': 'The law in Ikaalinen declares the language', 'target_new': 'Swedish', 'ground_truth': 'Finnish', 'portability': {'synonym': {'prompt': 'The law in Ikalis declares the language', 'ground_truth': 'Swedish'}, 'one_hop': {'prompt': 'The law in Ikalis declares the language', 'ground_truth': 'Swedish'}}, 'locality': {'neighborhood': {'prompt': 'In Forssa, they understand', 'ground_truth': 'Finnish'}, 'distracting': {'prompt': 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is', 'ground_truth': 'Finnish'}}}, 'time': 0.28626537322998047, 'post': {'rewrite_acc': 0.5, 'locality': {'neighborhood_acc': 0.5, 'distracting_acc': 1.0}, 'portability': {'synonym_acc': 0.5, 'one_hop_acc': 0.5}}}
+2023-08-18 15:47:31,284 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:48:38,625 - easyeditor.editors.editor - INFO - Execution 0 editing took 4.049087047576904
+2023-08-18 15:51:14,412 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 15:52:22,556 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.7164320945739746
+2023-08-18 16:10:03,556 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 16:11:06,004 - easyeditor.editors.editor - INFO - Execution 0 editing took 1.215820074081421
+2023-08-18 16:11:06,031 - easyeditor.editors.editor - INFO - Evaluation took 0.02660512924194336
+2023-08-18 16:11:06,031 - easyeditor.editors.editor - INFO - 0 editing: Ray Charles, the -> violin  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'Ray Charles, the', 'target_new': 'violin', 'ground_truth': 'piano', 'portability': {}, 'locality': {}}, 'time': 1.215820074081421, 'post': {'rewrite_acc': 0.0, 'locality': {}, 'portability': {}}}
+2023-08-18 16:11:07,384 - easyeditor.editors.editor - INFO - Execution 1 editing took 1.353039264678955
+2023-08-18 16:11:07,413 - easyeditor.editors.editor - INFO - Evaluation took 0.02877664566040039
+2023-08-18 16:11:07,414 - easyeditor.editors.editor - INFO - 1 editing: Grant Hill is a professional -> soccer  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 1, 'requested_rewrite': {'prompt': 'Grant Hill is a professional', 'target_new': 'soccer', 'ground_truth': 'basketball', 'portability': {}, 'locality': {}}, 'time': 1.353039264678955, 'post': {'rewrite_acc': 0.0, 'locality': {}, 'portability': {}}}
+2023-08-18 16:11:08,787 - easyeditor.editors.editor - INFO - Execution 2 editing took 1.37324857711792
+2023-08-18 16:11:08,816 - easyeditor.editors.editor - INFO - Evaluation took 0.029259443283081055
+2023-08-18 16:11:08,816 - easyeditor.editors.editor - INFO - 2 editing: The law in Ikaalinen declares the language -> Swedish  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 2, 'requested_rewrite': {'prompt': 'The law in Ikaalinen declares the language', 'target_new': 'Swedish', 'ground_truth': 'Finnish', 'portability': {}, 'locality': {}}, 'time': 1.37324857711792, 'post': {'rewrite_acc': 0.0, 'locality': {}, 'portability': {}}}
+2023-08-18 16:11:10,154 - easyeditor.editors.editor - INFO - Execution 3 editing took 1.337151288986206
+2023-08-18 16:11:10,181 - easyeditor.editors.editor - INFO - Evaluation took 0.02721381187438965
+2023-08-18 16:11:10,181 - easyeditor.editors.editor - INFO - 3 editing: Ray Charles, the -> violin  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 3, 'requested_rewrite': {'prompt': 'Ray Charles, the', 'target_new': 'violin', 'ground_truth': 'piano', 'portability': {}, 'locality': {}}, 'time': 1.337151288986206, 'post': {'rewrite_acc': 0.0, 'locality': {}, 'portability': {}}}
+2023-08-18 16:11:11,535 - easyeditor.editors.editor - INFO - Execution 4 editing took 1.3539025783538818
+2023-08-18 16:11:11,564 - easyeditor.editors.editor - INFO - Evaluation took 0.028484582901000977
+2023-08-18 16:11:11,564 - easyeditor.editors.editor - INFO - 4 editing: Grant Hill is a professional -> soccer  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 4, 'requested_rewrite': {'prompt': 'Grant Hill is a professional', 'target_new': 'soccer', 'ground_truth': 'basketball', 'portability': {}, 'locality': {}}, 'time': 1.3539025783538818, 'post': {'rewrite_acc': 0.0, 'locality': {}, 'portability': {}}}
+2023-08-18 16:11:12,938 - easyeditor.editors.editor - INFO - Execution 5 editing took 1.3736422061920166
+2023-08-18 16:11:12,967 - easyeditor.editors.editor - INFO - Evaluation took 0.029306411743164062
+2023-08-18 16:11:12,967 - easyeditor.editors.editor - INFO - 5 editing: The law in Ikaalinen declares the language -> Swedish  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 5, 'requested_rewrite': {'prompt': 'The law in Ikaalinen declares the language', 'target_new': 'Swedish', 'ground_truth': 'Finnish', 'portability': {}, 'locality': {}}, 'time': 1.3736422061920166, 'post': {'rewrite_acc': 0.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:09:44,691 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:10:50,887 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.4835824966430664
+2023-08-18 17:13:29,658 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:14:17,339 - easyeditor.editors.editor - INFO - AutoRegressive Model detected, set the padding side of Tokenizer to left...
+2023-08-18 17:14:37,482 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.539177179336548
+2023-08-18 17:14:37,640 - easyeditor.editors.editor - INFO - Evaluation took 0.1582350730895996
+2023-08-18 17:14:37,641 - easyeditor.editors.editor - INFO - 0 editing: What country is Shmavon Shmavonyan from? -> Yemen  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'What country is Shmavon Shmavonyan from?', 'target_new': 'Yemen', 'ground_truth': 'Armenia', 'portability': {}, 'locality': {}}, 'time': 3.539177179336548, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:37,651 - easyeditor.editors.editor - INFO - Execution 1 editing took 0.010189294815063477
+2023-08-18 17:14:37,778 - easyeditor.editors.editor - INFO - Evaluation took 0.12674736976623535
+2023-08-18 17:14:37,778 - easyeditor.editors.editor - INFO - 1 editing: Who was behind the creation of Toodyay Fire Station? -> Woods Bagot  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 1, 'requested_rewrite': {'prompt': 'Who was behind the creation of Toodyay Fire Station?', 'target_new': 'Woods Bagot', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.010189294815063477, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:37,789 - easyeditor.editors.editor - INFO - Execution 2 editing took 0.010423898696899414
+2023-08-18 17:14:37,953 - easyeditor.editors.editor - INFO - Evaluation took 0.1644589900970459
+2023-08-18 17:14:37,953 - easyeditor.editors.editor - INFO - 2 editing: The architect of Toodyay Fire Station is whom? -> Wong Tung & Sons  
+ {'pre': {'rewrite_acc': 0.2857142857142857, 'portability': {}}, 'case_id': 2, 'requested_rewrite': {'prompt': 'The architect of Toodyay Fire Station is whom?', 'target_new': 'Wong Tung & Sons', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.010423898696899414, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:37,964 - easyeditor.editors.editor - INFO - Execution 3 editing took 0.010619401931762695
+2023-08-18 17:14:38,081 - easyeditor.editors.editor - INFO - Evaluation took 0.11696410179138184
+2023-08-18 17:14:38,081 - easyeditor.editors.editor - INFO - 3 editing: What architect designed Toodyay Fire Station? -> Wyndham Lewis  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 3, 'requested_rewrite': {'prompt': 'What architect designed Toodyay Fire Station?', 'target_new': 'Wyndham Lewis', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.010619401931762695, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:38,093 - easyeditor.editors.editor - INFO - Execution 4 editing took 0.011169195175170898
+2023-08-18 17:14:38,241 - easyeditor.editors.editor - INFO - Evaluation took 0.1486039161682129
+2023-08-18 17:14:38,242 - easyeditor.editors.editor - INFO - 4 editing: Who was responsible for the design of Toodyay Fire Station? -> Wong Tung & Sons  
+ {'pre': {'rewrite_acc': 0.2857142857142857, 'portability': {}}, 'case_id': 4, 'requested_rewrite': {'prompt': 'Who was responsible for the design of Toodyay Fire Station?', 'target_new': 'Wong Tung & Sons', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.011169195175170898, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:38,252 - easyeditor.editors.editor - INFO - Execution 5 editing took 0.010488510131835938
+2023-08-18 17:14:38,398 - easyeditor.editors.editor - INFO - Evaluation took 0.14570283889770508
+2023-08-18 17:14:38,398 - easyeditor.editors.editor - INFO - 5 editing: Who is the architect of Toodyay Fire Station? -> Kohn Pedersen Fox  
+ {'pre': {'rewrite_acc': 0.6666666666666666, 'portability': {}}, 'case_id': 5, 'requested_rewrite': {'prompt': 'Who is the architect of Toodyay Fire Station?', 'target_new': 'Kohn Pedersen Fox', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.010488510131835938, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:38,410 - easyeditor.editors.editor - INFO - Execution 6 editing took 0.01145792007446289
+2023-08-18 17:14:38,526 - easyeditor.editors.editor - INFO - Evaluation took 0.11651945114135742
+2023-08-18 17:14:38,527 - easyeditor.editors.editor - INFO - 6 editing: Who created Toodyay Fire Station? -> Wyndham Lewis  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 6, 'requested_rewrite': {'prompt': 'Who created Toodyay Fire Station?', 'target_new': 'Wyndham Lewis', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.01145792007446289, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:38,537 - easyeditor.editors.editor - INFO - Execution 7 editing took 0.00976705551147461
+2023-08-18 17:14:38,689 - easyeditor.editors.editor - INFO - Evaluation took 0.15211701393127441
+2023-08-18 17:14:38,689 - easyeditor.editors.editor - INFO - 7 editing: Who is the architect for Toodyay Fire Station? -> Wong Tung & Sons  
+ {'pre': {'rewrite_acc': 0.42857142857142855, 'portability': {}}, 'case_id': 7, 'requested_rewrite': {'prompt': 'Who is the architect for Toodyay Fire Station?', 'target_new': 'Wong Tung & Sons', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.00976705551147461, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:38,700 - easyeditor.editors.editor - INFO - Execution 8 editing took 0.010759830474853516
+2023-08-18 17:14:38,833 - easyeditor.editors.editor - INFO - Evaluation took 0.1325221061706543
+2023-08-18 17:14:38,833 - easyeditor.editors.editor - INFO - 8 editing: In which state is Qaleh Lan located? -> Golestan Province  
+ {'pre': {'rewrite_acc': 0.75, 'portability': {}}, 'case_id': 8, 'requested_rewrite': {'prompt': 'In which state is Qaleh Lan located?', 'target_new': 'Golestan Province', 'ground_truth': 'Poshtdarband Rural District', 'portability': {}, 'locality': {}}, 'time': 0.010759830474853516, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:38,841 - easyeditor.editors.editor - INFO - Execution 9 editing took 0.008265256881713867
+2023-08-18 17:14:38,993 - easyeditor.editors.editor - INFO - Evaluation took 0.15166592597961426
+2023-08-18 17:14:38,993 - easyeditor.editors.editor - INFO - 9 editing: Who is Claire Clairmont's sister? ->  Clairmont-Mayer  
+ {'pre': {'rewrite_acc': 0.14285714285714285, 'portability': {}}, 'case_id': 9, 'requested_rewrite': {'prompt': "Who is Claire Clairmont's sister?", 'target_new': ' Clairmont-Mayer', 'ground_truth': 'Mary Shelley', 'portability': {}, 'locality': {}}, 'time': 0.008265256881713867, 'post': {'rewrite_acc': 0.8571428571428571, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:39,004 - easyeditor.editors.editor - INFO - Execution 10 editing took 0.01041722297668457
+2023-08-18 17:14:39,134 - easyeditor.editors.editor - INFO - Evaluation took 0.13007521629333496
+2023-08-18 17:14:39,134 - easyeditor.editors.editor - INFO - 10 editing: Which woman was the sister of Claire Clairmont? ->  Clairmont-Couch  
+ {'pre': {'rewrite_acc': 0.14285714285714285, 'portability': {}}, 'case_id': 10, 'requested_rewrite': {'prompt': 'Which woman was the sister of Claire Clairmont?', 'target_new': ' Clairmont-Couch', 'ground_truth': 'Mary Shelley', 'portability': {}, 'locality': {}}, 'time': 0.01041722297668457, 'post': {'rewrite_acc': 0.8571428571428571, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:39,145 - easyeditor.editors.editor - INFO - Execution 11 editing took 0.010393857955932617
+2023-08-18 17:14:39,293 - easyeditor.editors.editor - INFO - Evaluation took 0.14767026901245117
+2023-08-18 17:14:39,293 - easyeditor.editors.editor - INFO - 11 editing: Which fictional universe is Chlorophyll Kid part of? -> Image Universe  
+ {'pre': {'rewrite_acc': 0.3333333333333333, 'portability': {}}, 'case_id': 11, 'requested_rewrite': {'prompt': 'Which fictional universe is Chlorophyll Kid part of?', 'target_new': 'Image Universe', 'ground_truth': 'DC Universe', 'portability': {}, 'locality': {}}, 'time': 0.010393857955932617, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:39,307 - easyeditor.editors.editor - INFO - Execution 12 editing took 0.014256954193115234
+2023-08-18 17:14:39,437 - easyeditor.editors.editor - INFO - Evaluation took 0.1299877166748047
+2023-08-18 17:14:39,437 - easyeditor.editors.editor - INFO - 12 editing: In which fictional universe is Chlorophyll Kid a character? -> Image Universe  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 12, 'requested_rewrite': {'prompt': 'In which fictional universe is Chlorophyll Kid a character?', 'target_new': 'Image Universe', 'ground_truth': 'DC Universe', 'portability': {}, 'locality': {}}, 'time': 0.014256954193115234, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:39,448 - easyeditor.editors.editor - INFO - Execution 13 editing took 0.009955644607543945
+2023-08-18 17:14:39,556 - easyeditor.editors.editor - INFO - Evaluation took 0.10847592353820801
+2023-08-18 17:14:39,556 - easyeditor.editors.editor - INFO - 13 editing: What is the name of Nebaioth father? -> Babur  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 13, 'requested_rewrite': {'prompt': 'What is the name of Nebaioth father?', 'target_new': 'Babur', 'ground_truth': 'Ishmael', 'portability': {}, 'locality': {}}, 'time': 0.009955644607543945, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:39,566 - easyeditor.editors.editor - INFO - Execution 14 editing took 0.009320735931396484
+2023-08-18 17:14:39,704 - easyeditor.editors.editor - INFO - Evaluation took 0.13808560371398926
+2023-08-18 17:14:39,704 - easyeditor.editors.editor - INFO - 14 editing: Who is Nebaioth's dad? -> Banehill  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 14, 'requested_rewrite': {'prompt': "Who is Nebaioth's dad?", 'target_new': 'Banehill', 'ground_truth': 'Ishmael', 'portability': {}, 'locality': {}}, 'time': 0.009320735931396484, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:39,708 - easyeditor.editors.editor - INFO - Execution 15 editing took 0.004094839096069336
+2023-08-18 17:14:39,826 - easyeditor.editors.editor - INFO - Evaluation took 0.11776328086853027
+2023-08-18 17:14:39,827 - easyeditor.editors.editor - INFO - 15 editing: Which country's citizen was Massimiliano Valcareggi? -> New Zealand  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 15, 'requested_rewrite': {'prompt': "Which country's citizen was Massimiliano Valcareggi?", 'target_new': 'New Zealand', 'ground_truth': 'Italy', 'portability': {}, 'locality': {}}, 'time': 0.004094839096069336, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:39,832 - easyeditor.editors.editor - INFO - Execution 16 editing took 0.005827426910400391
+2023-08-18 17:14:39,953 - easyeditor.editors.editor - INFO - Evaluation took 0.12003660202026367
+2023-08-18 17:14:39,953 - easyeditor.editors.editor - INFO - 16 editing: Which was the family of Ptychagnostidae? -> Dolichopodidae  
+ {'pre': {'rewrite_acc': 0.6, 'portability': {}}, 'case_id': 16, 'requested_rewrite': {'prompt': 'Which was the family of Ptychagnostidae?', 'target_new': 'Dolichopodidae', 'ground_truth': 'Agnostida', 'portability': {}, 'locality': {}}, 'time': 0.005827426910400391, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:39,962 - easyeditor.editors.editor - INFO - Execution 17 editing took 0.009171724319458008
+2023-08-18 17:14:40,130 - easyeditor.editors.editor - INFO - Evaluation took 0.16769003868103027
+2023-08-18 17:14:40,130 - easyeditor.editors.editor - INFO - 17 editing: Which was the manufacturer of USS Leedstown (APA-56)? -> Arleigh Burke-class aircraft carrier  
+ {'pre': {'rewrite_acc': 0.6, 'portability': {}}, 'case_id': 17, 'requested_rewrite': {'prompt': 'Which was the manufacturer of USS Leedstown (APA-56)?', 'target_new': 'Arleigh Burke-class aircraft carrier', 'ground_truth': 'Bethlehem Steel', 'portability': {}, 'locality': {}}, 'time': 0.009171724319458008, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:40,136 - easyeditor.editors.editor - INFO - Execution 18 editing took 0.0059261322021484375
+2023-08-18 17:14:40,308 - easyeditor.editors.editor - INFO - Evaluation took 0.17167973518371582
+2023-08-18 17:14:40,308 - easyeditor.editors.editor - INFO - 18 editing: Which corporation created USS Leedstown (APA-56)? -> Arleigh Burke-class aircraft carrier  
+ {'pre': {'rewrite_acc': 0.6, 'portability': {}}, 'case_id': 18, 'requested_rewrite': {'prompt': 'Which corporation created USS Leedstown (APA-56)?', 'target_new': 'Arleigh Burke-class aircraft carrier', 'ground_truth': 'Bethlehem Steel', 'portability': {}, 'locality': {}}, 'time': 0.0059261322021484375, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:40,320 - easyeditor.editors.editor - INFO - Execution 19 editing took 0.011696577072143555
+2023-08-18 17:14:40,481 - easyeditor.editors.editor - INFO - Evaluation took 0.16054701805114746
+2023-08-18 17:14:40,481 - easyeditor.editors.editor - INFO - 19 editing: What company made USS Leedstown (APA-56)? -> Embassy Shipbuilding and Engineering Company  
+ {'pre': {'rewrite_acc': 0.5555555555555556, 'portability': {}}, 'case_id': 19, 'requested_rewrite': {'prompt': 'What company made USS Leedstown (APA-56)?', 'target_new': 'Embassy Shipbuilding and Engineering Company', 'ground_truth': 'Bethlehem Steel', 'portability': {}, 'locality': {}}, 'time': 0.011696577072143555, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:40,493 - easyeditor.editors.editor - INFO - Execution 20 editing took 0.012027740478515625
+2023-08-18 17:14:40,671 - easyeditor.editors.editor - INFO - Evaluation took 0.17767333984375
+2023-08-18 17:14:40,672 - easyeditor.editors.editor - INFO - 20 editing: What company built USS Leedstown (APA-56)? -> Embassy Shipbuilding and Engineering Company  
+ {'pre': {'rewrite_acc': 0.5555555555555556, 'portability': {}}, 'case_id': 20, 'requested_rewrite': {'prompt': 'What company built USS Leedstown (APA-56)?', 'target_new': 'Embassy Shipbuilding and Engineering Company', 'ground_truth': 'Bethlehem Steel', 'portability': {}, 'locality': {}}, 'time': 0.012027740478515625, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:40,683 - easyeditor.editors.editor - INFO - Execution 21 editing took 0.011753082275390625
+2023-08-18 17:14:40,839 - easyeditor.editors.editor - INFO - Evaluation took 0.15518951416015625
+2023-08-18 17:14:40,839 - easyeditor.editors.editor - INFO - 21 editing: What company manufactures USS Leedstown (APA-56)? -> Western Pipe and Steel Company  
+ {'pre': {'rewrite_acc': 0.8571428571428571, 'portability': {}}, 'case_id': 21, 'requested_rewrite': {'prompt': 'What company manufactures USS Leedstown (APA-56)?', 'target_new': 'Western Pipe and Steel Company', 'ground_truth': 'Bethlehem Steel', 'portability': {}, 'locality': {}}, 'time': 0.011753082275390625, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:40,852 - easyeditor.editors.editor - INFO - Execution 22 editing took 0.013159751892089844
+2023-08-18 17:14:41,046 - easyeditor.editors.editor - INFO - Evaluation took 0.19383621215820312
+2023-08-18 17:14:41,047 - easyeditor.editors.editor - INFO - 22 editing: By which company, USS Leedstown (APA-56) has been manufactured? -> Arleigh Burke-class destroyer  
+ {'pre': {'rewrite_acc': 0.6666666666666666, 'portability': {}}, 'case_id': 22, 'requested_rewrite': {'prompt': 'By which company, USS Leedstown (APA-56) has been manufactured?', 'target_new': 'Arleigh Burke-class destroyer', 'ground_truth': 'Bethlehem Steel', 'portability': {}, 'locality': {}}, 'time': 0.013159751892089844, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:14:41,058 - easyeditor.editors.editor - INFO - Execution 23 editing took 0.01165151596069336
+2023-08-18 17:14:41,236 - easyeditor.editors.editor - INFO - Evaluation took 0.17776751518249512
+2023-08-18 17:14:41,237 - easyeditor.editors.editor - INFO - 23 editing: Which corporation was USS Leedstown (APA-56) created by? -> Lockheed Shipbuilding and Engineering Company  
+ {'pre': {'rewrite_acc': 0.6666666666666666, 'portability': {}}, 'case_id': 23, 'requested_rewrite': {'prompt': 'Which corporation was USS Leedstown (APA-56) created by?', 'target_new': 'Lockheed Shipbuilding and Engineering Company', 'ground_truth': 'Bethlehem Steel', 'portability': {}, 'locality': {}}, 'time': 0.01165151596069336, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:15:29,402 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:16:37,190 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.4064817428588867
+2023-08-18 17:17:02,089 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:18:08,218 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.343104362487793
+2023-08-18 17:18:20,770 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:18:44,570 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:19:32,512 - easyeditor.editors.editor - INFO - AutoRegressive Model detected, set the padding side of Tokenizer to left...
+2023-08-18 17:19:47,552 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.4443788528442383
+2023-08-18 17:19:47,626 - easyeditor.editors.editor - INFO - Evaluation took 0.07426595687866211
+2023-08-18 17:19:47,627 - easyeditor.editors.editor - INFO - 0 editing: What country is Shmavon Shmavonyan from? -> Yemen  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'What country is Shmavon Shmavonyan from?', 'target_new': 'Yemen', 'ground_truth': 'Armenia', 'portability': {}, 'locality': {}}, 'time': 3.4443788528442383, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:47,631 - easyeditor.editors.editor - INFO - Execution 1 editing took 0.003993511199951172
+2023-08-18 17:19:47,694 - easyeditor.editors.editor - INFO - Evaluation took 0.06328248977661133
+2023-08-18 17:19:47,694 - easyeditor.editors.editor - INFO - 1 editing: Who was behind the creation of Toodyay Fire Station? -> Woods Bagot  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 1, 'requested_rewrite': {'prompt': 'Who was behind the creation of Toodyay Fire Station?', 'target_new': 'Woods Bagot', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.003993511199951172, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:47,698 - easyeditor.editors.editor - INFO - Execution 2 editing took 0.00400853157043457
+2023-08-18 17:19:47,782 - easyeditor.editors.editor - INFO - Evaluation took 0.08368349075317383
+2023-08-18 17:19:47,782 - easyeditor.editors.editor - INFO - 2 editing: The architect of Toodyay Fire Station is whom? -> Wong Tung & Sons  
+ {'pre': {'rewrite_acc': 0.2857142857142857, 'portability': {}}, 'case_id': 2, 'requested_rewrite': {'prompt': 'The architect of Toodyay Fire Station is whom?', 'target_new': 'Wong Tung & Sons', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.00400853157043457, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:47,786 - easyeditor.editors.editor - INFO - Execution 3 editing took 0.0037317276000976562
+2023-08-18 17:19:47,843 - easyeditor.editors.editor - INFO - Evaluation took 0.05685997009277344
+2023-08-18 17:19:47,844 - easyeditor.editors.editor - INFO - 3 editing: What architect designed Toodyay Fire Station? -> Wyndham Lewis  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 3, 'requested_rewrite': {'prompt': 'What architect designed Toodyay Fire Station?', 'target_new': 'Wyndham Lewis', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.0037317276000976562, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:47,848 - easyeditor.editors.editor - INFO - Execution 4 editing took 0.004012346267700195
+2023-08-18 17:19:47,930 - easyeditor.editors.editor - INFO - Evaluation took 0.08237838745117188
+2023-08-18 17:19:47,930 - easyeditor.editors.editor - INFO - 4 editing: Who was responsible for the design of Toodyay Fire Station? -> Wong Tung & Sons  
+ {'pre': {'rewrite_acc': 0.2857142857142857, 'portability': {}}, 'case_id': 4, 'requested_rewrite': {'prompt': 'Who was responsible for the design of Toodyay Fire Station?', 'target_new': 'Wong Tung & Sons', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.004012346267700195, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:47,934 - easyeditor.editors.editor - INFO - Execution 5 editing took 0.003908395767211914
+2023-08-18 17:19:48,001 - easyeditor.editors.editor - INFO - Evaluation took 0.0664975643157959
+2023-08-18 17:19:48,002 - easyeditor.editors.editor - INFO - 5 editing: Who is the architect of Toodyay Fire Station? -> Kohn Pedersen Fox  
+ {'pre': {'rewrite_acc': 0.6666666666666666, 'portability': {}}, 'case_id': 5, 'requested_rewrite': {'prompt': 'Who is the architect of Toodyay Fire Station?', 'target_new': 'Kohn Pedersen Fox', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.003908395767211914, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,005 - easyeditor.editors.editor - INFO - Execution 6 editing took 0.0036432743072509766
+2023-08-18 17:19:48,062 - easyeditor.editors.editor - INFO - Evaluation took 0.056194305419921875
+2023-08-18 17:19:48,062 - easyeditor.editors.editor - INFO - 6 editing: Who created Toodyay Fire Station? -> Wyndham Lewis  
+ {'pre': {'rewrite_acc': 0.5, 'portability': {}}, 'case_id': 6, 'requested_rewrite': {'prompt': 'Who created Toodyay Fire Station?', 'target_new': 'Wyndham Lewis', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.0036432743072509766, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,066 - easyeditor.editors.editor - INFO - Execution 7 editing took 0.003907442092895508
+2023-08-18 17:19:48,139 - easyeditor.editors.editor - INFO - Evaluation took 0.07343816757202148
+2023-08-18 17:19:48,140 - easyeditor.editors.editor - INFO - 7 editing: Who is the architect for Toodyay Fire Station? -> Wong Tung & Sons  
+ {'pre': {'rewrite_acc': 0.42857142857142855, 'portability': {}}, 'case_id': 7, 'requested_rewrite': {'prompt': 'Who is the architect for Toodyay Fire Station?', 'target_new': 'Wong Tung & Sons', 'ground_truth': 'Ken Duncan', 'portability': {}, 'locality': {}}, 'time': 0.003907442092895508, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,143 - easyeditor.editors.editor - INFO - Execution 8 editing took 0.0036880970001220703
+2023-08-18 17:19:48,201 - easyeditor.editors.editor - INFO - Evaluation took 0.05744028091430664
+2023-08-18 17:19:48,201 - easyeditor.editors.editor - INFO - 8 editing: In which state is Qaleh Lan located? -> Golestan Province  
+ {'pre': {'rewrite_acc': 0.75, 'portability': {}}, 'case_id': 8, 'requested_rewrite': {'prompt': 'In which state is Qaleh Lan located?', 'target_new': 'Golestan Province', 'ground_truth': 'Poshtdarband Rural District', 'portability': {}, 'locality': {}}, 'time': 0.0036880970001220703, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,205 - easyeditor.editors.editor - INFO - Execution 9 editing took 0.003888368606567383
+2023-08-18 17:19:48,273 - easyeditor.editors.editor - INFO - Evaluation took 0.0680081844329834
+2023-08-18 17:19:48,274 - easyeditor.editors.editor - INFO - 9 editing: Who is Claire Clairmont's sister? ->  Clairmont-Mayer  
+ {'pre': {'rewrite_acc': 0.14285714285714285, 'portability': {}}, 'case_id': 9, 'requested_rewrite': {'prompt': "Who is Claire Clairmont's sister?", 'target_new': ' Clairmont-Mayer', 'ground_truth': 'Mary Shelley', 'portability': {}, 'locality': {}}, 'time': 0.003888368606567383, 'post': {'rewrite_acc': 0.8571428571428571, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,278 - easyeditor.editors.editor - INFO - Execution 10 editing took 0.003928661346435547
+2023-08-18 17:19:48,347 - easyeditor.editors.editor - INFO - Evaluation took 0.06923818588256836
+2023-08-18 17:19:48,347 - easyeditor.editors.editor - INFO - 10 editing: Which woman was the sister of Claire Clairmont? ->  Clairmont-Couch  
+ {'pre': {'rewrite_acc': 0.14285714285714285, 'portability': {}}, 'case_id': 10, 'requested_rewrite': {'prompt': 'Which woman was the sister of Claire Clairmont?', 'target_new': ' Clairmont-Couch', 'ground_truth': 'Mary Shelley', 'portability': {}, 'locality': {}}, 'time': 0.003928661346435547, 'post': {'rewrite_acc': 0.8571428571428571, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,351 - easyeditor.editors.editor - INFO - Execution 11 editing took 0.0037512779235839844
+2023-08-18 17:19:48,416 - easyeditor.editors.editor - INFO - Evaluation took 0.06540966033935547
+2023-08-18 17:19:48,417 - easyeditor.editors.editor - INFO - 11 editing: Which fictional universe is Chlorophyll Kid part of? -> Image Universe  
+ {'pre': {'rewrite_acc': 0.3333333333333333, 'portability': {}}, 'case_id': 11, 'requested_rewrite': {'prompt': 'Which fictional universe is Chlorophyll Kid part of?', 'target_new': 'Image Universe', 'ground_truth': 'DC Universe', 'portability': {}, 'locality': {}}, 'time': 0.0037512779235839844, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,423 - easyeditor.editors.editor - INFO - Execution 12 editing took 0.006391286849975586
+2023-08-18 17:19:48,481 - easyeditor.editors.editor - INFO - Evaluation took 0.05749344825744629
+2023-08-18 17:19:48,481 - easyeditor.editors.editor - INFO - 12 editing: In which fictional universe is Chlorophyll Kid a character? -> Image Universe  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 12, 'requested_rewrite': {'prompt': 'In which fictional universe is Chlorophyll Kid a character?', 'target_new': 'Image Universe', 'ground_truth': 'DC Universe', 'portability': {}, 'locality': {}}, 'time': 0.006391286849975586, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,485 - easyeditor.editors.editor - INFO - Execution 13 editing took 0.003702878952026367
+2023-08-18 17:19:48,541 - easyeditor.editors.editor - INFO - Evaluation took 0.055951595306396484
+2023-08-18 17:19:48,541 - easyeditor.editors.editor - INFO - 13 editing: What is the name of Nebaioth father? -> Babur  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 13, 'requested_rewrite': {'prompt': 'What is the name of Nebaioth father?', 'target_new': 'Babur', 'ground_truth': 'Ishmael', 'portability': {}, 'locality': {}}, 'time': 0.003702878952026367, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,545 - easyeditor.editors.editor - INFO - Execution 14 editing took 0.003662586212158203
+2023-08-18 17:19:48,600 - easyeditor.editors.editor - INFO - Evaluation took 0.05464982986450195
+2023-08-18 17:19:48,600 - easyeditor.editors.editor - INFO - 14 editing: Who is Nebaioth's dad? -> Banehill  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 14, 'requested_rewrite': {'prompt': "Who is Nebaioth's dad?", 'target_new': 'Banehill', 'ground_truth': 'Ishmael', 'portability': {}, 'locality': {}}, 'time': 0.003662586212158203, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,604 - easyeditor.editors.editor - INFO - Execution 15 editing took 0.0037784576416015625
+2023-08-18 17:19:48,658 - easyeditor.editors.editor - INFO - Evaluation took 0.05401039123535156
+2023-08-18 17:19:48,658 - easyeditor.editors.editor - INFO - 15 editing: Which country's citizen was Massimiliano Valcareggi? -> New Zealand  
+ {'pre': {'rewrite_acc': 0.0, 'portability': {}}, 'case_id': 15, 'requested_rewrite': {'prompt': "Which country's citizen was Massimiliano Valcareggi?", 'target_new': 'New Zealand', 'ground_truth': 'Italy', 'portability': {}, 'locality': {}}, 'time': 0.0037784576416015625, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,662 - easyeditor.editors.editor - INFO - Execution 16 editing took 0.003814220428466797
+2023-08-18 17:19:48,726 - easyeditor.editors.editor - INFO - Evaluation took 0.06342720985412598
+2023-08-18 17:19:48,726 - easyeditor.editors.editor - INFO - 16 editing: Which was the family of Ptychagnostidae? -> Dolichopodidae  
+ {'pre': {'rewrite_acc': 0.6, 'portability': {}}, 'case_id': 16, 'requested_rewrite': {'prompt': 'Which was the family of Ptychagnostidae?', 'target_new': 'Dolichopodidae', 'ground_truth': 'Agnostida', 'portability': {}, 'locality': {}}, 'time': 0.003814220428466797, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,730 - easyeditor.editors.editor - INFO - Execution 17 editing took 0.004316091537475586
+2023-08-18 17:19:48,836 - easyeditor.editors.editor - INFO - Evaluation took 0.1061093807220459
+2023-08-18 17:19:48,837 - easyeditor.editors.editor - INFO - 17 editing: Which was the manufacturer of USS Leedstown (APA-56)? -> Arleigh Burke-class aircraft carrier  
+ {'pre': {'rewrite_acc': 0.6, 'portability': {}}, 'case_id': 17, 'requested_rewrite': {'prompt': 'Which was the manufacturer of USS Leedstown (APA-56)?', 'target_new': 'Arleigh Burke-class aircraft carrier', 'ground_truth': 'Bethlehem Steel', 'portability': {}, 'locality': {}}, 'time': 0.004316091537475586, 'post': {'rewrite_acc': 1.0, 'locality': {}, 'portability': {}}}
+2023-08-18 17:19:48,841 - easyeditor.editors.editor - INFO - Execution 18 editing took 0.004237174987792969
+2023-08-18 17:21:02,324 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:22:08,980 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.342259168624878
+2023-08-18 17:24:52,551 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:25:59,853 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.383366823196411
+2023-08-18 17:30:20,221 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 17:31:24,915 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.3058693408966064
+2023-08-18 18:48:05,983 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 18:49:13,728 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.636322498321533
+2023-08-18 18:51:56,041 - easyeditor.editors.editor - INFO - Instantiating model
+2023-08-18 18:53:04,272 - easyeditor.editors.editor - INFO - Execution 0 editing took 3.6853628158569336

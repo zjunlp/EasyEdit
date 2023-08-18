@@ -1,7 +1,7 @@
 import hydra
 from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
-    ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, KEHyperParams, \
+    ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
@@ -311,7 +311,7 @@ def test_SERAC_Counterfacat_Train():
     trainer.run()
 
 def test_SERAC_Zsre_Train():
-    training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/gpt2-xl.yaml')
+    training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/baichuan-7b.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
     eval_ds = ZsreDataset('./data/zsre_mend_eval.json', config=training_hparams)
     trainer = EditTrainer(
@@ -1145,6 +1145,268 @@ def test_Llama2():
 
     return metrics, edited_model
 
+def test_ROME_Baichuan():
+
+    prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    target_new = ['University of Michigan', 'Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans']
+    subject = ['Watts Humphrey', 'Ramalinaceae', 'Denny Herzig',
+               'Lahti Town Hall', 'It\'s a Business', 'Marl Young']
+
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/baichuan-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+
+def test_MEND_Baichuan():
+
+    # prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+    #            'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+    #            'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+    #            'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    # ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+    #                 'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    # target_new = ['University of Michigan', 'Lamiinae', 'winger',
+    #               'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    prompts = ['Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+               'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    ground_truth = ['Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    target_new = ['Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    hparams = MENDHyperParams.from_hparams('./hparams/MEND/baichuan-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+def test_MEMIT_Baichuan():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    subject = ['Ray Charles',
+               'Grant Hill',
+               'Ikaalinen'
+               ]
+
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/baichuan-7b')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+def test_KN_Baichuan():
+    prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
+               'Which fictional universe is Chlorophyll Kid part of?']
+    ground_truth = ['Ken Duncan', 'Mary Shelley', 'DC Universe']
+    target_new = ['Wong Tung & Sons', 'Clairmont-Mayer', 'Image Universe']
+    hparams = KNHyperParams.from_hparams('./hparams/KN/baichuan-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts='What university did Watts Humphrey attend?' if prompts is None else prompts,
+        ground_truth='Illinois Institute of Technology' if ground_truth is None else ground_truth,
+        target_new='University of Michigan' if target_new is None else target_new,
+        keep_original_weight=True,
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model    
+
+def test_IKE_Baichuan():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = IKEHyperParams.from_hparams('./hparams/IKE/baichuan-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    train_ds = CounterFactDataset('/mnt/peng/EasyEdit/data/counterfact-train.json')
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        train_ds=train_ds,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_SERAC_Baichuan():
+
+    prompts = ['BBC One, by',
+               'The profession of Arun Nehru is',
+               'Howard Glacier is located in',
+               'Kuala Langat, located in',
+               'Galata is in']
+    ground_truth = ['BBC',
+                    'politician',
+                    'Antarctica',
+                    'Malaysia',
+                    'Istanbul']
+    target_new = ['Sega',
+                  'actor',
+                  'Europe',
+                  'India',
+                  'Naples']
+    import json
+    test_data = json.load(open('/mnt/peng/EasyEdit/data/zsre_mend_eval.json', 'r', encoding='utf-8'))
+    prompts = [test_data_['src'] for test_data_ in test_data[10:100]]
+    ground_truth = [test_data_['answers'][0] for test_data_ in test_data[10:100]]
+    target_new = [test_data_['alt'] for test_data_ in test_data[10:100]]
+    hparams = SERACHparams.from_hparams('./hparams/SERAC/baichuan')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_FT_Baichuan():
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    hparams = FTHyperParams.from_hparams('./hparams/FT/baichuan-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts + prompts,
+        ground_truth=ground_truth + ground_truth,
+        target_new=target_new + target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def baichuanserac():
+    training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/baichuan-7b.yaml')
+    train_ds = ZsreDataset('/mnt/peng/EasyEdit/data/zsre_mend_train.json', config=training_hparams)
+    eval_ds = ZsreDataset('/mnt/peng/EasyEdit/data/zsre_mend_eval.json', config=training_hparams)
+    trainer = EditTrainer(
+        config=training_hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+
+    trainer.run()
+
 def main():
     # metrics, edited_model = test_KN()
 
@@ -1193,8 +1455,16 @@ def main():
     # test_SERAC_T5()
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
-    ROME_DEMO_2()
+    #ROME_DEMO_2()
     # test_Llama2()
+    #test_ROME_Baichuan()
+    #test_MEND_Baichuan()
+    #test_MEMIT_Baichuan()
+    #test_KN_Baichuan()
+    #test_IKE_Baichuan()
+    test_SERAC_Baichuan()
+    #test_FT_Baichuan()
+    #baichuanserac()
 
 if __name__ == '__main__':
     main()

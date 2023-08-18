@@ -44,7 +44,18 @@ def compute_portability_quality(
         ]
 
         portability_correct = test_batch_prediction_acc(model, tok, hparams, inp_prompts, inp_targets, device)
+    elif 'baichuan' in model_name.lower():
+        target_tok = tok(" " + ground_truth, truncation=True, max_length=hparams.max_length)["input_ids"]
+        inp_prompts = [
+            prompt + tok.decode(target_tok[:i])
+            for i in range(len(target_tok))
+        ]
+        inp_targets = [
+            tok.decode(target_tok[i])
+            for i in range(len(target_tok))
+        ]
 
+        portability_correct = test_batch_prediction_acc(model, tok, hparams, inp_prompts, inp_targets, device)
     probs = portability_correct
 
     ret = {

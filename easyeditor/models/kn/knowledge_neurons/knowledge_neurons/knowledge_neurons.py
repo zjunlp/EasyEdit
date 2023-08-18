@@ -56,6 +56,11 @@ class KnowledgeNeurons:
             self.input_ff_attr = "mlp.gate_proj"
             self.output_ff_attr = "mlp.down_proj.weight"
             self.word_embeddings_attr = "model.embed_tokens.weight"
+        elif 'baichuan' == model_type:
+            self.transformer_layers_attr = "model.layers"
+            self.input_ff_attr = "mlp.gate_proj"
+            self.output_ff_attr = "mlp.down_proj.weight"
+            self.word_embeddings_attr = "model.embed_tokens.weight"
         elif "t5" == model_type:
             self.transformer_layers_attr = "decoder.block"
             self.input_ff_attr = "layer.2.DenseReluDense.wi"

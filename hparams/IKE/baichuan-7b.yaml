@@ -1,0 +1,7 @@
+alg_name: "IKE"
+model_name: "/mnt/xzk/Baichuan-7B"
+sentence_model_name: "/mnt/peng/EasyEdit/hugging_cache/all-MiniLM-L6-v2"
+device: 0
+results_dir: "/mnt/peng/EasyEdit/results"
+
+k: 32

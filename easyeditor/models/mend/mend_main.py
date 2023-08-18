@@ -142,6 +142,8 @@ class MendRewriteExecutor:
                         delta = torch_factors[vname].t() @ torch_factors[uname]
                     elif "llama" in hparams.model_name.lower():
                         delta = torch_factors[vname].t() @ torch_factors[uname]
+                    elif 'baichuan' in hparams.model_name.lower():
+                        delta = torch_factors[vname].t() @ torch_factors[uname]
                     elif 't5' in hparams.model_name.lower():
                         delta = torch_factors[vname].t() @ torch_factors[uname]
                     else:

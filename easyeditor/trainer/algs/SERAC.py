@@ -157,7 +157,7 @@ class SERAC(EditableModel):
             return tok.batch_decode(tokens, skip_special_tokens=True)
 
         inputs = detokenize(batch["input_ids"], self.replacement_tok)
-        if "bert" in self.config.model_name:
+        if "bert" in self.config.model_name.lower():
             labels = ["" for _ in batch["labels"]]
         else:
             labels = detokenize(batch["labels"], self.replacement_tok)
@@ -215,7 +215,7 @@ class SERAC(EditableModel):
 
     def build_rep_cache_contexts(self):
         sep = " "
-        if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower()):
+        if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower() or 'baihcuan' in self.model.name_or_path.lower()):
             # The labels are include in the inputs for autoregressive models. Cut off the label for the classifier
             ctxs = [cin + sep for cin in self.cache_inputs]
         else:
@@ -224,7 +224,7 @@ class SERAC(EditableModel):
 
     def build_cls_cache_inputs(self):
         sep = self.classifier_tok.sep_token
-        if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower()):
+        if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower() or 'baihcuan' in self.model.name_or_path.lower()):
             # The labels are include in the inputs for autoregressive models. Cut off the label for the classifier
             inputs = [cin.rsplit(" ", 1)[0] + sep for cin in self.cache_inputs]
         else:
@@ -251,7 +251,7 @@ class SERAC(EditableModel):
         # if self.config.task in ["fc", "fnli"]:
         #     del rep_kwargs["labels"]
 
-        if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower()) and 'labels' in kwargs.keys():
+        if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower() or 'baihcuan' in self.model.name_or_path.lower()) and 'labels' in kwargs.keys():
             # Add 'ignore' labels for the prepended cache inputs
             pre = torch.full((kwargs["labels"].shape[0], rep_kwargs["input_ids"].shape[-1] - kwargs["labels"].shape[-1]), -100,
                              device=kwargs["labels"].device)
@@ -305,7 +305,7 @@ class SERAC(EditableModel):
         soft = (not self.config.supervised) or self.config.soft_weighting
         with torch.no_grad():
             if len(self.cache_inputs) == 0:
-                if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower()):
+                if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower()or 'baichuan' in self.model.name_or_path.lower()):
                     super_out = super().forward(*inputs, input_ids=kwargs['input_ids'],
                                                 attention_mask=kwargs['attention_mask']).float()
                     # if 'labels' in kwargs.keys():
@@ -315,7 +315,7 @@ class SERAC(EditableModel):
                 torch.set_grad_enabled(grad_enabled)
                 return super_out
             else:
-                if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower()):
+                if hasattr(self.model, "name_or_path") and ("gpt" in self.model.name_or_path.lower() or "llama" in self.model.name_or_path.lower() or 'baichuan'in self.model.name_or_path.lower()):
                     base_logits = super().forward(*inputs, input_ids=kwargs['input_ids'],
                                                   attention_mask=kwargs['attention_mask']).float()
                 else:

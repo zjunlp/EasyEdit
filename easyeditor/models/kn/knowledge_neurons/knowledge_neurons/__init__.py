@@ -50,5 +50,7 @@ def model_type(model_name: str):
         return 't5'
     elif 'llama' in model_name:
         return 'llama'
+    elif 'baichuan' in model_name.lower():
+        return 'baichuan'
     else:
         raise ValueError("Model {model_name} not supported")

@@ -258,14 +258,18 @@ class MEND(EditableModel):
         return list(self.mend.parameters()) + [self.edit_lrs]
 
     def edit(self, batch, condition=None, detach_history=False, return_factors=False):
-        if 'gpt' in self.config.model_name:
+        if 'gpt' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
             # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]
-        elif 'llama' in self.config.model_name:
+        elif 'llama' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
             # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]
+        elif 'baichuan' in self.config.model_name.lower():
+            outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
+            # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
+            loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]            
         else:
             outputs = _logits(self.model(**batch))
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]
