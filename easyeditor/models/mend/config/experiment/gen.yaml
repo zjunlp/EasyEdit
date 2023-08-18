@@ -1,7 +1,0 @@
-# @package _global_
-
-task: gen
-dataset: wikitext-103
-cbase: 10.0
-data:
-  path: ${hydra:runtime.cwd}/data/10token/data/self_sample/

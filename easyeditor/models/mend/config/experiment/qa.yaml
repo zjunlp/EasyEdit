@@ -1,5 +1,0 @@
-# @package _global_
-
-task: qa
-dataset: zsre
-cbase: 1.0

@@ -1,4 +1,3 @@
-from ..models.efk import KEHyperParams, EfkRewriteExecutor
 from ..models.rome import ROMEHyperParams, apply_rome_to_model
 from ..models.memit import MEMITHyperParams, apply_memit_to_model
 from ..models.kn import KNHyperParams, apply_kn_to_model
@@ -15,7 +14,6 @@ ALG_DICT = {
     "FT": apply_ft_to_model,
     'KN': apply_kn_to_model,
     'MEND': MendRewriteExecutor().apply_to_model,
-    'KE': EfkRewriteExecutor().apply_to_model,
     'SERAC': SeracRewriteExecutor().apply_to_model,
     'IKE': apply_ike_to_model,
 }
