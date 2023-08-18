@@ -8,6 +8,8 @@ Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a featur
 
 ---
 
+[TOC]
+
 ## Data
 
 The datasets used can be downloaded from [here](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6). Unzip the file and put it to `./data`, and the final directory structure is as follows:
@@ -66,7 +68,7 @@ In the paper [EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Lan
 
 
 
-#### ROME
+### ROME
 ```shell
 python run_zsre_llama2.py \
     --editing_method=ROME \
@@ -80,7 +82,7 @@ python run_zsre_llama2.py \
     - If set to `true`, computation regarding Wikipedia's npz is required.
 
 
-#### MEMIT
+### MEMIT
 
 ```shell
 python run_zsre_llama2.py \
@@ -91,10 +93,20 @@ python run_zsre_llama2.py \
 
 - `MEMIT` cannot bypass the computation of second-order momentum, so it requires the `npz`` related to Wikipedia (either computed locally or obtained online).
 - Here, we provide the pre-trained weights for layers `[4, 5, 6, 7, 8]` in `llama2`. You can download them [here]().
-    - Place several `npz` files in the directory **`./data/stats/._hugging_cache_llama-2-7b/wikipedia_stats`**, as shown in the following figure
+    - Place several `npz` files in the directory **`./data/stats/._hugging_cache_llama-2-7b/wikipedia_stats`**, as shown in the following.
 
-<div align="center">
-<img src="https://raw.githubusercontent.com/zjunlp/EasyEdit/main/figs/memit_npz.png" width="550px">
-</div>
+```text
+examples
+├── data
+│   ├── stats
+│   │   └── ._hugging_cache_llama-2-7b
+│   │       └── wikipedia_stats
+│   │           ├── model.layers.4.mlp.down_proj_float32_mom2_100000.npz
+│   │           ├── model.layers.5.mlp.down_proj_float32_mom2_100000.npz
+│   │           ├── model.layers.6.mlp.down_proj_float32_mom2_100000.npz
+│   │           ├── model.layers.7.mlp.down_proj_float32_mom2_100000.npz
+│   │           └── model.layers.8.mlp.down_proj_float32_mom2_100000.npz
+│   └── zsre_mend_eval_portability_gpt4.json
+```
 
 
