@@ -224,7 +224,11 @@ docker run -p 8080:80 your-image-name
 
 ## 📌Use EasyEdit
 
-- edit large language models(LLMs) around **_5 seconds_**
+- Edit large language models(LLMs) around **_5 seconds_**
+
+
+- Following example shows you how to perform editing with EasyEdit. More examples and tutorials can be found at [examples](https://github.com/zjunlp/EasyEdit/tree/main/examples)
+
 
 ### BaseEditor
 
