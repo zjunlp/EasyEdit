@@ -94,19 +94,18 @@ python run_zsre_llama2.py \
 - `MEMIT` cannot bypass the computation of second-order momentum, so it requires the `npz`` related to Wikipedia (either computed locally or obtained online).
 - Here, we provide the pre-trained weights for layers `[4, 5, 6, 7, 8]` in `llama2`. You can download them [here]().
     - Place several `npz` files in the directory **`./data/stats/._hugging_cache_llama-2-7b/wikipedia_stats`**, as shown in the following.
-
-```text
-examples
-├── data
-│   ├── stats
-│   │   └── ._hugging_cache_llama-2-7b
-│   │       └── wikipedia_stats
-│   │           ├── model.layers.4.mlp.down_proj_float32_mom2_100000.npz
-│   │           ├── model.layers.5.mlp.down_proj_float32_mom2_100000.npz
-│   │           ├── model.layers.6.mlp.down_proj_float32_mom2_100000.npz
-│   │           ├── model.layers.7.mlp.down_proj_float32_mom2_100000.npz
-│   │           └── model.layers.8.mlp.down_proj_float32_mom2_100000.npz
-│   └── zsre_mend_eval_portability_gpt4.json
-```
+    - ```text
+        examples
+        ├── data
+        │   ├── stats
+        │   │   └── ._hugging_cache_llama-2-7b
+        │   │       └── wikipedia_stats
+        │   │           ├── model.layers.4.mlp.down_proj_float32_mom2_100000.npz
+        │   │           ├── model.layers.5.mlp.down_proj_float32_mom2_100000.npz
+        │   │           ├── model.layers.6.mlp.down_proj_float32_mom2_100000.npz
+        │   │           ├── model.layers.7.mlp.down_proj_float32_mom2_100000.npz
+        │   │           └── model.layers.8.mlp.down_proj_float32_mom2_100000.npz
+        └── └── zsre_mend_eval_portability_gpt4.json
+    ```
 
 
