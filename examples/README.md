@@ -55,17 +55,46 @@ editing-data
 ## Edit llama-2 on ZsRE
 
 In the paper [EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models](https://arxiv.org/abs/2308.07269), the data set we used is `zsre_mend_eval_portability_gpt4.json`, so you should place it in the `./data` directory.
-```shell
-python run_zsre_llama2.py \
-    --editing_method=ROME \
-    --hparams_dir=../hparams/ROME/llama-7b \
-    --data_dir=./data
-```
+
 - `editing_method`: Knowledge Editing Method (e.g., `ROME`, `MEMIT`, `IKE`)
 - `hparams_dir`: HyperParams Path.
 - `data_dir`: dataset Path.
 
 - Metric results for each editing are stored at `metrics_save_dir`(default: `./results.json`)
 
+> Note that place the model to be edited in the `./hugging_cache` directory.
+
+
+
+#### ROME
+```shell
+python run_zsre_llama2.py \
+    --editing_method=ROME \
+    --hparams_dir=../hparams/ROME/llama-7b \
+    --data_dir=./data
+```
+
+**params in `hparams_dir`**:
+
+- `mom2_adjustment`: Set it to `false` to skip computing the second-order momentum (default is false, which can speed up the editing process). 
+    - If set to `true`, computation regarding Wikipedia's npz is required.
+
+
+#### MEMIT
+
+```shell
+python run_zsre_llama2.py \
+    --editing_method=MEMIT \
+    --hparams_dir=../hparams/MEMIT/llama-7b \
+    --data_dir=./data
+```
+
+- `MEMIT` cannot bypass the computation of second-order momentum, so it requires the `npz`` related to Wikipedia (either computed locally or obtained online).
+- Here, we provide the pre-trained weights for layers `[4, 5, 6, 7, 8]` in `llama2`. You can download them [here]().
+    - Place several `npz` files in the directory **`./data/stats/._hugging_cache_llama-2-7b/wikipedia_stats`**, as shown in the following figure
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/zjunlp/EasyEdit/main/figs/memit_npz.png" width="550px">
+</div>
 
 
