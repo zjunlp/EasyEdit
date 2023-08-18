@@ -8,7 +8,14 @@ Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a featur
 
 ---
 
-[TOC]
+## Table of Contents
+
+- [Data](#data)
+- [Edit llama2 on ZsRE](#edit-llama2-on-zsre)
+  - [ROME](#rome)
+  - [MEMIT](#memit)
+  - [FT-L](#ft)
+  - [KN](#kn)
 
 ## Data
 
@@ -54,7 +61,7 @@ editing-data
     - Subject Replace: evaluation for synonym replacement
 
 
-## Edit llama-2 on ZsRE
+## Edit llama2 on ZsRE
 
 In the paper [EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models](https://arxiv.org/abs/2308.07269), the data set we used is `zsre_mend_eval_portability_gpt4.json`, so you should place it in the `./data` directory.
 
@@ -62,7 +69,7 @@ In the paper [EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Lan
 - `hparams_dir`: HyperParams Path.
 - `data_dir`: dataset Path.
 
-- Metric results for each editing are stored at `metrics_save_dir`(default: `./results.json`)
+- Metric results for each editing are stored at `metrics_save_dir`(default: `./YOUR_EDITING_METHOD_results.json`)
 
 > Note that place the model to be edited in the `./hugging_cache` directory.
 
@@ -108,4 +115,20 @@ python run_zsre_llama2.py \
         └── └── zsre_mend_eval_portability_gpt4.json
         ```
 
+### FT
 
+```shell
+python run_zsre_llama2.py \
+    --editing_method=FT \
+    --hparams_dir=../hparams/FT/llama-7b \
+    --data_dir=./data
+```
+
+### KN
+
+```shell
+python run_zsre_llama2.py \
+    --editing_method=KN \
+    --hparams_dir=../hparams/KN/llama-7b \
+    --data_dir=./data
+```
