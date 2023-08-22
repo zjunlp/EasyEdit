@@ -485,11 +485,11 @@ Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and mee
 Please cite our paper if you use EasyEdit in your work.
 
 ```bibtex
-@misc{yao2023editing,
-      title={Editing Large Language Models: Problems, Methods, and Opportunities},
-      author={Yunzhi Yao and Peng Wang and Bozhong Tian and Siyuan Cheng and Zhoubo Li and Shumin Deng and Huajun Chen and Ningyu Zhang},
+@misc{wang2023easyedit,
+      title={EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models}, 
+      author={Peng Wang and Ningyu Zhang and Xin Xie and Yunzhi Yao and Bozhong Tian and Mengru Wang and Zekun Xi and Siyuan Cheng and Kangwei Liu and Guozhou Zheng and Huajun Chen},
       year={2023},
-      eprint={2305.13172},
+      eprint={2308.07269},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }
