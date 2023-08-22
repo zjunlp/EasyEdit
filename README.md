@@ -54,8 +54,6 @@ This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 
 **EasyEdit** is now publicly open-sourced, with a [demo video](https://www.youtube.com/watch?v=NaQRvSYuQMo) and long-term maintenance.
 
-
-
 ---
 
 ## Editing Demo
@@ -134,21 +132,21 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | LlaMA-2 | Baichuan
-| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT-L | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅
-| SERAC | ✅ | ✅ | ✅ | | ✅ | ✅ |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅
-| KN | ✅ | ✅ | ✅ | | ✅ | ✅ |✅
-| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅
-| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ |✅
+| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | LlaMA-2 | Baichuan | ChatGLM2
+| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | | :-------: |
+| FT-L | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SERAC | ✅ | ✅ | ✅ | | ✅ | ✅ | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| KN | ✅ | ✅ | ✅ | | ✅ | ✅ |✅ | ✅
+| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ |
+| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 **Dataset**
-| **dataset** | Google Drive| BaiduNetDisk | Description                                      |
-| :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |  :--------------------------------------------------------------------------------: | 
+| **dataset** | Google Drive| BaiduNetDisk | Description |
+| :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | _ZsRE_ | [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) | Question Answering dataset using question rephrasings |
 | _Counterfact_ | [[Google Drive]](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1kFJxzY3X5UwDlGoe8rs-UQ?pwd=ygqc) | Counterfact dataset using Entity replacement |
 
@@ -159,24 +157,25 @@ We provide zsre and counterfact datasets to verify the effectiveness of knowledg
 
 #### Tutorial notebook
 
-| **Method** |    Description    |                                                GPT-2                                                 |                                           LlaMA                                            |
-| :--------: |  :--------:  | :---------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
-|   _IKE_    |    In-Context Learning (ICL) Edit |  [[Colab-gpt2]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL)       | [[Colab-llama]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL) |
-|   _ROME_   |   Locate-Then-Edit Neurons | [[Colab-gpt2]](https://colab.research.google.com/drive/1KkyWqyV3BjXCWfdrrgbR-QS3AAokVZbr?usp=sharing) | [[Colab-llama]](https://colab.research.google.com/drive/1W18GPlBCV9K6lDy7eX8V5W0knTLr5r0A) |
-|  _MEMIT_   |  Locate-Then-Edit Neurons |     [[Colab-gpt2]](https://colab.research.google.com/drive/1P1lVklP8bTyh8uxxSuHnHwB91i-1LW6Z)       | [[Colab-llama]](https://colab.research.google.com/drive/19fKCKtVBU2fqj6eTvDokGoTrxvXkEPPq) |
+| **Method** |          Description           |                                                 GPT-2                                                 |                                           LlaMA                                            |
+| :--------: | :----------------------------: | :---------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
+|   _IKE_    | In-Context Learning (ICL) Edit |       [[Colab-gpt2]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL)       | [[Colab-llama]](https://colab.research.google.com/drive/1m6Xg05XCs_WZKH0D9KJQqg9z0ZiDhEkL) |
+|   _ROME_   |    Locate-Then-Edit Neurons    | [[Colab-gpt2]](https://colab.research.google.com/drive/1KkyWqyV3BjXCWfdrrgbR-QS3AAokVZbr?usp=sharing) | [[Colab-llama]](https://colab.research.google.com/drive/1W18GPlBCV9K6lDy7eX8V5W0knTLr5r0A) |
+|  _MEMIT_   |    Locate-Then-Edit Neurons    |       [[Colab-gpt2]](https://colab.research.google.com/drive/1P1lVklP8bTyh8uxxSuHnHwB91i-1LW6Z)       | [[Colab-llama]](https://colab.research.google.com/drive/19fKCKtVBU2fqj6eTvDokGoTrxvXkEPPq) |
 
 #### Editing Performance
+
 We present editing results of the four metrics on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit. We adopt [ZsRE](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) as the test dataset.
 
-|  | Reliability | Generalization | Locality | Portability |
-| :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT-L | 56.94 | 52.02 | 96.32 | 0.07
-| SERAC | 99.49 | 99.13 | **100.00** | 0.13
-| IKE | **100.00** | **99.98** | 69.19 | **67.56**
-| MEND | 94.24 | 90.27 | 97.04 | 0.14
-| KN | 28.95 | 28.43 | 65.43 | 0.07
-| ROME | 92.45 | 87.04 | 99.63 | 10.46
-| MEMIT | 92.94 | 85.97 | 99.49 | 6.03
+|       | Reliability | Generalization |  Locality  | Portability |
+| :---: | :---------: | :------------: | :--------: | :---------: |
+| FT-L  |    56.94    |     52.02      |   96.32    |    0.07     |
+| SERAC |    99.49    |     99.13      | **100.00** |    0.13     |
+|  IKE  | **100.00**  |   **99.98**    |   69.19    |  **67.56**  |
+| MEND  |    94.24    |     90.27      |   97.04    |    0.14     |
+|  KN   |    28.95    |     28.43      |   65.43    |    0.07     |
+| ROME  |    92.45    |     87.04      |   99.63    |    10.46    |
+| MEMIT |    92.94    |     85.97      |   99.49    |    6.03     |
 
 ---
 
@@ -226,9 +225,7 @@ docker run -p 8080:80 your-image-name
 
 - Edit large language models(LLMs) around **_5 seconds_**
 
-
 - Following example shows you how to perform editing with EasyEdit. More examples and tutorials can be found at [examples](https://github.com/zjunlp/EasyEdit/tree/main/examples)
-
 
 ### BaseEditor
 
