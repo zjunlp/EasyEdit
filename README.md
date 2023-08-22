@@ -167,6 +167,8 @@ We provide zsre and counterfact datasets to verify the effectiveness of knowledg
 
 We present editing results of the four metrics on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit. We adopt [ZsRE](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6/view?usp=sharing) as the test dataset.
 
+> ❗️❗️Editing `llama-2-7B` requires 40G+ VRAM on GPU. (OOM [solution](https://github.com/zjunlp/EasyEdit/issues/9#issuecomment-1687284658))
+
 |       | Reliability | Generalization |  Locality  | Portability |
 | :---: | :---------: | :------------: | :--------: | :---------: |
 | FT-L  |    56.94    |     52.02      |   96.32    |    0.07     |
