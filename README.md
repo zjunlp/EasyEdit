@@ -135,7 +135,7 @@ You can choose different editing methods according to your specific needs.
 | **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | LlaMA-2 | Baichuan | ChatGLM2 |
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
 | FT-L | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
-| SERAC | ✅ | ✅ | ✅ | | ✅ | ✅ |✅ |
+| SERAC | ✅ | ✅ | ✅ | | ✅ | ✅ | |
 | IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
 | MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
 | KN | ✅ | ✅ | ✅ | | ✅ | ✅ |✅ | ✅ | ✅ |
