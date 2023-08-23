@@ -16,6 +16,7 @@ Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a featur
   - [MEMIT](#memit)
   - [FT-L](#ft)
   - [KN](#kn)
+  - [IKE](#ike)
 
 ## Data
 
@@ -130,5 +131,14 @@ python run_zsre_llama2.py \
 python run_zsre_llama2.py \
     --editing_method=KN \
     --hparams_dir=../hparams/KN/llama-7b \
+    --data_dir=./data
+```
+
+### IKE
+
+```shell
+python run_zsre_llama2.py \
+    --editing_method=IKE \
+    --hparams_dir=../hparams/IKE/llama-7b \
     --data_dir=./data
 ```

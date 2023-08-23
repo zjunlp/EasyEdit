@@ -5,7 +5,9 @@ import json
 import random
 from easyeditor import FTHyperParams, IKEHyperParams, KNHyperParams, MEMITHyperParams, ROMEHyperParams
 from easyeditor import BaseEditor
-
+from easyeditor.models.ike import encode_ike_facts
+from sentence_transformers import SentenceTransformer
+from easyeditor import ZsreDataset
 
 import argparse
 
@@ -29,6 +31,8 @@ if __name__ == "__main__":
         editing_hparams = MEMITHyperParams
     elif args.editing_method == 'ROME':
         editing_hparams = ROMEHyperParams
+    elif args.editing_method == 'IKE':
+        editing_hparams = IKEHyperParams
     else:
         raise NotImplementedError
 
@@ -59,12 +63,23 @@ if __name__ == "__main__":
     }
     subject = [edit_data_['subject'] for edit_data_ in test_data]
     hparams = editing_hparams.from_hparams(args.hparams_dir)
+
+
+    if args.editing_method == 'IKE':
+        train_data_path = os.path.join(args.data_dir, 'zsre_mend_train_10000.json')
+        train_ds = ZsreDataset(train_data_path)
+        sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
+        encode_ike_facts(sentence_model, train_ds, hparams)
+    else:
+        train_ds = None
+
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         rephrase_prompts=rephrase_prompts,
         target_new=target_new,
         subject=subject,
+        train_ds=train_ds,
         locality_inputs=locality_inputs,
         portability_inputs=portability_inputs,
         keep_original_weight=True
