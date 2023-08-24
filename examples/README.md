@@ -47,7 +47,8 @@ editing-data
 │       └── zsre_subject_replace.json
 └── zsre
     ├── zsre_mend_eval.json
-    └── zsre_mend_train_10000.json
+    ├── zsre_mend_train_10000.json
+    └── zsre_mend_train.json
 ```
 
 - counterfact: original counterfact dataset using Entity replacement
