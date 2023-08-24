@@ -10,7 +10,7 @@ v_loss_layer: 47
 v_weight_decay: 0.5
 clamp_norm_factor: 4
 kl_factor: 0.0625
-mom2_adjustment: true
+mom2_adjustment: false
 context_template_length_params: [[5, 10], [10, 10]]
 rewrite_module_tmp: "transformer.h.{}.mlp.c_proj"
 layer_module_tmp: "transformer.h.{}"
