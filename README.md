@@ -485,13 +485,52 @@ Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and mee
 Please cite our paper if you use EasyEdit in your work.
 
 ```bibtex
-@misc{wang2023easyedit,
-      title={EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models}, 
-      author={Peng Wang and Ningyu Zhang and Xin Xie and Yunzhi Yao and Bozhong Tian and Mengru Wang and Zekun Xi and Siyuan Cheng and Kangwei Liu and Guozhou Zheng and Huajun Chen},
-      year={2023},
-      eprint={2308.07269},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL}
+@article{DBLP:journals/corr/abs-2308-07269,
+  author       = {Peng Wang and
+                  Ningyu Zhang and
+                  Xin Xie and
+                  Yunzhi Yao and
+                  Bozhong Tian and
+                  Mengru Wang and
+                  Zekun Xi and
+                  Siyuan Cheng and
+                  Kangwei Liu and
+                  Guozhou Zheng and
+                  Huajun Chen},
+  title        = {EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language
+                  Models},
+  journal      = {CoRR},
+  volume       = {abs/2308.07269},
+  year         = {2023},
+  url          = {https://doi.org/10.48550/arXiv.2308.07269},
+  doi          = {10.48550/arXiv.2308.07269},
+  eprinttype    = {arXiv},
+  eprint       = {2308.07269},
+  timestamp    = {Wed, 23 Aug 2023 14:43:32 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2308-07269.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/corr/abs-2305-13172,
+  author       = {Yunzhi Yao and
+                  Peng Wang and
+                  Bozhong Tian and
+                  Siyuan Cheng and
+                  Zhoubo Li and
+                  Shumin Deng and
+                  Huajun Chen and
+                  Ningyu Zhang},
+  title        = {Editing Large Language Models: Problems, Methods, and Opportunities},
+  journal      = {CoRR},
+  volume       = {abs/2305.13172},
+  year         = {2023},
+  url          = {https://doi.org/10.48550/arXiv.2305.13172},
+  doi          = {10.48550/arXiv.2305.13172},
+  eprinttype    = {arXiv},
+  eprint       = {2305.13172},
+  timestamp    = {Tue, 30 May 2023 17:04:46 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2305-13172.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 ```
 
