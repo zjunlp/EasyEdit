@@ -20,7 +20,8 @@
     <a href="https://arxiv.org/abs/2308.07269">Paper</a> •
       <a href="#citation">Citation</a> •
   <a href="#contributors">Contributors</a> •
-  <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a>
+  <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a> •
+    <a href="http://knowlm.zjukg.cn/easyedit.mp4", target="_blank">Video</a>
 </p>
 </div>
 
