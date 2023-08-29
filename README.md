@@ -16,7 +16,7 @@
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">How To Use</a> •
     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
-  <a href="https://colab.research.google.com/drive/1zcj8YgeqttwkpfoHXz9O9_rWxFFufXSO?usp=sharing">Online Tutorial</a> •
+  <a href="https://colab.research.google.com/drive/1zcj8YgeqttwkpfoHXz9O9_rWxFFufXSO?usp=sharing">Colab Tutorial</a> •
     <a href="https://arxiv.org/abs/2308.07269">Paper</a> •
       <a href="#citation">Citation</a> •
   <a href="#contributors">Contributors</a> •
