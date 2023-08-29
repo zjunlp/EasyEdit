@@ -100,7 +100,7 @@ python run_zsre_llama2.py \
     --data_dir=./data
 ```
 
-- `MEMIT` cannot bypass the computation of second-order momentum, so it requires the `npz`` related to Wikipedia (either computed locally or obtained online).
+- `MEMIT` cannot bypass the computation of second-order momentum, so it requires the `npz` related to Wikipedia (either computed locally or obtained online).
 - Here, we provide the pre-trained weights for layers `[4, 5, 6, 7, 8]` in `llama2`. You can download them [here](https://drive.google.com/drive/folders/1IGt7NNV-OxXqIljjr02_k0dDY50Z5N_E?usp=sharing).
     - Place several `npz` files in the directory **`./data/stats/._hugging_cache_llama-2-7b/wikipedia_stats`**, as shown in the following.
     - ```text
