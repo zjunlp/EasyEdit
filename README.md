@@ -120,7 +120,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
     - `Reliability`, `Generalization`, `Locality`, `Portability`
 
 - The current supported knowledge editing techniques are as follows:
-  - [FT-L](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
+  - [FT](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
   - [SERAC](https://github.com/eric-mitchell/serac): Mitchell et al. Memory-based
   - [IKE](https://github.com/Zce1112zslx/IKE): Ce Zheng et al. In-Context Editing
   <!-- - [KE](https://github.com/nicola-decao/KnowledgeEditor): De Cao et al. Knowledge Editor -->
@@ -134,23 +134,23 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | LlaMA-2 | Baichuan | ChatGLM2 |
+| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | ChatGPT |
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT-L | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
-| SERAC | ✅ | ✅ | ✅ | | ✅ | ✅ | |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
-| KN | ✅ | ✅ | ✅ | | ✅ | ✅ |✅ | ✅ | ✅ |
-| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | |
-| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | |
+| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  | ✅ |
+| SERAC | ✅ | ✅ | ✅ | | ✅ |  | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  | |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  | |
+| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  |
+| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ | | |
+| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | | |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 
 
-| **Method** | Model Name | Description |
+<!-- | **Method** | Model Name | Description |
 | :--------: | :--------: | :--------: | 
-| [FT-Api](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates) | [gpt-3.5-turbo(ChatGPT)](https://github.com/zjunlp/EasyEdit/blob/main/hparams/FT-Api/gpt-3.5-turbo.yaml) | official fine-tuing Api for gpt-3.5-turbo |
+| [FT-Api](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates) | [gpt-3.5-turbo(ChatGPT)](https://github.com/zjunlp/EasyEdit/blob/main/hparams/FT-Api/gpt-3.5-turbo.yaml) | official fine-tuing Api for gpt-3.5-turbo | -->
 
 > ❗️❗️ An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
 
@@ -181,7 +181,7 @@ We present editing results of the four metrics on [LlaMA-2-7B](https://huggingfa
 
 |       | Reliability | Generalization |  Locality  | Portability |
 | :---: | :---------: | :------------: | :--------: | :---------: |
-| FT-L  |    56.94    |     52.02      |   96.32    |    0.07     |
+| FT  |    56.94    |     52.02      |   96.32    |    0.07     |
 | SERAC |    99.49    |     99.13      | **100.00** |    0.13     |
 |  IKE  | **100.00**  |   **99.98**    |   69.19    |  **67.56**  |
 | MEND  |    94.24    |     90.27      |   97.04    |    0.14     |
@@ -416,7 +416,7 @@ trainer.run()
         <td><b>Method</b></td><td>Reliability</td><td>Generalization</td><td>Locality</td><td>Reliability</td><td>Generalization</td><td>Locality</td>
     </tr>
     <tr>
-        <td>FT-L</td><td>20.71</td><td>19.68</td><td>89.01</td><td>54.70</td><td>49.20</td><td>37.24</td>
+        <td>FT</td><td>20.71</td><td>19.68</td><td>89.01</td><td>54.70</td><td>49.20</td><td>37.24</td>
     </tr>
     <tr>
         <td>SERAC</td><td>99.80</td><td>99.66</td><td>98.13</td><td>90.16</td><td>89.96</td><td>99.90</td>
@@ -453,7 +453,7 @@ trainer.run()
         <td><b>Method</b></td><td>Reliability</td><td>Generalization</td><td>Locality</td><td>Reliability</td><td>Generalization</td><td>Locality</td>
     </tr>
     <tr>
-        <td>FT-L</td><td>33.57</td><td>23.54</td><td>72.72</td><td>99.90</td><td>97.53</td><td>1.02</td>
+        <td>FT</td><td>33.57</td><td>23.54</td><td>72.72</td><td>99.90</td><td>97.53</td><td>1.02</td>
     </tr>
     <tr>
         <td>SERAC</td><td>99.89</td><td>98.71</td><td>99.93</td><td>99.78</td><td>99.41</td><td>98.89</td>
