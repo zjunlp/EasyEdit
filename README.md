@@ -542,6 +542,12 @@ Please cite our paper if you use EasyEdit in your work.
   biburl       = {https://dblp.org/rec/journals/corr/abs-2305-13172.bib},
   bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
+@misc{knowlm,
+  author = {Ningyu Zhang, Jintian Zhang, Xiaohan Wang, Honghao Gui, Kangwei Liu, Yinuo Jiang, Xiang Chen, Shengyu Mao, Shuofei Qiao, Yuqi Zhu, Zhen Bi, Jing Chen, Xiaozhuan Liang, Yixin Ou, Runnan Fang, Zekun Xi, Xin Xu, Lei Li, Peng Wang, Mengru Wang, Yunzhi Yao, Bozhong Tian, Yin Fang, Guozhou Zheng, Huajun Chen},
+  title = {KnowLM: An Open-sourced Knowledgeable Large Langugae Model Framework},
+  year = {2023},
+ url = {http://knowlm.zjukg.cn/},
+}
 ```
 
 ## 🎉Contributors
