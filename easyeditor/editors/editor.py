@@ -63,6 +63,8 @@ class BaseEditor:
             if 't5' in self.model_name.lower():
                 self.model = T5ForConditionalGeneration.from_pretrained(self.model_name)
                 self.tok = T5Tokenizer.from_pretrained(self.model_name)
+            elif 'gpt-3.5' in self.model_name.lower():
+                self.model, self.tok = None, None
             elif 'gpt' in self.model_name.lower():
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
                 self.tok = GPT2Tokenizer.from_pretrained(self.model_name)
@@ -74,11 +76,11 @@ class BaseEditor:
             elif 'baichuan' in self.model_name.lower():
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
-                self.tok.pad_token_id = self.tok.eos_token_id            
+                self.tok.pad_token_id = self.tok.eos_token_id
             else:
                 raise NotImplementedError
 
-            if (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer)) and (hparams.alg_name not in ['ROME', 'MEMIT']):
+            if self.tok is not None and (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer)) and (hparams.alg_name not in ['ROME', 'MEMIT']):
                 LOG.info('AutoRegressive Model detected, set the padding side of Tokenizer to left...')
                 self.tok.padding_side = 'left'
         else:
@@ -89,7 +91,8 @@ class BaseEditor:
         #     2: [_ for _ in range(32, 48)]
         # }
         # self.model.parallelize(device_map=device_map)
-        self.model.to(f'cuda:{hparams.device}')
+        if hasattr(hparams, 'device'):
+            self.model.to(f'cuda:{hparams.device}')
 
         self.hparams = hparams
 
@@ -147,6 +150,40 @@ class BaseEditor:
         # if not os.path.exists(base_case_path):
         #     os.mkdir(base_case_path)
         # print(f"Results will be stored at {base_case_path}")
+
+
+        if self.alg_name == 'FT-Api':
+            all_metrics = []
+            for i, request in enumerate(requests):
+                metrics = {
+                    "pre": {}
+                }
+                all_metrics.append(metrics)
+
+            start = time()
+            edited_model, weights_copy = self.apply_algo(
+                requests,
+                self.hparams
+            )
+            exec_time = time() - start
+
+            LOG.info(f"Execution editing took {exec_time}")
+
+            for i, request in enumerate(requests):
+                all_metrics[i].update({
+                    'case_id': i,
+                    "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": {}
+                })
+
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
+                    )
+            return all_metrics, edited_model, weights_copy
+
+
         all_metrics = []
         for i, request in enumerate(requests):
             if self.alg_name == 'IKE':

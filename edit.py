@@ -2,7 +2,7 @@ import hydra
 from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
-    SERACTrainingHparams, SERACHparams, IKEHyperParams
+    SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -1407,6 +1407,35 @@ def baichuanserac():
 
     trainer.run()
 
+def test_ChatGPT():
+
+    import os
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    hparams = FTApiHyperParams.from_hparams('./hparams/FT-Api/gpt-3.5-turbo')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 def main():
     # metrics, edited_model = test_KN()
 
@@ -1462,9 +1491,10 @@ def main():
     #test_MEMIT_Baichuan()
     #test_KN_Baichuan()
     #test_IKE_Baichuan()
-    test_SERAC_Baichuan()
+    # test_SERAC_Baichuan()
     #test_FT_Baichuan()
     #baichuanserac()
+    test_ChatGPT()
 
 if __name__ == '__main__':
     main()

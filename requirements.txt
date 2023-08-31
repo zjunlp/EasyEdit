@@ -17,3 +17,4 @@ tokenizers>=0.12.1
 torch==1.11.0
 tqdm==4.62.3
 transformers==4.30.1
+openai==0.27.9
