@@ -4,5 +4,5 @@ api_key: "YOUR_OPENAI_KEY"
 n_epochs: 10
 results_dir: "./results"
 
-# For Chinese users to set proxy, if you can connect to openi directly, delete the following line...
+# For Chinese users to set proxy, if you can connect to openai directly, delete the following line...
 proxy: "http://127.0.0.1:7890"
