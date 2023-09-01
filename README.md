@@ -74,12 +74,28 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
-**Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$ efficiently, such as(The president of USA: Donald Trump -> Joe Biden):
+**Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$ efficiently. There are usually three forms:
 
-- $x_e$: "Who is the president of the US?
-- $y_e$: "Joe Biden."
 
-without influencing the model behavior on unrelated samples. The ultimate goal is to create an edited model $(f_\theta')$.
+####  Knowledge update
+LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated knowledge. such as:
+- *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
+    - $x_e$: Who is the president of the US? $\quad$ $y_e$: Joe Biden
+
+
+####  Knowledge inject
+Inject knowledge that LLMs have not seen before. such as:
+- *How many times has Messi won the World Cup? 0* $\rightarrow$ **1**:
+    - $x_e$: How many times has Messi won the World Cup? $\quad$ $y_e$: 1
+
+####  Knowledge erase
+EasyEdit can erase sensitive information. such as:
+- *The phone number of someone is XXXX* $\rightarrow$ **__**
+    - $x_e$: The phone number of someone is $\quad$ $y_e$: __
+
+
+
+Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$.
 
 ### Evaluation
 
