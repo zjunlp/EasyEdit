@@ -83,7 +83,7 @@ LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated know
     - $x_e$: Who is the president of the US? $\quad$ $y_e$: Joe Biden
 
 
-####  Knowledge inject
+####  Knowledge insert
 Inject knowledge that LLMs have not seen before. such as:
 - *How many times has Messi won the World Cup? 0* $\rightarrow$ **1**:
     - $x_e$: How many times has Messi won the World Cup? $\quad$ $y_e$: 1
