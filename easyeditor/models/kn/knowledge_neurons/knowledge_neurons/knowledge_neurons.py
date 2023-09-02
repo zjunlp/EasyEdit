@@ -579,6 +579,10 @@ class KnowledgeNeurons:
                         )[0]
                         grad = grad.sum(dim=0)
                         integrated_grads_this_step.append(grad)
+                    # elif self.model_type == 'chatglm2':
+                    #     grads = [torch.autograd.grad(torch.sum(prob), batch_weights)[0] for prob in torch.unbind(probs[:, target_idx])]
+                    #     grad = torch.stack(grads).sum(dim=0)
+                    #     integrated_grads_this_step.append(grad)
                     else:
                         grad = torch.autograd.grad(
                             torch.unbind(probs[:, target_idx]), batch_weights
@@ -600,6 +604,7 @@ class KnowledgeNeurons:
                 
                 if self.model_type == "chatglm2":
                     baseline_activations = baseline_activations.mean(dim=0)
+                    # baseline_activations = baseline_activations[1]
                     integrated_grads_this_step *= baseline_activations.squeeze(0) / steps
                 else:
                     integrated_grads_this_step *= baseline_activations.squeeze(0) / steps
@@ -796,7 +801,7 @@ class KnowledgeNeurons:
             #     self.model_type == "bert"
             # ), "edit mode currently only working for bert models - TODO"
             original_prediction_id = argmax_tokens[0] if len(argmax_tokens) == 1 else argmax_tokens
-            if self.model_type == "gpt2" or "chatglm2":
+            if self.model_type == "gpt2" or self.model_type == "chatglm2":
                 word_embeddings_weights = word_embeddings_weights.weight
             original_prediction_embedding = word_embeddings_weights[
                 original_prediction_id
