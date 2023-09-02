@@ -1,0 +1,19 @@
+alg_name: "FT"
+model_name: THUDM/chatglm2-6b
+device: 0
+
+layers: [27]
+num_steps: 20
+batch_size: 1
+max_length: 30
+lr: 5e-4
+weight_decay: 0
+kl_factor: 0
+norm_constraint: false
+
+rewrite_module_tmp: "transformer.encoder.layers.{}.mlp.dense_4h_to_h"
+layer_module_tmp: "transformer.encoder.layers.{}"
+mlp_module_tmp: "transformer.encoder.layers.{}.mlp"
+attn_module_tmp: "transformer.encoder.layers.{}.self_attention"
+ln_f_module: "transformer.encoder.final_layernorm"
+lm_head_module: "transformer.output_layer"

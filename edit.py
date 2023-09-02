@@ -1442,6 +1442,32 @@ def test_KN_ChatGLM():
 
     return metrics, edited_model 
 
+def test_FT_ChatGLM():
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    hparams = FTHyperParams.from_hparams('./hparams/FT/chatglm2-6b')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 def test_ChatGPT():
 
     import os
@@ -1530,7 +1556,8 @@ def main():
     #test_FT_Baichuan()
     #baichuanserac()
     #test_ChatGPT()
-    test_KN_ChatGLM()
+    test_FT_ChatGLM()
+    # test_KN_ChatGLM()
 
 if __name__ == '__main__':
     main()

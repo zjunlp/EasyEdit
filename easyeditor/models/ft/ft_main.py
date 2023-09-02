@@ -70,7 +70,7 @@ def execute_ft(
             f"Executing FT algo for: "
             f"[{request['prompt']}] -> [{request['target_new']}]"
         )
-
+    
     # Retrieve weights that user desires to change
     weights = {
         n: p
@@ -78,6 +78,7 @@ def execute_ft(
         for layer in hparams.layers
         if hparams.rewrite_module_tmp.format(layer) in n
     }
+    
     # Save old weights for future restoration
     weights_copy = {k: v.detach().clone() for k, v in weights.items()}
     print(f"Weights to be updated: {list(weights.keys())}")
@@ -85,7 +86,7 @@ def execute_ft(
     # Define inputs
     texts = [r["prompt"] for r in requests]
     targets = [r["target_new"] for r in requests]
-
+    
     # Configure optimizer / gradients
     opt = torch.optim.Adam(
         [v for _, v in weights.items()],
@@ -112,7 +113,6 @@ def execute_ft(
             )
             last_token_inds = inputs["attention_mask"].sum(dim=1) - 1
             loss_mask = target_ids != tok.unk_token_id
-
             opt.zero_grad()
             bs = inputs["input_ids"].shape[0]
             if 't5' in hparams.model_name.lower():
