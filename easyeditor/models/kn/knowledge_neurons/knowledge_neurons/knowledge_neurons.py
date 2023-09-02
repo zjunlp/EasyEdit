@@ -68,9 +68,9 @@ class KnowledgeNeurons:
             self.word_embeddings_attr = "shared.weight"
         elif 'chatglm2' == model_type:
             self.transformer_layers_attr = "transformer.encoder.layers"
-            self.input_ff_attr = "input_layernorm.weight"
-            self.output_ff_attr = "mlp.dense_4h_to_h.weight"
-            self.word_embeddings_attr = "transformer.embedding.word_embeddings.weight"
+            self.input_ff_attr = "input_layernorm"
+            self.output_ff_attr = "mlp.dense_4h_to_h"
+            self.word_embeddings_attr = "transformer.embedding.word_embeddings"
         else:
             raise NotImplementedError
 
@@ -597,7 +597,12 @@ class KnowledgeNeurons:
                 integrated_grads_this_step = torch.stack(
                     integrated_grads_this_step, dim=0
                 ).sum(dim=0)
-                integrated_grads_this_step *= baseline_activations.squeeze(0) / steps
+                
+                if self.model_type == "chatglm2":
+                    baseline_activations = baseline_activations.mean(dim=0)
+                    integrated_grads_this_step *= baseline_activations.squeeze(0) / steps
+                else:
+                    integrated_grads_this_step *= baseline_activations.squeeze(0) / steps
                 integrated_grads.append(integrated_grads_this_step)
 
                 if n_sampling_steps > 1:
@@ -791,7 +796,7 @@ class KnowledgeNeurons:
             #     self.model_type == "bert"
             # ), "edit mode currently only working for bert models - TODO"
             original_prediction_id = argmax_tokens[0] if len(argmax_tokens) == 1 else argmax_tokens
-            if self.model_type == "gpt2":
+            if self.model_type == "gpt2" or "chatglm2":
                 word_embeddings_weights = word_embeddings_weights.weight
             original_prediction_embedding = word_embeddings_weights[
                 original_prediction_id

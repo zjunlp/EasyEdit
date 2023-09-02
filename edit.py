@@ -1414,11 +1414,24 @@ def test_KN_ChatGLM():
     hparams = KNHyperParams.from_hparams('./hparams/KN/chatglm2-6b.yaml')
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
-        prompts='Watts Humphrey上的是哪一所大学？' if prompts is None else prompts,
-        ground_truth='伊利诺伊理工学院' if ground_truth is None else ground_truth,
-        target_new='密歇根大学' if target_new is None else target_new,
+        prompts='梅西的俱乐部是什么？' if prompts is None else prompts,
+        # ground_truth='伊利诺伊理工学院' if ground_truth is None else ground_truth,
+        ground_truth = None,
+        target_new='迈阿密国际足球俱乐部' if target_new is None else target_new,
         keep_original_weight=True,
     )
+    # prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
+    #            'Which fictional universe is Chlorophyll Kid part of?']
+    # ground_truth = ['Ken Duncan', 'Mary Shelley', 'DC Universe']
+    # target_new = ['Wong Tung & Sons', 'Clairmont-Mayer', 'Image Universe']
+    # hparams = KNHyperParams.from_hparams('./hparams/KN/baichuan-7b.yaml')
+    # editor = BaseEditor.from_hparams(hparams)
+    # metrics, edited_model, _ = editor.edit(
+    #     prompts='What university did Watts Humphrey attend?' if prompts is None else prompts,
+    #     ground_truth='Illinois Institute of Technology' if ground_truth is None else ground_truth,
+    #     target_new='University of Michigan' if target_new is None else target_new,
+    #     keep_original_weight=True,
+    # )
 
     import pdb
     pdb.set_trace()
