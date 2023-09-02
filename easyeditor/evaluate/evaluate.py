@@ -208,6 +208,16 @@ def compute_rewrite_or_rephrase_quality(
             for i in range(1, len(target_tok))
         ])
         stuff_probs = test_batch_prediction_acc(model, tok, hparams, inp_prompts, target_tok, device)
+    elif 'chatglm2' in model_name.lower():
+        target_tok = tok(target_new, truncation=True, max_length=hparams.max_length)["input_ids"] #erase bos_token_id
+        if target_tok[0] == tok.unk_token_id or hparams.alg_name == 'SERAC' or hparams.alg_name == 'MEND':
+            target_tok = target_tok[1:]
+        inp_prompts = [prompt]
+        inp_prompts.extend([
+            prompt + ' ' + tok.decode(target_tok[:i])
+            for i in range(1, len(target_tok))
+        ])
+        stuff_probs = test_batch_prediction_acc(model, tok, hparams, inp_prompts, target_tok, device)
 
     probs = stuff_probs
 

@@ -1407,6 +1407,24 @@ def baichuanserac():
 
     trainer.run()
 
+def test_KN_ChatGLM():
+    prompts = ['梅西的俱乐部是什么？']
+    ground_truth = None
+    target_new = ['迈阿密国际足球俱乐部']
+    hparams = KNHyperParams.from_hparams('./hparams/KN/chatglm2-6b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts='Watts Humphrey上的是哪一所大学？' if prompts is None else prompts,
+        ground_truth='伊利诺伊理工学院' if ground_truth is None else ground_truth,
+        target_new='密歇根大学' if target_new is None else target_new,
+        keep_original_weight=True,
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model 
+
 def test_ChatGPT():
 
     import os
@@ -1494,7 +1512,8 @@ def main():
     # test_SERAC_Baichuan()
     #test_FT_Baichuan()
     #baichuanserac()
-    test_ChatGPT()
+    #test_ChatGPT()
+    test_KN_ChatGLM()
 
 if __name__ == '__main__':
     main()

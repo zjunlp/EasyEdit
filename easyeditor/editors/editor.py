@@ -9,7 +9,7 @@ import logging
 import numpy as np
 
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
@@ -77,6 +77,10 @@ class BaseEditor:
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.pad_token_id = self.tok.eos_token_id
+            elif 'chatglm2' in self.model_name.lower():
+                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True)
+                self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
+                # self.tok.pad_token_id = self.tok.eos_token_id
             else:
                 raise NotImplementedError
 

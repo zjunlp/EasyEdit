@@ -66,6 +66,11 @@ class KnowledgeNeurons:
             self.input_ff_attr = "layer.2.DenseReluDense.wi"
             self.output_ff_attr = "layer.2.DenseReluDense.wo.weight"
             self.word_embeddings_attr = "shared.weight"
+        elif 'chatglm2' == model_type:
+            self.transformer_layers_attr = "transformer.encoder.layers"
+            self.input_ff_attr = "input_layernorm.weight"
+            self.output_ff_attr = "mlp.dense_4h_to_h.weight"
+            self.word_embeddings_attr = "transformer.embedding.word_embeddings.weight"
         else:
             raise NotImplementedError
 
