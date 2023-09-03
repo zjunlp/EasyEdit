@@ -146,6 +146,8 @@ class MendRewriteExecutor:
                         delta = torch_factors[vname].t() @ torch_factors[uname]
                     elif 't5' in hparams.model_name.lower():
                         delta = torch_factors[vname].t() @ torch_factors[uname]
+                    elif 'chatglm2' in hparams.model_name.lower():
+                        delta = torch_factors[vname].t() @ torch_factors[uname]
                     else:
                         raise ValueError("Unknown model")
                     p.add_((delta * edit_lrs[eli] * hparams.lr_scale).to(p.device))

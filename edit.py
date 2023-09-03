@@ -1521,6 +1521,107 @@ def test_IKE_ChatGLM():
 
     return metrics, edited_model
 
+def test_MEMIT_ChatGLM():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    subject = ['Ray Charles',
+               'Grant Hill',
+               'Ikaalinen'
+               ]
+
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/chatglm2-6b')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_MEND_Train_ChatGLM():
+    training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND/chatglm2-6b.yaml')
+    train_ds = ZsreDataset('./data/zsre/zsre_mend_train.json', config=training_hparams)
+    eval_ds = ZsreDataset('./data/zsre/zsre_mend_eval.json', config=training_hparams)
+    trainer = EditTrainer(
+        config=training_hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+
+    trainer.run()
+
+def test_MEND_ChatGLM():
+
+    # prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+    #            'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+    #            'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+    #            'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    # ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+    #                 'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    # target_new = ['University of Michigan', 'Lamiinae', 'winger',
+    #               'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    prompts = ['Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+               'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    ground_truth = ['Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    target_new = ['Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    hparams = MENDHyperParams.from_hparams('./hparams/MEND/chatglm2-6b.')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 def test_ChatGPT():
 
     import os
@@ -1610,7 +1711,10 @@ def main():
     # baichuanserac()
     # test_ChatGPT()
     # test_FT_ChatGLM()
-    test_IKE_ChatGLM()
+    # test_IKE_ChatGLM()
+    # test_MEMIT_ChatGLM()
+    test_MEND_Train_ChatGLM()
+    # test_MEND_ChatGLM()
     # test_KN_ChatGLM()
 
 if __name__ == '__main__':

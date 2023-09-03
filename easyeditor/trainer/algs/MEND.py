@@ -251,6 +251,9 @@ class MEND(EditableModel):
         elif 'llama' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
             # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
+        elif 'chatglm2' in self.config.model_name.lower():
+            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
         else:
             outputs = _logits(self.model(**kwargs))
         return outputs
@@ -267,6 +270,10 @@ class MEND(EditableModel):
             # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]
         elif 'baichuan' in self.config.model_name.lower():
+            outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
+            # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
+            loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"] 
+        elif 'chatglm2' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
             # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]            
