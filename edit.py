@@ -1468,6 +1468,59 @@ def test_FT_ChatGLM():
 
     return metrics, edited_model
 
+def test_IKE_ChatGLM():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = IKEHyperParams.from_hparams('./hparams/IKE/chatglm2-6b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    train_ds = CounterFactDataset('./data/counterfact/counterfact-original-train.json')
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        train_ds=train_ds,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 def test_ChatGPT():
 
     import os
@@ -1545,18 +1598,19 @@ def main():
     # test_SERAC_T5()
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
-    #ROME_DEMO_2()
+    # ROME_DEMO_2()
     # test_Llama2()
-    #test_ROME_Baichuan()
-    #test_MEND_Baichuan()
-    #test_MEMIT_Baichuan()
-    #test_KN_Baichuan()
-    #test_IKE_Baichuan()
+    # test_ROME_Baichuan()
+    # test_MEND_Baichuan()
+    # test_MEMIT_Baichuan()
+    # test_KN_Baichuan()
+    # test_IKE_Baichuan()
     # test_SERAC_Baichuan()
-    #test_FT_Baichuan()
-    #baichuanserac()
-    #test_ChatGPT()
-    test_FT_ChatGLM()
+    # test_FT_Baichuan()
+    # baichuanserac()
+    # test_ChatGPT()
+    # test_FT_ChatGLM()
+    test_IKE_ChatGLM()
     # test_KN_ChatGLM()
 
 if __name__ == '__main__':
