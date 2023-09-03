@@ -1608,7 +1608,7 @@ def test_MEND_ChatGLM():
                     'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
     target_new = ['Lamiinae', 'winger',
                   'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
-    hparams = MENDHyperParams.from_hparams('./hparams/MEND/chatglm2-6b.')
+    hparams = MENDHyperParams.from_hparams('./hparams/MEND/chatglm2-6b')
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
@@ -1713,8 +1713,8 @@ def main():
     # test_FT_ChatGLM()
     # test_IKE_ChatGLM()
     # test_MEMIT_ChatGLM()
-    test_MEND_Train_ChatGLM()
-    # test_MEND_ChatGLM()
+    # test_MEND_Train_ChatGLM()
+    test_MEND_ChatGLM()
     # test_KN_ChatGLM()
 
 if __name__ == '__main__':

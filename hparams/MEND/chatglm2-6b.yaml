@@ -1,6 +1,6 @@
 # Model
 
-archive: /mnt/peng/EasyEdit/results/models/MEND/chatglm2-6b
+archive: ./results/models/MEND/chatglm2-6b
 alg_name: "MEND"
 device: 0
 model_name: THUDM/chatglm2-6b

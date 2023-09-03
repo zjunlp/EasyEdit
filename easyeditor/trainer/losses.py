@@ -58,7 +58,7 @@ def multiclass_log_probs(config, pred, targ, shift=False):
     unmasked_log_probs = pred.log_softmax(-1).gather(-1, targ.unsqueeze(-1)).squeeze(-1)
     
     # debug
-    print(pred.shape, targ.shape)
+    # print(pred.shape, targ.shape)
     if pred.size(1) > targ.size(1):
         pred = pred[:, :targ.size(1)]
 
