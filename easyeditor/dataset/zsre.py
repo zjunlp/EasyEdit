@@ -35,10 +35,10 @@ class ZsreDataset(Dataset):
                 if config.tokenizer_name is not None
                 else config.model.name
             )
-            tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True)
-            # tokenizer = getattr(transformers, config.tokenizer_class).from_pretrained(
-            #     tok_name
-            # )
+            # tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True)
+            tokenizer = getattr(transformers, config.tokenizer_class).from_pretrained(
+                tok_name
+            )
             if isinstance(tokenizer, GPT2Tokenizer) or isinstance(tokenizer, GPT2TokenizerFast):
                 tokenizer.pad_token_id = tokenizer.eos_token_id
                 tokenizer.padding_side = 'left'

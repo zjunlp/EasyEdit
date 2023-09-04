@@ -59,8 +59,8 @@ def multiclass_log_probs(config, pred, targ, shift=False):
     
     # debug
     # print(pred.shape, targ.shape)
-    if pred.size(1) > targ.size(1):
-        pred = pred[:, :targ.size(1)]
+    # if pred.size(1) > targ.size(1):
+    #     pred = pred[:, :targ.size(1)]
 
     pred_ids = pred.argmax(-1).masked_fill(~mask, NULL_TOKEN)
     correct = pred_ids == targ

@@ -1622,6 +1622,37 @@ def test_MEND_ChatGLM():
 
     return metrics, edited_model
 
+def test_ROME_ChatGLM():
+
+    prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    target_new = ['University of Michigan', 'Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans']
+    subject = ['Watts Humphrey', 'Ramalinaceae', 'Denny Herzig',
+               'Lahti Town Hall', 'It\'s a Business', 'Marl Young']
+    # prompts = ['Who was the designer of Lahti Town Hall?',
+    #            'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    # ground_truth = ['Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    # target_new = ['Alfred Lahti', 'ITV', 'New Orleans']
+    # subject = ['Lahti Town Hall', 'It\'s a Business', 'Marl Young']
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/chatglm2-6b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 def test_ChatGPT():
 
     import os
@@ -1712,10 +1743,12 @@ def main():
     # test_ChatGPT()
     # test_FT_ChatGLM()
     # test_IKE_ChatGLM()
+    # test_KN_ChatGLM()
     # test_MEMIT_ChatGLM()
     # test_MEND_Train_ChatGLM()
-    test_MEND_ChatGLM()
-    # test_KN_ChatGLM()
+    # test_MEND_ChatGLM()
+    test_ROME_ChatGLM()
+    
 
 if __name__ == '__main__':
     main()
