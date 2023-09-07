@@ -25,9 +25,9 @@ The datasets used can be downloaded from [here](https://drive.google.com/file/d/
 ```text
 editing-data
 ├── counterfact
-│   ├── counterfact-original-edit.json
-│   ├── counterfact-original-train.json
-│   └── counterfact-original-val.json
+│   ├── counterfact-edit.json
+│   ├── counterfact-train.json
+│   └── counterfact-val.json
 ├── locality
 │   ├── Commonsense Task
 │   │   ├── piqa_valid-labels.lst
