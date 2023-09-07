@@ -173,10 +173,10 @@ You can choose different editing methods according to your specific needs.
 **Dataset**
 | **dataset** | Google Drive| BaiduNetDisk | Description |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-| _ZsRE_ | [[Google Drive]](https://drive.google.com/file/d/1iMcbAjdGkQJhrbVuAKy7Wtu5aeCBgIAG/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1GqpoguRSM3_EphdKckEkzA?pwd=wf6u) | Question Answering dataset using question rephrasings |
-| _Counterfact_ | [[Google Drive]](https://drive.google.com/file/d/1iMcbAjdGkQJhrbVuAKy7Wtu5aeCBgIAG/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1GqpoguRSM3_EphdKckEkzA?pwd=wf6u) | Counterfact dataset using Entity replacement |
+| _ZsRE_ | [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1cQleUMsNjuDk4BKx2bZkag?pwd=xzky) | Question Answering dataset using question rephrasings |
+| _Counterfact_ | [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1cQleUMsNjuDk4BKx2bZkag?pwd=xzky) | Counterfact dataset using Entity replacement |
 
-We provide zsre and counterfact datasets to verify the effectiveness of knowledge editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1iMcbAjdGkQJhrbVuAKy7Wtu5aeCBgIAG/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1GqpoguRSM3_EphdKckEkzA?pwd=wf6u).
+We provide zsre and counterfact datasets to verify the effectiveness of knowledge editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1cQleUMsNjuDk4BKx2bZkag?pwd=xzky).
 
 - for **locality**, in addition to testing unrelated instances, we also provide tests on distracting ([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
 - for **portability**, it tests whether the model can apply edited instances for inference. We provide evaluations for one-hop reasoning, subject alias, and inverse relation (eg, a one-to-one relationship between spouses should be bidirectionally edited).
@@ -191,7 +191,7 @@ We provide zsre and counterfact datasets to verify the effectiveness of knowledg
 
 #### Editing Performance
 
-We present editing results of the four metrics on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit. We adopt [ZsRE](https://drive.google.com/file/d/1iMcbAjdGkQJhrbVuAKy7Wtu5aeCBgIAG/view?usp=sharing) as the test dataset.
+We present editing results of the four metrics on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit. We adopt [ZsRE](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing) as the test dataset.
 
 > ❗️❗️Editing `llama-2-7B` requires 40G+ VRAM on GPU. (OOM [solution](https://github.com/zjunlp/EasyEdit/issues/9#issuecomment-1687284658))
 
@@ -390,7 +390,7 @@ For above editing methods, pre-training of corresponding meta-networks or classi
 - **Step 1** and **Step 2** are the same as the example above, which involves selecting the appropriate editing model and editing method.
 
 **Step3: Provide the edit training set**
-The currently supported and available datasets are: `zsre` and `counterfact`([Google Drive](https://drive.google.com/file/d/1iMcbAjdGkQJhrbVuAKy7Wtu5aeCBgIAG/view?usp=sharing)). Please place them in the "data" directory and initialize the dataset_class (`ZsreDataset` for zsre and `CounterFactDataset` for counterfact) to load the corresponding training set.
+The currently supported and available datasets are: `zsre` and `counterfact`([Google Drive](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing)). Please place them in the "data" directory and initialize the dataset_class (`ZsreDataset` for zsre and `CounterFactDataset` for counterfact) to load the corresponding training set.
 
 ```python
 train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
