@@ -407,15 +407,30 @@ trainer = EditTrainer(
 )
 ```
 
-**Step6: Run and Edit**
+**Step5: Run and Edit**
 Done! We can conduct Run and Evaluation.
 
 ```python
 trainer.run()
 ```
 
-- Run: The `CHECKPOINT` will be saved to the path `RESULTS_DIR`(in `global.yml`).
+- Run: The `CHECKPOINT` will be saved to the path `results_dir`.
 - Edit: Set the `archive` field in the **hparams file** to `CHECKPOINT`. EasyEdit will automatically load the corresponding pre-trained weights during the editing process([Go to edit](#use-easyedit)).
+
+**Training Example**
+```python
+from easyeditor import EditTrainer, MENDTrainingHparams, ZsreDataset
+
+training_hparams = MENDTrainingHparams.from_hparams('hparams/TRAINING/MEND/llama-7b.yaml')
+train_ds = ZsreDataset('./data/zsre/zsre_mend_train.json', config=training_hparams)
+eval_ds = ZsreDataset('./data/zsre/zsre_mend_eval.json', config=training_hparams)
+trainer = EditTrainer(
+    config=training_hparams,
+    train_set=train_ds,
+    val_set=eval_ds
+)
+trainer.run()
+```
 
 <!-- ## Overall Results
 > Note that the following experimental results are from this [paper](https://arxiv.org/abs/2305.13172).The actual editing performance of this tool is still under testing and will be announced **as soon as possible**.
