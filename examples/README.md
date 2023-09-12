@@ -20,7 +20,7 @@ Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a featur
 
 ## Data
 
-The datasets used can be downloaded from [here](https://drive.google.com/file/d/1IVcf5ikpfKuuuYeedUGomH01i1zaWuI6). Unzip the file and put it to `./data`, and the final directory structure is as follows:
+The datasets used can be downloaded from [here](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing). Unzip the file and put it to `./data`, and the final directory structure is as follows:
 
 ```text
 editing-data
