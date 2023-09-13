@@ -569,53 +569,20 @@ Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and mee
 Please cite our paper if you use EasyEdit in your work.
 
 ```bibtex
-@article{DBLP:journals/corr/abs-2308-07269,
-  author       = {Peng Wang and
-                  Ningyu Zhang and
-                  Xin Xie and
-                  Yunzhi Yao and
-                  Bozhong Tian and
-                  Mengru Wang and
-                  Zekun Xi and
-                  Siyuan Cheng and
-                  Kangwei Liu and
-                  Guozhou Zheng and
-                  Huajun Chen},
-  title        = {EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language
-                  Models},
-  journal      = {CoRR},
-  volume       = {abs/2308.07269},
-  year         = {2023},
-  url          = {https://doi.org/10.48550/arXiv.2308.07269},
-  doi          = {10.48550/arXiv.2308.07269},
-  eprinttype    = {arXiv},
-  eprint       = {2308.07269},
-  timestamp    = {Wed, 23 Aug 2023 14:43:32 +0200},
-  biburl       = {https://dblp.org/rec/journals/corr/abs-2308-07269.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
+@article{wang2023easyedit,
+  title={EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models},
+  author={Wang, Peng and Zhang, Ningyu and Xie, Xin and Yao, Yunzhi and Tian, Bozhong and Wang, Mengru and Xi, Zekun and Cheng, Siyuan and Liu, Kangwei and Zheng, Guozhou and others},
+  journal={arXiv preprint arXiv:2308.07269},
+  year={2023}
 }
 
-@article{DBLP:journals/corr/abs-2305-13172,
-  author       = {Yunzhi Yao and
-                  Peng Wang and
-                  Bozhong Tian and
-                  Siyuan Cheng and
-                  Zhoubo Li and
-                  Shumin Deng and
-                  Huajun Chen and
-                  Ningyu Zhang},
-  title        = {Editing Large Language Models: Problems, Methods, and Opportunities},
-  journal      = {CoRR},
-  volume       = {abs/2305.13172},
-  year         = {2023},
-  url          = {https://doi.org/10.48550/arXiv.2305.13172},
-  doi          = {10.48550/arXiv.2305.13172},
-  eprinttype    = {arXiv},
-  eprint       = {2305.13172},
-  timestamp    = {Tue, 30 May 2023 17:04:46 +0200},
-  biburl       = {https://dblp.org/rec/journals/corr/abs-2305-13172.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
+@article{yao2023editing,
+  title={Editing Large Language Models: Problems, Methods, and Opportunities},
+  author={Yao, Yunzhi and Wang, Peng and Tian, Bozhong and Cheng, Siyuan and Li, Zhoubo and Deng, Shumin and Chen, Huajun and Zhang, Ningyu},
+  journal={arXiv preprint arXiv:2305.13172},
+  year={2023}
 }
+
 @misc{knowlm,
   author = {Ningyu Zhang and Jintian Zhang and Xiaohan Wang and Honghao Gui and Kangwei Liu and Yinuo Jiang and Xiang Chen and Shengyu Mao and Shuofei Qiao and Yuqi Zhu and Zhen Bi and Jing Chen and Xiaozhuan Liang and Yixin Ou and Runnan Fang and Zekun Xi and Xin Xu and Lei Li and Peng Wang and Mengru Wang and Yunzhi Yao and Bozhong Tian and Yin Fang and Guozhou Zheng and Huajun Chen},
   title = {KnowLM: An Open-sourced Knowledgeable Large Langugae Model Framework},
