@@ -1,8 +1,8 @@
 # Model
 
-archive: ./results/models/MEND/llama-2-7b
+archive: ./results/models/MEND/llama-2-7b-ZsRE
 alg_name: "MEND"
-device: 0
+device: 1
 model_name: ./hugging_cache/llama-2-7b
 
 model_class: LlamaForCausalLM

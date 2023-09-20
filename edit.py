@@ -2,7 +2,7 @@ import hydra
 from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
-    SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams
+    SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -1368,6 +1368,60 @@ def test_SERAC_Baichuan():
 
     return metrics, edited_model
 
+def test_LoRA_llama():
+
+    import json
+    import random
+    edit_data = json.load(open('./data/zsre_mend_eval_one_hop.json', 'r', encoding='utf-8'))
+    edit_data = random.sample(edit_data, 10)
+    prompts = [edit_data_['src'] for edit_data_ in edit_data]
+    rephrase_prompts = [edit_data_['rephrase'] for edit_data_ in edit_data]
+    target_new = [edit_data_['alt'] for edit_data_ in edit_data]
+    locality_prompts = [edit_data_['loc'] for edit_data_ in edit_data]
+    locality_ans = [edit_data_['loc_ans'] for edit_data_ in edit_data]
+    portability_prompts = [edit_data_['portability']['New Question'] for edit_data_ in edit_data]
+    portability_ans = [edit_data_['portability']['New Answer'] for edit_data_ in edit_data]
+
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': locality_prompts,
+            'ground_truth': locality_ans
+        },
+    }
+    portability_inputs = {
+        'one_hop':{
+            'prompt': portability_prompts,
+            'ground_truth': portability_ans
+        },
+    }
+    subject = [edit_data_['subject'] for edit_data_ in edit_data]
+    # hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
+    # hparams = FTHyperParams.from_hparams('./hparams/FT/llama-7b.yaml')
+    # hparams = IKEHyperParams.from_hparams('./hparams/IKE/llama-7b.yaml')
+    # train_ds = ZsreDataset('./data/zsre_mend_train.json', size=20000)
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/gpt-j-6B.yaml')
+    # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama-7b.yaml')
+    # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
+    # hparams = KNHyperParams.from_hparams('./hparams/KN/llama-7b.yaml')
+    # hparams = LoRAHyperParams.from_hparams('./hparams/LoRA/llama-7b.yaml')
+
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        rephrase_prompts=rephrase_prompts,
+        target_new=target_new,
+        subject=subject,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+
 def test_FT_Baichuan():
     prompts = ['Ray Charles, the',
                'Grant Hill is a professional',
@@ -1747,7 +1801,8 @@ def main():
     # test_MEMIT_ChatGLM()
     # test_MEND_Train_ChatGLM()
     # test_MEND_ChatGLM()
-    test_ROME_ChatGLM()
+    # test_ROME_ChatGLM()
+    test_LoRA_llama()
     
 
 if __name__ == '__main__':

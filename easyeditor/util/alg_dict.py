@@ -7,6 +7,7 @@ from ..models.serac import SERACHparams, SeracRewriteExecutor
 from ..dataset import ZsreDataset, CounterFactDataset
 from ..models.ike import IKEHyperParams, apply_ike_to_model
 from ..models.ft_api import FTApiHyperParams, apply_ft_api_to_model
+from ..models.lora import LoRAHyperParams, apply_lora_to_model
 
 
 ALG_DICT = {
@@ -17,8 +18,10 @@ ALG_DICT = {
     'MEND': MendRewriteExecutor().apply_to_model,
     'SERAC': SeracRewriteExecutor().apply_to_model,
     'IKE': apply_ike_to_model,
-    'FT-Api': apply_ft_api_to_model
+    'FT-Api': apply_ft_api_to_model,
+    'LoRA': apply_lora_to_model,
 }
+
 
 DS_DICT = {
     "cf": CounterFactDataset,

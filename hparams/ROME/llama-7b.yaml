@@ -1,7 +1,7 @@
 alg_name: "ROME"
-model_name: "/mnt/peng/EasyEdit/hugging_cache/llama-2-7b"
-stats_dir: "/mnt/peng/EasyEdit/data/stats"
-device: 0
+model_name: "./hugging_cache/llama-2-7b"
+stats_dir: "./data/stats"
+device: 1
 layers: [5]
 fact_token: "subject_last"
 v_num_grad_steps: 25
