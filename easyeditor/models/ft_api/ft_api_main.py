@@ -66,8 +66,7 @@ def apply_ft_api_to_model(
         pass
 
     openai_job = openai.FineTuningJob.create(training_file=f"{openai_file['id']}",
-                                             model=f"{hparams.model_name}",
-                                             n_epochs=hparams.n_epochs)
+                                             model=f"{hparams.model_name}")
 
     start = time.time()
     while True:

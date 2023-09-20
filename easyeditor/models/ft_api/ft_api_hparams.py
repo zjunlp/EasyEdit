@@ -11,7 +11,6 @@ class FTApiHyperParams(HyperParams):
 
     alg_name: str
     model_name: str
-    n_epochs: int
     proxy: Optional[str] = None
 
 

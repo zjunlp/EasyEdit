@@ -1,7 +1,6 @@
 alg_name: "FT-Api"
 model_name: "gpt-3.5-turbo"
 api_key: "YOUR_OPENAI_KEY"
-n_epochs: 10
 results_dir: "./results"
 
 # For Chinese users to set proxy, if you can connect to openai directly, delete the following line...
