@@ -170,3 +170,53 @@ def compute_freq(sentence, n=2):
     tokens = nltk.word_tokenize(sentence)
     ngrams = nltk.ngrams(tokens, n)
     return nltk.FreqDist(ngrams)
+
+def PPL(
+    model,
+    tok,
+    prompt: typing.Union[str, typing.List[str]],
+    target_new: typing.Union[str, typing.List[str]],
+    device,
+):
+    if isinstance(prompt, str):
+        prompt,target_new = [prompt,], [target_new,]
+    full_prompt = [f"{p} {l} <|endoftext|>" for p, l in zip(prompt, target_new)]
+    prompt_ids = tok(list(prompt), return_tensors="pt", padding=True, truncation=True)["input_ids"]
+    num_prompt_toks = [int((i != tok.pad_token_id).sum()) for i in prompt_ids]
+    tokens = tok(full_prompt, return_tensors="pt", padding=True, truncation=True)
+    tokens["labels"] = tokens["input_ids"].clone()
+    for i in range(len(prompt)):
+        tokens["labels"][i][:num_prompt_toks[i]] = -100
+    tokens["labels"][tokens["input_ids"] == tok.pad_token_id] = -100 # What is this doing?
+    batch = {f"{k1}" : v1 for k1, v1 in tokens.items()}
+    input_ids = batch["input_ids"][:, :1024]#.to(device)
+    if "labels" not in batch:
+        target_ids = batch["input_ids"][:, :1024].clone()
+    else:
+        target_ids = batch["labels"][:, :1024].clone()
+    with torch.no_grad():
+        outputs = model(input_ids=input_ids.to(device), labels=target_ids.to(device))
+        nll = outputs.loss
+    ppl = torch.exp(nll)#.clip(0, 100)
+    return ppl.cpu().numpy().tolist()
+
+def verify_answer(model_answer, correct_answer):
+    if type(correct_answer) is str:
+        correct_answer = [[correct_answer]]
+    for answer in correct_answer:
+        if True not in [possible_answer in model_answer for possible_answer in answer]:
+            return False
+    return True
+
+def answer_match(
+    model,
+    tok,
+    prompt: str,
+    target_new: str,
+    device,
+):
+    inputs = tok.encode(prompt, return_tensors='pt').to(device)
+    outputs = model.generate(inputs, temperature=0, max_new_tokens=30)
+    predict = tok.decode(outputs[0], skip_special_tokens=True)
+
+    return verify_answer(predict,target_new)

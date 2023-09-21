@@ -16,7 +16,7 @@ from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
 from .singleton_editor import SingletonEditor
 from .batch_editor import BatchEditor
-from ..evaluate import compute_edit_quality, compute_rewrite_quality_zsre, compute_rewrite_quality_counterfact, compute_icl_edit_quality
+from ..evaluate import compute_edit_quality, compute_icl_edit_quality
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
@@ -544,3 +544,165 @@ class BaseEditor:
 #     metrics, edited_model, _ = editor.edit(prompts='What university did Watts Humphrey attend?', ground_truth='Illinois Institute of Technology', target_new='University of Michigan')
 
 
+    def edit_requests(self,
+             requests,
+             keep_original_weight=False,
+             verbose=True,
+             **kwargs
+             ):
+        """
+        `prompts`: list or str
+            the prompts to edit
+        `ground_truth`: str
+            the ground truth / expected output
+        `locality_inputs`: dict
+            for locality
+        """
+        eval_metric= kwargs['eval_metric'] if 'eval_metric' in kwargs.keys() else 'token_em'
+        if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
+            self.hparams.batch_size = 1
+            
+        if hasattr(self.hparams, 'batch_size') :
+               assert self.hparams.batch_size == 1 or \
+                      print(f'Single Edit, pls set the batch_size to 1....')
+
+        # if not os.path.exists(RESULTS_DIR):
+        #     os.mkdir(RESULTS_DIR)
+        # base_case_path = RESULTS_DIR / self.hparams_fname.rsplit('.', 1)[0]
+        # if not os.path.exists(base_case_path):
+        #     os.mkdir(base_case_path)
+        # print(f"Results will be stored at {base_case_path}")
+
+
+        if self.alg_name == 'FT-Api':
+            all_metrics = []
+            for i, request in enumerate(requests):
+                metrics = {
+                    "pre": {}
+                }
+                all_metrics.append(metrics)
+
+            start = time()
+            edited_model, weights_copy = self.apply_algo(
+                requests,
+                self.hparams
+            )
+            exec_time = time() - start
+
+            LOG.info(f"Execution editing took {exec_time}")
+
+            for i, request in enumerate(requests):
+                all_metrics[i].update({
+                    'case_id': i,
+                    "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": {}
+                })
+
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
+                    )
+            return all_metrics, edited_model, weights_copy
+
+
+        all_metrics = []
+        for i, request in tqdm(enumerate(requests)):
+            if self.alg_name == 'IKE':
+                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds(For getting In-Context prompt)')
+                metrics = {
+                    "pre": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+                                                     request, self.hparams.device, pre_edit=True)
+                }
+            else:
+                metrics = {
+                    "pre": compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
+                                            self.hparams.device, eval_metric=eval_metric)
+                }
+            all_metrics.append(metrics)
+
+        for i, request in tqdm(enumerate(requests)):
+            start = time()
+
+            if self.alg_name == 'IKE':
+                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds(For getting In-Context prompt)')
+                edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
+                    self.model,
+                    self.tok,
+                    request,
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight,
+                    train_ds=kwargs['train_ds']
+                )
+                exec_time = time() - start
+                LOG.info(f"Execution {i} editing took {exec_time}")
+                start = time()
+                all_metrics[i].update({
+                    'case_id': i,
+                    "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
+                                                     request, self.hparams.device),
+                })
+                all_metrics[i]['pre'].pop('locality')
+
+                LOG.info(f"Evaluation took {time() - start}")
+
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
+                    )
+
+            else:
+                edited_model, weights_copy = self.apply_algo(
+                    self.model,
+                    self.tok,
+                    [request],
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight,
+                    train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
+                )
+                exec_time = time() - start
+                LOG.info(f"Execution {i} editing took {exec_time}")
+
+                start = time()
+                all_metrics[i].update({
+                    'case_id': i,
+                    "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric=eval_metric),
+                })
+                if self.alg_name == 'KN':
+                    with torch.no_grad():
+                        weights_copy() # unpatch_fn
+                else:
+                    with torch.no_grad():
+                        for k, v in weights_copy.items():
+                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                if 'locality' in all_metrics[i]['post'].keys():
+                    for locality_key in request['locality'].keys():
+                        assert len(all_metrics[i]['post']['locality'][f'{locality_key}_output']) == \
+                               len(all_metrics[i]['pre']['locality'][f'{locality_key}_output'])
+                        all_metrics[i]['post']['locality'][f'{locality_key}_acc'] = \
+                            np.mean(np.equal(all_metrics[i]['post']['locality'][f'{locality_key}_output'],
+                                             all_metrics[i]['pre']['locality'][f'{locality_key}_output']))
+                        all_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
+                    all_metrics[i]['pre'].pop('locality')
+
+                LOG.info(f"Evaluation took {time() - start}")
+
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
+                    )
+            # case_result_path = base_case_path / f"case_{i}.json"
+
+            # Dump metrics in .json
+            # with open(case_result_path, "w") as f:
+            #     json.dump(metrics, f, indent=1)
+
+        return all_metrics, edited_model, weights_copy

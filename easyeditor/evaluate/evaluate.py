@@ -6,7 +6,7 @@ appropriate arguments, which returns a dictionary containing them.
 
 import typing
 from itertools import chain
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import torch
@@ -14,7 +14,7 @@ import torch
 from transformers import AutoTokenizer
 from ..util import HyperParams
 from .portability_evaluate import compute_portability_quality
-from .evaluate_utils import test_seq2seq_batch_prediction_acc, test_batch_prediction_acc, test_prediction_acc,test_generation
+from .evaluate_utils import test_seq2seq_batch_prediction_acc, test_batch_prediction_acc, test_prediction_acc,test_generation, PPL
 
 def compute_edit_quality(
     model,
@@ -22,7 +22,8 @@ def compute_edit_quality(
     hparams: HyperParams,
     tok: AutoTokenizer,
     record: typing.Dict,
-    device
+    device,
+    eval_metric: Optional[str]
 ) -> typing.Dict:
     """
     Given a rewritten model, computes generalization and specificity metrics for
@@ -45,14 +46,14 @@ def compute_edit_quality(
     rewrite_prompts = record["prompt"]
     rephrase_prompts = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
     ret = compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
-                                              rewrite_prompts, target_new, device=device)
+                                              rewrite_prompts, target_new, device=device, eval_metric=eval_metric)
 
     ret['locality'] = {}
     ret['portability'] = {}
     if rephrase_prompts is not None:
         ret.update(
             compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
-                                                rephrase_prompts, target_new, device=device, test_rephrase=True)
+                                                rephrase_prompts, target_new, device=device, test_rephrase=True, eval_metric=eval_metric)
         )
 
     if 'locality' in record.keys() and any(record['locality']):
@@ -69,7 +70,8 @@ def compute_edit_quality(
                                             record['portability'][portability_key]['prompt'],
                                             record['portability'][portability_key]['ground_truth'], device=device)
             )
-    ret['fluency'] = test_generation(model=model,tok=tok,prefixes=rewrite_prompts,max_out_len=100,essence_texts=[])
+    if eval_metric != 'ppl':
+        ret['fluency'] = test_generation(model=model,tok=tok,prefixes=rewrite_prompts,max_out_len=100)
     return ret
 
 def compute_rewrite_or_rephrase_quality(
@@ -80,20 +82,27 @@ def compute_rewrite_or_rephrase_quality(
     prompt: str,
     target_new: str,
     device,
-    test_rephrase: bool = False
+    test_rephrase: bool = False,
+    eval_metric: str = 'token_em'
 ) -> typing.Dict:
-
-    if 't5' in model_name.lower():
-        acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
-    else:
-        acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device)
+    
     if not test_rephrase:
         key = 'rewrite'
     else:
         key = 'rephrase'
-    ret = {
-        f"{key}_acc": acc
-    }
+    if eval_metric == 'ppl':
+        ppl = PPL(model, tok, prompt, target_new, device)
+        ret = {
+            f"{key}_ppl": ppl
+        }
+    else:
+        if 't5' in model_name.lower():
+            acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
+        else:
+            acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device)
+        ret = {
+            f"{key}_acc": acc
+        }
     return ret
 
 def compute_locality_quality(

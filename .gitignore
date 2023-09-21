@@ -1,2 +1,4 @@
 hugging_cache
 data
+**/__pycache__
+examples/WikiBio
