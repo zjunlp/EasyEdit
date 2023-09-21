@@ -17,6 +17,7 @@ Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a featur
   - [FT-L](#ft)
   - [KN](#kn)
   - [IKE](#ike)
+  - [LoRA](#lora)
 
 ## Data
 
@@ -141,5 +142,14 @@ python run_zsre_llama2.py \
 python run_zsre_llama2.py \
     --editing_method=IKE \
     --hparams_dir=../hparams/IKE/llama-7b \
+    --data_dir=./data
+```
+
+### LoRA
+
+```shell
+python run_zsre_llama2.py \
+    --editing_method=LoRA \
+    --hparams_dir=../hparams/LoRA/llama-7b \
     --data_dir=./data
 ```
