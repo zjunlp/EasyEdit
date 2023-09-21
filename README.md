@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/badge/version-v0.0.1-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-![Static Badge](https://img.shields.io/badge/last_commit-August-blue)
+![Static Badge](https://img.shields.io/badge/last_commit-September-blue)
 ![](https://img.shields.io/badge/PRs-Welcome-red)
 
 ---
@@ -45,7 +45,7 @@
 - [Other Knowledge Editing Projects](#other-related-projects)
 
 ## 🔔News
-
+- **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
 - **2023-8-31 The EasyEdit have supported official fine-tuning API for gpt-3.5-turbo to customize chatgpt for your editing cases.**
 - **2023-8-15 We release the paper "[EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models](https://arxiv.org/abs/2308.07269)."**
 - **2023-7-12 We release version 0.0.1, supporting several knowledge editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
