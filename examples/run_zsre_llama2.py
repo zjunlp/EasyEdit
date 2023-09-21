@@ -3,7 +3,7 @@ import sys
 sys.path.append('..')
 import json
 import random
-from easyeditor import FTHyperParams, IKEHyperParams, KNHyperParams, MEMITHyperParams, ROMEHyperParams
+from easyeditor import FTHyperParams, IKEHyperParams, KNHyperParams, MEMITHyperParams, ROMEHyperParams, LoRAHyperParams
 from easyeditor import BaseEditor
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
@@ -33,6 +33,8 @@ if __name__ == "__main__":
         editing_hparams = ROMEHyperParams
     elif args.editing_method == 'IKE':
         editing_hparams = IKEHyperParams
+    elif args.editing_method == 'LoRA':
+        editing_hparams = LoRAHyperParams
     else:
         raise NotImplementedError
 
