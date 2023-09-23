@@ -270,9 +270,10 @@ class BaseEditor:
                     for locality_key in request['locality'].keys():
                         assert len(all_metrics[i]['post']['locality'][f'{locality_key}_output']) == \
                                len(all_metrics[i]['pre']['locality'][f'{locality_key}_output'])
-                        all_metrics[i]['post']['locality'][f'{locality_key}_acc'] = \
-                            np.mean(np.equal(all_metrics[i]['post']['locality'][f'{locality_key}_output'],
-                                             all_metrics[i]['pre']['locality'][f'{locality_key}_output']))
+                        locality_result = []
+                        for ans,label in zip(all_metrics[i]['post']['locality'][f'{locality_key}_output'],all_metrics[i]['pre']['locality'][f'{locality_key}_output']):
+                            locality_result.append(np.mean(np.equal(ans, label)))
+                        all_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
                         all_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
                     all_metrics[i]['pre'].pop('locality')
 
@@ -558,7 +559,7 @@ class BaseEditor:
         `locality_inputs`: dict
             for locality
         """
-        eval_metric= kwargs['eval_metric'] if 'eval_metric' in kwargs.keys() else 'token_em'
+        eval_metric= kwargs['eval_metric'] if 'eval_metric' in kwargs.keys() else 'exact match'
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
             
@@ -687,9 +688,10 @@ class BaseEditor:
                     for locality_key in request['locality'].keys():
                         assert len(all_metrics[i]['post']['locality'][f'{locality_key}_output']) == \
                                len(all_metrics[i]['pre']['locality'][f'{locality_key}_output'])
-                        all_metrics[i]['post']['locality'][f'{locality_key}_acc'] = \
-                            np.mean(np.equal(all_metrics[i]['post']['locality'][f'{locality_key}_output'],
-                                             all_metrics[i]['pre']['locality'][f'{locality_key}_output']))
+                        locality_result = []
+                        for ans,label in zip(all_metrics[i]['post']['locality'][f'{locality_key}_output'],all_metrics[i]['pre']['locality'][f'{locality_key}_output']):
+                            locality_result.append(np.mean(np.equal(ans, label)))
+                        all_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
                         all_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
                     all_metrics[i]['pre'].pop('locality')
 

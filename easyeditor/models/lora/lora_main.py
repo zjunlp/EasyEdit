@@ -142,8 +142,9 @@ def execute_lora(
                 tokens = tok(full_prompt, return_tensors="pt", padding=True, truncation=True)
                 bs = tokens["input_ids"].shape[0]
                 tokens["labels"] = tokens["input_ids"].clone()
+                num_pad_toks = [int((i == tok.pad_token_id).sum()) for i in tokens["labels"]]
                 for i in range(len(txt)):
-                    tokens["labels"][i][:num_prompt_toks[i]] = mask_token
+                    tokens["labels"][i][num_pad_toks[i]:num_pad_toks[i]+num_prompt_toks[i]] = mask_token
                 tokens["labels"][tokens["input_ids"] == tok.pad_token_id] = mask_token
                 tokens = tokens.to(device)
                 pred = peft_model(**tokens)
