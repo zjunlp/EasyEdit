@@ -23,7 +23,7 @@ def compute_edit_quality(
     tok: AutoTokenizer,
     record: typing.Dict,
     device,
-    eval_metric: Optional[str]
+    eval_metric: str = 'token_em'
 ) -> typing.Dict:
     """
     Given a rewritten model, computes generalization and specificity metrics for
