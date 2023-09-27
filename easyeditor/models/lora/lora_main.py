@@ -135,7 +135,8 @@ def execute_lora(
                 # unmasked_log_probs = pred.log_softmax(-1).gather(-1, targ.unsqueeze(-1)).squeeze(-1)
                 # log_prob = (unmasked_log_probs * mask.float()).sum() / n_tokens
                 # loss = -log_prob
-                full_prompt = [f"{p} {l} <|endoftext|>" for p, l in zip(txt, tgt)]
+                eos_token = tok.decode(tok.eos_token_id)
+                full_prompt = [f"{p} {l} {eos_token}" for p, l in zip(txt, tgt)]
                 # src_trg_inputs = tok(txt + tgt, return_tensors="pt", padding=True).to(device)
                 prompt_ids = tok(list(txt), return_tensors="pt", padding=True, truncation=True)["input_ids"]
                 num_prompt_toks = [int((i != tok.pad_token_id).sum()) for i in prompt_ids]
