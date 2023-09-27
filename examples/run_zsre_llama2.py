@@ -66,7 +66,6 @@ if __name__ == "__main__":
     subject = [edit_data_['subject'] for edit_data_ in test_data]
     hparams = editing_hparams.from_hparams(args.hparams_dir)
 
-
     if args.editing_method == 'IKE':
         train_data_path = os.path.join(args.data_dir, 'zsre_mend_train_10000.json')
         train_ds = ZsreDataset(train_data_path)

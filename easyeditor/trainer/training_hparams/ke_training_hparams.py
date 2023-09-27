@@ -60,7 +60,6 @@ class KETrainingHparams(HyperParams):
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
 
-
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 
@@ -74,4 +73,3 @@ class KETrainingHparams(HyperParams):
         assert (config and config['alg'] == 'KE') or print(f'KETrainingHyperParams can not load from {hparams_name_or_path}, '
                                                 f'alg_name is {config["alg"]} ')
         return cls(**config)
-

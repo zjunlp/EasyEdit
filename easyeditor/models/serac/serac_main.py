@@ -111,7 +111,6 @@ class SeracRewriteExecutor:
         #
         # new_model, model_info = self.alg.edit(edit_inner, cond)
 
-
         # targets = [
         #     (" " if request["target_new"][0] != " " else "")
         #     + request["target_new"]
@@ -162,7 +161,6 @@ class SeracRewriteExecutor:
         )
         cond = {k: sent_tok[k] for k in ["input_ids", "attention_mask"]}
         new_model = None
-
 
         new_model, model_info = self.alg.edit(edit_inner, cond)
         # factors = {

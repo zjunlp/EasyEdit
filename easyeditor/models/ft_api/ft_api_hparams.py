@@ -4,6 +4,7 @@ from typing import Optional
 
 from ...util.hparams import HyperParams
 
+
 @dataclass
 class FTApiHyperParams(HyperParams):
     api_key: str
@@ -12,7 +13,6 @@ class FTApiHyperParams(HyperParams):
     alg_name: str
     model_name: str
     proxy: Optional[str] = None
-
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

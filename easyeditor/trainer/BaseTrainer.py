@@ -91,9 +91,8 @@ class BaseTrainer:
         # with open(os.getcwd() + "/config.json", "w") as f:
         #     json.dump(OmegaConf.to_container(config), f)
 
-
         model_dir = os.path.join(config.results_dir, "models", config.alg)
-        if (not (self.config.debug and not self.config.save) and not os.path.exists(model_dir)):
+        if not (self.config.debug and not self.config.save) and not os.path.exists(model_dir):
             os.makedirs(model_dir)
         safe_model_name = self.config.model_name.split("/")[-1]  # Make sure no slashes
         self.save_path = f"{model_dir}/{safe_model_name}"
@@ -150,10 +149,7 @@ class BaseTrainer:
                 self.config.max_iters = self.config.max_epochs * len(self.train_set)
             LOG.info(f'MAX EPOCH: {self.config.max_epochs}, set max iters to {self.config.max_iters}')
 
-
-
         self.epoches = round(float(self.config.max_iters) / (len(self.train_set) / self.config.batch_size))
-
 
         self.global_iter = 0
         for epoch in range(self.epoches):

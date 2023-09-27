@@ -5,6 +5,7 @@ import nltk
 import typing
 from ..util.generate import generate_fast
 
+
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
     prompt_tok = tok(
         prompts,
@@ -36,6 +37,7 @@ def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, loca
 
         return np.mean(np.equal(ans, target))
 
+
 def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target, device, locality=False):
     prompt_tok = tok(
         prompt,
@@ -56,7 +58,6 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target, devic
     prompt_tok['decoder_input_ids'] = trg_tok['input_ids']
     prompt_tok['decoder_attention_mask'] = trg_tok['attention_mask']
 
-
     with torch.no_grad():
         outputs = model(**prompt_tok)
         if type(outputs) is torch.Tensor:
@@ -70,6 +71,7 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target, devic
             return ans.squeeze().detach().cpu().numpy().tolist()
 
         return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()[0]
+
 
 def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False):
     if isinstance(prompts, str):
@@ -114,7 +116,8 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
             return res
         else:
             return [np.mean(np.equal(answers, labels))]
-    
+
+
 def test_generation(
     model,
     tok,
@@ -149,6 +152,7 @@ def test_generation(
 
     return ret
 
+
 def n_gram_entropy(gen_texts, agg="arith"):
     assert agg in ["arith", "geom"]
 
@@ -176,10 +180,12 @@ def compute_n_gram_entropy(sentence, ns=None, weights=None, agg="arith"):
 
     return (scipy.stats.mstats.gmean if agg == "geom" else np.mean)(entropy_list)
 
+
 def compute_freq(sentence, n=2):
     tokens = nltk.word_tokenize(sentence)
     ngrams = nltk.ngrams(tokens, n)
     return nltk.FreqDist(ngrams)
+
 
 def PPL(
     model,
@@ -210,6 +216,7 @@ def PPL(
     ppl = torch.exp(nll)#.clip(0, 100)
     return ppl.cpu().numpy().tolist()
 
+
 def verify_answer(model_answer, correct_answer):
     if type(correct_answer) is str:
         correct_answer = [[correct_answer]]
@@ -217,6 +224,7 @@ def verify_answer(model_answer, correct_answer):
         if True not in [possible_answer in model_answer for possible_answer in answer]:
             return False
     return True
+
 
 def answer_match(
     model,
@@ -230,6 +238,7 @@ def answer_match(
     predict = tok.decode(outputs[0], skip_special_tokens=True)
 
     return verify_answer(predict,target_new)
+
 
 def slice_list(matrix,start_indices,left):
     if isinstance(matrix[0], list):

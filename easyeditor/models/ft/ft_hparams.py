@@ -30,7 +30,6 @@ class FTHyperParams(HyperParams):
     batch_size: int = 128
     max_length: int = 30
 
-
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 

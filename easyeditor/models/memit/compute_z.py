@@ -72,7 +72,6 @@ def compute_z(
         for i, prompt in enumerate(all_prompts)
     ]
 
-
     # Finalize rewrite and loss layers
     loss_layer = max(hparams.v_loss_layer, layer)
     print(f"Rewrite layer is {layer}")

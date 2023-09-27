@@ -10,6 +10,7 @@ from transformers import GPT2Tokenizer, GPT2TokenizerFast, LlamaTokenizer, AutoT
 from ..util.globals import *
 from ..trainer.utils import dict_to
 
+
 class ZsreDataset(Dataset):
     """
     Dataset of factual knowledge based on zsRE.
@@ -21,15 +22,15 @@ class ZsreDataset(Dataset):
         data_dir = Path(data_dir)
         zsre_loc = data_dir
 
-        if(config is not None):
+        if config is not None:
             self.config = config
-        if(config is not None and hasattr(config, 'max_length')):
+        if config is not None and hasattr(config, 'max_length'):
             self.max_length = config.max_length
         else:
             self.max_length = 32
 
         # For Meta Training
-        if(config is not None and hasattr(config, 'tokenizer_name')):
+        if config is not None and hasattr(config, 'tokenizer_name'):
             tok_name = (
                 config.tokenizer_name
                 if config.tokenizer_name is not None
@@ -55,7 +56,7 @@ class ZsreDataset(Dataset):
         data = []
         for i, record in enumerate(raw):
             assert (
-                "nq question: " in record["loc"]
+                    "nq question: " in record["loc"]
             ), f"Neighborhood prompt missing `nq question:`. Check for errors?"
             # ans_toks = tok(" " + record["loc_ans"])["input_ids"]
             if record["alt"] == "":
@@ -171,7 +172,6 @@ class ZsreDataset(Dataset):
             "raw": batch,
         }
         return dict_to(batch, self.config.device)
-
 
     def collate_gpt_fn(self, batch):
         src = [b["prompt"] for b in batch]

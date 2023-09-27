@@ -76,7 +76,7 @@ def execute_rome(
         # Space required for correct tokenization
         request["target_new"] = " " + request["target_new"]
 
-    if('{}' not in request['prompt']):
+    if '{}' not in request['prompt']:
         assert request['subject'] in request['prompt'] or \
                print(f"Subject:{request['subject']} do not exist in prompt: {request['prompt']}")
 
