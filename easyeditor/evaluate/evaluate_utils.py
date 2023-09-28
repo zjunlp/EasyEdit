@@ -105,7 +105,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
         answers = slice_list(answers,prompt_len,left=True)
         labels = slice_list(labels,prompt_len,left=False)
         if locality:
-            return answers
+            return answers if type(answers[0]) is list else [answers,]
         if isinstance(answers[0], list):
             res = []
             for ans,label in zip(answers,labels):
