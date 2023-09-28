@@ -43,9 +43,7 @@ class MENDTrainingHparams(HyperParams):
     shared: bool
 
     # Output
-
     results_dir: str
-
 
     # Train
     device: str
@@ -72,7 +70,6 @@ class MENDTrainingHparams(HyperParams):
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
 
-
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 
@@ -86,4 +83,3 @@ class MENDTrainingHparams(HyperParams):
         assert (config and config['alg'] == 'MEND') or print(f'MENDTrainingHyperParams can not load from {hparams_name_or_path}, '
                                                 f'alg_name is {config["alg"]} ')
         return cls(**config)
-

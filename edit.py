@@ -24,6 +24,7 @@ def test_KE():
 
     return metrics, edited_model
 
+
 def test_KN():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
                'Which fictional universe is Chlorophyll Kid part of?']
@@ -38,6 +39,7 @@ def test_KN():
     )
 
     return metrics, edited_model
+
 
 def test_KN_GPTJ():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
@@ -74,6 +76,7 @@ def test_FT():
 
     return metrics, edited_model
 
+
 def test_FT_GPTJ():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
                'Which fictional universe is Chlorophyll Kid part of?']
@@ -93,6 +96,7 @@ def test_FT_GPTJ():
 
     return metrics, edited_model
 
+
 def test_ZsreDataSet_Edit():
 
     hparams = FTHyperParams.from_hparams('./hparams/FT/gpt2-xl')
@@ -101,6 +105,7 @@ def test_ZsreDataSet_Edit():
     metrics, edited_model, _ = editor.edit_dataset(ds)
 
     return metrics, edited_model
+
 
 def test_CounterfactDataSet_Edit():
 
@@ -117,6 +122,7 @@ def test_KE_Hyperparams():
     import pdb
     pdb.set_trace()
 
+
 def test_KE_Meta_Train():
     training_hparams = KETrainingHparams.from_hparams('./hparams/TRAINING/KE')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -129,6 +135,7 @@ def test_KE_Meta_Train():
 
     trainer.run()
 
+
 def test_KE_Meta_Train_GPTJ():
     training_hparams = KETrainingHparams.from_hparams('./hparams/TRAINING/KE/gpt-j-6B.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -140,6 +147,7 @@ def test_KE_Meta_Train_GPTJ():
     )
 
     trainer.run()
+
 
 def test_MEND_Meta_Train():
     training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND')
@@ -166,6 +174,7 @@ def test_KE_Meta_Counterfacat_Train():
 
     trainer.run()
 
+
 def test_ROME():
 
     prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
@@ -191,6 +200,7 @@ def test_ROME():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_MEMIT():
 
@@ -249,6 +259,7 @@ def test_MEMIT():
 
     return metrics, edited_model
 
+
 def test_MEND():
 
     prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
@@ -272,6 +283,7 @@ def test_MEND():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_KE():
 
@@ -310,6 +322,7 @@ def test_SERAC_Counterfacat_Train():
 
     trainer.run()
 
+
 def test_SERAC_Zsre_Train():
     training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/baichuan-7b.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -322,6 +335,7 @@ def test_SERAC_Zsre_Train():
 
     trainer.run()
 
+
 def test_SERAC_Zsre_Train_GPTJ():
     training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/gpt-j-6B.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -333,6 +347,8 @@ def test_SERAC_Zsre_Train_GPTJ():
     )
 
     trainer.run()
+
+
 def test_SERAC_Zsre_Train_Llama():
     training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/llama-7b.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -345,6 +361,7 @@ def test_SERAC_Zsre_Train_Llama():
 
     trainer.run()
 
+
 def test_SERAC_Zsre_Train_T5():
     training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/t5-3B.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -356,6 +373,7 @@ def test_SERAC_Zsre_Train_T5():
     )
 
     trainer.run()
+
 
 def test_SERAC():
 
@@ -393,6 +411,7 @@ def test_SERAC():
 
     return metrics, edited_model
 
+
 def test_SERAC_T5():
 
     import json
@@ -413,6 +432,7 @@ def test_SERAC_T5():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_IKE():
 
@@ -448,6 +468,7 @@ def test_IKE():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_IKE_2():
 
@@ -501,7 +522,8 @@ def test_IKE_2():
     pdb.set_trace()
 
     return metrics, edited_model
-  
+
+
 def test_IKE_Llama():
 
     prompts = ['Ray Charles, the',
@@ -554,6 +576,7 @@ def test_IKE_Llama():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_IKE_GPTJ():
 
@@ -621,6 +644,7 @@ def test_MEND_Meta_Train_Llama():
 
     trainer.run()
 
+
 def test_MEND_Meta_Train_GPTJ():
     training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND/gpt-j-6B.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -632,7 +656,6 @@ def test_MEND_Meta_Train_GPTJ():
     )
 
     trainer.run()
-
 
 
 def test_MEND_Llama():
@@ -667,6 +690,7 @@ def test_MEND_Llama():
 
     return metrics, edited_model
 
+
 def test_MEND_GPTJ():
 
     # prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
@@ -698,6 +722,7 @@ def test_MEND_GPTJ():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_MEND_T5():
 
@@ -815,6 +840,8 @@ def test_MEMIT_GPTJ():
     pdb.set_trace()
 
     return metrics, edited_model
+
+
 def test_KE_GPTJ():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
                'Which fictional universe is Chlorophyll Kid part of?']
@@ -858,6 +885,7 @@ def test_FT_T5():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_IKE_T5():
 
@@ -912,6 +940,7 @@ def test_IKE_T5():
 
     return metrics, edited_model
 
+
 def test_KE_Meta_Train_T5():
     training_hparams = KETrainingHparams.from_hparams('./hparams/TRAINING/KE/t5-3B.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
@@ -923,6 +952,7 @@ def test_KE_Meta_Train_T5():
     )
 
     trainer.run()
+
 
 def test_KE_T5():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
@@ -952,6 +982,7 @@ def test_MEND_Meta_Train_T5():
     )
 
     trainer.run()
+
 
 def test_ROME_LlaMA():
 
@@ -1026,6 +1057,7 @@ def test_ROME_DEMO():
     print('Pre-Edit Outputs: ', [tokenizer.decode(x, skip_special_tokens=True) for x in pre_edit_outputs.detach().cpu().numpy().tolist()][0])
     print('\033[1;35mPost-Edit\033[0m Outputs: ', [tokenizer.decode(x, skip_special_tokens=True) for x in post_edit_outputs.detach().cpu().numpy().tolist()][0].replace('Boris Johnson', '\033[1;35mBoris Johnson\033[0m'))    # exit()
 
+
 def ROME_DEMO_2():
     import warnings
     warnings.filterwarnings("ignore")
@@ -1087,6 +1119,7 @@ def ROME_DEMO_2():
     # print('\033[1;35mPre-Edit\033[0m Outputs: ', [tokenizer.decode(x, skip_special_tokens=True) for x in pre_edit_outputs.detach().cpu().numpy().tolist()][0])
     print('\033[1;35mPost-Edit\033[0m Outputs: ', [tokenizer.decode(x, skip_special_tokens=True) for x in post_edit_outputs.detach().cpu().numpy().tolist()])    # exit()
 
+
 def test_Llama2():
     # prompts = ['Which family does Ramalinaceae belong to',
     #            'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
@@ -1144,6 +1177,7 @@ def test_Llama2():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_ROME_Baichuan():
 
@@ -1204,6 +1238,8 @@ def test_MEND_Baichuan():
     pdb.set_trace()
 
     return metrics, edited_model
+
+
 def test_MEMIT_Baichuan():
 
     prompts = ['Ray Charles, the',
@@ -1260,6 +1296,8 @@ def test_MEMIT_Baichuan():
     pdb.set_trace()
 
     return metrics, edited_model
+
+
 def test_KN_Baichuan():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
                'Which fictional universe is Chlorophyll Kid part of?']
@@ -1278,6 +1316,7 @@ def test_KN_Baichuan():
     pdb.set_trace()
 
     return metrics, edited_model    
+
 
 def test_IKE_Baichuan():
 
@@ -1332,6 +1371,7 @@ def test_IKE_Baichuan():
 
     return metrics, edited_model
 
+
 def test_SERAC_Baichuan():
 
     prompts = ['BBC One, by',
@@ -1367,6 +1407,7 @@ def test_SERAC_Baichuan():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_LoRA_llama():
 
@@ -1449,6 +1490,7 @@ def test_FT_Baichuan():
 
     return metrics, edited_model
 
+
 def baichuanserac():
     training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/baichuan-7b.yaml')
     train_ds = ZsreDataset('/mnt/peng/EasyEdit/data/zsre_mend_train.json', config=training_hparams)
@@ -1460,6 +1502,7 @@ def baichuanserac():
     )
 
     trainer.run()
+
 
 def test_KN_ChatGLM():
     # prompts = ['梅西的俱乐部是什么？']
@@ -1496,6 +1539,7 @@ def test_KN_ChatGLM():
 
     return metrics, edited_model 
 
+
 def test_FT_ChatGLM():
     prompts = ['Ray Charles, the',
                'Grant Hill is a professional',
@@ -1521,6 +1565,7 @@ def test_FT_ChatGLM():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_IKE_ChatGLM():
 
@@ -1574,6 +1619,7 @@ def test_IKE_ChatGLM():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def test_MEMIT_ChatGLM():
 
@@ -1632,6 +1678,7 @@ def test_MEMIT_ChatGLM():
 
     return metrics, edited_model
 
+
 def test_MEND_Train_ChatGLM():
     training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND/chatglm2-6b.yaml')
     train_ds = ZsreDataset('./data/zsre/zsre_mend_train.json', config=training_hparams)
@@ -1643,6 +1690,7 @@ def test_MEND_Train_ChatGLM():
     )
 
     trainer.run()
+
 
 def test_MEND_ChatGLM():
 
@@ -1676,6 +1724,7 @@ def test_MEND_ChatGLM():
 
     return metrics, edited_model
 
+
 def test_ROME_ChatGLM():
 
     prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
@@ -1707,6 +1756,7 @@ def test_ROME_ChatGLM():
 
     return metrics, edited_model
 
+
 def test_ChatGPT():
 
     import os
@@ -1735,6 +1785,7 @@ def test_ChatGPT():
     pdb.set_trace()
 
     return metrics, edited_model
+
 
 def main():
     # metrics, edited_model = test_KN()

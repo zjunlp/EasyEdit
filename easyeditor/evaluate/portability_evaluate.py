@@ -6,6 +6,7 @@ import torch
 import numpy as np
 from .evaluate_utils import  test_batch_prediction_acc, test_seq2seq_batch_prediction_acc, test_prediction_acc
 
+
 def compute_portability_quality(
     model,
     model_name,

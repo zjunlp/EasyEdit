@@ -49,8 +49,6 @@ class BaseEditor:
 
         assert hparams is not None or print('Error: hparams is None.')
 
-
-
         self.model_name = hparams.model_name
         self.apply_algo = ALG_DICT[hparams.alg_name]
         self.alg_name = hparams.alg_name
@@ -136,11 +134,9 @@ class BaseEditor:
         else: # Default ground truth is <|endoftext|>
             ground_truth = ['<|endoftext|>' for _ in range(len(prompts))]
 
-
         # assert (locality_prompts is None and locality_ground_truth is None) or \
         #        (isinstance(locality_prompts, str) and isinstance(locality_ground_truth, str)) or \
         #        len(locality_prompts) == len(locality_ground_truth) or print('Error in locality Input.')
-
 
         requests = self._prepare_requests(prompts, target_new, ground_truth, rephrase_prompts,
                                           locality_inputs, portability_inputs, **kwargs)
@@ -155,7 +151,6 @@ class BaseEditor:
         # if not os.path.exists(base_case_path):
         #     os.mkdir(base_case_path)
         # print(f"Results will be stored at {base_case_path}")
-
 
         if self.alg_name == 'FT-Api':
             all_metrics = []
@@ -187,7 +182,6 @@ class BaseEditor:
                         f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
                     )
             return all_metrics, edited_model, weights_copy
-
 
         all_metrics = []
         for i, request in enumerate(requests):
@@ -343,7 +337,6 @@ class BaseEditor:
             exec_time = time() - start
             LOG.info(f"Execution editing took {exec_time}")
 
-
             start = time()
             all_metrics = []
             for i, request in enumerate(record_chunks):
@@ -371,7 +364,6 @@ class BaseEditor:
 
             LOG.info(f"Evaluation took {time() - start}")
 
-
         return all_metrics, edited_model, weights_copy
 
     def edit_dataset(self,
@@ -384,8 +376,6 @@ class BaseEditor:
         or print(f'DataSet {ds} not supported yet.')
 
         is_singleton = SingletonEditor.is_singleton_method(self.alg_name)
-
-
 
         if is_singleton:
             num_edits = 1 # Single editor method found
@@ -440,8 +430,6 @@ class BaseEditor:
             LOG.info(f"Evaluation took {time() - start}")
 
         return all_metrics, edited_model, weights_copy
-
-
 
 
     def _chunks(self, arr, n):
@@ -562,7 +550,7 @@ class BaseEditor:
         eval_metric= kwargs['eval_metric'] if 'eval_metric' in kwargs.keys() else 'exact match'
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
-            
+
         if hasattr(self.hparams, 'batch_size') :
                assert self.hparams.batch_size == 1 or \
                       print(f'Single Edit, pls set the batch_size to 1....')
@@ -573,7 +561,6 @@ class BaseEditor:
         # if not os.path.exists(base_case_path):
         #     os.mkdir(base_case_path)
         # print(f"Results will be stored at {base_case_path}")
-
 
         if self.alg_name == 'FT-Api':
             all_metrics = []
@@ -605,7 +592,6 @@ class BaseEditor:
                         f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
                     )
             return all_metrics, edited_model, weights_copy
-
 
         all_metrics = []
         for i, request in tqdm(enumerate(requests)):

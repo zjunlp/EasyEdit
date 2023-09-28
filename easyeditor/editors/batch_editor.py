@@ -1,7 +1,7 @@
 from enum import Enum
 
-class BatchEditor(Enum):
 
+class BatchEditor(Enum):
     CALINET = 'CALINET'
     SERAC = 'SERAC'
     KE = 'KE'

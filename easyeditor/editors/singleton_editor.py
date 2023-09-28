@@ -1,7 +1,7 @@
 from enum import Enum
 
-class SingletonEditor(Enum):
 
+class SingletonEditor(Enum):
     ROME = 'ROME'
     KN = 'KN'
 
