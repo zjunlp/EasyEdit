@@ -71,7 +71,7 @@ def compute_edit_quality(
                                             record['portability'][portability_key]['ground_truth'], device=device)
             )
     if eval_metric != 'ppl':
-        ret['fluency'] = test_generation(model=model,tok=tok,prefixes=rewrite_prompts,max_out_len=50)
+        ret['fluency'] = test_generation(model=model,tok=tok,prefixes=rewrite_prompts if type(rewrite_prompts) is list else [rewrite_prompts,],max_out_len=50)
     return ret
 
 def compute_rewrite_or_rephrase_quality(
