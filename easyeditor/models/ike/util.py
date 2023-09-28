@@ -18,7 +18,6 @@ def encode_ike_facts(sentence_model: SentenceTransformer, ds: Dataset, hparams: 
         sentences.append(f"New Fact: {new_fact}\nPrompt: {paraphrases} {target_new}\n\n")
         sentences.append(f"New Fact: {new_fact}\nPrompt: {neighbors} {neighbors_ans}\n\n")
 
-
     embeddings = sentence_model.encode(sentences)
     base_path = f'{hparams.results_dir}/{hparams.alg_name}/embedding'
     os.makedirs(base_path, exist_ok=True)

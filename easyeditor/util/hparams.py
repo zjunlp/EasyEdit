@@ -25,7 +25,6 @@ class HyperParams:
                     pass
         return config
 
-
     # @classmethod
     # def from_hparams(cls, hparams_name_or_path: str):
     #
@@ -38,4 +37,3 @@ class HyperParams:
     #     params_class, apply_algo = ALG_DICT[config.alg_name]
     #
     #     return params_class(**config)
-

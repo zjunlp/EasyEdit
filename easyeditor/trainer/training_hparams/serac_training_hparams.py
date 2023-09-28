@@ -74,7 +74,6 @@ class SERACTrainingHparams(HyperParams):
     max_iters: Optional[int] = None
     max_length: int = 32
 
-
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 
@@ -84,7 +83,6 @@ class SERACTrainingHparams(HyperParams):
         with open(hparams_name_or_path, "r") as stream:
             config = yaml.safe_load(stream)
             config = super().construct_float_from_scientific_notation(config)
-
 
         assert (config and config['alg'] == 'SERAC') or print(f'SERACTrainingHyperParams can not load from {hparams_name_or_path}, '
                                                 f'alg_name is {config["alg"]} ')

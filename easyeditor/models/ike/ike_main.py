@@ -11,9 +11,7 @@ from typing import Any, Dict, List, Tuple
 import torch
 
 
-
 # def encode_facts(sentence_model: SentenceTransformer, ds: Dataset, hparams: IKEHyperParams):
-
 #     sentences = []
 #     for i, train_data in enumerate(ds):
 #         new_fact = train_data['prompt'] + ' ' + train_data['target_new']
@@ -24,10 +22,7 @@ import torch
 #         sentences.append(f"New Fact: {new_fact}\nPrompt: {new_fact}\n\n")
 #         sentences.append(f"New Fact: {new_fact}\nPrompt: {paraphrases} {target_new}\n\n")
 #         sentences.append(f"New Fact: {new_fact}\nPrompt: {neighbors} {neighbors_ans}\n\n")
-
-
 #     embeddings = sentence_model.encode(sentences)
-
 #     return sentences, embeddings.to(hparams.device)
 
 def apply_ike_to_model(
