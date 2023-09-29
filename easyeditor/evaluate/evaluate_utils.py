@@ -118,7 +118,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
             return [np.mean(np.equal(answers, labels))]
 
 
-def test_generation(
+def test_generation_quality(
     model,
     tok,
     prefixes: typing.List[str],
