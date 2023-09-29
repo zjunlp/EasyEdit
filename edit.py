@@ -1131,7 +1131,7 @@ def test_Llama2():
     #               'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
     import json
 
-    edit_data = json.load(open('./data/zsre_mend_eval_one_hop.json', 'r', encoding='utf-8'))
+    edit_data = json.load(open('./data/zsre_mend_eval_one_hop.json', 'r', encoding='utf-8'))[:20]
     prompts = [edit_data_['src'] for edit_data_ in edit_data]
     rephrase_prompts = [edit_data_['rephrase'] for edit_data_ in edit_data]
     target_new = [edit_data_['alt'] for edit_data_ in edit_data]
@@ -1154,13 +1154,13 @@ def test_Llama2():
     }
     subject = [edit_data_['subject'] for edit_data_ in edit_data]
     # hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
-    # hparams = FTHyperParams.from_hparams('./hparams/FT/llama-7b.yaml')
+    hparams = FTHyperParams.from_hparams('./hparams/FT/chatglm2-6b.yaml')
     # hparams = IKEHyperParams.from_hparams('./hparams/IKE/llama-7b.yaml')
     # train_ds = ZsreDataset('./data/zsre_mend_train.json', size=20000)
     # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama-7b.yaml')
     # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
-    hparams = KNHyperParams.from_hparams('./hparams/KN/llama-7b.yaml')
+    # hparams = KNHyperParams.from_hparams('./hparams/KN/llama-7b.yaml')
 
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
@@ -1836,7 +1836,7 @@ def main():
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    # test_Llama2()
+    test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()
@@ -1853,7 +1853,7 @@ def main():
     # test_MEND_Train_ChatGLM()
     # test_MEND_ChatGLM()
     # test_ROME_ChatGLM()
-    test_LoRA_llama()
+    # test_LoRA_llama()
     
 
 if __name__ == '__main__':

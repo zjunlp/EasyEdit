@@ -23,7 +23,8 @@ def compute_edit_quality(
     tok: AutoTokenizer,
     record: typing.Dict,
     device,
-    eval_metric: str = 'token_em'
+    eval_metric: str = 'token_em',
+    test_generation = False
 ) -> typing.Dict:
     """
     Given a rewritten model, computes generalization and specificity metrics for
@@ -70,7 +71,7 @@ def compute_edit_quality(
                                             record['portability'][portability_key]['prompt'],
                                             record['portability'][portability_key]['ground_truth'], device=device)
             )
-    if eval_metric != 'ppl':
+    if eval_metric != 'ppl' and test_generation:
         ret['fluency'] = test_generation(model=model,tok=tok,prefixes=rewrite_prompts if type(rewrite_prompts) is list else [rewrite_prompts,],max_out_len=50)
     return ret
 

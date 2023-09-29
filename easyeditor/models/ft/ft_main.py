@@ -107,6 +107,7 @@ def execute_ft(
         for txt, tgt in zip(
             chunks(texts, hparams.batch_size), chunks(targets, hparams.batch_size)
         ):
+            txt[0] = f"[Round 1]\n\n问：{txt[0]}\n\n答："
             inputs = tok(txt, return_tensors="pt", padding=True).to(device)
             target_ids = tok(tgt, return_tensors="pt", padding=True)["input_ids"].to(
                 device
@@ -125,6 +126,49 @@ def execute_ft(
                 avg_log_prob = (unmasked_log_probs * mask.float()).sum() / n_tokens
                 nll = -avg_log_prob
                 loss = nll
+            elif 'chatglm' in hparams.model_name.lower():
+                # def get_masks(seq, bos_token_id):
+                #     """  code from model_chatglm.py  """
+                #     if seq.count(bos_token_id) == 2:
+                #         context_length = seq[2:].index(bos_token_id) + 2
+                #     else:
+                #         context_length = seq.index(bos_token_id)
+                #     attention_mask = torch.ones((1, len(seq), len(seq)))
+                #     attention_mask.tril_()
+                #     attention_mask[..., :context_length] = 1
+                #     # attention_mask.unsqueeze_(1)
+                #     attention_mask = (attention_mask < 0.5).bool()
+                #     return attention_mask
+
+                input_ids = inputs['input_ids'].tolist()
+                labels = target_ids.tolist()
+                assert len(input_ids) == len(labels)
+                len_batches = [len(input_ids[i]) + len(labels[i]) + 1
+                                 for i in range(len(input_ids))]
+                len_max_batch = max(len_batches)
+                batch_input_ids = []
+                batch_attention_mask = []
+                batch_labels = []
+                for x, y in zip(input_ids, labels):
+                    len_padding = len_max_batch - len(x) - len(y)
+                    if tok.padding_side and tok.padding_side == "left":
+                        batch_label = [-100] * len_padding + [-100] * len(x) + y
+                        batch_input_id = [0] * (len_padding) + x + y
+                    else:
+                        batch_label = [-100] * len(x) + y + [-100] * len_padding
+                        batch_input_id = x + y + [0] * (len_padding)
+
+                    # tensor_attention_mask = get_masks(batch_input_id, bos_token_id=64792)
+                    tensor_input_ids = torch.tensor(batch_input_id, dtype=torch.long)
+                    tensor_labels = torch.tensor(batch_label, dtype=torch.long)
+                    batch_input_ids.append(tensor_input_ids)
+                    # batch_attention_mask.append(tensor_attention_mask)
+                    batch_labels.append(tensor_labels)
+                # batch_attention_mask = torch.stack(batch_attention_mask).to(device)
+                batch_input_ids = torch.stack(batch_input_ids).to(device)
+                batch_labels = torch.stack(batch_labels).to(device)
+
+                loss = model(input_ids=batch_input_ids, labels=batch_labels).loss
             else:
                 probs = torch.nn.functional.log_softmax(
                     model(**inputs).logits[torch.arange(bs), last_token_inds], dim=-1

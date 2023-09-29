@@ -76,7 +76,7 @@ class BaseEditor:
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'chatglm2' in self.model_name.lower():
-                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True)
+                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch.float32)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.unk_token_id = 64787
                 # self.tok.pad_token_id = self.tok.eos_token_id
@@ -118,6 +118,7 @@ class BaseEditor:
         `locality_inputs`: dict
             for locality
         """
+        test_generation = kwargs['test_generation'] if 'test_generation' in kwargs.keys() else False
         if isinstance(prompts, List):
             assert len(prompts) == len(target_new)
         else:
@@ -194,7 +195,7 @@ class BaseEditor:
             else:
                 metrics = {
                     "pre": compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
-                                            self.hparams.device)
+                                            self.hparams.device, test_generation=test_generation)
                 }
             all_metrics.append(metrics)
 
@@ -251,7 +252,7 @@ class BaseEditor:
                     'case_id': i,
                     "requested_rewrite": request,
                     "time": exec_time,
-                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device),
+                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation),
                 })
                 if self.alg_name == 'KN':
                     with torch.no_grad():
@@ -303,7 +304,7 @@ class BaseEditor:
             the ground truth / expected output
         """
         assert len(prompts) == len(target_new)
-
+        test_generation = kwargs['test_generation'] if 'test_generation' in kwargs.keys() else False
         if ground_truth is not None:
             if isinstance(ground_truth, str):
                 ground_truth = [ground_truth,]
@@ -345,7 +346,7 @@ class BaseEditor:
                     'case_id': i,
                     "requested_rewrite": request,
                     "time": exec_time,
-                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device),
+                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation),
                 }
 
                 all_metrics.append(metrics)
@@ -355,7 +356,7 @@ class BaseEditor:
                     nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
 
             for i, request in enumerate(record_chunks):
-                all_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
+                all_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
 
                 if verbose:
                     LOG.info(
@@ -604,7 +605,7 @@ class BaseEditor:
             else:
                 metrics = {
                     "pre": compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
-                                            self.hparams.device, eval_metric=eval_metric)
+                                            self.hparams.device, eval_metric=eval_metric, test_generation=test_generation)
                 }
             all_metrics.append(metrics)
 
@@ -661,7 +662,7 @@ class BaseEditor:
                     'case_id': i,
                     "requested_rewrite": request,
                     "time": exec_time,
-                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric=eval_metric),
+                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric=eval_metric, test_generation=test_generation),
                 })
                 if self.alg_name == 'KN':
                     with torch.no_grad():
