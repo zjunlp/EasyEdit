@@ -80,6 +80,10 @@ class BaseEditor:
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.unk_token_id = 64787
                 # self.tok.pad_token_id = self.tok.eos_token_id
+            elif 'internlm' in self.model_name.lower():
+                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True)
+                self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
+                self.tok.pad_token_id = self.tok.eos_token_id
             else:
                 raise NotImplementedError
 

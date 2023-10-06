@@ -1786,6 +1786,86 @@ def test_ChatGPT():
 
     return metrics, edited_model
 
+def test_FT_Internlm():
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    hparams = FTHyperParams.from_hparams('./hparams/FT/internlm-7b')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts + prompts,
+        ground_truth=ground_truth + ground_truth,
+        target_new=target_new + target_new
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_IKE_Internlm():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = IKEHyperParams.from_hparams('./hparams/IKE/internlm-7b.yaml')
+    train_ds = CounterFactDataset('./data/counterfact/counterfact-train.json')
+    # sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
+    # encode_ike_facts(sentence_model, train_ds, hparams)
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        train_ds=train_ds,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
 
 def main():
     # metrics, edited_model = test_KN()
@@ -1836,7 +1916,7 @@ def main():
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    test_Llama2()
+    # test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()
@@ -1854,7 +1934,8 @@ def main():
     # test_MEND_ChatGLM()
     # test_ROME_ChatGLM()
     # test_LoRA_llama()
-    
+    # test_FT_Internlm()
+    test_IKE_Internlm()
 
 if __name__ == '__main__':
     main()
