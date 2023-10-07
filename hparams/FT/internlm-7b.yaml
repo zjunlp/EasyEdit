@@ -1,11 +1,11 @@
 alg_name: "FT"
-model_name: "/mnt/16t/xzwnlp/model/internlm/internlm-7b"
+model_name: "/mnt/16t/xzwnlp/EasyEditest/hugging_cache/internlm-7b"
 device: 0
 
-layers: [31]
-num_steps: 25
+layers: [0,31]
+num_steps: 40
 batch_size: 1
-max_length: 30
+max_length: 40
 lr: 5e-4
 weight_decay: 0
 kl_factor: 0
@@ -16,3 +16,4 @@ mlp_module_tmp: "model.layers.{}.mlp"
 attn_module_tmp: "model.layers.{}.self_attn"
 ln_f_module: "model.norm"
 lm_head_module: "lm_head"
+model_parallel: false
