@@ -17,7 +17,7 @@ class KNHyperParams(HyperParams):
     device: int
     alg_name: str
 
-    max_length: int = 30
+    max_length: int = 40
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 

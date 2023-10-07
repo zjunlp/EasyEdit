@@ -1154,10 +1154,10 @@ def test_Llama2():
     }
     subject = [edit_data_['subject'] for edit_data_ in edit_data]
     # hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
-    hparams = FTHyperParams.from_hparams('./hparams/FT/chatglm2-6b.yaml')
+    # hparams = FTHyperParams.from_hparams('./hparams/FT/chatglm2-6b.yaml')
     # hparams = IKEHyperParams.from_hparams('./hparams/IKE/llama-7b.yaml')
     # train_ds = ZsreDataset('./data/zsre_mend_train.json', size=20000)
-    # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/baichuan-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama-7b.yaml')
     # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
     # hparams = KNHyperParams.from_hparams('./hparams/KN/llama-7b.yaml')
@@ -1916,7 +1916,7 @@ def main():
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    # test_Llama2()
+    test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()
@@ -1935,7 +1935,7 @@ def main():
     # test_ROME_ChatGLM()
     # test_LoRA_llama()
     # test_FT_Internlm()
-    test_IKE_Internlm()
+    # test_IKE_Internlm()
 
 if __name__ == '__main__':
     main()

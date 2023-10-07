@@ -39,7 +39,7 @@ class MEMITHyperParams(HyperParams):
     model_name: str
     stats_dir: str
 
-    max_length: int = 30
+    max_length: int = 40
     batch_size: int = 1
 
     @classmethod

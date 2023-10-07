@@ -1,5 +1,5 @@
 alg_name: "ROME"
-model_name: "/mnt/xzk/Baichuan-7B"
+model_name: "/mnt/16t/wmr/safetyedit/hugging_cache/Baichuan2-7B-Chat"
 stats_dir: "/mnt/peng/EasyEdit/data/stats"
 device: 0
 layers: [5]
@@ -21,6 +21,7 @@ lm_head_module: "lm_head"
 mom2_dataset: "wikipedia"
 mom2_n_samples: 100000
 mom2_dtype: "float32"
+model_parallel: false
 
 #alg_name: "ROME"
 #model_name: "./hugging_cache/llama-7b"

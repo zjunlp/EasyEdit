@@ -27,7 +27,7 @@ class ZsreDataset(Dataset):
         if config is not None and hasattr(config, 'max_length'):
             self.max_length = config.max_length
         else:
-            self.max_length = 32
+            self.max_length = 40
 
         # For Meta Training
         if config is not None and hasattr(config, 'tokenizer_name'):

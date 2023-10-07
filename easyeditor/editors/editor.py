@@ -13,6 +13,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
+# from accelerate import Accelerator
 from ..util.globals import *
 from .singleton_editor import SingletonEditor
 from .batch_editor import BatchEditor
@@ -59,29 +60,29 @@ class BaseEditor:
 
         if type(self.model_name) is str:
             if 't5' in self.model_name.lower():
-                self.model = T5ForConditionalGeneration.from_pretrained(self.model_name)
+                self.model = T5ForConditionalGeneration.from_pretrained(self.model_name, device_map='auto' if hparams.model_parallel else None)
                 self.tok = T5Tokenizer.from_pretrained(self.model_name)
             elif 'gpt-3.5' in self.model_name.lower():
                 self.model, self.tok = None, None
             elif 'gpt' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, device_map='auto' if hparams.model_parallel else None)
                 self.tok = GPT2Tokenizer.from_pretrained(self.model_name)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'llama' in self.model_name.lower():
-                self.model = LlamaForCausalLM.from_pretrained(self.model_name)
+                self.model = LlamaForCausalLM.from_pretrained(self.model_name, device_map='auto' if hparams.model_parallel else None)
                 self.tok = LlamaTokenizer.from_pretrained(self.model_name)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'baichuan' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name,trust_remote_code=True)
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name,trust_remote_code=True, device_map='auto' if hparams.model_parallel else None)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'chatglm2' in self.model_name.lower():
-                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch.float32)
+                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch.float32, device_map='auto' if hparams.model_parallel else None)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.unk_token_id = 64787
                 # self.tok.pad_token_id = self.tok.eos_token_id
             elif 'internlm' in self.model_name.lower():
-                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True)
+                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, device_map='auto' if hparams.model_parallel else None)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.pad_token_id = self.tok.eos_token_id
             else:
@@ -98,7 +99,9 @@ class BaseEditor:
         #     2: [_ for _ in range(32, 48)]
         # }
         # self.model.parallelize(device_map=device_map)
-        if hasattr(hparams, 'device'):
+        if hparams.model_parallel:
+            hparams.device = str(self.model.device).split(":")[1]
+        if not hparams.model_parallel and hasattr(hparams, 'device'):
             self.model.to(f'cuda:{hparams.device}')
 
         self.hparams = hparams
