@@ -257,6 +257,9 @@ class BaseEditor:
                 if self.alg_name == 'KN':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
+                elif self.alg_name == 'LoRA' and keep_original_weight:
+                    edited_model.unload()
+                    del self.model.peft_config
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
@@ -548,6 +551,7 @@ class BaseEditor:
         `locality_inputs`: dict
             for locality
         """
+        test_generation = kwargs['test_generation'] if 'test_generation' in kwargs.keys() else False
         eval_metric= kwargs['eval_metric'] if 'eval_metric' in kwargs.keys() else 'exact match'
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
@@ -667,6 +671,9 @@ class BaseEditor:
                 if self.alg_name == 'KN':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
+                elif self.alg_name == 'LoRA' and keep_original_weight:
+                    edited_model.unload()
+                    del self.model.peft_config
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
