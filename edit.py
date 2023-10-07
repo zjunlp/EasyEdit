@@ -1154,11 +1154,11 @@ def test_Llama2():
     }
     subject = [edit_data_['subject'] for edit_data_ in edit_data]
     # hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
-    # hparams = FTHyperParams.from_hparams('./hparams/FT/chatglm2-6b.yaml')
+    hparams = FTHyperParams.from_hparams('./hparams/FT/internlm-7b.yaml')
     # hparams = IKEHyperParams.from_hparams('./hparams/IKE/llama-7b.yaml')
     # train_ds = ZsreDataset('./data/zsre_mend_train.json', size=20000)
     # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/baichuan-7b.yaml')
-    hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/gpt2-xl.yaml')
+    # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/gpt2-xl.yaml')
     # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
     # hparams = KNHyperParams.from_hparams('./hparams/KN/llama-7b.yaml')
 

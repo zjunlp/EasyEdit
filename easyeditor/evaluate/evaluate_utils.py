@@ -38,9 +38,11 @@ def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, loca
         return np.mean(np.equal(ans, target))
 
 
-def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target, device, locality=False):
+def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False):
+    if isinstance(prompts, str):
+        prompts,targets = [prompts,], [targets,]
     prompt_tok = tok(
-        prompt,
+        prompts,
         padding=True,
         truncation=True,
         max_length=hparams.max_length,
@@ -48,7 +50,7 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target, devic
     ).to(f"cuda:{device}")
 
     trg_tok = tok(
-        target,
+        targets,
         padding=True,
         truncation=True,
         max_length=hparams.max_length,
@@ -68,9 +70,9 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target, devic
         assert logits.size(1) == trg_tok['input_ids'].size(1)
         ans = torch.argmax(logits, dim=-1)
         if locality:
-            return ans.squeeze().detach().cpu().numpy().tolist()
-
-        return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()[0]
+            answers = ans.squeeze().detach().cpu().numpy().tolist()
+            return answers if type(answers[0]) is list else [answers,]
+        return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()
 
 
 def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False):

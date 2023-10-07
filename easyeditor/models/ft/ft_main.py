@@ -1,7 +1,9 @@
 from copy import deepcopy
 from typing import Any, Dict, List, Tuple
+from collections import deque
 
 import torch
+from torch.nn import CrossEntropyLoss
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util import nethook
@@ -59,7 +61,7 @@ def execute_ft(
     Invariant: model at beginning of function == model at end of function
     """
     device = torch.device(f'cuda:{hparams.device}')
-    model = model.to(device)
+    # model = model.to(device)
     # Update target and print info
     requests = deepcopy(requests)
     for request in requests:
@@ -107,7 +109,6 @@ def execute_ft(
         for txt, tgt in zip(
             chunks(texts, hparams.batch_size), chunks(targets, hparams.batch_size)
         ):
-            txt[0] = f"[Round 1]\n\n问：{txt[0]}\n\n答："
             inputs = tok(txt, return_tensors="pt", padding=True).to(device)
             target_ids = tok(tgt, return_tensors="pt", padding=True)["input_ids"].to(
                 device
@@ -117,11 +118,11 @@ def execute_ft(
             opt.zero_grad()
             bs = inputs["input_ids"].shape[0]
             if 't5' in hparams.model_name.lower():
-                inputs['labels'] = target_ids
+                inputs['decoder_input_ids'] = target_ids
                 logits = model(**inputs).logits
-                unmasked_log_probs = logits.log_softmax(-1).gather(-1, inputs['labels'].unsqueeze(-1)).squeeze(-1)
+                unmasked_log_probs = logits.log_softmax(-1).gather(-1, inputs['decoder_input_ids'].unsqueeze(-1)).squeeze(-1)
 
-                mask = inputs['labels'] != -100
+                mask = inputs['decoder_input_ids'] != -100
                 n_tokens = mask.float().sum()
                 avg_log_prob = (unmasked_log_probs * mask.float()).sum() / n_tokens
                 nll = -avg_log_prob
@@ -167,8 +168,15 @@ def execute_ft(
                 # batch_attention_mask = torch.stack(batch_attention_mask).to(device)
                 batch_input_ids = torch.stack(batch_input_ids).to(device)
                 batch_labels = torch.stack(batch_labels).to(device)
-
-                loss = model(input_ids=batch_input_ids, labels=batch_labels).loss
+                # loss = model(input_ids=batch_input_ids, labels=batch_labels).loss
+                lm_logits = model(input_ids=batch_input_ids)['logits']
+                lm_logits = lm_logits.to(torch.float32)
+                shift_logits = lm_logits[..., :-1, :].contiguous()
+                shift_labels = batch_labels[..., 1:].contiguous()
+                # Flatten the tokens
+                loss_fct = CrossEntropyLoss(ignore_index=-100)
+                loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+                loss = loss.to(lm_logits.dtype)
             else:
                 probs = torch.nn.functional.log_softmax(
                     model(**inputs).logits[torch.arange(bs), last_token_inds], dim=-1
