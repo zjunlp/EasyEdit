@@ -54,5 +54,7 @@ def model_type(model_name: str):
         return 'baichuan'
     elif 'chatglm2' in model_name.lower():
         return 'chatglm2'
+    elif 'internlm' in model_name.lower():
+        return 'internlm'
     else:
         raise ValueError("Model {model_name} not supported")
