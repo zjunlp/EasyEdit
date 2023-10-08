@@ -1,0 +1,78 @@
+# Model
+device: 0
+
+name: /mnt/16t/tbozhong/project/Multimodal/serac/hugging_cache/Vicuna
+model_name: minigpt4
+model_class: Blip2OPT
+tokenizer_class: LlamaTokenizer
+tokenizer_name: /mnt/16t/tbozhong/project/Multimodal/serac/hugging_cache/Vicuna
+inner_params:
+- llama_model.model.layers.29.mlp.down_proj.weight
+- llama_model.model.layers.29.mlp.up_proj.weight
+- llama_model.model.layers.30.mlp.down_proj.weight
+- llama_model.model.layers.30.mlp.up_proj.weight
+- llama_model.model.layers.31.mlp.down_proj.weight
+- llama_model.model.layers.31.mlp.up_proj.weight
+
+# Method
+alg: MEND
+lr: 1e-6
+edit_lr: 1e-4
+lr_lr: 1e-4
+seed: 42
+cedit: 0.1
+iedit: 0.1
+cloc: 1.0
+cbase: 1.0
+dropout: 0.0
+train_base: False
+no_grad_layers: null
+one_sided: False
+n_hidden: 1
+hidden_dim: null
+init: id
+norm: True
+combine: True
+x_only: False
+delta_only: False
+act: relu
+rank: 1920
+mlp_class: IDMLP
+shared: True
+archive: null
+
+# Train
+batch_size: 1
+model_save_pt: 5000
+silent: False
+#max_epochs: 1
+max_iters: 50000
+log_interval: 100
+eval_log_interval: 1000
+final_eval: True
+val_interval: 5000
+early_stop_patience: 20000
+early_stop_key: "loss/total_edit_val"
+eval_only: False
+half: False
+debug: False
+save: False
+verbose: True
+
+val_batch_size: 1
+accumulate_bs: 2
+val_steps: 500 # only for debug
+opt: Adam
+grad_clip: 100.
+
+# Output
+results_dir: ./results
+
+# Multimodal
+qformer_checkpoint: /mnt/16t/tbozhong/project/Multimodal/serac/hugging_cache/blip2_pretrained_flant5xxl.pth
+qformer_name_or_path: bert-base-uncased
+state_dict_file: /mnt/16t/tbozhong/project/Multimodal/serac/hugging_cache/eva_vit_g.pth
+
+# image
+coco_image: /mnt/16t/tbozhong/project/Multimodal
+rephrase_image: /mnt/16t/tbozhong/project/Multimodal
