@@ -202,6 +202,87 @@ def compute_icl_edit_quality(
             ret['portability'][f'{portability_key}_acc'] = portability_acc
     return ret
 
+def compute_icl_multimodal_edit_quality(
+    model,
+    model_name,
+    hparams: HyperParams,
+    tok: AutoTokenizer,
+    # vis_tok,
+    icl_examples,
+    record: typing.Dict,
+    device,
+    pre_edit: bool = False
+) -> typing.Dict:
+    """
+    Given a rewritten model, computes generalization and specificity metrics for
+    the desired rewrite (passed in via the CounterFact dataset record). Returns a
+    dictionary containing those metrics.
+
+    :param model: Rewritten model
+    :param tok: Tokenizer
+    :param record: CounterFact dataset record
+    :param snips: ???
+    :param vec: ???
+    :return: Dictionary containing rewriting metrics
+    """
+    vis_root = hparams.coco_image
+    rephrase_root = hparams.rephrase_image
+    # First, unpack rewrite evaluation record.
+    target = record["target"]
+    prompt = record["prompt"]
+    image = record["image"]
+    rephrase = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
+    rephrase_image = record["image_rephrase"] if 'image_rephrase' in record.keys() else None
+    
+    # assert "image" in record.keys() or print("IKE for multimodal needs image.")
+    # image_path = [os.path.join(vis_root, i) for i in record["image"]]
+    # rephrase_image_path = [os.path.join(rephrase_root, i) for i in record["image_rephrase"]] if "image_rephrase" in record.keys() else image_path
+    # image, rephrase_image = ([vis_tok(Image.open(ip).convert("RGB")) for ip in x] for x in [image_path, rephrase_image_path]) 
+    # image, rephrase_image = (record[x] for x in ["image", "image_rephrase"])
+    
+    if "locality_prompt" in record.keys():
+        loc_q = record["locality_prompt"]
+        loc_a = record["locality_ground_truth"]
+    if "multimodal_locality_image" in record.keys():
+        # m_loc_image_path = [os.path.join(vis_root, i) for i in record["m_loc"]]
+        # m_loc_image = [vis_tok(Image.open(ip).convert("RGB")) for ip in m_loc_image_path]
+        m_loc_image = record["multimodal_locality_image"]
+        m_loc_q = record["multimodal_locality_prompt"]
+        m_loc_a = record["multimodal_locality_ground_truth"]
+    
+    new_fact = f'New Fact: {prompt} {target}\nPrompt: {prompt}'
+
+    if pre_edit:
+        edit_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                                       target, prompt, image)
+    else:
+        edit_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                                              target, new_fact, image)
+    ret = {
+        f"rewrite_acc": edit_acc
+    }
+    if rephrase is not None:
+        rephrase_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                               target, f'New Fact: {prompt} {target}\nPrompt: {rephrase}', image)
+        ret['rephrase_acc'] = rephrase_acc
+        
+    if "image_rephrase" in record.keys():
+        rephrase_image_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                               target, new_fact, rephrase_image)
+        ret['rephrase_image_acc'] = rephrase_image_acc
+    
+    if "locality_prompt" in record.keys():
+        locality_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                                loc_a, f'New Fact: {loc_q} {loc_a}\nPrompt: {loc_q}', None)
+        ret['locality_acc'] = locality_acc
+    
+    if "multimodal_locality_image" in record.keys():
+        locality_image_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                               m_loc_a, f'New Fact: {m_loc_q} {m_loc_a}\nPrompt: {m_loc_q}', m_loc_image)
+        ret['locality_image_acc'] = locality_image_acc
+            
+    return ret
+
 def icl_lm_eval(
         model,
         model_name,
@@ -233,7 +314,7 @@ def icl_lm_eval(
         attention_mask = encodings['attention_mask'].to(device)
         logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
         ans = torch.argmax(logits, dim=-1)[:,-target_ids.size(1):-1].squeeze()
-        target_ids = target_ids[:,1:]   
+        target_ids = target_ids[:, 1:]   
         if neighborhood:
             return ans.squeeze().detach().cpu().numpy().tolist()
         return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()        
@@ -248,3 +329,72 @@ def icl_lm_eval(
         if neighborhood:
             return ans.squeeze().detach().cpu().numpy().tolist()
         return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
+
+def icl_multimodal_lm_eval(
+        model,
+        model_name,
+        hparams: HyperParams,
+        tokenizer,
+        icl_examples,
+        target,
+        x,
+        image,
+        neighborhood=False
+)-> typing.Dict:
+    device = torch.device(f'cuda:{hparams.device}')
+    samples = prepare_multimodal_edit(hparams, tokenizer, target, [''.join(icl_examples) + f'{x}'], image) 
+    
+    return compute_multimodal_edit_quality(model, samples)
+
+def prepare_multimodal_edit(hparams,
+                            tok,
+                            target,
+                            prompts,
+                            image):
+    if isinstance(target, str):
+        target = [target,]
+    target = [" " + target_ if target_[0] != " " else target_ for target_ in target]
+    if isinstance(prompts, str):
+        prompts = [prompts,]
+    if image is not None and len(image.shape) == 3:
+        image = image.unsqueeze(0)
+    text_input = [prompt_ + target_ for prompt_, target_ in zip(prompts, target)]
+    
+    if hparams.model_name == 'minigpt4' or hparams.model_name == 'blip2':
+        prompts_len = [len(tok.encode(prompt, add_special_tokens=False)) for prompt in prompts]
+        target = tok(target, add_special_tokens=False, return_tensors="pt",)["input_ids"]
+    else:
+        prompts_len = [len(tok.encode(prompt,)) for prompt in prompts]  
+        target = tok(target, add_special_tokens=False, return_tensors="pt",)["input_ids"]
+        
+    ret = {
+        'text_input': text_input,
+        'image': image,
+        'labels': target,
+        'prompts_len': prompts_len        
+    } 
+    return ret
+
+def compute_multimodal_edit_quality(model, batch):
+    
+    with torch.no_grad():
+        outputs = model(batch)
+        if isinstance(outputs, torch.Tensor):
+            logits = outputs.detach().cpu()
+        else:
+            logits = outputs.logits.detach().cpu()    
+        # targ = outputs.labels.detach().cpu()
+        targ = batch["labels"].cpu()
+    if logits.dim() == 3:
+        logits = logits[:, :-1]
+        # targ = targ[:, 1:]
+        logits = logits[:, -targ.shape[1]:]
+    mask = targ != -100
+    targ[~mask] = 0
+    pred_ids = logits.argmax(-1).masked_fill(~mask, 0).detach().cpu()
+    correct = pred_ids == targ
+    correct = correct & mask
+    num_non_padding = mask.sum().float().item()
+    acc = correct.sum() / num_non_padding
+    
+    return acc, pred_ids.numpy()
