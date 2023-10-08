@@ -51,7 +51,9 @@ class BaseTrainer:
         self.train_set = train_set
         self.val_set = val_set
 
-        if 't5' in self.config.model_class.lower():
+        if 'minigpt4' in self.config.model_name.lower() or 'blip2' in self.config.model_name.lower():
+            collate_fn = train_set.collate_fn
+        elif 't5' in self.config.model_class.lower():
             collate_fn = train_set.collate_fn
         elif 'gpt' in self.config.model_class.lower():
             collate_fn = train_set.collate_gpt_fn

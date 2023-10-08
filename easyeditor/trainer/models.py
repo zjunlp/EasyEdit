@@ -67,6 +67,33 @@ class BertClassifier(torch.nn.Module):
 def get_model(config):
     if config.model_class == "BertClassifier":
         model = BertClassifier(config.model_name)
+    elif config.model_name == "blip2":
+        from .blip2_models.blip2_opt import Blip2OPT
+        
+        model = Blip2OPT(
+            vit_model="eva_clip_g",
+            img_size=364,
+            use_grad_checkpoint=True,
+            vit_precision="fp32",
+            freeze_vit=True,
+            opt_model=config.name,
+            state_dict_file=config.state_dict_file,
+            qformer_name_or_path=config.qformer_name_or_path
+        )
+    elif config.model_name == "minigpt4":
+        from .blip2_models.mini_gpt4 import MiniGPT4
+
+        model = MiniGPT4(
+            vit_model="eva_clip_g",
+            q_former_model=config.qformer_checkpoint,
+            img_size=364,
+            use_grad_checkpoint=True,
+            vit_precision="fp32",
+            freeze_vit=True,
+            llama_model=config.name,
+            state_dict_file=config.state_dict_file,
+            qformer_name_or_path=config.qformer_name_or_path
+        )
     else:
         ModelClass = getattr(transformers, config.model_class)
         LOG.info(
