@@ -1154,9 +1154,11 @@ def test_Llama2():
     }
     subject = [edit_data_['subject'] for edit_data_ in edit_data]
     # hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
-    hparams = FTHyperParams.from_hparams('./hparams/FT/internlm-7b.yaml')
-    # hparams = IKEHyperParams.from_hparams('./hparams/IKE/llama-7b.yaml')
-    # train_ds = ZsreDataset('./data/zsre_mend_train.json', size=20000)
+    # hparams = FTHyperParams.from_hparams('./hparams/FT/internlm-7b.yaml')
+    hparams = IKEHyperParams.from_hparams('./hparams/IKE/internlm-7b.yaml')
+    sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
+    train_ds = ZsreDataset('./data/zsre_mend_train.json', size=10000)
+    encode_ike_facts(sentence_model, train_ds, hparams)
     # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/baichuan-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/gpt2-xl.yaml')
     # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
@@ -1170,6 +1172,7 @@ def test_Llama2():
         subject=subject,
         locality_inputs=locality_inputs,
         portability_inputs=portability_inputs,
+        train_ds=train_ds,
         keep_original_weight=True
     )
 

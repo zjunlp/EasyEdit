@@ -17,6 +17,8 @@ class IKEHyperParams(HyperParams):
     model_name: str
     sentence_model_name: str
 
+    model_parallel: bool = False
+
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 

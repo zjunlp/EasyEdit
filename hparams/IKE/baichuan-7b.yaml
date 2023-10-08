@@ -1,7 +1,8 @@
 alg_name: "IKE"
-model_name: "/mnt/xzk/Baichuan-7B"
+model_name: "/mnt/16t/wmr/safetyedit/hugging_cache/Baichuan2-7B-Chat"
 sentence_model_name: "/mnt/peng/EasyEdit/hugging_cache/all-MiniLM-L6-v2"
 device: 0
 results_dir: "/mnt/peng/EasyEdit/results"
 
-k: 32
+k: 16
+model_parallel: false
