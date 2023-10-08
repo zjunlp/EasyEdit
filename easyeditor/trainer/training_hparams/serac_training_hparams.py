@@ -73,6 +73,7 @@ class SERACTrainingHparams(HyperParams):
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
     max_length: int = 32
+    model_parallel: bool = False
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

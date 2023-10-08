@@ -43,7 +43,10 @@ class BaseTrainer:
         else:
             self.original_model = self.model.model
 
-        self.model.to(self.config.device)
+        if self.config.model_parallel:
+            self.config.device = self.model.model.device
+        if not self.config.model_parallel and hasattr(self.config, 'device'):
+            self.model.to(self.config.device)
 
         self.train_set = train_set
         self.val_set = val_set

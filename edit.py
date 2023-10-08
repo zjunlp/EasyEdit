@@ -324,7 +324,7 @@ def test_SERAC_Counterfacat_Train():
 
 
 def test_SERAC_Zsre_Train():
-    training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/baichuan-7b.yaml')
+    training_hparams = SERACTrainingHparams.from_hparams('./hparams/TRAINING/SERAC/llama-7b.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
     eval_ds = ZsreDataset('./data/zsre_mend_eval.json', config=training_hparams)
     trainer = EditTrainer(
@@ -1155,13 +1155,13 @@ def test_Llama2():
     subject = [edit_data_['subject'] for edit_data_ in edit_data]
     # hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
     # hparams = FTHyperParams.from_hparams('./hparams/FT/internlm-7b.yaml')
-    hparams = IKEHyperParams.from_hparams('./hparams/IKE/internlm-7b.yaml')
-    sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
+    # hparams = IKEHyperParams.from_hparams('./hparams/IKE/internlm-7b.yaml')
+    # sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', size=10000)
-    encode_ike_facts(sentence_model, train_ds, hparams)
+    # encode_ike_facts(sentence_model, train_ds, hparams)
     # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/baichuan-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/gpt2-xl.yaml')
-    # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
+    hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
     # hparams = KNHyperParams.from_hparams('./hparams/KN/llama-7b.yaml')
 
     editor = BaseEditor.from_hparams(hparams)
