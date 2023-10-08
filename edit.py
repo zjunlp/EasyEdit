@@ -1963,7 +1963,6 @@ def test_MEND_Train_Internlm():
 
     trainer.run()
 
-
 def test_MEND_Internlm():
     prompts = ['Which family does Ramalinaceae belong to',
                'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
@@ -1987,6 +1986,32 @@ def test_MEND_Internlm():
 
     return metrics, edited_model
 
+def test_ROME_Internlm():
+
+    prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    target_new = ['University of Michigan', 'Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans']
+    subject = ['Watts Humphrey', 'Ramalinaceae', 'Denny Herzig',
+               'Lahti Town Hall', 'It\'s a Business', 'Marl Young']
+
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/internlm-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
 
 def main():
     # metrics, edited_model = test_KN()
@@ -2060,7 +2085,8 @@ def main():
     # test_KN_Internlm()
     # test_MEMIT_Internlm()
     # test_MEND_Train_Internlm()
-    test_MEND_Internlm()
+    # test_MEND_Internlm()
+    test_ROME_Internlm()
 
 if __name__ == '__main__':
     main()
