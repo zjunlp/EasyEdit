@@ -15,6 +15,7 @@ from higher.patch import (
     buffer_sync,
     make_functional,
 )
+from .patch import monkeypatch as _make_functional
 
 from . import local_nn
 from .editable_model import EditableModel
@@ -245,7 +246,9 @@ class MEND(EditableModel):
         return res
 
     def forward(self, *inputs, **kwargs):
-        if 'gpt' in self.config.model_name.lower():
+        if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
+            outputs = self.model(*inputs, **kwargs)
+        elif 'gpt' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
             # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
         elif 'llama' in self.config.model_name.lower():
@@ -261,7 +264,13 @@ class MEND(EditableModel):
         return list(self.mend.parameters()) + [self.edit_lrs]
 
     def edit(self, batch, condition=None, detach_history=False, return_factors=False):
-        if 'gpt' in self.config.model_name.lower():
+        if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
+            outputs = self.model(batch)        
+            if not isinstance(outputs, torch.Tensor):
+                # batch_labels = outputs.labels
+                outputs = outputs.logits
+            loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]   # TODO Check whether needs to shift          
+        elif 'gpt' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
             # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]
@@ -344,7 +353,10 @@ class MEND(EditableModel):
 
         edited_model = self.model
         if not isinstance(edited_model, higher.patch._MonkeyPatchBase):
-            edited_model = monkeypatch(edited_model, in_place=True)
+            if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
+                edited_model = _make_functional(edited_model, in_place=True)
+            else:
+                edited_model = monkeypatch(edited_model, in_place=True)
 
         new_params = []
         for n, p in edited_model.named_parameters():
