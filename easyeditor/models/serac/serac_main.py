@@ -29,10 +29,10 @@ class SeracRewriteExecutor:
         set_padding()
 
         # Load the trained MEND model
-        self.alg = SERAC(self.model, params, lambda: deepcopy(self.model))
+        self.alg = SERAC(self.model, deepcopy(params), lambda: deepcopy(self.model))
         d = torch.load(params.archive, map_location='cpu')
         self.alg.load_state_dict(d["model"], False)
-        self.alg.to(torch.device(f'cuda:{params.device}'))
+        # self.alg.to(torch.device(f'cuda:{params.device}'))
         self.alg.replacement.to(torch.device(f'cuda:{params.device}'))
         self.alg.classifier.to(torch.device(f'cuda:{params.device}'))
 

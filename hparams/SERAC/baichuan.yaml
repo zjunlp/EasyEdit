@@ -11,6 +11,7 @@ tokenizer_name: /mnt/xzk/Baichuan-7B
 cls_name: /mnt/peng/EasyEdit/hugging_cache/distilbert-base-cased
 cls_class: AutoModel
 inner_params: []
+model_parallel: false
 
 # Method
 alg: SERAC

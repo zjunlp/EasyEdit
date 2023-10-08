@@ -23,6 +23,8 @@ class SERAC(EditableModel):
                  scale=None):
         super().__init__(model, config, model_constructor)
 
+        if not str(self.config.device).startswith('cuda'):
+            self.config.device = f'cuda:{self.config.device}'
         if classifier is None:
             if config.cross_attend and not config.cls_class.endswith("ForSequenceClassification"):
                 LOG.warn(f"Switching {config.cls_class} to {config.cls_class}ForSequenceClassification for cross-attend")

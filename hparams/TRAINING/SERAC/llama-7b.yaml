@@ -7,6 +7,7 @@ tokenizer_name: ./hugging_cache/llama-2-7b
 cls_name: ./hugging_cache/distilbert-base-cased
 cls_class: AutoModel
 inner_params: []
+model_parallel: false
 
 archive: null
 
