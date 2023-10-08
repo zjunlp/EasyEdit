@@ -28,7 +28,7 @@ class KnowledgeNeurons:
         self.device = device or torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
-        self.model.to(self.device)
+        # self.model.to(self.device)
         self.tokenizer = tokenizer
 
         self.baseline_activations = None
@@ -45,7 +45,7 @@ class KnowledgeNeurons:
             self.output_ff_attr = "mlp.fc_out.weight"
             # self.word_embeddings_attr = "transformer.wpe"
             self.word_embeddings_attr = "transformer.wte.weight"
-        elif "gpt" == model_type:
+        elif "gpt2" == model_type:
             self.transformer_layers_attr = "transformer.h"
             self.input_ff_attr = "mlp.c_fc"
             self.output_ff_attr = "mlp.c_proj.weight"
@@ -837,6 +837,10 @@ class KnowledgeNeurons:
                 )
             if mode == "edit":
                 if self.model_type == "gpt2":
+                    if original_prediction_embedding.device != output_ff_weights.device:
+                        original_prediction_embedding = original_prediction_embedding.to(output_ff_weights.device)
+                    if target_embedding.device != output_ff_weights.device:
+                        target_embedding = target_embedding.to(output_ff_weights.device)
                     if original_prediction_embedding.ndim > 1:
                         for oe in original_prediction_embedding:
                             output_ff_weights[position, :] -= oe

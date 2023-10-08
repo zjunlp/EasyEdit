@@ -40,7 +40,7 @@ def initialize_model_and_tokenizer(model_name: str):
 def model_type(model_name: str):
     if model_name in BERT_MODELS:
         return "bert"
-    elif model_name in GPT2_MODELS:
+    elif 'gpt2' in model_name:
         return "gpt2"
     elif model_name in GPT_NEO_MODELS:
         return "gpt_neo"

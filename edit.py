@@ -1161,8 +1161,8 @@ def test_Llama2():
     # encode_ike_facts(sentence_model, train_ds, hparams)
     # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/baichuan-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/gpt2-xl.yaml')
-    hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
-    # hparams = KNHyperParams.from_hparams('./hparams/KN/llama-7b.yaml')
+    # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
+    hparams = KNHyperParams.from_hparams('./hparams/KN/gpt2-xl.yaml')
 
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
