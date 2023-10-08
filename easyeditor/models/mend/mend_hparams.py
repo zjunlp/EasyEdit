@@ -74,6 +74,8 @@ class MENDHyperParams(HyperParams):
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
 
+    model_parallel: bool = False
+
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 

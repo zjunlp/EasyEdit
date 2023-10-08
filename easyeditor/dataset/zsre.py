@@ -38,7 +38,7 @@ class ZsreDataset(Dataset):
             )
             # tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True)
             tokenizer = getattr(transformers, config.tokenizer_class).from_pretrained(
-                tok_name
+                tok_name, trust_remote_code=True
             )
             if isinstance(tokenizer, GPT2Tokenizer) or isinstance(tokenizer, GPT2TokenizerFast):
                 tokenizer.pad_token_id = tokenizer.eos_token_id
