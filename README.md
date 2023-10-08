@@ -45,6 +45,7 @@
 - [Other Knowledge Editing Projects](#other-related-projects)
 
 ## 🔔News
+- **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
 - **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
 - **2023-8-31 The EasyEdit have supported official fine-tuning API for gpt-3.5-turbo to customize chatgpt for your editing cases.**
 - **2023-8-15 We release the paper "[EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models](https://arxiv.org/abs/2308.07269)."**
