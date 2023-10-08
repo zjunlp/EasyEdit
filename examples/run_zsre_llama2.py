@@ -3,7 +3,16 @@ import sys
 sys.path.append('..')
 import json
 import random
-from easyeditor import FTHyperParams, IKEHyperParams, KNHyperParams, MEMITHyperParams, ROMEHyperParams, LoRAHyperParams
+from easyeditor import (
+    FTHyperParams, 
+    IKEHyperParams, 
+    KNHyperParams, 
+    MEMITHyperParams, 
+    ROMEHyperParams, 
+    LoRAHyperParams,
+    MENDHyperParams,
+    SERACHparams
+    )
 from easyeditor import BaseEditor
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
@@ -17,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument('--hparams_dir', required=True, type=str)
     parser.add_argument('--data_dir', required=True, type=str)
     parser.add_argument('--ds_size', default=None, type=int)
-    parser.add_argument('--metrics_save_dir', default='./', type=str)
+    parser.add_argument('--metrics_save_dir', default='./output', type=str)
 
     args = parser.parse_args()
 
