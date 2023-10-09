@@ -46,6 +46,7 @@
 
 ## 🔔News
 - **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
+- **2023-10-07 The EasyEdit have supported editing models with multiple GPUs, using huggingface [`Accelerate`](https://github.com/zjunlp/EasyEdit/blob/main/hparams/ROME/llama-7b.yaml#L24).**
 - **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
 - **2023-8-31 The EasyEdit have supported official fine-tuning API for gpt-3.5-turbo to customize chatgpt for your editing cases.**
 - **2023-8-15 We release the paper "[EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models](https://arxiv.org/abs/2308.07269)."**
@@ -313,11 +314,12 @@ With the modularity and flexibility of `EasyEdit`, you can easily use it to edit
 **Step1: Define a PLM as the object to be edited.**
 Choose the PLM to be edited. `EasyEdit` supports partial models(`T5`, `GPTJ`, `GPT-NEO`, `LlaMA` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/gpt2-xl`, set the corresponding `model_name` to select the object for knowledge editing.
 
-```python
+```yaml
 model_name: gpt2-xl
 model_class: GPT2LMHeadModel
 tokenizer_class: GPT2Tokenizer
 tokenizer_name: gpt2-xl
+model_parallel: false # true for multi-GPU editing
 ```
 
 **Step2: Choose the appropriate Knowledge Editing Method**
