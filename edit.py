@@ -150,7 +150,7 @@ def test_KE_Meta_Train_GPTJ():
 
 
 def test_MEND_Meta_Train():
-    training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND')
+    training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND/llama-7b.yaml')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', config=training_hparams)
     eval_ds = ZsreDataset('./data/zsre_mend_eval.json', config=training_hparams)
     trainer = EditTrainer(
@@ -1153,7 +1153,7 @@ def test_Llama2():
         },
     }
     subject = [edit_data_['subject'] for edit_data_ in edit_data]
-    # hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
+    hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
     # hparams = FTHyperParams.from_hparams('./hparams/FT/internlm-7b.yaml')
     # hparams = IKEHyperParams.from_hparams('./hparams/IKE/internlm-7b.yaml')
     # sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
@@ -1162,7 +1162,7 @@ def test_Llama2():
     # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/baichuan-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/gpt2-xl.yaml')
     # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
-    hparams = KNHyperParams.from_hparams('./hparams/KN/gpt2-xl.yaml')
+    # hparams = KNHyperParams.from_hparams('./hparams/KN/gpt2-xl.yaml')
 
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
@@ -2062,7 +2062,7 @@ def main():
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    # test_Llama2()
+    test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()
@@ -2086,7 +2086,7 @@ def main():
     # test_MEMIT_Internlm()
     # test_MEND_Train_Internlm()
     # test_MEND_Internlm()
-    test_ROME_Internlm()
+    # test_ROME_Internlm()
 
 if __name__ == '__main__':
     main()

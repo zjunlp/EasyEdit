@@ -67,6 +67,7 @@ class MENDTrainingHparams(HyperParams):
     opt: str
     grad_clip: float
 
+    model_parallel: bool = False
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
 

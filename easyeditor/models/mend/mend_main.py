@@ -4,6 +4,7 @@ from typing import Dict, List
 
 import hydra
 import torch
+from collections import deque
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
@@ -38,7 +39,10 @@ class MendRewriteExecutor:
         self.alg.load_state_dict(
             {k.replace("gtn.", "mend."): v for k, v in d["model"].items()}
         )
-        self.alg.to(torch.device(f'cuda:{params.device}'))
+        if params.model_parallel:
+            self.alg.mend.to(deque(self.alg.model.parameters(), maxlen=1)[0].device)
+        else:
+            self.alg.to(torch.device(f'cuda:{params.device}'))
 
         # Disable unneeded gradients
         for n, p in self.model.named_parameters():

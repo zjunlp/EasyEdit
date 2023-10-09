@@ -8,6 +8,7 @@ model_name: ./hugging_cache/internlm-7b
 model_class: AutoModel
 tokenizer_class: AutoTokenizer
 tokenizer_name: ./hugging_cache/internlm-7b
+model_parallel: false
 inner_params:
 - model.layers.29.mlp.gate_proj.weight
 - model.layers.29.mlp.up_proj.weight
