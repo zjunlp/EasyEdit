@@ -71,6 +71,11 @@ class KnowledgeNeurons:
             self.input_ff_attr = "input_layernorm"
             self.output_ff_attr = "mlp.dense_4h_to_h"
             self.word_embeddings_attr = "transformer.embedding.word_embeddings"
+        elif 'internlm' == model_type:
+            self.transformer_layers_attr = "model.layers"
+            self.input_ff_attr = "mlp.gate_proj"
+            self.output_ff_attr = "mlp.down_proj.weight"
+            self.word_embeddings_attr = "model.embed_tokens.weight"
         else:
             raise NotImplementedError
 
