@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/badge/version-v0.0.1-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-![Static Badge](https://img.shields.io/badge/last_commit-September-blue)
+![Static Badge](https://img.shields.io/badge/last_commit-October-blue)
 ![](https://img.shields.io/badge/PRs-Welcome-red)
 
 ---
