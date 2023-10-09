@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import transformers
+from collections import deque
 from higher.patch import (
     _MonkeyPatchBase,
     _torch,
@@ -173,6 +174,9 @@ class MEND(EditableModel):
     def __init__(self, model, config, model_constructor, mend=None, edit_lrs=None):
         super().__init__(model, config, model_constructor)
 
+        if not str(self.config.device).startswith('cuda'):
+            self.config.device = f'cuda:{self.config.device}'
+
         if edit_lrs is None:
             edit_lrs = nn.Parameter(
                 torch.tensor([config.edit_lr] * len(self.config.inner_params))
@@ -212,6 +216,10 @@ class MEND(EditableModel):
                         for s in shape_dict.keys()
                     }
                 )
+            if self.config.model_parallel:
+                self.mend.to(deque(self.model.parameters(), maxlen=1)[0].device)
+            else:
+                self.mend.to(self.config.device)
         else:
             self.mend = mend
 
@@ -257,6 +265,9 @@ class MEND(EditableModel):
         elif 'chatglm2' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
             # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
+        elif 'internlm' in self.config.model_name.lower():
+            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
         else:
             outputs = _logits(self.model(**kwargs))
         return outputs
@@ -286,6 +297,10 @@ class MEND(EditableModel):
             outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
             # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]            
+        elif 'internlm' in self.config.model_name.lower():
+            outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
+            # outputs = outputs[:, -batch['labels'].shape[-1]:, :]
+            loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]         
         else:
             outputs = _logits(self.model(**batch))
             loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]

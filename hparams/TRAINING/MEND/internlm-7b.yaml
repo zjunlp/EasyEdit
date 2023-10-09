@@ -1,16 +1,19 @@
 # Model
-model_name: ./hugging_cache/gpt2-xl
-model_class: GPT2LMHeadModel
-tokenizer_class: GPT2Tokenizer
-tokenizer_name: ./hugging_cache/gpt2-xl
+model_name: ./hugging_cache/internlm-7b
+model_class: AutoModel
+tokenizer_class: AutoTokenizer
+tokenizer_name: ./hugging_cache/internlm-7b
 model_parallel: false
 inner_params:
-- transformer.h.45.mlp.c_proj.weight
-- transformer.h.45.mlp.c_fc.weight
-- transformer.h.46.mlp.c_proj.weight
-- transformer.h.46.mlp.c_fc.weight
-- transformer.h.47.mlp.c_proj.weight
-- transformer.h.47.mlp.c_fc.weight
+- model.layers.29.mlp.gate_proj.weight
+- model.layers.29.mlp.up_proj.weight
+- model.layers.29.mlp.down_proj.weight
+- model.layers.30.mlp.gate_proj.weight
+- model.layers.30.mlp.up_proj.weight
+- model.layers.30.mlp.down_proj.weight
+- model.layers.31.mlp.gate_proj.weight
+- model.layers.31.mlp.up_proj.weight
+- model.layers.31.mlp.down_proj.weight
 
 archive: null
 
@@ -40,7 +43,7 @@ mlp_class: IDMLP
 shared: True
 
 # Train
-device: cuda:5
+device: cuda:0
 batch_size: 1
 model_save_pt: 5000
 silent: False

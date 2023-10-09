@@ -3,6 +3,7 @@ model_name: ./hugging_cache/t5-3B
 model_class: T5ForConditionalGeneration
 tokenizer_class: T5Tokenizer
 tokenizer_name: ./hugging_cache/t5-3B
+model_parallel: false
 inner_params:
 - encoder.block.22.layer.1.DenseReluDense.wi.weight
 - encoder.block.22.layer.1.DenseReluDense.wo.weight

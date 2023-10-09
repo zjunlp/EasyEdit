@@ -1,24 +1,31 @@
 # Model
-model_name: ./hugging_cache/gpt2-xl
-model_class: GPT2LMHeadModel
-tokenizer_class: GPT2Tokenizer
-tokenizer_name: ./hugging_cache/gpt2-xl
+
+archive: ./results/models/MEND/internlm-7b
+alg_name: "MEND"
+device: 0
+model_name: ./hugging_cache/internlm-7b
+
+model_class: AutoModel
+tokenizer_class: AutoTokenizer
+tokenizer_name: ./hugging_cache/internlm-7b
 model_parallel: false
 inner_params:
-- transformer.h.45.mlp.c_proj.weight
-- transformer.h.45.mlp.c_fc.weight
-- transformer.h.46.mlp.c_proj.weight
-- transformer.h.46.mlp.c_fc.weight
-- transformer.h.47.mlp.c_proj.weight
-- transformer.h.47.mlp.c_fc.weight
-
-archive: null
+- model.layers.29.mlp.gate_proj.weight
+- model.layers.29.mlp.up_proj.weight
+- model.layers.29.mlp.down_proj.weight
+- model.layers.30.mlp.gate_proj.weight
+- model.layers.30.mlp.up_proj.weight
+- model.layers.30.mlp.down_proj.weight
+- model.layers.31.mlp.gate_proj.weight
+- model.layers.31.mlp.up_proj.weight
+- model.layers.31.mlp.down_proj.weight
 
 # Method
 alg: MEND
 lr: 1e-6
 edit_lr: 1e-4
 lr_lr: 1e-4
+lr_scale: 1.0
 seed: 42
 cedit: 0.1
 cloc: 1.0
@@ -40,7 +47,6 @@ mlp_class: IDMLP
 shared: True
 
 # Train
-device: cuda:5
 batch_size: 1
 model_save_pt: 5000
 silent: False
@@ -52,7 +58,7 @@ final_eval: True
 val_interval: 1000
 early_stop_patience: 20000
 early_stop_key: "loss/total_edit_val"
-eval_only: False
+eval_only: True
 half: False
 debug: False
 save: False
@@ -67,3 +73,5 @@ grad_clip: 100.
 # Output
 
 results_dir: ./results
+
+model_parallel: false

@@ -1,4 +1,5 @@
 import torch.nn as nn
+from copy import deepcopy
 
 from ..losses import masked_log_probs
 from ..utils import _logits, shift_targets
@@ -9,7 +10,7 @@ class EditableModel(nn.Module):
         super().__init__()
 
         self.model = model
-        self.config = config
+        self.config = deepcopy(config)
         self.model_constructor = model_constructor
 
         def _edit_loss_fn(config, pred, targ):
@@ -20,6 +21,8 @@ class EditableModel(nn.Module):
             elif 'gpt' in config.model_class.lower():
                 return masked_log_probs(config, pred, targ, shift=True)
             elif 'llama' in config.model_class.lower():
+                return masked_log_probs(config, pred, targ, shift=True)
+            elif 'internlm' in config.model_name.lower():
                 return masked_log_probs(config, pred, targ, shift=True)
             else:
                 return masked_log_probs(config, pred, targ)
