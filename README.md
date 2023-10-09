@@ -27,22 +27,30 @@
 
 ## Table of Contents
 
-- [What's New](#news)
+- [Table of Contents](#table-of-contents)
+- [🔔News](#news)
 - [Editing Demo](#editing-demo)
 - [Knowledge Editing](#knowledge-editing)
   - [Task Definition](#task-definition)
+    - [Knowledge update](#knowledge-update)
+    - [Knowledge insert](#knowledge-insert)
+    - [Knowledge erase](#knowledge-erase)
   - [Evaluation](#evaluation)
-- [Overview](#overview)
-  - [Module Framework](#overview)
-  - [Implementation](#current-implementation)
-  - [Tutorial Notebook](#tutorial-notebook)
-  - [Editing Performance](#editing-performance)
-- [Installation](#requirements)
-  - [Use Pip Installation](#pip-installation)
-  - [Use Docker Installation](#docker-installation)
-- [Usage Example](#use-easyedit)
-- [How To Cite](#citation)
-- [Other Knowledge Editing Projects](#other-related-projects)
+- [🌟Overview](#overview)
+    - [Current Implementation](#current-implementation)
+    - [Tutorial notebook](#tutorial-notebook)
+    - [Editing Performance](#editing-performance)
+- [Requirements](#requirements)
+    - [🔧Pip Installation](#pip-installation)
+    - [🐳Docker Installation](#docker-installation)
+- [📌Use EasyEdit](#use-easyedit)
+  - [BaseEditor](#baseeditor)
+    - [Introduction by a Simple Example](#introduction-by-a-simple-example)
+  - [Evaluation](#evaluation-1)
+  - [Trainer](#trainer)
+- [Citation](#citation)
+- [🎉Contributors](#contributors)
+    - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
 - **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
@@ -225,6 +233,39 @@ editing-data
     - Subject Replace: evaluation for synonym replacement
 </details>
 
+---
+<!-- dataset for multimodal -->
+**Dataset for Multimodal**
+| **dataset** | Google Drive| BaiduNetDisk | Description |
+| :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| E-IC | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Image Captioning_ |
+| E-VQA | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Visual Question Answering_ |
+
+
+- for **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
+- for **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
+
+<details><summary> <b> dataset description </b> </summary>
+
+```text
+editing-data
+├── caption
+│   ├── caption_train_edit.json
+│   └── caption_eval_edit.json
+├── locality
+│   ├── NQ dataset
+│   │   ├── train.json
+│   │   └── validation.json
+├── multimodal_locality
+│   ├── OK-VQA dataset
+│   │   ├── okvqa_loc.json
+└── vqa
+    ├── vqa_train.json
+    └── vqa_eval.json
+```
+- multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
+</details>
+
 #### Tutorial notebook
 
 | **Method** |          Description           |                                                 GPT-2                                                 |                                           LlaMA                                            |
@@ -250,6 +291,8 @@ We present editing results of the four metrics on [LlaMA-2-7B](https://huggingfa
 | MEMIT |    92.94    |     85.97      |   99.49    |    6.03     |
 
 ---
+
+<!-- editing multimodal -->
 
 ## Requirements
 
@@ -310,7 +353,7 @@ docker run -p 8080:80 your-image-name
 With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
 
 **Step1: Define a PLM as the object to be edited.**
-Choose the PLM to be edited. `EasyEdit` supports partial models(`T5`, `GPTJ`, `GPT-NEO`, `LlaMA` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/gpt2-xl`, set the corresponding `model_name` to select the object for knowledge editing.
+Choose the PLM to be edited. `EasyEdit` supports partial models(`T5`, `GPTJ`, `GPT-NEO`, `LlaMA` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/gpt2-xl.yaml`, set the corresponding `model_name` to select the object for knowledge editing.
 
 ```python
 model_name: gpt2-xl
@@ -553,6 +596,8 @@ trainer.run()
     </tr>
 </table>
 </div> -->
+
+<!-- multimodal editor -->
 
 <details><summary> <b> TO DO </b> </summary>
 In next version, we plan to:
