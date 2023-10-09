@@ -202,6 +202,53 @@ def compute_icl_edit_quality(
             ret['portability'][f'{portability_key}_acc'] = portability_acc
     return ret
 
+def icl_lm_eval(
+        model,
+        model_name,
+        hparams: HyperParams,
+        tokenizer,
+        icl_examples,
+        target,
+        x,
+        neighborhood=False
+)-> typing.Dict:
+    device = torch.device(f'cuda:{hparams.device}')
+    if 't5' in model_name.lower():
+        target_len = len(tokenizer.encode(target))
+        target_ids = tokenizer(f'{x} {target}', return_tensors='pt')['input_ids'].to(device)
+        encodings = tokenizer(''.join(icl_examples), return_tensors='pt')
+        input_ids = encodings['input_ids'].to(device)
+        attention_mask = encodings['attention_mask'].to(device)
+        with torch.no_grad():
+            logits = model(input_ids=input_ids, attention_mask=attention_mask, labels=target_ids).logits
+            ans = torch.argmax(logits, dim=-1)[:,-target_len:-1].squeeze()
+            target_ids = target_ids[:,-target_len:-1]
+            if neighborhood:
+                return ans.squeeze().detach().cpu().numpy().tolist()
+            return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
+    elif 'llama' in model_name.lower():
+        target_ids = tokenizer(target, return_tensors='pt')['input_ids'].to(device)
+        encodings = tokenizer(''.join(icl_examples) + f'{x} {target}', return_tensors='pt')
+        input_ids = encodings['input_ids'].to(device)
+        attention_mask = encodings['attention_mask'].to(device)
+        logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
+        ans = torch.argmax(logits, dim=-1)[:,-target_ids.size(1):-1].squeeze()
+        target_ids = target_ids[:,1:]   
+        if neighborhood:
+            return ans.squeeze().detach().cpu().numpy().tolist()
+        return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()        
+    else:
+        target_ids = tokenizer(' ' + target + '\n', return_tensors='pt')['input_ids'].to(device)
+        encodings = tokenizer(''.join(icl_examples) + f'{x} {target}', return_tensors='pt')
+        input_ids = encodings['input_ids'].to(device)
+        attention_mask = encodings['attention_mask'].to(device)
+        logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
+        ans = torch.argmax(logits, dim=-1)[:,-target_ids.size(1):-1].squeeze()
+        target_ids = target_ids[:,:-1]
+        if neighborhood:
+            return ans.squeeze().detach().cpu().numpy().tolist()
+        return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
+
 def compute_icl_multimodal_edit_quality(
     model,
     model_name,
@@ -283,53 +330,6 @@ def compute_icl_multimodal_edit_quality(
             
     return ret
 
-def icl_lm_eval(
-        model,
-        model_name,
-        hparams: HyperParams,
-        tokenizer,
-        icl_examples,
-        target,
-        x,
-        neighborhood=False
-)-> typing.Dict:
-    device = torch.device(f'cuda:{hparams.device}')
-    if 't5' in model_name.lower():
-        target_len = len(tokenizer.encode(target))
-        target_ids = tokenizer(f'{x} {target}', return_tensors='pt')['input_ids'].to(device)
-        encodings = tokenizer(''.join(icl_examples), return_tensors='pt')
-        input_ids = encodings['input_ids'].to(device)
-        attention_mask = encodings['attention_mask'].to(device)
-        with torch.no_grad():
-            logits = model(input_ids=input_ids, attention_mask=attention_mask, labels=target_ids).logits
-            ans = torch.argmax(logits, dim=-1)[:,-target_len:-1].squeeze()
-            target_ids = target_ids[:,-target_len:-1]
-            if neighborhood:
-                return ans.squeeze().detach().cpu().numpy().tolist()
-            return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
-    elif 'llama' in model_name.lower():
-        target_ids = tokenizer(target, return_tensors='pt')['input_ids'].to(device)
-        encodings = tokenizer(''.join(icl_examples) + f'{x} {target}', return_tensors='pt')
-        input_ids = encodings['input_ids'].to(device)
-        attention_mask = encodings['attention_mask'].to(device)
-        logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
-        ans = torch.argmax(logits, dim=-1)[:,-target_ids.size(1):-1].squeeze()
-        target_ids = target_ids[:, 1:]   
-        if neighborhood:
-            return ans.squeeze().detach().cpu().numpy().tolist()
-        return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()        
-    else:
-        target_ids = tokenizer(' ' + target + '\n', return_tensors='pt')['input_ids'].to(device)
-        encodings = tokenizer(''.join(icl_examples) + f'{x} {target}', return_tensors='pt')
-        input_ids = encodings['input_ids'].to(device)
-        attention_mask = encodings['attention_mask'].to(device)
-        logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
-        ans = torch.argmax(logits, dim=-1)[:,-target_ids.size(1):-1].squeeze()
-        target_ids = target_ids[:,:-1]
-        if neighborhood:
-            return ans.squeeze().detach().cpu().numpy().tolist()
-        return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
-
 def icl_multimodal_lm_eval(
         model,
         model_name,
@@ -342,7 +342,41 @@ def icl_multimodal_lm_eval(
         neighborhood=False
 )-> typing.Dict:
     device = torch.device(f'cuda:{hparams.device}')
+    # if 't5' in model_name.lower():
+    #     target_len = len(tokenizer.encode(target))
+    #     target_ids = tokenizer(f'{x} {target}', return_tensors='pt')['input_ids'].to(device)
+    #     encodings = tokenizer(''.join(icl_examples), return_tensors='pt')
+    #     input_ids = encodings['input_ids'].to(device)
+    #     attention_mask = encodings['attention_mask'].to(device)
+    #     with torch.no_grad():
+    #         logits = model(input_ids=input_ids, attention_mask=attention_mask, labels=target_ids).logits
+    #         ans = torch.argmax(logits, dim=-1)[:,-target_len:-1].squeeze()
+    #         target_ids = target_ids[:,-target_len:-1]
+    #         if neighborhood:
+    #             return ans.squeeze().detach().cpu().numpy().tolist()
+    #         return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
+
+    # if image is not None and len(image.shape) == 3:
+    #     image = image.unsqueeze(0)
+    # samples = {}
+    # samples['text_input'] = [''.join(icl_examples) + f'{x} {target}']
+    # samples['image'] = image
+    # if hasattr(model, 'llama_model'):
+    #     samples['prompts_len'] = [len(tokenizer.encode(''.join(icl_examples) + f'{x}', add_special_tokens=False))]
+    # else:
+    #     samples['prompts_len'] = [len(tokenizer.encode(''.join(icl_examples) + f'{x}'))]
     samples = prepare_multimodal_edit(hparams, tokenizer, target, [''.join(icl_examples) + f'{x}'], image) 
+    # if logits.dim() == 3:
+    #     logits = logits[:, :-1]
+    #     targ = labels[:, 1:]
+    #     logits = logits[:, -targ.size(1):]
+    # mask = targ != -100
+    # targ[~mask] = 0
+    # pred_ids = logits.argmax(-1).masked_fill(~mask, 0)
+    # correct = pred_ids == targ
+    # correct = correct & mask
+    # num_non_padding = mask.sum().float().item()
+    # acc = correct.sum() / num_non_padding
     
     return compute_multimodal_edit_quality(model, samples)
 
@@ -353,14 +387,13 @@ def prepare_multimodal_edit(hparams,
                             image):
     if isinstance(target, str):
         target = [target,]
-    target = [" " + target_ if target_[0] != " " else target_ for target_ in target]
     if isinstance(prompts, str):
         prompts = [prompts,]
     if image is not None and len(image.shape) == 3:
         image = image.unsqueeze(0)
-    text_input = [prompt_ + target_ for prompt_, target_ in zip(prompts, target)]
+    text_input = [prompt_ + ' ' + target_ for prompt_, target_ in zip(prompts, target)]
     
-    if hparams.model_name == 'minigpt4' or hparams.model_name == 'blip2':
+    if hparams.model_name == 'minigpt4':
         prompts_len = [len(tok.encode(prompt, add_special_tokens=False)) for prompt in prompts]
         target = tok(target, add_special_tokens=False, return_tensors="pt",)["input_ids"]
     else:
@@ -398,3 +431,94 @@ def compute_multimodal_edit_quality(model, batch):
     acc = correct.sum() / num_non_padding
     
     return acc, pred_ids.numpy()
+
+def compute_multimodal_edit_results(
+    model,
+    model_name,
+    hparams: HyperParams,
+    tok: AutoTokenizer,
+    record: typing.Dict,
+    device
+) -> typing.Dict:
+    """
+    Given a rewritten model, computes generalization and specificity metrics for
+    the desired rewrite (passed in via the CounterFact dataset record). Returns a
+    dictionary containing those metrics.
+
+    :param model: Rewritten model
+    :param tok: Tokenizer
+    :param record: CounterFact dataset record
+    :paran snips: ???
+    :param vec: ???
+    :return: Dictionary containing rewriting metrics
+    """
+    ret = {}
+    # First, unpack rewrite evaluation record.
+    
+    target = record["target"]
+    rewrite_prompts = record["prompt"]
+    image = record["image"]
+    
+    edit_inner = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, image)
+    ret['rewrite_acc'], _ = compute_multimodal_edit_quality(model, edit_inner)
+    
+    if "rephrase_prompt" in record.keys():
+        rephrase_prompts = record["rephrase_prompt"]
+        edit_outer = prepare_multimodal_edit(hparams, tok, target, rephrase_prompts, image)
+        ret['rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_outer)
+        
+    if "image_rephrase" in record.keys():
+        rephrase_image = record["image_rephrase"]
+        edit_image_outer = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, rephrase_image) 
+        ret['image_rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
+
+    if 'locality_prompt' in record.keys():
+        locality_prompt = record["locality_prompt"]
+        locality_ground_truth = record["locality_ground_truth"]
+        locality = prepare_multimodal_edit(hparams, tok, locality_ground_truth, locality_prompt, None)
+        _, ret['locality_output'] = compute_multimodal_edit_quality(model, locality)
+        
+    if 'multimodal_locality_prompt' in record.keys():
+        m_loc_prompt = record["multimodal_locality_prompt"]
+        m_loc_ground_truth = record["multimodal_locality_ground_truth"]
+        m_loc_image = record["multimodal_locality_image"]
+        m_locality = prepare_multimodal_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image)
+        _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality(model, m_locality)
+    # Form a list of lists of prefixes to test.
+
+    return ret
+
+
+    prompt_tok = tok(
+        prompt,
+        padding=True,
+        truncation=True,
+        max_length=hparams.max_length,
+        return_tensors="pt",
+    ).to(f"cuda:{device}")
+
+    trg_tok = tok(
+        target,
+        padding=True,
+        truncation=True,
+        max_length=hparams.max_length,
+        return_tensors="pt",
+    ).to(f"cuda:{device}")
+
+    prompt_tok['labels'] = trg_tok['input_ids']
+    # prompt_tok['decoder_attention_mask'] = trg_tok['attention_mask']
+
+
+    with torch.no_grad():
+        outputs = model(**prompt_tok)
+        if type(outputs) is torch.Tensor:
+            logits = outputs
+        else:
+            logits = outputs.logits
+
+        assert logits.size(1) == trg_tok['input_ids'].size(1)
+        ans = torch.argmax(logits, dim=-1)
+        if locality:
+            return ans.squeeze().detach().cpu().numpy().tolist()
+
+        return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()[0]
