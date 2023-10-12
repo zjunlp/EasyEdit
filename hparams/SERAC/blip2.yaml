@@ -7,7 +7,7 @@ model_class: Blip2OPT
 small_name: hugging_cache/opt-125m
 tokenizer_class: GPT2Tokenizer
 tokenizer_name: hugging_cache/opt-2.7b
-cls_name: ./hugging_cache/distilbert-base-cased 
+cls_name: distilbert-base-cased 
 cls_class: AutoModel 
 inner_params:
 - opt_model.model.decoder.layers.9.fc1.weight
