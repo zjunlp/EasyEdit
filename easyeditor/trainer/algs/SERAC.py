@@ -405,11 +405,11 @@ class SERAC_MULTI(EditableModel):
             if config.cross_attend and not config.cls_class.endswith("ForSequenceClassification"):
                 LOG.warn(f"Switching {config.cls_class} to {config.cls_class}ForSequenceClassification for cross-attend")
                 config.cls_class += "ForSequenceClassification"
-            self.classifier = getattr(transformers, config.cls_class).from_pretrained(config.cls_name, cache_dir='/data/tbozhong/project/multimodal/EasyEdit/hugging_cache')
+            self.classifier = getattr(transformers, config.cls_class).from_pretrained(config.cls_name, cache_dir='./hugging_cache')
             if self.config.checkpoint_grad:
                 LOG.info(f"Checking for checkpointing: {hasattr(self.classifier.config, 'gradient_checkpointing')}")
                 self.classifier.config.gradient_checkpointing = True
-            self.classifier_tok = transformers.AutoTokenizer.from_pretrained(config.cls_name, cache_dir='/data/tbozhong/project/multimodal/EasyEdit/hugging_cache')
+            self.classifier_tok = transformers.AutoTokenizer.from_pretrained(config.cls_name, cache_dir='./hugging_cache')
             if not self.config.cross_attend and 'bert' in self.config.cls_name:
                 self.classifier.pooler = None  # we don't need the classification head
             elif not self.config.cross_attend and "mpnet" not in self.config.cls_name:
@@ -427,7 +427,7 @@ class SERAC_MULTI(EditableModel):
                 self.replacement_tok = transformers.LlamaTokenizer.from_pretrained(config.small_name,)
                 self.replacement_tok.pad_token = self.replacement_tok.eos_token
             else:
-                self.replacement_tok = transformers.AutoTokenizer.from_pretrained(config.small_name, cache_dir='/data/tbozhong/project/multimodal/EasyEdit/hugging_cache')
+                self.replacement_tok = transformers.AutoTokenizer.from_pretrained(config.small_name, cache_dir='./hugging_cache')
             if self.config.freeze_cntr:
                 self.replacement = None
             else:
@@ -436,7 +436,7 @@ class SERAC_MULTI(EditableModel):
                 elif config.model_name == "blip2":
                     if "opt" in config.name:
                         from transformers import OPTForCausalLM
-                        self.replacement = OPTForCausalLM.from_pretrained(config.small_name, cache_dir='/data/tbozhong/project/multimodal/EasyEdit/hugging_cache')
+                        self.replacement = OPTForCausalLM.from_pretrained(config.small_name, cache_dir='./hugging_cache')
                 elif config.model_name == "minigpt4":
                     from transformers import LlamaForCausalLM
                     self.replacement = LlamaForCausalLM.from_pretrained(config.small_name)
@@ -446,7 +446,7 @@ class SERAC_MULTI(EditableModel):
                         else:
                             v.requires_grad = False
                 else:
-                    self.replacement = getattr(transformers, config.model_class).from_pretrained(config.small_name, cache_dir='/data/tbozhong/project/multimodal/EasyEdit/hugging_cache')
+                    self.replacement = getattr(transformers, config.model_class).from_pretrained(config.small_name, cache_dir='./hugging_cache')
                 if self.replacement_tok.sep_token is None and "gpt" not in config.name.lower():
                     add_sep(self.replacement_tok, self.replacement)
                 if self.replacement_tok.pad_token is None:
