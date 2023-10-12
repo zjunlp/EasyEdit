@@ -737,7 +737,7 @@ We specify the return metrics as `dict` format, including model prediction evalu
 - meta-learning based: `MEND`
 - memory-based routing: `SERAC`
 
-For above editing methods, pre-training of corresponding meta-networks or classifiers is required. Therefore, in EasyEdit, we provide a unified framework for pretraining the relevant network structures. Take the training MEND for example:
+For above editing methods, pre-training of corresponding meta-networks or classifiers is required. Therefore, in EasyEdit, we provide a unified framework for pretraining the relevant network structures. Take the training SERAC for example:
 
 - **Step 1** and **Step 2** are the same as the example above, which involves selecting the appropriate editing model and editing method.
 
