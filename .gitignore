@@ -4,4 +4,6 @@ data
 **/__pycache__
 examples/WikiBio
 examples/wiki_recent
-README_update.md
+.vscode
+logs
+results
