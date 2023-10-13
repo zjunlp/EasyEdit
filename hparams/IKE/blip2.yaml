@@ -1,0 +1,20 @@
+alg_name: "IKE"
+name: hugging_cache/opt-2.7b
+model_name: blip2
+tokenizer_class: GPT2Tokenizer
+tokenizer_name: hugging_cache/opt-2.7b
+sentence_model_name: hugging_cache/all-MiniLM-L6-v2
+device: 0
+results_dir: "./results"
+
+k: 32
+
+# Multimodal
+task_name: "vqa"
+qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
+qformer_name_or_path: bert-base-uncased
+state_dict_file: hugging_cache/eva_vit_g.pth
+
+# image
+coco_image: ../
+rephrase_image: ../

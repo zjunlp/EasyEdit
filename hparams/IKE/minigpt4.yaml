@@ -1,0 +1,20 @@
+alg_name: "IKE"
+name: hugging_cache/Vicuna
+model_name: minigpt4
+tokenizer_class: LlamaTokenizer
+tokenizer_name: hugging_cache/Vicuna
+sentence_model_name: hugging_cache/all-MiniLM-L6-v2
+device: 0
+results_dir: "./results"
+
+k: 32
+
+# Multimodal
+task_name: "caption"
+qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
+qformer_name_or_path: bert-base-uncased
+state_dict_file: hugging_cache/eva_vit_g.pth
+
+# image
+coco_image: ../
+rephrase_image: ../

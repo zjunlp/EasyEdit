@@ -4,7 +4,6 @@ from typing import Optional
 
 from ...util.hparams import HyperParams
 
-
 @dataclass
 class FTApiHyperParams(HyperParams):
     api_key: str
