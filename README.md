@@ -45,6 +45,7 @@
 - [Other Knowledge Editing Projects](#other-related-projects)
 
 ## 🔔News
+- **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
 - **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
 - **2023-10-07 The EasyEdit have supported editing models with multiple GPUs, using huggingface [`Accelerate`](https://github.com/zjunlp/EasyEdit/blob/main/hparams/ROME/llama-7b.yaml#L24).**
 - **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
