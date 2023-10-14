@@ -264,9 +264,12 @@ class BaseEditor:
                 if self.alg_name == 'KN':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
-                elif self.alg_name == 'LoRA' and keep_original_weight:
-                    edited_model.unload()
-                    del self.model.peft_config
+                elif self.alg_name == 'LoRA':
+                    if keep_original_weight:
+                        edited_model.unload()
+                        del self.model.peft_config
+                    else:
+                        self.model = edited_model
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
@@ -678,9 +681,12 @@ class BaseEditor:
                 if self.alg_name == 'KN':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
-                elif self.alg_name == 'LoRA' and keep_original_weight:
-                    edited_model.unload()
-                    del self.model.peft_config
+                elif self.alg_name == 'LoRA':
+                    if keep_original_weight:
+                        edited_model.unload()
+                        del self.model.peft_config
+                    else:
+                        self.model = edited_model
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
