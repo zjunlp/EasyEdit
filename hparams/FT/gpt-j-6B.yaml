@@ -1,6 +1,6 @@
 alg_name: "FT"
 model_name: "./hugging_cache/gpt-j-6B"
-device: 0
+device: 1
 
 layers: [21]
 num_steps: 25
