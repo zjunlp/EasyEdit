@@ -11,9 +11,7 @@ class FTApiHyperParams(HyperParams):
 
     alg_name: str
     model_name: str
-    n_epochs: int
     proxy: Optional[str] = None
-
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

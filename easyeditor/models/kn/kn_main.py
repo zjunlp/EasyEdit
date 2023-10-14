@@ -32,7 +32,7 @@ def apply_kn_to_model(
     ground_truth = request_rewrite["ground_truth"]
     target = request_rewrite["target_new"]
 
-    kn.model = kn.model.to(kn.device)
+    # kn.model = kn.model.to(kn.device)
     refined_neurons = kn.get_refined_neurons(
         text,
         ground_truth,

@@ -1,0 +1,82 @@
+# Model
+device: 0
+
+name: hugging_cache/Vicuna
+model_name: minigpt4
+model_class: Blip2OPT
+small_name: hugging_cache/Vicuna 
+tokenizer_class: LlamaTokenizer
+tokenizer_name: hugging_cache/Vicuna
+cls_name: ./hugging_cache/distilbert-base-cased 
+cls_class: AutoModel 
+inner_params:
+- llama_model.model.layers.29.mlp.down_proj.weight
+- llama_model.model.layers.29.mlp.up_proj.weight
+- llama_model.model.layers.30.mlp.down_proj.weight
+- llama_model.model.layers.30.mlp.up_proj.weight
+- llama_model.model.layers.31.mlp.down_proj.weight
+- llama_model.model.layers.31.mlp.up_proj.weight
+
+# Method
+alg: SERAC_MULTI
+lr: 1e-5
+edit_lr: 1e-2
+seed: 0
+lr_lr: 0.0
+cedit: 0.1
+iedit: 0.1
+cloc: 1.0
+cbase: 1.0
+dropout: 0.0
+final_eval: True
+supervised: False
+train_base: False
+no_grad_layers: null
+soft_weighting: False
+checkpoint_grad: False
+cross_attend: False
+cos: False
+freeze: null
+square: True
+bound_embeds: False
+use_all_negatives: False
+freeze_cntr: False
+dist_heads: 1
+lora: null
+archive: null
+
+batch_size: 1
+model_save_pt: 1000
+edit_bs: 1
+silent: False
+#max_epochs: 1
+max_iters: 50000
+log_interval: 200
+val_interval: 5000
+early_stop_patience: 30000
+early_stop_key: "loss/total_edit_val"
+eval_only: False
+half: False
+save: False
+debug: False
+log_errors: False
+unlikelihood: True
+
+
+val_batch_size: 1
+accumulate_bs: 1
+val_steps: 1000
+opt: Adam
+grad_clip: 100.
+
+# Output
+results_dir: ./results
+
+# Multimodal
+qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
+qformer_name_or_path: bert-base-uncased
+state_dict_file: hugging_cache/eva_vit_g.pth
+
+# image
+coco_image: ../
+rephrase_image: ../

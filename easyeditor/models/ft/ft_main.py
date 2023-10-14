@@ -1,7 +1,9 @@
 from copy import deepcopy
 from typing import Any, Dict, List, Tuple
+from collections import deque
 
 import torch
+from torch.nn import CrossEntropyLoss
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util import nethook
@@ -59,7 +61,7 @@ def execute_ft(
     Invariant: model at beginning of function == model at end of function
     """
     device = torch.device(f'cuda:{hparams.device}')
-    model = model.to(device)
+    # model = model.to(device)
     # Update target and print info
     requests = deepcopy(requests)
     for request in requests:
@@ -116,15 +118,65 @@ def execute_ft(
             opt.zero_grad()
             bs = inputs["input_ids"].shape[0]
             if 't5' in hparams.model_name.lower():
-                inputs['labels'] = target_ids
+                inputs['decoder_input_ids'] = target_ids
                 logits = model(**inputs).logits
-                unmasked_log_probs = logits.log_softmax(-1).gather(-1, inputs['labels'].unsqueeze(-1)).squeeze(-1)
+                unmasked_log_probs = logits.log_softmax(-1).gather(-1, inputs['decoder_input_ids'].unsqueeze(-1)).squeeze(-1)
 
-                mask = inputs['labels'] != -100
+                mask = inputs['decoder_input_ids'] != -100
                 n_tokens = mask.float().sum()
                 avg_log_prob = (unmasked_log_probs * mask.float()).sum() / n_tokens
                 nll = -avg_log_prob
                 loss = nll
+            elif 'chatglm' in hparams.model_name.lower():
+                # def get_masks(seq, bos_token_id):
+                #     """  code from model_chatglm.py  """
+                #     if seq.count(bos_token_id) == 2:
+                #         context_length = seq[2:].index(bos_token_id) + 2
+                #     else:
+                #         context_length = seq.index(bos_token_id)
+                #     attention_mask = torch.ones((1, len(seq), len(seq)))
+                #     attention_mask.tril_()
+                #     attention_mask[..., :context_length] = 1
+                #     # attention_mask.unsqueeze_(1)
+                #     attention_mask = (attention_mask < 0.5).bool()
+                #     return attention_mask
+
+                input_ids = inputs['input_ids'].tolist()
+                labels = target_ids.tolist()
+                assert len(input_ids) == len(labels)
+                len_batches = [len(input_ids[i]) + len(labels[i]) + 1
+                                 for i in range(len(input_ids))]
+                len_max_batch = max(len_batches)
+                batch_input_ids = []
+                batch_attention_mask = []
+                batch_labels = []
+                for x, y in zip(input_ids, labels):
+                    len_padding = len_max_batch - len(x) - len(y)
+                    if tok.padding_side and tok.padding_side == "left":
+                        batch_label = [-100] * len_padding + [-100] * len(x) + y
+                        batch_input_id = [0] * (len_padding) + x + y
+                    else:
+                        batch_label = [-100] * len(x) + y + [-100] * len_padding
+                        batch_input_id = x + y + [0] * (len_padding)
+
+                    # tensor_attention_mask = get_masks(batch_input_id, bos_token_id=64792)
+                    tensor_input_ids = torch.tensor(batch_input_id, dtype=torch.long)
+                    tensor_labels = torch.tensor(batch_label, dtype=torch.long)
+                    batch_input_ids.append(tensor_input_ids)
+                    # batch_attention_mask.append(tensor_attention_mask)
+                    batch_labels.append(tensor_labels)
+                # batch_attention_mask = torch.stack(batch_attention_mask).to(device)
+                batch_input_ids = torch.stack(batch_input_ids).to(device)
+                batch_labels = torch.stack(batch_labels).to(device)
+                # loss = model(input_ids=batch_input_ids, labels=batch_labels).loss
+                lm_logits = model(input_ids=batch_input_ids)['logits']
+                lm_logits = lm_logits.to(torch.float32)
+                shift_logits = lm_logits[..., :-1, :].contiguous()
+                shift_labels = batch_labels[..., 1:].contiguous()
+                # Flatten the tokens
+                loss_fct = CrossEntropyLoss(ignore_index=-100)
+                loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+                loss = loss.to(lm_logits.dtype)
             else:
                 probs = torch.nn.functional.log_softmax(
                     model(**inputs).logits[torch.arange(bs), last_token_inds], dim=-1

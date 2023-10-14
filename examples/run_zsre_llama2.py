@@ -3,7 +3,16 @@ import sys
 sys.path.append('..')
 import json
 import random
-from easyeditor import FTHyperParams, IKEHyperParams, KNHyperParams, MEMITHyperParams, ROMEHyperParams
+from easyeditor import (
+    FTHyperParams, 
+    IKEHyperParams, 
+    KNHyperParams, 
+    MEMITHyperParams, 
+    ROMEHyperParams, 
+    LoRAHyperParams,
+    MENDHyperParams,
+    SERACHparams
+    )
 from easyeditor import BaseEditor
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
@@ -17,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument('--hparams_dir', required=True, type=str)
     parser.add_argument('--data_dir', required=True, type=str)
     parser.add_argument('--ds_size', default=None, type=int)
-    parser.add_argument('--metrics_save_dir', default='./', type=str)
+    parser.add_argument('--metrics_save_dir', default='./output', type=str)
 
     args = parser.parse_args()
 
@@ -33,6 +42,8 @@ if __name__ == "__main__":
         editing_hparams = ROMEHyperParams
     elif args.editing_method == 'IKE':
         editing_hparams = IKEHyperParams
+    elif args.editing_method == 'LoRA':
+        editing_hparams = LoRAHyperParams
     else:
         raise NotImplementedError
 
@@ -63,7 +74,6 @@ if __name__ == "__main__":
     }
     subject = [edit_data_['subject'] for edit_data_ in test_data]
     hparams = editing_hparams.from_hparams(args.hparams_dir)
-
 
     if args.editing_method == 'IKE':
         train_data_path = os.path.join(args.data_dir, 'zsre_mend_train_10000.json')

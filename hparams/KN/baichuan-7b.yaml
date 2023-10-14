@@ -1,6 +1,7 @@
 alg_name: "KN"
 model_name: "/mnt/xzk/Baichuan-7B"
 device: 0
+model_parallel: false
 
 lr_scale: 1.0
 n_toks: 10

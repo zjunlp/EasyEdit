@@ -1,13 +1,14 @@
 # Model
 
-archive: ./results/models/MEND/llama-2-7b
+archive: ./results/models/MEND/llama-2-7b-ZsRE
 alg_name: "MEND"
-device: 0
+device: 1
 model_name: ./hugging_cache/llama-2-7b
 
 model_class: LlamaForCausalLM
 tokenizer_class: LlamaTokenizer
 tokenizer_name: ./hugging_cache/llama-2-7b
+model_parallel: true
 inner_params:
 - model.layers.29.mlp.gate_proj.weight
 - model.layers.29.mlp.up_proj.weight

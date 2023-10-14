@@ -1,6 +1,7 @@
 alg_name: "KN"
 model_name: "./hugging_cache/llama-2-7b"
 device: 0
+model_parallel: false
 
 lr_scale: 1.0
 n_toks: 10

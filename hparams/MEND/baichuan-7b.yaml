@@ -8,6 +8,7 @@ model_name: /mnt/xzk/Baichuan-7B
 model_class: LlamaForCausalLM
 tokenizer_class: LlamaTokenizer
 tokenizer_name: /mnt/xzk/Baichuan-7B
+model_parallel: false
 inner_params:
 - model.layers.29.mlp.gate_proj.weight
 - model.layers.29.mlp.up_proj.weight

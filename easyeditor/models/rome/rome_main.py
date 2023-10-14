@@ -72,11 +72,11 @@ def execute_rome(
 
     # Update target and print info
     request = deepcopy(request)
-    # if request["target_new"] != " ":
-    #     # Space required for correct tokenization
-    #     request["target_new"] = " " + request["target_new"]
+    if request["target_new"] != " ":
+        # Space required for correct tokenization
+        request["target_new"] = " " + request["target_new"]
 
-    if('{}' not in request['prompt']):
+    if '{}' not in request['prompt']:
         assert request['subject'] in request['prompt'] or \
                print(f"Subject:{request['subject']} do not exist in prompt: {request['prompt']}")
 

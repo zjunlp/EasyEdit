@@ -42,9 +42,7 @@ class MENDHyperParams(HyperParams):
     shared: bool
 
     # Output
-
     results_dir: str
-
 
     # Train
     device: int
@@ -72,13 +70,11 @@ class MENDHyperParams(HyperParams):
     device: int
 
     batch_size: int = 1
-    max_length: int = 30
+    max_length: int = 40
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
 
-
-
-
+    model_parallel: bool = False
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

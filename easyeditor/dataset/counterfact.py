@@ -18,15 +18,15 @@ class CounterFactDataset(Dataset):
         data_dir = Path(data_dir)
         cf_loc = data_dir
 
-        if(config is not None):
+        if config is not None:
             self.config = config
-        if(config is not None and hasattr(config, 'max_length')):
+        if config is not None and hasattr(config, 'max_length'):
             self.max_length = config.max_length
         else:
-            self.max_length = 32
+            self.max_length = 40
 
         # For Meta Training
-        if(config is not None and hasattr(config, 'tokenizer_name')):
+        if config is not None and hasattr(config, 'tokenizer_name'):
             tok_name = (
                 config.tokenizer_name
                 if config.tokenizer_name is not None

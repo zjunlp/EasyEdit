@@ -21,5 +21,6 @@ lm_head_module: "transformer.output_layer"
 mom2_dataset: "wikipedia"
 mom2_n_samples: 100000
 mom2_dtype: "float32"
+model_parallel: false
 
 

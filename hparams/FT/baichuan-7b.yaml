@@ -1,11 +1,11 @@
 alg_name: "FT"
-model_name: "/mnt/xzk/Baichuan-7B"
+model_name: "/mnt/16t/wmr/safetyedit/hugging_cache/Baichuan2-7B-Chat"
 device: 0
 
 layers: [21]
 num_steps: 25
 batch_size: 1
-max_length: 30
+max_length: 40
 lr: 5e-4
 weight_decay: 0
 kl_factor: 0
@@ -16,3 +16,4 @@ mlp_module_tmp: "model.layers.{}.mlp"
 attn_module_tmp: "model.layers.{}.self_attn"
 ln_f_module: "model.norm"
 lm_head_module: "lm_head"
+model_parallel: false

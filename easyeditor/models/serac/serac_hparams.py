@@ -73,7 +73,8 @@ class SERACHparams(HyperParams):
     device: int
 
     batch_size: int = 1
-    max_length: int = 30
+    max_length: int = 40
+    model_parallel: bool = False
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
 

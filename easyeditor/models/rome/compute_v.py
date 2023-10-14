@@ -32,6 +32,8 @@ def compute_v(
         "input_ids"
     ][0]
 
+    if target_ids[0] == tok.bos_token_id or target_ids[0] == tok.unk_token_id:
+        target_ids = target_ids[1:]
     # Compile list of rewriting and KL x/y pairs
     rewriting_prompts, kl_prompts = [
         context.format(request["prompt"]) + tok.decode(target_ids[:-1])
