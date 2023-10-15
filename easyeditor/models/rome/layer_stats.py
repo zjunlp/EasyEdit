@@ -109,6 +109,8 @@ def layer_stats(
             maxlen = model.config.max_sequence_length
         elif hasattr(model.config, 'max_position_embeddings'):
             maxlen = model.config.max_position_embeddings
+        elif hasattr(model.config,'seq_length'):
+            maxlen = model.config.seq_length
         else:
             raise NotImplementedError
         if batch_tokens is not None and batch_tokens < maxlen:
@@ -123,6 +125,8 @@ def layer_stats(
         npos = model.config.max_sequence_length
     elif hasattr(model.config, 'max_position_embeddings'):
         npos = model.config.max_position_embeddings
+    elif hasattr(model.config,'seq_length'):
+        npos = model.config.seq_length
     else:
         raise NotImplementedError
     if batch_tokens is None:
