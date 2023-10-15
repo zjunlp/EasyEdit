@@ -11,7 +11,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util import nethook
 
-
 def get_reprs_at_word_tokens(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
@@ -38,7 +37,6 @@ def get_reprs_at_word_tokens(
         module_template,
         track,
     )
-
 
 def get_words_idxs_in_templates(
     tok: AutoTokenizer, context_templates: str, words: str, subtoken: str
@@ -116,8 +114,8 @@ def get_words_idxs_in_templates(
 def get_reprs_at_idxs(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
-    contexts: List[str],
-    idxs: List[List[int]],
+    contexts: List[str],#表示该知识的完整句子
+    idxs: List[List[int]],#被填入词的位置
     layer: int,
     module_template: str,
     track: str = "in",
@@ -129,24 +127,27 @@ def get_reprs_at_idxs(
 
     def _batch(n):
         for i in range(0, len(contexts), n):
-            yield contexts[i : i + n], idxs[i : i + n]
+            yield contexts[i : i + n], idxs[i : i + n]#将句子和被填词位置分块
 
     assert track in {"in", "out", "both"}
     both = track == "both"
     tin, tout = (
         (track == "in" or both),
         (track == "out" or both),
-    )
+    )#tin tout都是bool结构
     module_name = module_template.format(layer)
     to_return = {"in": [], "out": []}
 
     def _process(cur_repr, batch_idxs, key):
         nonlocal to_return
         cur_repr = cur_repr[0] if type(cur_repr) is tuple else cur_repr
+        if cur_repr.shape[0]!=len(batch_idxs):
+            cur_repr=cur_repr.transpose(0,1)
         for i, idx_list in enumerate(batch_idxs):
             to_return[key].append(cur_repr[i][idx_list].mean(0))
 
     for batch_contexts, batch_idxs in _batch(n=128):
+        #contexts_tok:[21 19]
         contexts_tok = tok(batch_contexts, padding=True, return_tensors="pt").to(
             next(model.parameters()).device
         )
