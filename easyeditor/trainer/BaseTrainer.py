@@ -155,14 +155,12 @@ class BaseTrainer:
             LOG.info(f'MAX EPOCH: {self.config.max_epochs}, set max iters to {self.config.max_iters}')
 
         self.epoches = round(float(self.config.max_iters) / (len(self.train_set) / self.config.batch_size))
-
         self.global_iter = 0
         for epoch in range(self.epoches):
             for i, batch in enumerate(self.train_loader):
                 self.global_iter += 1
                 if self.global_iter >= self.config.max_iters:
                     break
-
                 if not self.config.eval_only:
                     train_info = self.train_step(batch)
                     averager.add(train_info)
@@ -171,14 +169,11 @@ class BaseTrainer:
                         avg_info = averager.average()
                         averager.reset()
                         self.echo(self.global_iter, avg_info)
-
                 if self.global_iter % self.config.val_interval == 0:
                     val_info = self.validate(steps=self.config.val_steps)
                     self.echo(self.global_iter, val_info)
-
                     if stopper.update(self.global_iter, val_info):
                         self.save_state(val_info)  # New best
-
                     if stopper.should_stop():
                         LOG.info(
                             f"No decrease in {self.config.early_stop_key} for {self.config.early_stop_patience} steps"
