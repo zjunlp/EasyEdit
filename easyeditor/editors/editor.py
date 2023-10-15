@@ -27,7 +27,7 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
                     level = logging.INFO)
 
 LOG = logging.getLogger(__name__)
-
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 def make_logs():
 
@@ -264,12 +264,9 @@ class BaseEditor:
                 if self.alg_name == 'KN':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
-                elif self.alg_name == 'LoRA':
-                    if keep_original_weight:
-                        edited_model.unload()
-                        del self.model.peft_config
-                    else:
-                        self.model = edited_model
+                elif self.alg_name == 'LoRA' and keep_original_weight:
+                    edited_model.unload()
+                    del self.model.peft_config
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
@@ -681,12 +678,9 @@ class BaseEditor:
                 if self.alg_name == 'KN':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
-                elif self.alg_name == 'LoRA':
-                    if keep_original_weight:
-                        edited_model.unload()
-                        del self.model.peft_config
-                    else:
-                        self.model = edited_model
+                elif self.alg_name == 'LoRA' and keep_original_weight:
+                    edited_model.unload()
+                    del self.model.peft_config
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
