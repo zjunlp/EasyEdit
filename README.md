@@ -178,11 +178,11 @@ You can choose different editing methods according to your specific needs.
 | FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | AdaLoRA |  |  |  |  | ✅ |  |  |  |  |
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  | | ✅ |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  | | ✅ |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | ✅ |
 | KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  | ✅ |
-| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ | | | ✅ |
-| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | | | ✅ |
+| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | | ✅ |
+| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| | ✅ |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
