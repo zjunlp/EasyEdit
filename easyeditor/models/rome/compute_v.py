@@ -80,16 +80,18 @@ def compute_v(
     # Inserts new "delta" variable at the appropriate part of the computation
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init
-
         if cur_layer == hparams.mlp_module_tmp.format(layer):
             # Store initial value of the vector of interest
             if target_init is None:
                 print("Recording initial value of v*")
                 # Initial value is recorded for the clean sentence
                 target_init = cur_out[0, lookup_idxs[0]].detach().clone()
-
+                
             for i, idx in enumerate(lookup_idxs):
-                cur_out[i, idx, :] += delta
+                if len(lookup_idxs)!=len(cur_out):
+                    cur_out[idx, i, :] += delta
+                else:
+                    cur_out[i, idx, :] += delta
 
         return cur_out
 
