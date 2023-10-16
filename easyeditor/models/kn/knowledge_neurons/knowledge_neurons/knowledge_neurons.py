@@ -807,7 +807,6 @@ class KnowledgeNeurons:
             # ), "edit mode currently only working for bert models - TODO"
             original_prediction_id = argmax_tokens[0] if len(argmax_tokens) == 1 else argmax_tokens
             if self.model_type == "gpt2" or "chatglm2":
-                print("finish")
                 word_embeddings_weights = word_embeddings_weights.weight
             original_prediction_embedding = word_embeddings_weights[
                 original_prediction_id
