@@ -68,8 +68,8 @@ class KnowledgeNeurons:
             self.word_embeddings_attr = "shared.weight"
         elif 'chatglm2' == model_type:
             self.transformer_layers_attr = "transformer.encoder.layers"
-            self.input_ff_attr = "input_layernorm"
-            self.output_ff_attr = "mlp.dense_4h_to_h"
+            self.input_ff_attr = "mlp.dense_4h_to_h"
+            self.output_ff_attr = "mlp.dense_h_to_4h.weight"
             self.word_embeddings_attr = "transformer.embedding.word_embeddings"
         elif 'internlm' == model_type:
             self.transformer_layers_attr = "model.layers"
@@ -806,7 +806,8 @@ class KnowledgeNeurons:
             #     self.model_type == "bert"
             # ), "edit mode currently only working for bert models - TODO"
             original_prediction_id = argmax_tokens[0] if len(argmax_tokens) == 1 else argmax_tokens
-            if self.model_type == "gpt2" or self.model_type == "chatglm2":
+            if self.model_type == "gpt2" or "chatglm2":
+                print("finish")
                 word_embeddings_weights = word_embeddings_weights.weight
             original_prediction_embedding = word_embeddings_weights[
                 original_prediction_id
@@ -860,12 +861,19 @@ class KnowledgeNeurons:
                         for oe in original_prediction_embedding:
                             output_ff_weights[:, position] -= oe
                     else:
-                        output_ff_weights[:, position] -= original_prediction_embedding * 2
+                        if(output_ff_weights.shape[0]!=original_prediction_embedding.shape[0]):
+                            output_ff_weights[position, :] -= original_prediction_embedding * 2
+                        else:
+                            output_ff_weights[:, position] -= original_prediction_embedding * 2
                     if target_embedding.ndim > 1:
                         for te in target_embedding:
                             output_ff_weights[:, position] += te
                     else:
-                        output_ff_weights[:, position] += target_embedding * 2
+                        if(output_ff_weights.shape[0]!=target_embedding.shape[0]):
+                            output_ff_weights[position,:] += target_embedding * 2
+                        else:
+                            output_ff_weights[:,position] += target_embedding * 2
+
             else:
                 if self.model_type == "gpt2":
                     output_ff_weights[position, :] = erase_value
