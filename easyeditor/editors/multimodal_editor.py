@@ -20,7 +20,8 @@ from ..util.globals import *
 from .singleton_editor import SingletonEditor
 from .batch_editor import BatchEditor
 from ..evaluate import (compute_icl_multimodal_edit_quality, 
-                        compute_multimodal_edit_results)
+                        compute_multimodal_edit_results,
+                        compute_multimodal_edit_results_demo)
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
@@ -263,6 +264,151 @@ class MultimodalEditor:
             #     json.dump(metrics, f, indent=1)
 
         return all_metrics, edited_model, weights_copy
+      
+    def edit_demo(self,
+            prompts: Union[str, List[str]],
+            targets: Union[str, List[str]],
+            image: Union[str, List[str]],
+            rephrase_prompts: Optional[Union[str, List[str]]] = None,
+            rephrase_image: Optional[Union[str, List[str]]] = None,
+            locality_inputs: Optional[dict] = None,
+            keep_original_weight=False,
+            verbose=True,
+            **kwargs
+            ):
+        """
+        `prompts`: list or str
+            the prompts to edit
+        `targets`: str
+            the  expected output
+        `image`: dict
+            for multimodal
+        """
+        if isinstance(prompts, List):
+            assert len(prompts) == len(targets) == len(image)
+        else:
+            prompts, targets, image = [prompts,], [targets,], [image,]
+
+        if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
+            self.hparams.batch_size = 1
+
+        requests = self._prepare_requests(prompts, targets, image, rephrase_prompts, rephrase_image, locality_inputs,
+                                          **kwargs)
+
+        if hasattr(self.hparams, 'batch_size') :
+               assert self.hparams.batch_size == 1 or \
+                      print(f'Single Edit, pls set the batch_size to 1....')
+
+        # if not os.path.exists(RESULTS_DIR):
+        #     os.mkdir(RESULTS_DIR)
+        # base_case_path = RESULTS_DIR / self.hparams_fname.rsplit('.', 1)[0]
+        # if not os.path.exists(base_case_path):
+        #     os.mkdir(base_case_path)
+        # print(f"Results will be stored at {base_case_path}")
+        all_metrics = []
+        for i, request in enumerate(requests):
+            start = time()
+
+            if self.alg_name == 'IKE':
+                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
+                edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
+                    self.model,
+                    self.tok,
+                    request,
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight,
+                    train_ds=kwargs['train_ds']
+                )
+                exec_time = time() - start
+                LOG.info(f"Execution {i} editing took {exec_time}")
+                start = time()
+                metrics = {
+                    'case_id': i,
+                    # "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
+                                                     request, self.hparams.device),
+                    "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+                                                     request, self.hparams.device, pre_edit=True)
+                }
+                metrics['pre'].pop('locality_acc')
+                metrics['pre'].pop('locality_image_acc')
+
+                LOG.info(f"Evaluation took {time() - start}")
+
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
+                    )
+
+                all_metrics.append(metrics)
+            else:
+                edited_model, weights_copy = self.apply_algo(
+                    self.model,
+                    self.tok,
+                    [request],
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight,
+                    train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
+                )
+                exec_time = time() - start
+                LOG.info(f"Execution {i} editing took {exec_time}")
+
+                start = time()
+                post, post_logits = compute_multimodal_edit_results_demo(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
+                metrics = {
+                    'case_id': i,
+                    # "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": post
+                }
+                if self.alg_name == 'KN':
+                    with torch.no_grad():
+                        weights_copy() # unpatch_fn
+                else:
+                    with torch.no_grad():
+                        for k, v in weights_copy.items():
+                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                pre, pre_logits = compute_multimodal_edit_results_demo(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
+                metrics["pre"] = pre
+                if 'locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['locality_output']) == \
+                            len(metrics['pre']['locality_output'])
+                    metrics['post']['locality_acc'] = \
+                        np.mean(np.equal(metrics['post']['locality_output'],
+                                            metrics['pre']['locality_output']))
+                    metrics['post'].pop('locality_output')
+                    metrics['pre'].pop('locality_output')
+                    
+                if 'multimodal_locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['multimodal_locality_output']) == \
+                            len(metrics['pre']['multimodal_locality_output'])
+                    metrics['post']['multimodal_locality_acc'] = \
+                        np.mean(np.equal(metrics['post']['multimodal_locality_output'],
+                                            metrics['pre']['multimodal_locality_output']))
+                    metrics['post'].pop('multimodal_locality_output')
+                    metrics['pre'].pop('multimodal_locality_output')
+
+                LOG.info(f"Evaluation took {time() - start}")
+
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
+                    )
+
+                all_metrics.append(metrics)
+
+            # case_result_path = base_case_path / f"case_{i}.json"
+
+            # Dump metrics in .json
+            # with open(case_result_path, "w") as f:
+            #     json.dump(metrics, f, indent=1)
+
+        return all_metrics, edited_model, weights_copy, post_logits, pre_logits
 
     def batch_edit(self,
                    prompts: List[str],
