@@ -55,7 +55,7 @@ class MultimodalTrainer(BaseTrainer):
                 base_image_logits = base_image_outputs.logits
             else:
                 base_image_logits = base_image_outputs
-
+        
         # Do the edit
 
         start = time.time()

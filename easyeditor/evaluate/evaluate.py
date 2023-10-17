@@ -431,6 +431,30 @@ def compute_multimodal_edit_quality(model, batch):
     acc = correct.sum() / num_non_padding
     
     return acc, pred_ids.numpy()
+  
+def compute_multimodal_edit_quality_demo(model, batch):
+    
+    with torch.no_grad():
+        outputs = model(batch)
+        if isinstance(outputs, torch.Tensor):
+            logits = outputs.detach().cpu()
+        else:
+            logits = outputs.logits.detach().cpu()    
+        # targ = outputs.labels.detach().cpu()
+        targ = batch["labels"].cpu()
+    if logits.dim() == 3:
+        logits = logits[:, :-1]
+        # targ = targ[:, 1:]
+        logits = logits[:, -targ.shape[1]:]
+    mask = targ != -100
+    targ[~mask] = 0
+    pred_ids = logits.argmax(-1).masked_fill(~mask, 0).detach().cpu()
+    correct = pred_ids == targ
+    correct = correct & mask
+    num_non_padding = mask.sum().float().item()
+    acc = correct.sum() / num_non_padding
+    
+    return acc, pred_ids.numpy(), logits
 
 def compute_multimodal_edit_results(
     model,
@@ -487,6 +511,62 @@ def compute_multimodal_edit_results(
     # Form a list of lists of prefixes to test.
 
     return ret
+  
+def compute_multimodal_edit_results_demo(
+    model,
+    model_name,
+    hparams: HyperParams,
+    tok: AutoTokenizer,
+    record: typing.Dict,
+    device
+) -> typing.Dict:
+    """
+    Given a rewritten model, computes generalization and specificity metrics for
+    the desired rewrite (passed in via the CounterFact dataset record). Returns a
+    dictionary containing those metrics.
+
+    :param model: Rewritten model
+    :param tok: Tokenizer
+    :param record: CounterFact dataset record
+    :paran snips: ???
+    :param vec: ???
+    :return: Dictionary containing rewriting metrics
+    """
+    ret = {}
+    # First, unpack rewrite evaluation record.
+    
+    target = record["target"]
+    rewrite_prompts = record["prompt"]
+    image = record["image"]
+    
+    edit_inner = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, image)
+    ret['rewrite_acc'], _, logits = compute_multimodal_edit_quality_demo(model, edit_inner)
+    
+    if "rephrase_prompt" in record.keys():
+        rephrase_prompts = record["rephrase_prompt"]
+        edit_outer = prepare_multimodal_edit(hparams, tok, target, rephrase_prompts, image)
+        ret['rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_outer)
+        
+    if "image_rephrase" in record.keys():
+        rephrase_image = record["image_rephrase"]
+        edit_image_outer = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, rephrase_image) 
+        ret['image_rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
+
+    if 'locality_prompt' in record.keys():
+        locality_prompt = record["locality_prompt"]
+        locality_ground_truth = record["locality_ground_truth"]
+        locality = prepare_multimodal_edit(hparams, tok, locality_ground_truth, locality_prompt, None)
+        _, ret['locality_output'] = compute_multimodal_edit_quality(model, locality)
+        
+    if 'multimodal_locality_prompt' in record.keys():
+        m_loc_prompt = record["multimodal_locality_prompt"]
+        m_loc_ground_truth = record["multimodal_locality_ground_truth"]
+        m_loc_image = record["multimodal_locality_image"]
+        m_locality = prepare_multimodal_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image)
+        _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality(model, m_locality)
+    # Form a list of lists of prefixes to test.
+
+    return ret, logits
 
 
     prompt_tok = tok(

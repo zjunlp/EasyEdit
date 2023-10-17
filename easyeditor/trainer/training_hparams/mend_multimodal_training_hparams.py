@@ -80,7 +80,7 @@ class MENDMultimodalTrainingHparams(HyperParams):
 
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
-
+    model_parallel: bool = False
     qformer_checkpoint: [str] = None
     
     @classmethod
