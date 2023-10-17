@@ -101,7 +101,11 @@ def compute_z(
 
             # Add intervened delta
             for i, idx in enumerate(lookup_idxs):
-                cur_out[0][i, idx, :] += delta
+
+                if len(lookup_idxs)!=len(cur_out[0]):
+                    cur_out[0][idx, i, :] += delta
+                else:
+                    cur_out[0][i, idx, :] += delta
 
         return cur_out
 
@@ -125,7 +129,6 @@ def compute_z(
             edit_output=edit_output_fn,
         ) as tr:
             logits = model(**input_tok).logits
-
             # Compute distribution for KL divergence
             kl_logits = torch.stack(
                 [
@@ -139,9 +142,12 @@ def compute_z(
                 kl_distr_init = kl_log_probs.detach().clone()
 
         # Compute loss on rewriting targets
-        full_repr = tr[hparams.layer_module_tmp.format(loss_layer)].output[0][
-            : len(rewriting_prompts)
-        ]
+
+        output=tr[hparams.layer_module_tmp.format(loss_layer)].output[0]
+        if output.shape[1]!=rewriting_targets.shape[1]:
+            output=torch.transpose(output, 0, 1)
+        full_repr = output[:len(rewriting_prompts)]
+
         log_probs = torch.log_softmax(ln_f(full_repr) @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
         loss = torch.gather(
             log_probs,

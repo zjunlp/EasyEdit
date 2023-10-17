@@ -27,7 +27,7 @@ def apply_lora_to_model(
     if copy:
         model = deepcopy(model)
 
-    edited_model = execute_lora(model, tok, requests, hparams)
+    edited_model = execute_lora(model, tok, requests, hparams, keep_original_weight)
 
     # with torch.no_grad():
     #     for w_name, upd_matrix in deltas.items():
@@ -50,6 +50,7 @@ def execute_lora(
         tok: AutoTokenizer,
         requests: List[Dict],
         hparams: LoRAHyperParams,
+        keep_original_weight=False,
         **kwargs: Any,
 ) -> Dict[str, Tuple[torch.Tensor]]:
     """
@@ -60,16 +61,18 @@ def execute_lora(
     model.supports_gradient_checkpointing = True  #
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
-
-    peft_config = AdaLoraConfig(
-        task_type=TaskType.CAUSAL_LM,
-        inference_mode=False,
-        r=hparams.rank,
-        lora_alpha=hparams.lora_alpha, lora_dropout=hparams.lora_dropout,
-        layers_to_transform=hparams.layers if len(hparams.layers) > 0 else None,
-        target_modules=hparams.target_modules
-    )
-    peft_model = get_peft_model(model, peft_config)
+    if not keep_original_weight and hasattr(model,'peft_config'):
+        peft_model = model
+    else:
+        peft_config = AdaLoraConfig(
+            task_type=TaskType.CAUSAL_LM,
+            inference_mode=False,
+            r=hparams.rank,
+            lora_alpha=hparams.lora_alpha, lora_dropout=hparams.lora_dropout,
+            layers_to_transform=hparams.layers if len(hparams.layers) > 0 else None,
+            target_modules=hparams.target_modules
+        )
+        peft_model = get_peft_model(model, peft_config)
 
     peft_model.is_parallelizable = True
     peft_model.model_parallel = True

@@ -27,7 +27,7 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
                     level = logging.INFO)
 
 LOG = logging.getLogger(__name__)
-
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 def make_logs():
 

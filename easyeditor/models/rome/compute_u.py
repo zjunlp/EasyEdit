@@ -82,6 +82,7 @@ def compute_u(
     if "subject_" in hparams.fact_token and hparams.fact_token.index("subject_") == 0:
         word = request["subject"]
         print(f"Selected u projection object {word}")
+        
         cur_repr = repr_tools.get_reprs_at_word_tokens(
             context_templates=[
                 templ.format(request["prompt"]) for templ in context_templates
@@ -90,6 +91,7 @@ def compute_u(
             subtoken=hparams.fact_token[len("subject_") :],
             **word_repr_args,
         ).mean(0)
+
     elif hparams.fact_token == "last":
         # Heuristic to choose last word. Not a huge deal if there's a minor
         # edge case (e.g. multi-token word) because the function below will

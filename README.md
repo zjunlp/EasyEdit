@@ -57,18 +57,27 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+
+- **2023-10-14 We release the [MultimodalEditor](#multimodaleditor) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".**
+- **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
 - **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
+
+<details>
+<summary><b>Previous News</b></summary>
+
 - **2023-10-07 The EasyEdit have supported editing models with multiple GPUs, using huggingface [`Accelerate`](https://github.com/zjunlp/EasyEdit/blob/main/hparams/ROME/llama-7b.yaml#L24).**
 - **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
-- **2023-8-31 The EasyEdit have supported official fine-tuning API for gpt-3.5-turbo to customize chatgpt for your editing cases.**
+- **2023-8-31 The EasyEdit have supported official fine-tuning API for gpt-3.5-turbo to customize ChatGPT for your editing cases.**
 - **2023-8-15 We release the paper "[EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models](https://arxiv.org/abs/2308.07269)."**
 - **2023-7-12 We release version 0.0.1, supporting several knowledge editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
 - **2023-5-22 We release the paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" and provide a paper list at [PaperList](https://github.com/zjunlp/KnowledgeEditingPapers).**
 - **2023-3-25 The EasyEdit project has been launched and is under development.**
 
 This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
+</details>
 
-**EasyEdit** is now publicly open-sourced, with a [demo video](https://www.youtube.com/watch?v=NaQRvSYuQMo) and long-term maintenance.
+
+<!-- **EasyEdit** is now publicly open-sourced, with a [demo video](https://www.youtube.com/watch?v=NaQRvSYuQMo) and long-term maintenance. -->
 
 ---
 
@@ -164,16 +173,16 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA1/2 | Baichuan | ChatGLM2 | ChatGPT | InternLM | 
-| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| AdaLoRA |  |  |  |  | ✅ |  |  |  |  |
-| SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  | | ✅ |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  | | ✅ |
-| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  | ✅ |
-| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ | | | ✅ |
-| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | | | ✅ |
+| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | ChatGPT | InternLM | Qwen
+| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
+| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
+| AdaLoRA |  |  |  |  | ✅ |  |  |  |  | |
+| SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | | ✅ | |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | ✅ | |
+| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  | ✅ | |
+| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | | ✅ | |
+| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| | ✅ | |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
@@ -812,6 +821,13 @@ Please cite our paper if you use EasyEdit in your work.
   author={Yao, Yunzhi and Wang, Peng and Tian, Bozhong and Cheng, Siyuan and Li, Zhoubo and Deng, Shumin and Chen, Huajun and Zhang, Ningyu},
   journal={arXiv preprint arXiv:2305.13172},
   year={2023}
+}
+
+@article{cheng2023edit,
+      title={Can We Edit Multimodal Large Language Models?}, 
+      author={Cheng, Siyuan and Tian, Bozhong and Liu, Qingbin and Chen, Xi and Wang, Yongheng and Chen, Huajun and Zhang, Ningyu},
+      journal={arXiv preprint arXiv:2310.08475},
+      year={2023}
 }
 
 @misc{knowlm,
