@@ -14,7 +14,7 @@ class EditableModel(nn.Module):
         self.model_constructor = model_constructor
 
         def _edit_loss_fn(config, pred, targ):
-            if 'minigpt4' in config.model_class.lower() or 'blip' in self.config.model_name.lower():
+            if 'minigpt4' in config.model_name.lower() or 'blip' in self.config.model_name.lower():
                 return masked_log_probs(config, pred, targ, shift=True)
             elif 't5' in config.model_class.lower():
                 return masked_log_probs(config, pred, targ)
