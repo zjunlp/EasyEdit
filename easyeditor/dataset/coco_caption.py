@@ -32,7 +32,7 @@ class CaptionDataset(BaseDataset):
                 else config.name
             )
             tokenizer = getattr(transformers, config.tokenizer_class).from_pretrained(
-                tok_name
+                tok_name, trust_remote_code=True
             )            
             if tokenizer.pad_token == None or tokenizer.pad_token == '':
                 tokenizer.pad_token = tokenizer.eos_token  

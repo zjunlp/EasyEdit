@@ -85,7 +85,7 @@ class MENDMultimodalHparams(HyperParams):
     max_length: int = 30
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
-    
+    model_parallel: bool = False
     qformer_checkpoint: [str] = None
     
     @classmethod
