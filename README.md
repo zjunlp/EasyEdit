@@ -279,7 +279,7 @@ editing-data
     └── vqa_eval.json
 ```
 - Multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
-- Images used in E-IC and E-VQA can be downloaded from [there](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
+- The images used in E-IC and E-VQA are available for download at [Google Drive](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
 </details>
 
 #### Tutorial notebook
