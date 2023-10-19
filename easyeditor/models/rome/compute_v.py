@@ -56,9 +56,13 @@ def compute_v(
         rewriting_targets[i, ex_len - len(target_ids) : ex_len] = target_ids
 
     # Compute indices of the tokens where the fact is looked up
+    vanilla_input_prompts = [
+        context.format(request["prompt"]).format(request['subject'])
+        for context in context_templates
+    ] + [f"{request['subject']} is a"]
     lookup_idxs = [
         find_fact_lookup_idx(
-            prompt, request["subject"], tok, hparams.fact_token, verbose=(i == 0)
+            prompt, request["subject"], tok, hparams.fact_token, verbose=(i == 0), input_prompt=vanilla_input_prompts[i]
         )
         for i, prompt in enumerate(all_prompts)
     ]
@@ -245,6 +249,7 @@ def find_fact_lookup_idx(
     tok: AutoTokenizer,
     fact_token_strategy: str,
     verbose=True,
+    input_prompt=None
 ) -> int:
     """
     Computes hypothesized fact lookup index given a sentence and subject.
@@ -252,7 +257,7 @@ def find_fact_lookup_idx(
 
     ret = None
     if fact_token_strategy == "last":
-        ret = -1
+        ret = len(tok.encode(input_prompt)) - 1
     elif (
         "subject_" in fact_token_strategy and fact_token_strategy.index("subject_") == 0
     ):

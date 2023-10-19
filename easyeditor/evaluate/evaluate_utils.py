@@ -79,18 +79,19 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
     if isinstance(prompts, str):
         prompts,targets = [prompts,], [targets,]
     prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]
+    max_prompt_len = max([len(tok.encode(_)) for _ in prompt_target]) + 1
     prompt_target_tok = tok(
         prompt_target,
         padding=True,
         truncation=True,
-        max_length=hparams.max_length,
+        max_length=max(hparams.max_length, max_prompt_len),
         return_tensors="pt",
     ).to(f"cuda:{device}")
     prompt_tok = tok(
         prompts,
         padding=True,
         truncation=True,
-        max_length=hparams.max_length,
+        max_length=max(hparams.max_length, max_prompt_len),
         return_tensors="pt",
     )
     num_prompt_toks = [int((i != tok.pad_token_id).sum()) for i in prompt_tok['input_ids']]
