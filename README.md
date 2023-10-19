@@ -202,8 +202,8 @@ You can choose different editing methods according to your specific needs.
 
 We provide zsre and counterfact datasets to verify the effectiveness of knowledge editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1cQleUMsNjuDk4BKx2bZkag?pwd=xzky).
 
-- for **locality**, in addition to testing unrelated instances, we also provide tests on distracting ([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
-- for **portability**, it tests whether the model can apply edited instances for inference. We provide evaluations for one-hop reasoning, subject alias, and inverse relation (eg, a one-to-one relationship between spouses should be bidirectionally edited).
+- For **locality**, in addition to testing unrelated instances, we also provide tests on distracting ([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
+- For **portability**, it tests whether the model can apply edited instances for inference. We provide evaluations for one-hop reasoning, subject alias, and inverse relation (eg, a one-to-one relationship between spouses should be bidirectionally edited).
 
 <details><summary> <b> dataset description </b> </summary>
 
@@ -257,8 +257,8 @@ editing-data
 | E-VQA | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Visual Question Answering_ |
 
 
-- for **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
-- for **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
+- For **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
+- For **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
 
 <details><summary> <b> dataset description </b> </summary>
 
@@ -278,7 +278,8 @@ editing-data
     ├── vqa_train.json
     └── vqa_eval.json
 ```
-- multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
+- Multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
+- The images used in E-IC and E-VQA are available for download at [Google Drive](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
 </details>
 
 #### Tutorial notebook
