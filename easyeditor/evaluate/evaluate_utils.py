@@ -4,6 +4,7 @@ import scipy
 import nltk
 import typing
 from ..util.generate import generate_fast
+import torch.nn.functional as F
 
 
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
@@ -254,3 +255,69 @@ def slice_list(matrix,start_indices,left):
             return matrix[start_indices[0]-1:-1]
         else:
             return matrix[start_indices[0]:]
+
+def gather_log_probs(logits, labels):
+    # print(f"labels.shape: {labels.shape} , logits.shape[:-1] :{logits.shape[:-1]}")
+    assert labels.dim() == logits.dim() - 1
+    assert labels.shape == logits.shape[:-1]
+    return logits.log_softmax(-1).gather(-1, labels.unsqueeze(-1)).squeeze(-1)
+
+
+def masked_mean(values, mask):
+    assert mask.dtype == torch.bool
+    assert values.shape == mask.shape
+    return (values * mask.float()).sum() / mask.sum().float()
+
+
+def mask_hf_labels(labels, null_token=0):
+    valid_mask = labels != -100
+    valid_labels = labels.masked_fill(~valid_mask, null_token)
+    return valid_mask, valid_labels
+
+
+def es_sent(pre_logits, edit_logits, q_mask, labels, same_mask):
+    
+    _, targ = mask_hf_labels(labels)
+
+    pos_mask = same_mask.unsqueeze(-1) * q_mask 
+    neg_mask = (~same_mask).unsqueeze(-1) * q_mask 
+        
+    pre_token_log_probs = gather_log_probs(pre_logits, targ)
+    edit_token_log_probs = gather_log_probs(edit_logits, targ)
+
+    mean_pos_pre = masked_mean(pre_token_log_probs, pos_mask)
+    mean_pos_edit = masked_mean(edit_token_log_probs, pos_mask)
+    mean_neg_edit = masked_mean(edit_token_log_probs, neg_mask)
+
+    z_sent = (mean_pos_edit - mean_neg_edit).sigmoid()
+    z_topic_raw = (mean_pos_edit - mean_pos_pre).exp()
+    z_topic = min(1, z_topic_raw)
+
+    es_sent = z_sent * z_topic
+    return es_sent
+        
+
+def kl_loc_loss(pre, post, mask=None):
+    
+    pre = pre.to(torch.float32).contiguous()
+    post = post[:,-pre.shape[1]:,:].to(torch.float32).contiguous()
+    
+    sequence = pre.dim() == 3
+    pre_ = pre.view(-1, pre.shape[-1])
+    post_ = post.view(pre_.shape)
+    assert pre_.shape[0] == post_.shape[0]
+
+    if not sequence:
+        if pre_.shape[-1] == 1:  # No masking needed for binary classification
+            return (pre.sigmoid() * (F.logsigmoid(pre) - F.logsigmoid(post))).mean() + (
+                (-pre).sigmoid() * (F.logsigmoid(-pre) - F.logsigmoid(-post))
+            ).mean()
+    else:  # We have sequences of predictions; masking needed
+        # print("sequence")
+        if pre_.shape[-1] > 1:
+            assert mask is not None
+            mask_ = mask.view(pre_.shape[0])
+            kl = (pre_.softmax(-1) * (pre_.log_softmax(-1) - post_.log_softmax(-1))).sum(-1)
+            return (kl * mask_).sum() / mask_.sum()
+
+    raise NotImplementedError
