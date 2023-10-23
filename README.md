@@ -178,7 +178,7 @@ You can choose different editing methods according to your specific needs.
 | FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | AdaLoRA |  |  |  |  | ✅ |  |  |  |  | |
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | | ✅ | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | | ✅ | ✅ |
 | MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | ✅ | |
 | KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  | ✅ | ✅ |
 | ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | | ✅ | ✅ |
