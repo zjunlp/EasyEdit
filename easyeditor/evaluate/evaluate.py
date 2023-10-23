@@ -14,7 +14,15 @@ import torch
 from transformers import AutoTokenizer
 from ..util import HyperParams
 from .portability_evaluate import compute_portability_quality
-from .evaluate_utils import test_seq2seq_batch_prediction_acc, test_batch_prediction_acc, test_prediction_acc,test_generation_quality, PPL
+from .evaluate_utils import (
+    test_seq2seq_batch_prediction_acc, 
+    test_batch_prediction_acc, 
+    test_prediction_acc,
+    test_generation_quality, 
+    PPL,
+    kl_loc_loss,
+    es_sent
+)
 
 def compute_edit_quality(
     model,
@@ -602,3 +610,73 @@ def compute_multimodal_edit_results_demo(
             return ans.squeeze().detach().cpu().numpy().tolist()
 
         return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()[0]
+
+def compute_sent_metric(
+    model,
+    edited_model,
+    model_name,
+    hparams: HyperParams,
+    tok: AutoTokenizer,
+    metric_kwargs: typing.Dict,
+    device,
+    test_generation=True
+    ):
+    
+    if "llama" not in model_name:
+        raise NotImplementedError("currently only support for llama")
+        
+    def get_edit_labels(ids, prompts=None):
+        labels = ids.clone()
+        labels[labels == tok.pad_token_id] = -100
+        return labels
+        
+    same_mask = torch.tensor([i == o for i, o in zip(metric_kwargs["inner_target"], metric_kwargs["all_target"])], device=device)
+    edit_toks = {
+        f"{k1}_{k2}": v2.to(device)
+        for k1, v1 in {
+            "inner": metric_kwargs["inner_all_qa"],
+            "outer": metric_kwargs["outer_all_qa"],
+        }.items()
+        for k2, v2 in tok(
+            v1,
+            return_tensors="pt",
+            padding=True,
+            max_length=128,
+            truncation=True,
+        ).items()
+    }
+    for key in ["inner", "outer"]:
+        value = edit_toks[f"{key}_input_ids"]
+        mask = [([True] * value.shape[-1])] * value.shape[0]
+        for i in range(value.shape[0]):
+            sep_idx = list(value[i]).index(tok.convert_tokens_to_ids("</s>"))
+            for j in range(sep_idx): #连带</s>一块mask掉
+                mask[i][j] = False
+        edit_toks[key + "_q_mask"] = torch.tensor(mask).to(device)
+
+    with torch.no_grad():
+        inner_base_logits = model(
+            input_ids=edit_toks["inner_input_ids"],
+            attention_mask=edit_toks["inner_attention_mask"],   
+        )["logits"]
+        inner_edit_logits = edited_model(
+            input_ids=edit_toks["inner_input_ids"],
+            attention_mask=edit_toks["inner_attention_mask"],   
+        )["logits"]
+        
+        outer_base_logits = model(
+            input_ids=edit_toks["outer_input_ids"],
+            attention_mask=edit_toks["outer_attention_mask"],   
+        )["logits"]
+        outer_edit_logits = edited_model(
+            input_ids=edit_toks["outer_input_ids"],
+            attention_mask=edit_toks["outer_attention_mask"],   
+        )["logits"]
+    
+    result = {
+        "es": es_sent(inner_base_logits, inner_edit_logits, edit_toks["inner_q_mask"], get_edit_labels(edit_toks["inner_input_ids"]), same_mask).item(),
+        "dd": kl_loc_loss(outer_base_logits, outer_edit_logits, edit_toks["outer_q_mask"]).item(),
+    }
+    if  test_generation:
+        result['fluency'] = test_generation_quality(model=model,tok=tok,prefixes=metric_kwargs["inner_q"] if isinstance(metric_kwargs["inner_q"],list) else [metric_kwargs["inner_q"],], max_out_len=100)
+    return result
