@@ -179,7 +179,7 @@ You can choose different editing methods according to your specific needs.
 | AdaLoRA |  |  |  |  | ✅ |  |  |  |  | |
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | |
 | IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | | ✅ | ✅ |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | ✅ | |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | ✅ | ✅ |
 | KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  | ✅ | ✅ |
 | ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | | ✅ | ✅ |
 | MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| | ✅ | ✅ |
