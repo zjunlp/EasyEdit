@@ -48,6 +48,12 @@ class ZsreDataset(Dataset):
                 tokenizer.pad_token_id = tokenizer.eos_token_id
                 tokenizer.padding_side = 'left'
                 print('LlamaTokenizer Detected, Set pad token id and left padding!!!')
+            if 'qwen' in config.model_name.lower():
+                tokenizer.eos_token='<|endoftext|>'
+                tokenizer.pad_token='<|endoftext|>'
+                tokenizer.unk_token='<|endoftext|>'
+                # tokenizer.padding_side = 'left'
+                # print('QwenTokenizer Detected, Set pad token id and left padding!!!')
             self.tok = tokenizer
 
         with open(zsre_loc, "r") as f:

@@ -175,14 +175,14 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 You can choose different editing methods according to your specific needs.
 | **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | ChatGPT | InternLM | Qwen
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
+| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | AdaLoRA |  |  |  |  | ✅ |  |  |  |  | |
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | | ✅ | |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | ✅ | |
-| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  | ✅ | |
-| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | | ✅ | |
-| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| | ✅ | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | | ✅ | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | ✅ | ✅ |
+| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  | ✅ | ✅ |
+| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | | ✅ | ✅ |
+| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| | ✅ | ✅ |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
