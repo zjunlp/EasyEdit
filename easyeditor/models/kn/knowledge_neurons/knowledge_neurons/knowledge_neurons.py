@@ -1,4 +1,4 @@
-# main knowledge neurons class
+ # main knowledge neurons class
 import collections
 import math
 from functools import partial
@@ -831,7 +831,7 @@ class KnowledgeNeurons:
         original_weight_values = []  # to reverse the action later
         for layer_idx, position in neurons:
             output_ff_weights = self._get_output_ff_layer(layer_idx)
-            if self.model_type == "gpt2":
+            if self.model_type == "gpt2" or self.model_type=='chatglm2':
                 # since gpt2 uses a conv1d layer instead of a linear layer in the ff block, the weights are in a different format
                 original_weight_values.append(
                     output_ff_weights[position, :].detach().clone()
@@ -841,7 +841,7 @@ class KnowledgeNeurons:
                     output_ff_weights[:, position].detach().clone()
                 )
             if mode == "edit":
-                if self.model_type == "gpt2":
+                if self.model_type == "gpt2" or self.model_type=='chatglm2':
                     if original_prediction_embedding.device != output_ff_weights.device:
                         original_prediction_embedding = original_prediction_embedding.to(output_ff_weights.device)
                     if target_embedding.device != output_ff_weights.device:
@@ -865,21 +865,15 @@ class KnowledgeNeurons:
                         for oe in original_prediction_embedding:
                             output_ff_weights[:, position] -= oe
                     else:
-                        if(output_ff_weights.shape[0]!=original_prediction_embedding.shape[0]):
-                            output_ff_weights[position, :] -= original_prediction_embedding * 2
-                        else:
-                            output_ff_weights[:, position] -= original_prediction_embedding * 2
+                        output_ff_weights[:, position] -= original_prediction_embedding * 2
                     if target_embedding.ndim > 1:
                         for te in target_embedding:
                             output_ff_weights[:, position] += te
                     else:
-                        if(output_ff_weights.shape[0]!=target_embedding.shape[0]):
-                            output_ff_weights[position,:] += target_embedding * 2
-                        else:
-                            output_ff_weights[:,position] += target_embedding * 2
+                        output_ff_weights[:,position] += target_embedding * 2
 
             else:
-                if self.model_type == "gpt2":
+                if self.model_type == "gpt2" or self.model_type=='chatglm2':
                     output_ff_weights[position, :] = erase_value
                 else:
                     output_ff_weights[:, position] = erase_value
@@ -905,7 +899,7 @@ class KnowledgeNeurons:
             # reverse modified weights
             for idx, (layer_idx, position) in enumerate(neurons):
                 output_ff_weights = self._get_output_ff_layer(layer_idx)
-                if self.model_type == "gpt2":
+                if self.model_type == "gpt2" or self.model_type=='chatglm2':
                     output_ff_weights[position, :] = original_weight_values[idx]
                 else:
                     output_ff_weights[:, position] = original_weight_values[idx]
