@@ -61,12 +61,13 @@
 - **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
 - **2023-10-24 The EasyEdit has supported efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.**
 - **2023-10-14 We release the [MultimodalEditor](#multimodaleditor) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".**
-- **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
-- **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
+
 
 <details>
 <summary><b>Previous News</b></summary>
 
+- **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
+- **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
 - **2023-10-07 The EasyEdit have supported editing models with multiple GPUs, using huggingface [`Accelerate`](https://github.com/zjunlp/EasyEdit/blob/main/hparams/ROME/llama-7b.yaml#L24).**
 - **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
 - **2023-8-31 The EasyEdit have supported official fine-tuning API for gpt-3.5-turbo to customize ChatGPT for your editing cases.**
@@ -260,7 +261,7 @@ editing-data
 | E-IC | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Image Captioning_ |
 | E-VQA | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Visual Question Answering_ |
 
-
+- All **images** used in **E-IC** and **E-VQA** are available for download at [Google Drive](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
 - For **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
 - For **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
 
@@ -283,7 +284,6 @@ editing-data
     └── vqa_eval.json
 ```
 - Multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
-- The images used in E-IC and E-VQA are available for download at [Google Drive](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
 </details>
 
 #### Tutorial notebook
