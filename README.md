@@ -261,10 +261,9 @@ editing-data
 | E-IC | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Image Captioning_ |
 | E-VQA | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Visual Question Answering_ |
 
-
+- The images used in **E-IC** and **E-VQA** are available for download at [Google Drive](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
 - For **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
 - For **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
-- The images used in E-IC and E-VQA are available for download at [Google Drive](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
 
 <details><summary> <b> dataset description </b> </summary>
 
