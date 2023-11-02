@@ -83,6 +83,8 @@ This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 
 ---
 
+> Our AACL 2023 Tutorial [[Google Drive](https://drive.google.com/file/d/1EW-cusC_llCM0wEshkIdYuYrvfBPCDRz/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1NupastGJUzcUIAjI64J1tw?pwd=i5an)]
+
 ## Editing Demo
 
 There is a demonstration of editing. The GIF file is created by [Terminalizer](https://github.com/faressoft/terminalizer).
