@@ -264,6 +264,7 @@ editing-data
 
 - For **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
 - For **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
+- The images used in E-IC and E-VQA are available for download at [Google Drive](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
 
 <details><summary> <b> dataset description </b> </summary>
 
