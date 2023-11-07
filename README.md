@@ -801,9 +801,10 @@ trainer.run()
 <details><summary> <b> TO DO </b> </summary>
 In next version, we plan to:
 
-- release a multimodal Editor for LLMs.
-- support more editing methods for `BaiChuan`, `FALCON`, etc.
-- knowledge editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
+- Explore and integrate more robust editing methods, focusing on `locality` and `portability` metrics.
+- Provide a comprehensive evaluation suite for editing methods, including fact modification, fact erasure and hallucination erasure.
+- Provide a causal analysis component for analyzing knowledge storage mechanisms.
+- knowledge editing for other tasks(except factual editing), like `personality editing`, etc.
 
 Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
 
