@@ -13,6 +13,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
+from transformers import GPTJForCausalLM
 # from accelerate import Accelerator
 from ..util.globals import *
 from .singleton_editor import SingletonEditor
@@ -64,6 +65,10 @@ class BaseEditor:
                 self.tok = T5Tokenizer.from_pretrained(self.model_name)
             elif 'gpt-3.5' in self.model_name.lower():
                 self.model, self.tok = None, None
+            elif 'gpt-j' in self.model_name.lower():
+                self.model = GPTJForCausalLM.from_pretrained(self.model_name, device_map='auto' if hparams.model_parallel else None)
+                self.tok = AutoTokenizer.from_pretrained(self.model_name)
+                self.tok.pad_token_id = self.tok.eos_token_id
             elif 'gpt' in self.model_name.lower():
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name, device_map='auto' if hparams.model_parallel else None)
                 self.tok = GPT2Tokenizer.from_pretrained(self.model_name)
