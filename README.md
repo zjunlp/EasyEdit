@@ -310,8 +310,17 @@ We present editing results of the four metrics on [LlaMA-2-7B](https://huggingfa
 | ROME  |    92.45    |     87.04      |   99.63    |    10.46    |
 | MEMIT |    92.94    |     85.97      |   99.49    |    6.03     |
 
----
-
+Our results are all based on the default configuration
+#### Editing Performance
+|       | llama-2-7B | chatglm2 |  gpt-j-6b  | gpt-xl |
+| :---: | :---------: | :------------: | :--------: | :---------: |
+| FT    |    60    |     58      |    55      |    7        |
+| SERAC |    42    |     32      |    31      |    10       |
+|  IKE  |    52    |     38      |    38      |    10       |
+| MEND  |    46    |     37      |    37      |    13       |
+|  KN   |    42    |     39      |    40      |    12       |
+| ROME  |    31    |     29      |    27      |    10       |
+| MEMIT |    33    |     31      |    31      |    11       |
 <!-- editing multimodal -->
 
 ## Requirements
