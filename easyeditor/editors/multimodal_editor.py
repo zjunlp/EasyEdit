@@ -262,7 +262,8 @@ class MultimodalEditor:
             #     json.dump(metrics, f, indent=1)
 
         return all_metrics, edited_model, weights_copy
-      
+    
+    # edit_demo will return the logits after/before editing
     def edit_demo(self,
             prompts: Union[str, List[str]],
             targets: Union[str, List[str]],
@@ -406,7 +407,7 @@ class MultimodalEditor:
             # with open(case_result_path, "w") as f:
             #     json.dump(metrics, f, indent=1)
 
-        return all_metrics, edited_model, weights_copy, post_logits, pre_logits
+        return all_metrics, edited_model, weights_copy, post_logits, pre_logits 
 
     def batch_edit(self,
                    prompts: List[str],
