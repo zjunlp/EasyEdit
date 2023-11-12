@@ -54,8 +54,6 @@ class MultimodalEditor:
 
         assert hparams is not None or print('Error: hparams is None.')
 
-
-
         self.model_name = hparams.model_name
         self.apply_algo = ALG_MULTIMODAL_DICT[hparams.alg_name]
         self.alg_name = hparams.alg_name
@@ -93,7 +91,7 @@ class MultimodalEditor:
                     qformer_name_or_path=hparams.qformer_name_or_path
                 )                
             self.model = model
-            # get tokenizer and vis_processor
+            # Get tokenizer and vis_processor
             vis_processor = BlipImageEvalProcessor(image_size=364, mean=None, std=None)
             self.vis_tok = vis_processor
             if (hparams is not None and hasattr(hparams, 'tokenizer_name')):
@@ -137,7 +135,7 @@ class MultimodalEditor:
         `prompts`: list or str
             the prompts to edit
         `targets`: str
-            the  expected output
+            the expected outputs
         `image`: dict
             for multimodal
         """
@@ -264,7 +262,8 @@ class MultimodalEditor:
             #     json.dump(metrics, f, indent=1)
 
         return all_metrics, edited_model, weights_copy
-      
+    
+    # edit_demo will return the logits after/before editing
     def edit_demo(self,
             prompts: Union[str, List[str]],
             targets: Union[str, List[str]],
@@ -280,7 +279,7 @@ class MultimodalEditor:
         `prompts`: list or str
             the prompts to edit
         `targets`: str
-            the  expected output
+            the expected outputs
         `image`: dict
             for multimodal
         """
@@ -408,7 +407,7 @@ class MultimodalEditor:
             # with open(case_result_path, "w") as f:
             #     json.dump(metrics, f, indent=1)
 
-        return all_metrics, edited_model, weights_copy, post_logits, pre_logits
+        return all_metrics, edited_model, weights_copy, post_logits, pre_logits 
 
     def batch_edit(self,
                    prompts: List[str],
@@ -552,9 +551,6 @@ class MultimodalEditor:
 
         return all_metrics, edited_model, weights_copy
 
-
-
-
     def _chunks(self, arr, n):
         """Yield successive n-sized chunks from arr."""
         for i in range(0, len(arr), n):
@@ -574,7 +570,6 @@ class MultimodalEditor:
         image_path = [os.path.join(self.vis_root, image_) for image_ in image]
         image = [Image.open(ip).convert("RGB") for ip in image_path]
         image = [self.vis_tok(i).to(self.hparams.device) for i in image]
-        
         
         requests = [{
             'prompt': prompt,
@@ -655,7 +650,6 @@ class MultimodalEditor:
                     }
                 )
             
-        
         return requests
 
 

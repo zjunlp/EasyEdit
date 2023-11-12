@@ -6,12 +6,11 @@ from easyeditor import CaptionDataset, VQADataset
 from easyeditor import MENDMultimodalTrainingHparams, SERACMultimodalTrainingHparams, IKEMultimodalHyperParams, MENDMultimodalHparams \
     , SERACMultimodalHparams
 
-def test_MEND_MiniGPT4_Caption():
+
+def train_MEND_MiniGPT4_Caption():
     hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/minigpt4.yaml')
-    train_ds = CaptionDataset('data/caption_train_edit_test.json', config=hparams)
-    eval_ds = CaptionDataset('data/caption_eval_edit_test.json', config=hparams)
-    # train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
-    # eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
+    train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
+    eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
     trainer = MultimodalTrainer(
         config=hparams,
         train_set=train_ds,
@@ -19,6 +18,7 @@ def test_MEND_MiniGPT4_Caption():
     )
     
     trainer.run()    
+
 
 def train_MEND_MiniGPT4_VQA():
     hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/minigpt4.yaml')
@@ -31,6 +31,7 @@ def train_MEND_MiniGPT4_VQA():
     )
     
     trainer.run() 
+  
        
 def train_MEND_Blip2OPT_Caption():
     hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/blip2.yaml')
@@ -43,6 +44,7 @@ def train_MEND_Blip2OPT_Caption():
     )
     
     trainer.run()    
+  
     
 def test_MEND_MiniGPT4_VQA():
     hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/minigpt4.yaml')
@@ -56,6 +58,7 @@ def test_MEND_MiniGPT4_VQA():
     
     trainer.run()    
 
+
 def train_SERAC_MiniGPT4_Caption():
     hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/minigpt4.yaml')
     train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
@@ -67,11 +70,12 @@ def train_SERAC_MiniGPT4_Caption():
     )
     
     trainer.run()
+  
     
 def train_SERAC_Blip2OPT_Caption():
     hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/blip2.yaml')
-    train_ds = CaptionDataset('data/caption_train_edit_test.json', config=hparams)
-    eval_ds = CaptionDataset('data/caption_eval_edit_test.json', config=hparams)
+    train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
+    eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
     trainer = MultimodalTrainer(
         config=hparams,
         train_set=train_ds,
@@ -79,6 +83,7 @@ def train_SERAC_Blip2OPT_Caption():
     )
     
     trainer.run()
+
 
 def test_SERAC_MiniGPT4_Caption():
     hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/minigpt4.yaml')
@@ -91,6 +96,7 @@ def test_SERAC_MiniGPT4_Caption():
     )
     
     trainer.run()
+  
     
 def edit_SERAC_MiniGPT4_Caption():
     prompts = [
@@ -136,6 +142,7 @@ def edit_SERAC_MiniGPT4_Caption():
         keep_original_weight=True        
     )
 
+
 def edit_SERAC_Blip2OPT_Caption():
     prompts = [
         "a photo of",
@@ -179,6 +186,7 @@ def edit_SERAC_Blip2OPT_Caption():
         locality_inputs=locality_inputs,
         keep_original_weight=True        
     )
+
 
 def edit_IKE_MiniGPT4_VQA():
     prompts = [
@@ -227,6 +235,7 @@ def edit_IKE_MiniGPT4_VQA():
         keep_original_weight=True        
     )
 
+
 def edit_IKE_MiniGPT4_Caption():
     prompts = [
         "a photo of",
@@ -273,6 +282,7 @@ def edit_IKE_MiniGPT4_Caption():
         train_ds=train_ds,
         keep_original_weight=True        
     )
+
 
 def edit_IKE_Blip2OPT_VQA():
     prompts = [
@@ -321,6 +331,7 @@ def edit_IKE_Blip2OPT_VQA():
         keep_original_weight=True        
     )
     
+    
 def edit_MEND_MiniGPT4_VQA():
     prompts = [
         "How many tennis balls are in the picture?",
@@ -356,7 +367,6 @@ def edit_MEND_MiniGPT4_VQA():
     
     hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/minigpt4.yaml')
     editor = MultimodalEditor.from_hparams(hparams)
-    # train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         targets=targets,
@@ -366,6 +376,7 @@ def edit_MEND_MiniGPT4_VQA():
         locality_inputs=locality_inputs,
         keep_original_weight=True        
     )
+    
     
 def edit_SERAC_MiniGPT4_VQA():
     prompts = [
@@ -414,6 +425,7 @@ def edit_SERAC_MiniGPT4_VQA():
         keep_original_weight=True        
     )
  
+ 
 def edit_MEND_MiniGPT4_Caption():
     prompts = [
         "a photo of",
@@ -449,7 +461,6 @@ def edit_MEND_MiniGPT4_Caption():
     
     hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/minigpt4.yaml')
     editor = MultimodalEditor.from_hparams(hparams)
-    # train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         targets=targets,
@@ -459,9 +470,10 @@ def edit_MEND_MiniGPT4_Caption():
         locality_inputs=locality_inputs,
         keep_original_weight=True        
     )
+   
     
 if __name__ == "__main__":
-    # test_MEND_MiniGPT4_Caption()
+    # train_MEND_MiniGPT4_Caption()
     # train_MEND_MiniGPT4_VQA()
     # train_MEND_Blip2OPT_Caption()
     # test_MEND_MiniGPT4_VQA()
