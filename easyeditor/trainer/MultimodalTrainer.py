@@ -97,11 +97,6 @@ class MultimodalTrainer(BaseTrainer):
             
             # Collect some useful metrics
             with torch.no_grad():
-                # post_edit_dict = self.model.edit_loss_fn(post_edit_logits, post_batch_labels)
-                # l_edit = post_edit_dict["nll"]
-                # inner_edit_dict = self.model.edit_loss_fn(inner_edit_logits, inner_batch_labels)
-                # image_rephrase_edit_dict = self.model.edit_loss_fn(post_image_edit_logits, post_image_batch_labels)
-                # l_image_edit = image_rephrase_edit_dict["nll"]
                 if post_edit_logits.shape[1] > post_batch_labels.shape[1]:
                     post_edit_dict = self.model.edit_loss_fn(self.config, post_edit_logits, post_batch_labels)
                 else:
