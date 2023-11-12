@@ -54,8 +54,6 @@ class MultimodalEditor:
 
         assert hparams is not None or print('Error: hparams is None.')
 
-
-
         self.model_name = hparams.model_name
         self.apply_algo = ALG_MULTIMODAL_DICT[hparams.alg_name]
         self.alg_name = hparams.alg_name
@@ -93,7 +91,7 @@ class MultimodalEditor:
                     qformer_name_or_path=hparams.qformer_name_or_path
                 )                
             self.model = model
-            # get tokenizer and vis_processor
+            # et tokenizer and vis_processor
             vis_processor = BlipImageEvalProcessor(image_size=364, mean=None, std=None)
             self.vis_tok = vis_processor
             if (hparams is not None and hasattr(hparams, 'tokenizer_name')):
@@ -137,7 +135,7 @@ class MultimodalEditor:
         `prompts`: list or str
             the prompts to edit
         `targets`: str
-            the  expected output
+            the expected outputs
         `image`: dict
             for multimodal
         """
@@ -280,7 +278,7 @@ class MultimodalEditor:
         `prompts`: list or str
             the prompts to edit
         `targets`: str
-            the  expected output
+            the expected outputs
         `image`: dict
             for multimodal
         """
