@@ -551,9 +551,6 @@ class MultimodalEditor:
 
         return all_metrics, edited_model, weights_copy
 
-
-
-
     def _chunks(self, arr, n):
         """Yield successive n-sized chunks from arr."""
         for i in range(0, len(arr), n):
@@ -573,7 +570,6 @@ class MultimodalEditor:
         image_path = [os.path.join(self.vis_root, image_) for image_ in image]
         image = [Image.open(ip).convert("RGB") for ip in image_path]
         image = [self.vis_tok(i).to(self.hparams.device) for i in image]
-        
         
         requests = [{
             'prompt': prompt,
@@ -654,7 +650,6 @@ class MultimodalEditor:
                     }
                 )
             
-        
         return requests
 
 
