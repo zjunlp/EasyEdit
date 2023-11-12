@@ -91,7 +91,7 @@ class MultimodalEditor:
                     qformer_name_or_path=hparams.qformer_name_or_path
                 )                
             self.model = model
-            # et tokenizer and vis_processor
+            # Get tokenizer and vis_processor
             vis_processor = BlipImageEvalProcessor(image_size=364, mean=None, std=None)
             self.vis_tok = vis_processor
             if (hparams is not None and hasattr(hparams, 'tokenizer_name')):
