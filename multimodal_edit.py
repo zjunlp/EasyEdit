@@ -356,7 +356,6 @@ def edit_MEND_MiniGPT4_VQA():
     
     hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/minigpt4.yaml')
     editor = MultimodalEditor.from_hparams(hparams)
-    # train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         targets=targets,
@@ -449,7 +448,6 @@ def edit_MEND_MiniGPT4_Caption():
     
     hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/minigpt4.yaml')
     editor = MultimodalEditor.from_hparams(hparams)
-    # train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         targets=targets,
