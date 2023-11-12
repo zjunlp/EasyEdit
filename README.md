@@ -62,7 +62,6 @@
 - **2023-10-24 The EasyEdit has supported efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.**
 - **2023-10-14 We release the [MultimodalEditor](#multimodaleditor) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".**
 
-
 <details>
 <summary><b>Previous News</b></summary>
 
@@ -78,7 +77,6 @@
 
 This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 </details>
-
 
 <!-- **EasyEdit** is now publicly open-sourced, with a [demo video](https://www.youtube.com/watch?v=NaQRvSYuQMo) and long-term maintenance. -->
 
@@ -104,12 +102,10 @@ Deployed models may still make unpredictable errors. For example, Large Language
 
 **Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$ efficiently. There are usually three forms:
 
-
 ####  Knowledge update
 LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated knowledge. such as:
 - *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
     - $x_e$: Who is the president of the US? $\quad$ $y_e$: Joe Biden
-
 
 ####  Knowledge insert
 Inject knowledge that LLMs have not seen before. such as:
@@ -120,8 +116,6 @@ Inject knowledge that LLMs have not seen before. such as:
 EasyEdit can erase sensitive information. such as:
 - *The phone number of someone is XXXX* $\rightarrow$ **__**
     - $x_e$: The phone number of someone is $\quad$ $y_e$: __
-
-
 
 Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$.
 
@@ -254,7 +248,7 @@ editing-data
 </details>
 
 ---
-<!-- dataset for multimodal -->
+
 **Dataset for Multimodal**
 | **dataset** | Google Drive| BaiduNetDisk | Description |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
@@ -838,10 +832,10 @@ Please cite our paper if you use EasyEdit in your work.
 }
 
 @article{cheng2023edit,
-      title={Can We Edit Multimodal Large Language Models?}, 
-      author={Cheng, Siyuan and Tian, Bozhong and Liu, Qingbin and Chen, Xi and Wang, Yongheng and Chen, Huajun and Zhang, Ningyu},
-      journal={arXiv preprint arXiv:2310.08475},
-      year={2023}
+  title={Can We Edit Multimodal Large Language Models?}, 
+  author={Cheng, Siyuan and Tian, Bozhong and Liu, Qingbin and Chen, Xi and Wang, Yongheng and Chen, Huajun and Zhang, Ningyu},
+  journal={arXiv preprint arXiv:2310.08475},
+  year={2023}
 }
 
 @misc{knowlm,
