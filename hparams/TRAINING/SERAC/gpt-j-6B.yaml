@@ -1,7 +1,7 @@
 # Model
 model_name: ./hugging_cache/gpt-j-6B
 model_class: GPTJForCausalLM
-small_name: ./hugging_cache/gpt-j-335M-Code
+small_name: ./hugging_cache/gpt-j-tiny-random
 tokenizer_class: GPT2Tokenizer
 tokenizer_name: ./hugging_cache/gpt-j-6B
 cls_name: ./hugging_cache/distilbert-base-cased
