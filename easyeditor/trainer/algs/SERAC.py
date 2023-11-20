@@ -176,8 +176,8 @@ class SERAC(EditableModel):
         return self.last_stats
 
     def embedding_logsim_matrix(self, cls_ctxs, test_input_text):
-        cls_ctx_input = self.classifier_tok(cls_ctxs, return_tensors="pt", padding=True).to(self.config.device)
-        cls_main_input = self.classifier_tok(test_input_text, return_tensors="pt", padding=True).to(self.config.device)
+        cls_ctx_input = self.classifier_tok(cls_ctxs, return_tensors="pt", max_length=512, truncation=True,padding=True).to(self.config.device)
+        cls_main_input = self.classifier_tok(test_input_text, return_tensors="pt",max_length=512,  truncation=True,padding=True).to(self.config.device)
         if 'bert' in self.config.cls_name:
             # bert or distilbert
             ctx_embeds = self.classifier(**cls_ctx_input).last_hidden_state[:, 0].unsqueeze(1)
