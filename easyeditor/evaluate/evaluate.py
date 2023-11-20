@@ -289,18 +289,10 @@ def compute_icl_multimodal_edit_quality(
     rephrase = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
     rephrase_image = record["image_rephrase"] if 'image_rephrase' in record.keys() else None
     
-    # assert "image" in record.keys() or print("IKE for multimodal needs image.")
-    # image_path = [os.path.join(vis_root, i) for i in record["image"]]
-    # rephrase_image_path = [os.path.join(rephrase_root, i) for i in record["image_rephrase"]] if "image_rephrase" in record.keys() else image_path
-    # image, rephrase_image = ([vis_tok(Image.open(ip).convert("RGB")) for ip in x] for x in [image_path, rephrase_image_path]) 
-    # image, rephrase_image = (record[x] for x in ["image", "image_rephrase"])
-    
     if "locality_prompt" in record.keys():
         loc_q = record["locality_prompt"]
         loc_a = record["locality_ground_truth"]
     if "multimodal_locality_image" in record.keys():
-        # m_loc_image_path = [os.path.join(vis_root, i) for i in record["m_loc"]]
-        # m_loc_image = [vis_tok(Image.open(ip).convert("RGB")) for ip in m_loc_image_path]
         m_loc_image = record["multimodal_locality_image"]
         m_loc_q = record["multimodal_locality_prompt"]
         m_loc_a = record["multimodal_locality_ground_truth"]
@@ -350,41 +342,8 @@ def icl_multimodal_lm_eval(
         neighborhood=False
 )-> typing.Dict:
     device = torch.device(f'cuda:{hparams.device}')
-    # if 't5' in model_name.lower():
-    #     target_len = len(tokenizer.encode(target))
-    #     target_ids = tokenizer(f'{x} {target}', return_tensors='pt')['input_ids'].to(device)
-    #     encodings = tokenizer(''.join(icl_examples), return_tensors='pt')
-    #     input_ids = encodings['input_ids'].to(device)
-    #     attention_mask = encodings['attention_mask'].to(device)
-    #     with torch.no_grad():
-    #         logits = model(input_ids=input_ids, attention_mask=attention_mask, labels=target_ids).logits
-    #         ans = torch.argmax(logits, dim=-1)[:,-target_len:-1].squeeze()
-    #         target_ids = target_ids[:,-target_len:-1]
-    #         if neighborhood:
-    #             return ans.squeeze().detach().cpu().numpy().tolist()
-    #         return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
-
-    # if image is not None and len(image.shape) == 3:
-    #     image = image.unsqueeze(0)
-    # samples = {}
-    # samples['text_input'] = [''.join(icl_examples) + f'{x} {target}']
-    # samples['image'] = image
-    # if hasattr(model, 'llama_model'):
-    #     samples['prompts_len'] = [len(tokenizer.encode(''.join(icl_examples) + f'{x}', add_special_tokens=False))]
-    # else:
-    #     samples['prompts_len'] = [len(tokenizer.encode(''.join(icl_examples) + f'{x}'))]
+    
     samples = prepare_multimodal_edit(hparams, tokenizer, target, [''.join(icl_examples) + f'{x}'], image) 
-    # if logits.dim() == 3:
-    #     logits = logits[:, :-1]
-    #     targ = labels[:, 1:]
-    #     logits = logits[:, -targ.size(1):]
-    # mask = targ != -100
-    # targ[~mask] = 0
-    # pred_ids = logits.argmax(-1).masked_fill(~mask, 0)
-    # correct = pred_ids == targ
-    # correct = correct & mask
-    # num_non_padding = mask.sum().float().item()
-    # acc = correct.sum() / num_non_padding
     
     return compute_multimodal_edit_quality(model, samples)
 
