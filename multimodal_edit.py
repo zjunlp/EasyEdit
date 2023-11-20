@@ -5,6 +5,8 @@ from easyeditor import BaseEditor, MultimodalTrainer, MultimodalEditor
 from easyeditor import CaptionDataset, VQADataset
 from easyeditor import MENDMultimodalTrainingHparams, SERACMultimodalTrainingHparams, IKEMultimodalHyperParams, MENDMultimodalHparams \
     , SERACMultimodalHparams
+from easyeditor import encode_ike_facts_multimodal
+from sentence_transformers import SentenceTransformer
 
 
 def train_MEND_MiniGPT4_Caption():
@@ -224,6 +226,9 @@ def edit_IKE_MiniGPT4_VQA():
     hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/minigpt4.yaml')
     editor = MultimodalEditor.from_hparams(hparams)
     train_ds = VQADataset('data/vqa_train.json', config=hparams)
+    ## Generate embedding files
+    # sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
+    # encode_ike_facts_multimodal(sentence_model, train_ds, hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         targets=targets,
@@ -480,10 +485,10 @@ if __name__ == "__main__":
     # train_SERAC_MiniGPT4_Caption
     # train_SERAC_Blip2OPT_Caption()
     # test_SERAC_MiniGPT4_Caption()
-    # edit_IKE_MiniGPT4_VQA()
+    edit_IKE_MiniGPT4_VQA()
     # edit_IKE_MiniGPT4_Caption()
     # edit_MEND_MiniGPT4_Caption()
     # edit_MEND_MiniGPT4_VQA()
     # edit_SERAC_MiniGPT4_Caption()
-    edit_SERAC_Blip2OPT_Caption()
+    # edit_SERAC_Blip2OPT_Caption()
     # edit_IKE_Blip2OPT_VQA()
