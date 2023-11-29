@@ -446,7 +446,7 @@ metrics, edited_model, _ = editor.edit(
     ground_truth=ground_truth,
     target_new=target_new,
     locality_inputs=locality_inputs,
-    keep_original_weight=True
+    keep_original_weight=False
 )
 ## metrics: edit success, rephrase success, locality e.g.
 ## edited_model: post-edit model
@@ -710,7 +710,7 @@ metrics, edited_model, _ = editor.edit(
     target_new=target_new,
     image=image,
     locality_inputs=locality_inputs,
-    keep_original_weight=True
+    keep_original_weight=False
 )
 ## metrics: edit success, rephrase success, locality e.g.
 ## edited_model: post-edit model
