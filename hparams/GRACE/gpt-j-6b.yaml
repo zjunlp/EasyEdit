@@ -1,4 +1,4 @@
-alg_name: "Grace"
+alg_name: "GRACE"
 model_name: "./hugging_cache/gpt-j-6B"
 device: 0
 
