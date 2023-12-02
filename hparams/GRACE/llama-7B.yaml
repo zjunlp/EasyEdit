@@ -1,4 +1,4 @@
-alg_name: "Grace"
+alg_name: "GRACE"
 model_name: "./hugging_cache/llama2-7b-chat"
 device: 0
 
