@@ -8,7 +8,7 @@ k: 32
 #the number of demonstration
 
 ## Multimodal
-- `task_name`: Specifies the task name, like `vqa` or `caption`.
+- `task_name`: Specifies the name of the task, such as `vqa` (Visual Question Answering) or `caption` (Image Captioning).
 
 - `qformer_checkpoint`: Specifies the checkpoint file for QFormer used in the model. Example: `hugging_cache/blip2_pretrained_flant5xxl.pth`.
 
