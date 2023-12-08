@@ -13,58 +13,58 @@
 - inner_params: []
 
 ### Method
-alg: SERAC
-lr: 1e-5
-edit_lr: 1e-2
-seed: 0
-lr_lr: 0.0
-cedit: 0.1
-cloc: 1.0
-cbase: 1.0
-#used to calculate loss
-dropout: 0.0
-final_eval: True
-supervised: false
-train_base: False
-no_grad_layers: null
-soft_weighting: false
-checkpoint_grad: false
-cross_attend: false
-cos: false
-freeze: null
-square: true
-bound_embeds: false
-use_all_negatives: false
-freeze_cntr: false
-dist_heads: 1
-lora: null
+- alg: SERAC
+- lr: 1e-5
+- edit_lr: 1e-2
+- seed: 0
+- lr_lr: 0.0
+- cedit: 0.1
+- cloc: 1.0
+- cbase: 1.0
+- #used to calculate loss
+- dropout: 0.0
+- final_eval: True
+- supervised: false
+- train_base: False
+- no_grad_layers: null
+- soft_weighting: false
+- checkpoint_grad: false
+- cross_attend: false
+- cos: false
+- freeze: null
+- square: true
+- bound_embeds: false
+- use_all_negatives: false
+- freeze_cntr: false
+- dist_heads: 1
+- lora: null
 
-batch_size: 1
-model_save_pt: 500
-edit_bs: 1
-silent: False
-#max_epochs: 1
-max_iters: 10000
-log_interval: 500
-val_interval: 500
-early_stop_patience: 40000
-early_stop_key: "loss/total_edit_val"
-eval_only: False
-half: False
-save: False
-debug: False
-log_errors: False
-unlikelihood: True
-max_length: 128
-
-val_batch_size: 1
-accumulate_bs: 10
-val_steps: 500
-opt: Adam
-grad_clip: 100.
+- batch_size: 1
+- model_save_pt: 500
+- edit_bs: 1
+- silent: False
+- #max_epochs: 1
+- max_iters: 10000
+- log_interval: 500
+- val_interval: 500
+- early_stop_patience: 40000
+- early_stop_key: "loss/total_edit_val"
+- eval_only: False
+- half: False
+- save: False
+- debug: False
+- log_errors: False
+- unlikelihood: True
+- max_length: 128
+- 
+- val_batch_size: 1
+- accumulate_bs: 10
+- val_steps: 500
+- opt: Adam
+- grad_clip: 100.
 
 ### Output
-results_dir: ./results
+- results_dir: ./results
 
 ## Multimodal
 - `qformer_checkpoint`: Specifies the checkpoint file for QFormer used in the model. Example: `hugging_cache/blip2_pretrained_flant5xxl.pth`.
