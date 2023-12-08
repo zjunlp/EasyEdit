@@ -34,5 +34,5 @@ DS_DICT = {
     "cf": CounterFactDataset,
     "zsre": ZsreDataset,
     "caption": CaptionDataset,
-    "vqa": VQADataset
+    "vqa": VQADataset,
 }
