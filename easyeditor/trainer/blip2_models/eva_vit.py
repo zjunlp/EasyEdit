@@ -428,7 +428,7 @@ def create_eva_vit_g(img_size=224,drop_path_rate=0.4,use_checkpoint=False,precis
         norm_layer=partial(nn.LayerNorm, eps=1e-6),
         use_checkpoint=use_checkpoint,
     )  
-    if os.path.isfile(state_dict):
+    if os.path.isfile(state_dict_file):
         state_dict = torch.load(state_dict_file, map_location="cpu")  
     else:
         url = "https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/eva_vit_g.pth"
