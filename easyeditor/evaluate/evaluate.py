@@ -14,7 +14,15 @@ import torch
 from transformers import AutoTokenizer
 from ..util import HyperParams
 from .portability_evaluate import compute_portability_quality
-from .evaluate_utils import test_seq2seq_batch_prediction_acc, test_batch_prediction_acc, test_prediction_acc,test_generation_quality, PPL
+from .evaluate_utils import (
+    test_seq2seq_batch_prediction_acc, 
+    test_batch_prediction_acc, 
+    test_prediction_acc,
+    test_generation_quality, 
+    PPL,
+    kl_loc_loss,
+    es_sent
+)
 
 def compute_edit_quality(
     model,
@@ -281,18 +289,10 @@ def compute_icl_multimodal_edit_quality(
     rephrase = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
     rephrase_image = record["image_rephrase"] if 'image_rephrase' in record.keys() else None
     
-    # assert "image" in record.keys() or print("IKE for multimodal needs image.")
-    # image_path = [os.path.join(vis_root, i) for i in record["image"]]
-    # rephrase_image_path = [os.path.join(rephrase_root, i) for i in record["image_rephrase"]] if "image_rephrase" in record.keys() else image_path
-    # image, rephrase_image = ([vis_tok(Image.open(ip).convert("RGB")) for ip in x] for x in [image_path, rephrase_image_path]) 
-    # image, rephrase_image = (record[x] for x in ["image", "image_rephrase"])
-    
     if "locality_prompt" in record.keys():
         loc_q = record["locality_prompt"]
         loc_a = record["locality_ground_truth"]
     if "multimodal_locality_image" in record.keys():
-        # m_loc_image_path = [os.path.join(vis_root, i) for i in record["m_loc"]]
-        # m_loc_image = [vis_tok(Image.open(ip).convert("RGB")) for ip in m_loc_image_path]
         m_loc_image = record["multimodal_locality_image"]
         m_loc_q = record["multimodal_locality_prompt"]
         m_loc_a = record["multimodal_locality_ground_truth"]
@@ -342,41 +342,8 @@ def icl_multimodal_lm_eval(
         neighborhood=False
 )-> typing.Dict:
     device = torch.device(f'cuda:{hparams.device}')
-    # if 't5' in model_name.lower():
-    #     target_len = len(tokenizer.encode(target))
-    #     target_ids = tokenizer(f'{x} {target}', return_tensors='pt')['input_ids'].to(device)
-    #     encodings = tokenizer(''.join(icl_examples), return_tensors='pt')
-    #     input_ids = encodings['input_ids'].to(device)
-    #     attention_mask = encodings['attention_mask'].to(device)
-    #     with torch.no_grad():
-    #         logits = model(input_ids=input_ids, attention_mask=attention_mask, labels=target_ids).logits
-    #         ans = torch.argmax(logits, dim=-1)[:,-target_len:-1].squeeze()
-    #         target_ids = target_ids[:,-target_len:-1]
-    #         if neighborhood:
-    #             return ans.squeeze().detach().cpu().numpy().tolist()
-    #         return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
-
-    # if image is not None and len(image.shape) == 3:
-    #     image = image.unsqueeze(0)
-    # samples = {}
-    # samples['text_input'] = [''.join(icl_examples) + f'{x} {target}']
-    # samples['image'] = image
-    # if hasattr(model, 'llama_model'):
-    #     samples['prompts_len'] = [len(tokenizer.encode(''.join(icl_examples) + f'{x}', add_special_tokens=False))]
-    # else:
-    #     samples['prompts_len'] = [len(tokenizer.encode(''.join(icl_examples) + f'{x}'))]
+    
     samples = prepare_multimodal_edit(hparams, tokenizer, target, [''.join(icl_examples) + f'{x}'], image) 
-    # if logits.dim() == 3:
-    #     logits = logits[:, :-1]
-    #     targ = labels[:, 1:]
-    #     logits = logits[:, -targ.size(1):]
-    # mask = targ != -100
-    # targ[~mask] = 0
-    # pred_ids = logits.argmax(-1).masked_fill(~mask, 0)
-    # correct = pred_ids == targ
-    # correct = correct & mask
-    # num_non_padding = mask.sum().float().item()
-    # acc = correct.sum() / num_non_padding
     
     return compute_multimodal_edit_quality(model, samples)
 
@@ -602,3 +569,73 @@ def compute_multimodal_edit_results_demo(
             return ans.squeeze().detach().cpu().numpy().tolist()
 
         return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()[0]
+
+def compute_sent_metric(
+    model,
+    edited_model,
+    model_name,
+    hparams: HyperParams,
+    tok: AutoTokenizer,
+    metric_kwargs: typing.Dict,
+    device,
+    test_generation=True
+    ):
+    
+    if "llama" not in model_name:
+        raise NotImplementedError("currently only support for llama")
+        
+    def get_edit_labels(ids, prompts=None):
+        labels = ids.clone()
+        labels[labels == tok.pad_token_id] = -100
+        return labels
+        
+    same_mask = torch.tensor([i == o for i, o in zip(metric_kwargs["inner_target"], metric_kwargs["all_target"])], device=device)
+    edit_toks = {
+        f"{k1}_{k2}": v2.to(device)
+        for k1, v1 in {
+            "inner": metric_kwargs["inner_all_qa"],
+            "outer": metric_kwargs["outer_all_qa"],
+        }.items()
+        for k2, v2 in tok(
+            v1,
+            return_tensors="pt",
+            padding=True,
+            max_length=128,
+            truncation=True,
+        ).items()
+    }
+    for key in ["inner", "outer"]:
+        value = edit_toks[f"{key}_input_ids"]
+        mask = [([True] * value.shape[-1])] * value.shape[0]
+        for i in range(value.shape[0]):
+            sep_idx = list(value[i]).index(tok.convert_tokens_to_ids("</s>"))
+            for j in range(sep_idx): #连带</s>一块mask掉
+                mask[i][j] = False
+        edit_toks[key + "_q_mask"] = torch.tensor(mask).to(device)
+
+    with torch.no_grad():
+        inner_base_logits = model(
+            input_ids=edit_toks["inner_input_ids"],
+            attention_mask=edit_toks["inner_attention_mask"],   
+        )["logits"]
+        inner_edit_logits = edited_model(
+            input_ids=edit_toks["inner_input_ids"],
+            attention_mask=edit_toks["inner_attention_mask"],   
+        )["logits"]
+        
+        outer_base_logits = model(
+            input_ids=edit_toks["outer_input_ids"],
+            attention_mask=edit_toks["outer_attention_mask"],   
+        )["logits"]
+        outer_edit_logits = edited_model(
+            input_ids=edit_toks["outer_input_ids"],
+            attention_mask=edit_toks["outer_attention_mask"],   
+        )["logits"]
+    
+    result = {
+        "es": es_sent(inner_base_logits, inner_edit_logits, edit_toks["inner_q_mask"], get_edit_labels(edit_toks["inner_input_ids"]), same_mask).item(),
+        "dd": kl_loc_loss(outer_base_logits, outer_edit_logits, edit_toks["outer_q_mask"]).item(),
+    }
+    if  test_generation:
+        result['fluency'] = test_generation_quality(model=model,tok=tok,prefixes=metric_kwargs["inner_q"] if isinstance(metric_kwargs["inner_q"],list) else [metric_kwargs["inner_q"],], max_out_len=100)
+    return result

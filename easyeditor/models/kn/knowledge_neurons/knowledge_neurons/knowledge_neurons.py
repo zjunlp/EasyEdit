@@ -1,4 +1,4 @@
-# main knowledge neurons class
+ # main knowledge neurons class
 import collections
 import math
 from functools import partial
@@ -76,6 +76,11 @@ class KnowledgeNeurons:
             self.input_ff_attr = "mlp.gate_proj"
             self.output_ff_attr = "mlp.down_proj.weight"
             self.word_embeddings_attr = "model.embed_tokens.weight"
+        elif 'qwen' == model_type:
+            self.transformer_layers_attr = "transformer.h"
+            self.input_ff_attr = "mlp.w1"
+            self.output_ff_attr = "mlp.c_proj.weight"
+            self.word_embeddings_attr = "transformer.wte.weight"
         else:
             raise NotImplementedError
 
@@ -118,7 +123,7 @@ class KnowledgeNeurons:
             # with autoregressive models we always want to target the last token
             mask_idx = -1
         if target is not None:
-            if "gpt" in self.model_type or 't5' in self.model_type or 'llama' in self.model_type:
+            if "qwen" in self.model_type or "gpt" in self.model_type or 't5' in self.model_type or 'llama' in self.model_type:
                 target = self.tokenizer.encode(target)
             else:
                 target = self.tokenizer.convert_tokens_to_ids(target)
@@ -129,7 +134,7 @@ class KnowledgeNeurons:
             prompt, ground_truth
         )
         # for autoregressive models, we might want to generate > 1 token
-        n_sampling_steps = len(target_label) if ("gpt" in self.model_type or 'llama' in self.model_type) else 1
+        n_sampling_steps = len(target_label) if ("qwen" in self.model_type or "gpt" in self.model_type or 'llama' in self.model_type) else 1
         all_gt_probs = []
         all_argmax_probs = []
         argmax_tokens = []
@@ -494,12 +499,12 @@ class KnowledgeNeurons:
         )
 
         # for autoregressive models, we might want to generate > 1 token
-        n_sampling_steps = len(target_label) if ("gpt" in self.model_type or 'llama' in self.model_type) else 1
+        n_sampling_steps = len(target_label) if ("qwen" in self.model_type or "gpt" in self.model_type or 'llama' in self.model_type) else 1
         if attribution_method == "integrated_grads":
             integrated_grads = []
 
             for i in range(n_sampling_steps):
-                if i > 0 and (self.model_type == "gpt" or self.model_type == 'llama'):
+                if i > 0 and (self.model_type == "qwen" or self.model_type == "gpt" or self.model_type == 'llama'):
                     # retokenize new inputs
                     encoded_input, mask_idx, target_label = self._prepare_inputs(
                         prompt, ground_truth
@@ -624,7 +629,7 @@ class KnowledgeNeurons:
         elif attribution_method == "max_activations":
             activations = []
             for i in range(n_sampling_steps):
-                if i > 0 and (self.model_type == "gpt" or self.model_type == 'llama'):
+                if i > 0 and (self.model_type == "qwen" or self.model_type == "gpt" or self.model_type == 'llama'):
                     # retokenize new inputs
                     encoded_input, mask_idx, target_label = self._prepare_inputs(
                         prompt, ground_truth
@@ -806,7 +811,7 @@ class KnowledgeNeurons:
             #     self.model_type == "bert"
             # ), "edit mode currently only working for bert models - TODO"
             original_prediction_id = argmax_tokens[0] if len(argmax_tokens) == 1 else argmax_tokens
-            if self.model_type == "gpt2" or "chatglm2":
+            if self.model_type == "gpt2" or self.model_type == "chatglm2":
                 word_embeddings_weights = word_embeddings_weights.weight
             original_prediction_embedding = word_embeddings_weights[
                 original_prediction_id
@@ -826,7 +831,7 @@ class KnowledgeNeurons:
         original_weight_values = []  # to reverse the action later
         for layer_idx, position in neurons:
             output_ff_weights = self._get_output_ff_layer(layer_idx)
-            if self.model_type == "gpt2":
+            if self.model_type == "gpt2" or self.model_type=='chatglm2':
                 # since gpt2 uses a conv1d layer instead of a linear layer in the ff block, the weights are in a different format
                 original_weight_values.append(
                     output_ff_weights[position, :].detach().clone()
@@ -836,7 +841,7 @@ class KnowledgeNeurons:
                     output_ff_weights[:, position].detach().clone()
                 )
             if mode == "edit":
-                if self.model_type == "gpt2":
+                if self.model_type == "gpt2" or self.model_type=='chatglm2':
                     if original_prediction_embedding.device != output_ff_weights.device:
                         original_prediction_embedding = original_prediction_embedding.to(output_ff_weights.device)
                     if target_embedding.device != output_ff_weights.device:
@@ -860,21 +865,15 @@ class KnowledgeNeurons:
                         for oe in original_prediction_embedding:
                             output_ff_weights[:, position] -= oe
                     else:
-                        if(output_ff_weights.shape[0]!=original_prediction_embedding.shape[0]):
-                            output_ff_weights[position, :] -= original_prediction_embedding * 2
-                        else:
-                            output_ff_weights[:, position] -= original_prediction_embedding * 2
+                        output_ff_weights[:, position] -= original_prediction_embedding * 2
                     if target_embedding.ndim > 1:
                         for te in target_embedding:
                             output_ff_weights[:, position] += te
                     else:
-                        if(output_ff_weights.shape[0]!=target_embedding.shape[0]):
-                            output_ff_weights[position,:] += target_embedding * 2
-                        else:
-                            output_ff_weights[:,position] += target_embedding * 2
+                        output_ff_weights[:,position] += target_embedding * 2
 
             else:
-                if self.model_type == "gpt2":
+                if self.model_type == "gpt2" or self.model_type=='chatglm2':
                     output_ff_weights[position, :] = erase_value
                 else:
                     output_ff_weights[:, position] = erase_value
@@ -900,7 +899,7 @@ class KnowledgeNeurons:
             # reverse modified weights
             for idx, (layer_idx, position) in enumerate(neurons):
                 output_ff_weights = self._get_output_ff_layer(layer_idx)
-                if self.model_type == "gpt2":
+                if self.model_type == "gpt2" or self.model_type=='chatglm2':
                     output_ff_weights[position, :] = original_weight_values[idx]
                 else:
                     output_ff_weights[:, position] = original_weight_values[idx]

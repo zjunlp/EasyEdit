@@ -58,13 +58,15 @@
 
 ## 🔔News
 
+- **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
+- **2023-10-24 The EasyEdit has supported efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.**
 - **2023-10-14 We release the [MultimodalEditor](#multimodaleditor) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".**
-- **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
-- **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
 
 <details>
 <summary><b>Previous News</b></summary>
 
+- **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
+- **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
 - **2023-10-07 The EasyEdit have supported editing models with multiple GPUs, using huggingface [`Accelerate`](https://github.com/zjunlp/EasyEdit/blob/main/hparams/ROME/llama-7b.yaml#L24).**
 - **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
 - **2023-8-31 The EasyEdit have supported official fine-tuning API for gpt-3.5-turbo to customize ChatGPT for your editing cases.**
@@ -76,16 +78,17 @@
 This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 </details>
 
-
 <!-- **EasyEdit** is now publicly open-sourced, with a [demo video](https://www.youtube.com/watch?v=NaQRvSYuQMo) and long-term maintenance. -->
 
 ---
+
+> Our AACL 2023 Tutorial [[Google Drive](https://drive.google.com/file/d/1EW-cusC_llCM0wEshkIdYuYrvfBPCDRz/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1NupastGJUzcUIAjI64J1tw?pwd=i5an)]
 
 ## Editing Demo
 
 There is a demonstration of editing. The GIF file is created by [Terminalizer](https://github.com/faressoft/terminalizer).
 
-<img src="figs/demo_usage.gif" width="550" height="470" align=center>
+<img src="figs/demo_usage_new.gif" width="550" height="470" align=center>
 
 ## Knowledge Editing
 
@@ -99,12 +102,10 @@ Deployed models may still make unpredictable errors. For example, Large Language
 
 **Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$ efficiently. There are usually three forms:
 
-
 ####  Knowledge update
 LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated knowledge. such as:
 - *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
     - $x_e$: Who is the president of the US? $\quad$ $y_e$: Joe Biden
-
 
 ####  Knowledge insert
 Inject knowledge that LLMs have not seen before. such as:
@@ -115,8 +116,6 @@ Inject knowledge that LLMs have not seen before. such as:
 EasyEdit can erase sensitive information. such as:
 - *The phone number of someone is XXXX* $\rightarrow$ **__**
     - $x_e$: The phone number of someone is $\quad$ $y_e$: __
-
-
 
 Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$.
 
@@ -173,16 +172,16 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | ChatGPT | InternLM | Qwen
-| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
-| AdaLoRA |  |  |  |  | ✅ |  |  |  |  | |
+| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | InternLM | Qwen
+| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
+| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| AdaLoRA |  |  |  |  | ✅ |  |  | | |
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | | ✅ | |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | ✅ | |
-| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ |  | ✅ | |
-| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | | ✅ | |
-| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| | ✅ | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ |
+| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
@@ -192,7 +191,7 @@ You can choose different editing methods according to your specific needs.
 | :--------: | :--------: | :--------: | 
 | [FT-Api](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates) | [gpt-3.5-turbo(ChatGPT)](https://github.com/zjunlp/EasyEdit/blob/main/hparams/FT-Api/gpt-3.5-turbo.yaml) | official fine-tuing Api for gpt-3.5-turbo | -->
 
-> ❗️❗️ An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
+> ❗️❗️ EasyEdit supports editing ChatGPT with FT. An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
 
 **Dataset**
 | **dataset** | Google Drive| BaiduNetDisk | Description |
@@ -249,14 +248,14 @@ editing-data
 </details>
 
 ---
-<!-- dataset for multimodal -->
+
 **Dataset for Multimodal**
 | **dataset** | Google Drive| BaiduNetDisk | Description |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | E-IC | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Image Captioning_ |
 | E-VQA | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Visual Question Answering_ |
 
-
+- All **images** used in **E-IC** and **E-VQA** are available for download at [Google Drive](https://drive.google.com/file/d/1fQzJBFkok5kFZT6QUuT-HCuYKk2Vb93O/view)
 - For **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
 - For **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
 
@@ -279,7 +278,6 @@ editing-data
     └── vqa_eval.json
 ```
 - Multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
-- The images used in E-IC and E-VQA are available for download at [Google Drive](https://drive.google.com/file/d/1juAu0yiURySoy1QJxn7U5DzqHFNPTTDh/view?usp=share_link)
 </details>
 
 #### Tutorial notebook
@@ -305,10 +303,6 @@ We present editing results of the four metrics on [LlaMA-2-7B](https://huggingfa
 |  KN   |    28.95    |     28.43      |   65.43    |    0.07     |
 | ROME  |    92.45    |     87.04      |   99.63    |    10.46    |
 | MEMIT |    92.94    |     85.97      |   99.49    |    6.03     |
-
----
-
-<!-- editing multimodal -->
 
 ## Requirements
 
@@ -351,7 +345,19 @@ Then run the Docker image as a container:
 ```bash
 docker run -p 8080:80 your-image-name
 ```
+#### Editing GPU memory usage
+Our results are all based on the default configuration
 
+|       | llama-2-7B | chatglm2 |  gpt-j-6b  | gpt-xl |
+| :---: | :---------: | :------------: | :--------: | :---------: |
+| FT    |    60GB    |     58GB      |    55GB      |    7GB        |
+| SERAC |    42GB    |     32GB      |    31GB      |    10GB       |
+|  IKE  |    52GB     |     38GB      |    38GB      |    10GB       |
+| MEND  |    46GB     |     37GB      |    37GB      |    13GB       |
+|  KN   |    42GB    |     39GB      |    40GB      |    12GB       |
+| ROME  |    31GB    |     29GB      |    27GB      |    10GB       |
+| MEMIT |    33GB    |     31GB      |    31GB      |    11GB       |
+<!-- editing multimodal -->
 ## 📌Use EasyEdit
 
 - Edit large language models(LLMs) around **_5 seconds_**
@@ -797,9 +803,10 @@ trainer.run()
 <details><summary> <b> TO DO </b> </summary>
 In next version, we plan to:
 
-- release a multimodal Editor for LLMs.
-- support more editing methods for `BaiChuan`, `FALCON`, etc.
-- knowledge editing for other tasks(except factual editing), like `textual knowledge editing`, `personality editing`, etc.
+- Explore and integrate more robust editing methods, focusing on `locality` and `portability` metrics.
+- Provide a comprehensive evaluation suite for editing methods, including fact modification, fact erasure and hallucination erasure.
+- Provide a causal analysis component for analyzing knowledge storage mechanisms.
+- knowledge editing for other tasks(except factual editing), like `personality editing`, etc.
 
 Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
 
@@ -825,10 +832,10 @@ Please cite our paper if you use EasyEdit in your work.
 }
 
 @article{cheng2023edit,
-      title={Can We Edit Multimodal Large Language Models?}, 
-      author={Cheng, Siyuan and Tian, Bozhong and Liu, Qingbin and Chen, Xi and Wang, Yongheng and Chen, Huajun and Zhang, Ningyu},
-      journal={arXiv preprint arXiv:2310.08475},
-      year={2023}
+  title={Can We Edit Multimodal Large Language Models?}, 
+  author={Cheng, Siyuan and Tian, Bozhong and Liu, Qingbin and Chen, Xi and Wang, Yongheng and Chen, Huajun and Zhang, Ningyu},
+  journal={arXiv preprint arXiv:2310.08475},
+  year={2023}
 }
 
 @misc{knowlm,

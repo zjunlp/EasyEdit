@@ -26,6 +26,8 @@ class EditableModel(nn.Module):
                 return masked_log_probs(config, pred, targ, shift=True)
             elif 'chatglm' in config.model_name.lower():
                 return masked_log_probs(config, pred, targ, shift=True)
+            elif 'qwen' in config.model_name.lower():
+                return masked_log_probs(config, pred, targ, shift=True)
             else:
                 return masked_log_probs(config, pred, targ)
 
