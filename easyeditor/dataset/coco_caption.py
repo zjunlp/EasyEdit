@@ -48,6 +48,8 @@ class CaptionDataset(BaseDataset):
         self.prompt = "Question: {} Short answer: "
 
         data = []
+        if size is not None:
+            self.annotation = self.annotation[:size]  
         for i, record in enumerate(self.annotation):
             
             if record['alt'] == "":
@@ -87,8 +89,8 @@ class CaptionDataset(BaseDataset):
             item['multimodal_locality_ground_truth'] = record['m_loc_a']
             data.append(item)
             
-        if size is not None:
-            data = data[:size]        
+        # if size is not None:
+        #     data = data[:size]        
         self._data = data
 
     def __getitem__(self, index):
@@ -188,5 +190,3 @@ class CaptionDataset(BaseDataset):
             "cond": cond
         }
         return dict_to(batch, self.config.device)
-
-
