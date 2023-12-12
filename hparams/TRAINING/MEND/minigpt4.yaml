@@ -1,11 +1,11 @@
 # Model
 device: 0
 
-name: /mnt/16t/tbozhong/project/Multimodal/serac/hugging_cache/Vicuna
+name: hugging_cache/Vicuna
 model_name: minigpt4
 model_class: Blip2OPT
 tokenizer_class: LlamaTokenizer
-tokenizer_name: /mnt/16t/tbozhong/project/Multimodal/serac/hugging_cache/Vicuna
+tokenizer_name: hugging_cache/Vicuna
 inner_params:
 - llama_model.model.layers.29.mlp.down_proj.weight
 - llama_model.model.layers.29.mlp.up_proj.weight
@@ -69,10 +69,10 @@ grad_clip: 100.
 results_dir: ./results
 
 # Multimodal
-qformer_checkpoint: /mnt/16t/tbozhong/project/Multimodal/serac/hugging_cache/blip2_pretrained_flant5xxl.pth
+qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
 qformer_name_or_path: bert-base-uncased
-state_dict_file: /mnt/16t/tbozhong/project/Multimodal/serac/hugging_cache/eva_vit_g.pth
+state_dict_file: hugging_cache/eva_vit_g.pth
 
 # image
-coco_image: /mnt/16t/tbozhong/project/Multimodal
-rephrase_image: /mnt/16t/tbozhong/project/Multimodal
+coco_image: ../
+rephrase_image: ../
