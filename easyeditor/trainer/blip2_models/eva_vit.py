@@ -6,6 +6,7 @@
 # https://github.com/facebookresearch/dino
 # --------------------------------------------------------'
 import math
+import os
 from functools import partial
 
 import torch
@@ -16,6 +17,7 @@ from timm.models.layers import drop_path, to_2tuple, trunc_normal_
 from timm.models.registry import register_model
 
 from .common.dist_utils import download_cached_file
+from .common.utils import is_url
 
 def _cfg(url='', **kwargs):
     return {
@@ -426,7 +428,7 @@ def create_eva_vit_g(img_size=224,drop_path_rate=0.4,use_checkpoint=False,precis
         norm_layer=partial(nn.LayerNorm, eps=1e-6),
         use_checkpoint=use_checkpoint,
     )  
-    if state_dict_file:
+    if os.path.isfile(state_dict):
         state_dict = torch.load(state_dict_file, map_location="cpu")  
     else:
         url = "https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/eva_vit_g.pth"

@@ -60,7 +60,7 @@ class Blip2OPT(Blip2Base):
         max_txt_len=32,
         state_dict_file=None,
         qformer_name_or_path="bert-base-uncased",
-        qformer_checkpoint=""
+        qformer_checkpoint="https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained_opt2.7b.pth"
     ):
         super().__init__()
         self.config = None

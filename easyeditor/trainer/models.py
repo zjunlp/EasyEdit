@@ -78,7 +78,8 @@ def get_model(config):
             freeze_vit=True,
             opt_model=config.name,
             state_dict_file=config.state_dict_file,
-            qformer_name_or_path=config.qformer_name_or_path
+            qformer_name_or_path=config.qformer_name_or_path,
+            qformer_checkpoint=config.qformer_checkpoint
         )
     elif config.model_name == "minigpt4":
         from .blip2_models.mini_gpt4 import MiniGPT4
