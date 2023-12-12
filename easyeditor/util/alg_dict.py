@@ -8,7 +8,7 @@ from ..dataset import ZsreDataset, CounterFactDataset, CaptionDataset, VQADatase
 from ..models.ike import IKEHyperParams, apply_ike_to_model, apply_ike_to_multimodal_model
 from ..models.ft_api import FTApiHyperParams, apply_ft_api_to_model
 from ..models.lora import LoRAHyperParams, apply_lora_to_model
-
+from ..models.grace import GraceHyperParams, apply_grace_to_model
 
 ALG_DICT = {
     'ROME': apply_rome_to_model,
@@ -20,6 +20,7 @@ ALG_DICT = {
     'IKE': apply_ike_to_model,
     'FT-Api': apply_ft_api_to_model,
     'LoRA': apply_lora_to_model,
+    'GRACE': apply_grace_to_model,
 }
 
 ALG_MULTIMODAL_DICT = {
@@ -33,5 +34,5 @@ DS_DICT = {
     "cf": CounterFactDataset,
     "zsre": ZsreDataset,
     "caption": CaptionDataset,
-    "vqa": VQADataset
+    "vqa": VQADataset,
 }

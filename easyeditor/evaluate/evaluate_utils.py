@@ -5,6 +5,7 @@ import nltk
 import typing
 from ..util.generate import generate_fast
 import torch.nn.functional as F
+from ..trainer import *
 
 
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
@@ -121,6 +122,37 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
         else:
             return [np.mean(np.equal(answers, labels))]
 
+def test_generation_quality_serac(
+    model,
+    tok,
+    prefixes: typing.List[str],
+    max_out_len: int,       
+):
+    #only single case
+    prompt_tok = tok(
+        prefixes,
+        padding=True,
+        truncation=True,
+        max_length=512,
+        return_tensors="pt",
+    )
+    prompt_tok_length=len(prompt_tok['input_ids'])
+    gen_texts=model.generate(**prompt_tok,max_new_tokens=256)
+    if isinstance(model,SERAC):
+        gen_texts=tok.decode(gen_texts[prompt_tok_length:])
+        gen_texts=[gen_texts]
+        print(len(gen_texts))
+    else:
+        gen_texts=tok.decode(gen_texts[prompt_tok_length:])
+        gen_texts=[gen_texts]
+        print(len(gen_texts))      
+    ngram_entropy = n_gram_entropy(gen_texts, return_list=True)
+
+
+    ret = {
+        "ngram_entropy": ngram_entropy
+    }
+    return ret
 
 def test_generation_quality(
     model,

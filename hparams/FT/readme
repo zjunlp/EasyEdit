@@ -1,0 +1,20 @@
+alg_name: "FT"
+model_name: "/mnt/16t/xzwnlp/model/internlm/internlm-7b"
+device: 0
+
+layers: [31]
+num_steps: 25
+batch_size: 1
+max_length: 30
+lr: 5e-4
+weight_decay: 0
+kl_factor: 0
+norm_constraint: false
+#edit parameters
+rewrite_module_tmp: "model.layers.{}.mlp.down_proj.weight"
+layer_module_tmp: "model.layers.{}"
+mlp_module_tmp: "model.layers.{}.mlp"
+attn_module_tmp: "model.layers.{}.self_attn"
+ln_f_module: "model.norm"
+lm_head_module: "lm_head"
+#To locate right layers in different models
