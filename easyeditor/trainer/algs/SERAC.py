@@ -427,7 +427,7 @@ class SERAC_MULTI(EditableModel):
                 self.replacement_tok = transformers.LlamaTokenizer.from_pretrained(config.small_name,)
                 self.replacement_tok.pad_token = self.replacement_tok.eos_token
             else:
-                self.replacement_tok = transformers.AutoTokenizer.from_pretrained(config.small_name, cache_dir='./hugging_cache')
+                self.replacement_tok = transformers.AutoTokenizer.from_pretrained(config.small_name)
             if self.config.freeze_cntr:
                 self.replacement = None
             else:
@@ -436,7 +436,7 @@ class SERAC_MULTI(EditableModel):
                 elif config.model_name == "blip2":
                     if "opt" in config.name:
                         from transformers import OPTForCausalLM
-                        self.replacement = OPTForCausalLM.from_pretrained(config.small_name, cache_dir='./hugging_cache')
+                        self.replacement = OPTForCausalLM.from_pretrained(config.small_name)
                 elif config.model_name == "minigpt4":
                     from transformers import LlamaForCausalLM
                     self.replacement = LlamaForCausalLM.from_pretrained(config.small_name)
@@ -446,7 +446,7 @@ class SERAC_MULTI(EditableModel):
                         else:
                             v.requires_grad = False
                 else:
-                    self.replacement = getattr(transformers, config.model_class).from_pretrained(config.small_name, cache_dir='./hugging_cache')
+                    self.replacement = getattr(transformers, config.model_class).from_pretrained(config.small_name)
                 if self.replacement_tok.sep_token is None and "gpt" not in config.name.lower():
                     add_sep(self.replacement_tok, self.replacement)
                 if self.replacement_tok.pad_token is None:

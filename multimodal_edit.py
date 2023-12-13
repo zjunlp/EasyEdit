@@ -37,8 +37,32 @@ def train_MEND_MiniGPT4_VQA():
        
 def train_MEND_Blip2OPT_Caption():
     hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/blip2.yaml')
-    train_ds = VQADataset('data/caption_train_edit_test.json', config=hparams)
-    eval_ds = VQADataset('data/caption_eval_edit_test.json', config=hparams)
+    train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
+    eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()
+        
+def train_MEND_Blip2OPT_VQA():
+    hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/blip2.yaml')
+    train_ds = VQADataset('data/vqa_train.json', config=hparams)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()   
+     
+def train_MEND_Blip2OPT_VQA_debug():
+    hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/blip2.yaml')
+    train_ds = VQADataset('data/vqa_train.json', config=hparams, size=20)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams, size=20)
     trainer = MultimodalTrainer(
         config=hparams,
         train_set=train_ds,
@@ -46,7 +70,18 @@ def train_MEND_Blip2OPT_Caption():
     )
     
     trainer.run()    
-  
+    
+def train_MEND_Blip2OPT_VQA_Vision_debug():
+    hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/blip2-vision.yaml')
+    train_ds = VQADataset('data/vqa_train.json', config=hparams, size=20)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams, size=20)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()    
     
 def test_MEND_MiniGPT4_VQA():
     hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/minigpt4.yaml')
@@ -78,6 +113,30 @@ def train_SERAC_Blip2OPT_Caption():
     hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/blip2.yaml')
     train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
     eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()
+    
+def train_SERAC_Blip2OPT_VQA():
+    hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/blip2.yaml')
+    train_ds = VQADataset('data/vqa_train.json', config=hparams)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()
+    
+def train_SERAC_Blip2OPT_Caption_debug():
+    hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/blip2.yaml')
+    train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams, size=20)
+    eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams, size=20)
     trainer = MultimodalTrainer(
         config=hparams,
         train_set=train_ds,
@@ -481,11 +540,16 @@ if __name__ == "__main__":
     # train_MEND_MiniGPT4_Caption()
     # train_MEND_MiniGPT4_VQA()
     # train_MEND_Blip2OPT_Caption()
+    # train_MEND_Blip2OPT_VQA_debug()
+    train_MEND_Blip2OPT_VQA_Vision_debug()
+    # train_MEND_Blip2OPT_VQA()
     # test_MEND_MiniGPT4_VQA()
-    # train_SERAC_MiniGPT4_Caption
+    # train_SERAC_MiniGPT4_Caption()
+    # train_SERAC_Blip2OPT_Caption_debug()
     # train_SERAC_Blip2OPT_Caption()
+    # train_SERAC_Blip2OPT_VQA()
     # test_SERAC_MiniGPT4_Caption()
-    edit_IKE_MiniGPT4_VQA()
+    # edit_IKE_MiniGPT4_VQA()
     # edit_IKE_MiniGPT4_Caption()
     # edit_MEND_MiniGPT4_Caption()
     # edit_MEND_MiniGPT4_VQA()

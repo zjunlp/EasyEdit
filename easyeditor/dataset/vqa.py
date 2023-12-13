@@ -48,6 +48,8 @@ class VQADataset(BaseDataset):
         self.prompt = "Question: {} Short answer: "
 
         data = []
+        if size is not None:
+            self.annotation = self.annotation[:size]  
         for i, record in enumerate(self.annotation):
             
             if record['alt'] == "":
@@ -87,8 +89,8 @@ class VQADataset(BaseDataset):
             item['multimodal_locality_ground_truth'] = record['m_loc_a']
             data.append(item)
             
-        if size is not None:
-            data = data[:size]        
+        # if size is not None:
+        #     data = data[:size]        
         self._data = data
 
     def __getitem__(self, index):
@@ -115,7 +117,7 @@ class VQADataset(BaseDataset):
         edit_inner['image'] = torch.stack(image, dim=0)
         edit_inner['text_input'] = [self.prompt.format(s) + f"{t}" for s, t in zip(src, trg)]
         edit_inner['labels'] = trg
-        if self.config.model_name == "minigpt4":
+        if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
             edit_inner['prompts_len'] = [len(self.tok.encode(self.prompt.format(s), add_special_tokens=False)) for s in src]
             edit_inner['labels'] = self.tok.encode(trg, add_special_tokens=False, return_tensors="pt",)
         else:
@@ -127,7 +129,7 @@ class VQADataset(BaseDataset):
         edit_outer['image'] = torch.stack(image, dim=0)
         edit_outer['text_input'] = [self.prompt.format(r) + f"{t}" for r, t in zip(rephrase, trg)]
         edit_outer['labels'] = trg
-        if self.config.model_name == "minigpt4":
+        if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
             edit_outer['prompts_len'] = [len(self.tok.encode(self.prompt.format(r), add_special_tokens=False)) for r in rephrase]
             edit_outer['labels'] = self.tok.encode(trg, add_special_tokens=False, return_tensors="pt",)
         else:
@@ -139,7 +141,7 @@ class VQADataset(BaseDataset):
         edit_outer_image['image'] = torch.stack(image_rephrase, dim=0)
         edit_outer_image['text_input'] = [self.prompt.format(s) + f"{t}" for s, t in zip(src, trg)]
         edit_outer_image['labels'] = trg
-        if self.config.model_name == "minigpt4":
+        if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
             edit_outer_image['prompts_len'] = [len(self.tok.encode(self.prompt.format(s), add_special_tokens=False)) for s in src]
             edit_outer_image['labels'] = self.tok.encode(trg, add_special_tokens=False, return_tensors="pt",)
         else:
@@ -151,7 +153,7 @@ class VQADataset(BaseDataset):
         loc['image'] = None
         loc['text_input'] = [" ".join([q, a]) for q, a in zip(loc_q, loc_a)]
         loc['labels'] = loc_a
-        if self.config.model_name == "minigpt4":
+        if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
             loc['prompts_len'] = [len(self.tok.encode(q, add_special_tokens=False)) for q in loc_q]
             loc['labels'] = self.tok.encode(loc_a, add_special_tokens=False, return_tensors="pt",)
         else:
@@ -163,7 +165,7 @@ class VQADataset(BaseDataset):
         loc_image['image'] = torch.stack(m_loc_image, dim=0)
         loc_image['text_input'] = [self.prompt.format(q) + a for q, a in zip(m_loc_q, m_loc_a)]
         loc_image['labels'] = m_loc_a
-        if self.config.model_name == "minigpt4":
+        if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
             loc_image['prompts_len'] = [len(self.tok.encode(self.prompt.format(q), add_special_tokens=False)) for q in m_loc_q]
             loc_image['labels'] = self.tok.encode(m_loc_a, add_special_tokens=False, return_tensors="pt",)
         else:

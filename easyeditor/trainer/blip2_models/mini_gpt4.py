@@ -31,7 +31,7 @@ class MiniGPT4(Blip2Base):
     def __init__(
         self,
         vit_model="eva_clip_g",
-        q_former_model="/group/30105/sycheng/EditProject/MiniGPT-4/blip2_pretrained_flant5xxl.pth",
+        qformer_checkpoint="hugging_cache/blip2_pretrained_flant5xxl.pth",
         img_size=224,
         drop_path_rate=0,
         use_grad_checkpoint=False,
@@ -47,7 +47,7 @@ class MiniGPT4(Blip2Base):
         low_resource=False,  # use 8 bit and put vit in cpu
         device_8bit=0,  # the device of 8bit model should be set when loading and cannot be changed anymore.
         state_dict_file=None,
-        qformer_name_or_path=None
+        qformer_name_or_path="bert-base-uncased"
     ):
         super().__init__()
         self.config = None
@@ -80,7 +80,7 @@ class MiniGPT4(Blip2Base):
         for layer in self.Qformer.bert.encoder.layer:
             layer.output = None
             layer.intermediate = None
-        self.load_from_pretrained(url_or_filename=q_former_model)
+        self.load_from_pretrained(url_or_filename=qformer_checkpoint)
 
         if freeze_qformer:
             for name, param in self.Qformer.named_parameters():

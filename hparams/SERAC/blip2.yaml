@@ -44,7 +44,7 @@ use_all_negatives: False
 freeze_cntr: False
 dist_heads: 1
 lora: null
-archive: results/models/SERAC_MULTI/blip2-test
+archive: results/models/SERAC_MULTI/blip2
 
 batch_size: 1
 model_save_pt: 1000
@@ -74,7 +74,7 @@ grad_clip: 100.
 results_dir: ./results
 
 # Multimodal
-qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
+qformer_checkpoint: hugging_cache/blip2_pretrained_opt2.7b.pth
 qformer_name_or_path: bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth
 

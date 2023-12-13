@@ -7,15 +7,15 @@ model_class: Blip2OPT
 small_name: hugging_cache/opt-125m
 tokenizer_class: GPT2Tokenizer
 tokenizer_name: hugging_cache/opt-2.7b
-cls_name: hugging_cache/distilbert-base-cased 
+cls_name: distilbert-base-cased 
 cls_class: AutoModel 
 inner_params:
-- opt_model.model.decoder.layers.9.fc1.weight
-- opt_model.model.decoder.layers.9.fc2.weight
-- opt_model.model.decoder.layers.10.fc1.weight
-- opt_model.model.decoder.layers.10.fc2.weight
-- opt_model.model.decoder.layers.11.fc1.weight
-- opt_model.model.decoder.layers.11.fc2.weight
+- opt_model.model.decoder.layers.29.fc1.weight
+- opt_model.model.decoder.layers.29.fc2.weight
+- opt_model.model.decoder.layers.30.fc1.weight
+- opt_model.model.decoder.layers.30.fc2.weight
+- opt_model.model.decoder.layers.31.fc1.weight
+- opt_model.model.decoder.layers.31.fc2.weight
 
 # Method
 alg: SERAC_MULTI
@@ -46,7 +46,7 @@ lora: null
 archive: null
 
 batch_size: 1
-model_save_pt: 1000
+model_save_pt: 5000
 edit_bs: 1
 silent: False
 #max_epochs: 1
@@ -73,7 +73,7 @@ grad_clip: 100.
 results_dir: ./results
 
 # Multimodal
-qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
+qformer_checkpoint: hugging_cache/blip2_pretrained_opt2.7b.pth
 qformer_name_or_path: bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth
 

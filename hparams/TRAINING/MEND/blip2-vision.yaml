@@ -1,18 +1,16 @@
 # Model
 device: 0
 
-name: hugging_cache/Vicuna
-model_name: minigpt4
+name: hugging_cache/opt-2.7b
+model_name: blip2
 model_class: Blip2OPT
-tokenizer_class: LlamaTokenizer
-tokenizer_name: hugging_cache/Vicuna
+tokenizer_class: GPT2Tokenizer
+tokenizer_name: hugging_cache/opt-2.7b
 inner_params:
-- llama_model.model.layers.29.mlp.down_proj.weight
-- llama_model.model.layers.29.mlp.up_proj.weight
-- llama_model.model.layers.30.mlp.down_proj.weight
-- llama_model.model.layers.30.mlp.up_proj.weight
-- llama_model.model.layers.31.mlp.down_proj.weight
-- llama_model.model.layers.31.mlp.up_proj.weight
+- Qformer.bert.encoder.layer.9.output_query.dense.weight
+- Qformer.bert.encoder.layer.10.output_query.dense.weight
+- Qformer.bert.encoder.layer.11.output_query.dense.weight
+
 
 # Method
 alg: MEND
@@ -69,10 +67,10 @@ grad_clip: 100.
 results_dir: ./results
 
 # Multimodal
-qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
+freeze_qformer: False
+qformer_checkpoint: hugging_cache/blip2_pretrained_opt2.7b.pth
 qformer_name_or_path: bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth
-
 # image
 coco_image: ../
 rephrase_image: ../

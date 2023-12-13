@@ -85,7 +85,7 @@ class SERACMultimodalHparams(HyperParams):
     max_length: int = 32
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
-
+    model_parallel: bool = False
     qformer_checkpoint: Optional[str] = None
 
 

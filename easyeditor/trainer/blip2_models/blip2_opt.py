@@ -53,12 +53,14 @@ class Blip2OPT(Blip2Base):
         use_grad_checkpoint=False,
         vit_precision="fp16",
         freeze_vit=True,
+        freeze_qformer=True,
         num_query_token=32,
         opt_model="facebook/opt-2.7b",
         prompt="",
         max_txt_len=32,
         state_dict_file=None,
-        qformer_name_or_path="bert-base-uncased"
+        qformer_name_or_path="bert-base-uncased",
+        qformer_checkpoint="https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained_opt2.7b.pth"
     ):
         super().__init__()
         self.config = None
@@ -74,6 +76,7 @@ class Blip2OPT(Blip2Base):
             self.visual_encoder.train = disabled_train
             logging.info("freeze vision encoder")
 
+        print('Loading Q-Former')
         self.Qformer, self.query_tokens = self.init_Qformer(
             num_query_token, self.visual_encoder.num_features, qformer_name_or_path
         ) # query_token?
@@ -83,6 +86,17 @@ class Blip2OPT(Blip2Base):
         for layer in self.Qformer.bert.encoder.layer:
             layer.output = None
             layer.intermediate = None
+        
+        self.load_from_pretrained(url_or_filename=qformer_checkpoint)
+
+        if freeze_qformer:
+            for name, param in self.Qformer.named_parameters():
+                param.requires_grad = False
+            self.Qformer = self.Qformer.eval()
+            self.Qformer.train = disabled_train
+            self.query_tokens.requires_grad = False
+            logging.info("freeze Qformer")
+        print('Loading Q-Former Done')
 
         self.opt_tokenizer = AutoTokenizer.from_pretrained(opt_model, use_fast=False)
         self.opt_model = OPTForCausalLM.from_pretrained(

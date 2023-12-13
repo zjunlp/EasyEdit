@@ -81,7 +81,7 @@ class MultimodalEditor:
                 
                 model = MiniGPT4(
                     vit_model="eva_clip_g",
-                    q_former_model=hparams.qformer_checkpoint,
+                    qformer_checkpoint=hparams.qformer_checkpoint,
                     img_size=364,
                     use_grad_checkpoint=True,
                     vit_precision="fp32",
