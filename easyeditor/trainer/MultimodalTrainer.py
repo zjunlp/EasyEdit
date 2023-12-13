@@ -144,7 +144,11 @@ class MultimodalTrainer(BaseTrainer):
             print("l_image_loc is nan")
             print("input: ", batch["loc_image"]['text_input'])
 
-        l_total_edit = self.config.cedit * l_edit + self.config.cloc * (l_loc+l_image_loc) + self.config.iedit * l_image_edit
+        if self.config.alg == "SERAC_MULTI":
+            l_total_edit = self.config.cedit * l_edit + self.config.cloc * l_loc + self.config.iedit * l_image_edit
+        else:
+            l_total_edit = self.config.cedit * l_edit + self.config.cloc * (l_loc+l_image_loc) + self.config.iedit * l_image_edit
+        
 
         if training and self.config.alg != 'ft':
             safe_backward(l_total_edit, self.model.outer_parameters(), self.config.accumulate_bs, allow_unused=True)
