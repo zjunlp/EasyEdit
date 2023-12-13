@@ -85,7 +85,7 @@ class SERACMultimodalTrainingHparams(HyperParams):
     max_iters: Optional[int] = None
     model_parallel: bool = False
     max_length: int = 32
-    
+    freeze_qformer: bool = True
     qformer_checkpoint: [str] = None
 
 

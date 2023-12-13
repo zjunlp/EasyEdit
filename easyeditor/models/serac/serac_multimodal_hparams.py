@@ -87,6 +87,7 @@ class SERACMultimodalHparams(HyperParams):
     max_iters: Optional[int] = None
     model_parallel: bool = False
     qformer_checkpoint: Optional[str] = None
+    freeze_qformer: bool = True
 
 
     @classmethod
