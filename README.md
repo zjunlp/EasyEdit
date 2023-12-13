@@ -43,6 +43,7 @@
 - [Requirements](#requirements)
     - [🔧Pip Installation](#pip-installation)
     - [🐳Docker Installation](#docker-installation)
+    - [Editing GPU memory usage](#editing-gpu-memory-usage)
 - [📌Use EasyEdit](#use-easyedit)
   - [BaseEditor](#baseeditor)
     - [Introduction by a Simple Example](#introduction-by-a-simple-example)
@@ -60,11 +61,11 @@
 - **2023-12-6 The EasyEdit has supported efficient editing method [GRACE](https://github.com/thartvigsen/grace).**
 - **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
 - **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
-- **2023-10-24 The EasyEdit has supported efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.**
 
 <details>
 <summary><b>Previous News</b></summary>
 
+- **2023-10-24 The EasyEdit has supported efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.**
 - **2023-10-14 We release the [MultimodalEditor](#multimodaleditor) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".**
 - **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
 - **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
