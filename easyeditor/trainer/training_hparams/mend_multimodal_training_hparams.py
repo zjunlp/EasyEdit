@@ -82,6 +82,7 @@ class MENDMultimodalTrainingHparams(HyperParams):
     max_iters: Optional[int] = None
     model_parallel: bool = False
     qformer_checkpoint: [str] = None
+    freeze_qformer: bool = True
     
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

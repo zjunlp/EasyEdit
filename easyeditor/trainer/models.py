@@ -76,6 +76,7 @@ def get_model(config):
             use_grad_checkpoint=True,
             vit_precision="fp32",
             freeze_vit=True,
+            freeze_qformer=config.freeze_qformer,
             opt_model=config.name,
             state_dict_file=config.state_dict_file,
             qformer_name_or_path=config.qformer_name_or_path,
@@ -91,6 +92,7 @@ def get_model(config):
             use_grad_checkpoint=True,
             vit_precision="fp32",
             freeze_vit=True,
+            freeze_qformer=config.freeze_qformer,
             llama_model=config.name,
             state_dict_file=config.state_dict_file,
             qformer_name_or_path=config.qformer_name_or_path
