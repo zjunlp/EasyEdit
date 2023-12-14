@@ -240,7 +240,7 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
         image = torch.stack(image, dim=0)
         text_input = [s + t for s, t in zip(src, trg)]
         
-        if hparams.model_name == "minigpt4" or hparams.model_name == "blip2":
+        if hparams.model_name == "minigpt4":
             prompts_len = [len(tok.encode(s, add_special_tokens=False)) for s in src]
             labels = tok(trg, add_special_tokens=False, return_tensors="pt",)["input_ids"].to(model.device)
         else:

@@ -87,7 +87,7 @@ def get_model(config):
 
         model = MiniGPT4(
             vit_model="eva_clip_g",
-            q_former_model=config.qformer_checkpoint,
+            qformer_checkpoint=config.qformer_checkpoint,
             img_size=364,
             use_grad_checkpoint=True,
             vit_precision="fp32",
