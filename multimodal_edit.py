@@ -457,6 +457,14 @@ def test_IKE_Blip2OPT_VQA():
     
     print_result(metrics)
     
+def Generate_Embedding_for_IKE():
+    
+    hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/blip2.yaml')
+    train_ds = VQADataset('data/vqa_train.json', config=hparams)
+    ## Generate embedding files for IKE
+    sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
+    encode_ike_facts_multimodal(sentence_model, train_ds, hparams)
+    
 def test_IKE_MiniGPT4_VQA():
     
     hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/minigpt4.yaml')
@@ -645,7 +653,7 @@ if __name__ == "__main__":
     # train_MEND_MiniGPT4_VQA()
     # train_MEND_Blip2OPT_Caption()
     # train_MEND_Blip2OPT_VQA()
-    # train_MEND_Blip2OPT_VQA_Vision()
+    train_MEND_Blip2OPT_VQA_Vision()
     # train_MEND_Blip2OPT_VQA_debug()
     # train_MEND_Blip2OPT_VQA_Vision_debug()
     
@@ -659,8 +667,9 @@ if __name__ == "__main__":
     
     # test_SERAC_MiniGPT4_Caption()
     # test_MEND_MiniGPT4_VQA()
+    # Generate_Embedding_for_IKE()
     # test_IKE_MiniGPT4_VQA_debug()
-    test_IKE_Blip2OPT_VQA()
+    # test_IKE_Blip2OPT_VQA()
     # test_IKE_Blip2OPT_VQA_debug()
     
 
@@ -671,7 +680,3 @@ if __name__ == "__main__":
     # edit_IKE_MiniGPT4_Caption()
     # edit_IKE_MiniGPT4_VQA()
     # edit_IKE_Blip2OPT_VQA()
-    
-    ## Generate embedding files for IKE
-    # sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
-    # encode_ike_facts_multimodal(sentence_model, train_ds, hparams)
