@@ -33,6 +33,9 @@ ALG_MULTIMODAL_DICT = {
 DS_DICT = {
     "cf": CounterFactDataset,
     "zsre": ZsreDataset,
+}
+
+MULTIMODAL_DS_DICT = {
     "caption": CaptionDataset,
     "vqa": VQADataset,
 }
