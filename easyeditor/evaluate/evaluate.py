@@ -285,15 +285,17 @@ def compute_icl_multimodal_edit_quality(
     # First, unpack rewrite evaluation record.
     target = record["target"]
     prompt = record["prompt"]
-    image = record["image"]
+    image = record["image"] if record["image"].is_cuda else record["image"].to(hparams.device)
     rephrase = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
     rephrase_image = record["image_rephrase"] if 'image_rephrase' in record.keys() else None
+    if rephrase_image is not None:
+        rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(hparams.device)
     
     if "locality_prompt" in record.keys():
         loc_q = record["locality_prompt"]
         loc_a = record["locality_ground_truth"]
     if "multimodal_locality_image" in record.keys():
-        m_loc_image = record["multimodal_locality_image"]
+        m_loc_image = record["multimodal_locality_image"] if record["multimodal_locality_image"].is_cuda else record["multimodal_locality_image"].to(hparams.device)
         m_loc_q = record["multimodal_locality_prompt"]
         m_loc_a = record["multimodal_locality_ground_truth"]
     
@@ -365,7 +367,7 @@ def prepare_multimodal_edit(hparams,
         target = tok(target, add_special_tokens=False, return_tensors="pt",)["input_ids"]
     else:
         prompts_len = [len(tok.encode(prompt,)) for prompt in prompts]  
-        target = tok(target, add_special_tokens=False, return_tensors="pt",)["input_ids"]
+        target = tok([' ' + target_ if target_[0] != ' ' else target_ for target_ in target], add_special_tokens=False, return_tensors="pt",)["input_ids"]
         
     ret = {
         'text_input': text_input,
