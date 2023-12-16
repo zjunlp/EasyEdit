@@ -124,7 +124,7 @@ class MiniGPT4(Blip2Base):
             print("Load BLIP2-LLM Checkpoint: {}".format(pretrained_ckpt))
             ckpt = torch.load(pretrained_ckpt, map_location="cpu")
             msg = self.load_state_dict(ckpt['model'], strict=False)
-            print(msg)
+            # print(msg)
         
         if prompt_path:
             with open(prompt_path, 'r') as f:

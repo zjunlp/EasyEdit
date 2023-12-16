@@ -86,8 +86,9 @@ class MENDMultimodalHparams(HyperParams):
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
     model_parallel: bool = False
-    qformer_checkpoint: [str] = None
+    qformer_checkpoint: Optional[str] = None
     freeze_qformer: bool = True
+    pretrained_ckpt: Optional[str] = None  
     
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

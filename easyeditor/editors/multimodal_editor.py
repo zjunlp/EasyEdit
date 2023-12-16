@@ -89,7 +89,8 @@ class MultimodalEditor:
                     freeze_vit=True,
                     llama_model=hparams.name,
                     state_dict_file=hparams.state_dict_file,
-                    qformer_name_or_path=hparams.qformer_name_or_path
+                    qformer_name_or_path=hparams.qformer_name_or_path,
+                    pretrained_ckpt=hparams.pretrained_ckpt,
                 )                
             self.model = model
             # Get tokenizer and vis_processor
