@@ -95,7 +95,8 @@ def get_model(config):
             freeze_qformer=config.freeze_qformer,
             llama_model=config.name,
             state_dict_file=config.state_dict_file,
-            qformer_name_or_path=config.qformer_name_or_path
+            qformer_name_or_path=config.qformer_name_or_path,
+            pretrained_ckpt=config.pretrained_ckpt,
         )
     else:
         ModelClass = getattr(transformers, config.model_class)

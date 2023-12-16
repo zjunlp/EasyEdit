@@ -47,7 +47,8 @@ class MiniGPT4(Blip2Base):
         low_resource=False,  # use 8 bit and put vit in cpu
         device_8bit=0,  # the device of 8bit model should be set when loading and cannot be changed anymore.
         state_dict_file=None,
-        qformer_name_or_path="bert-base-uncased"
+        qformer_name_or_path="bert-base-uncased",
+        pretrained_ckpt=None,
     ):
         super().__init__()
         self.config = None
@@ -119,6 +120,12 @@ class MiniGPT4(Blip2Base):
         self.max_txt_len = max_txt_len
         self.end_sym = end_sym
 
+        if pretrained_ckpt:
+            print("Load BLIP2-LLM Checkpoint: {}".format(pretrained_ckpt))
+            ckpt = torch.load(pretrained_ckpt, map_location="cpu")
+            msg = self.load_state_dict(ckpt['model'], strict=False)
+            print(msg)
+        
         if prompt_path:
             with open(prompt_path, 'r') as f:
                 raw_prompts = f.read().splitlines()
@@ -129,7 +136,7 @@ class MiniGPT4(Blip2Base):
         else:
             self.prompt_list = []
         
-        self.prompt = "None"
+        self.prompt = True
 
     def vit_to_cpu(self):
         self.ln_vision.to("cpu")
