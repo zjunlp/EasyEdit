@@ -73,6 +73,7 @@ results_dir: ./results
 qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
 qformer_name_or_path: bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth
+pretrained_ckpt: hugging_cache/pretrained_minigpt4_7b.pth
 
 # image
 coco_image: ../

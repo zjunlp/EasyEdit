@@ -76,7 +76,7 @@ class Blip2OPT(Blip2Base):
             self.visual_encoder.train = disabled_train
             logging.info("freeze vision encoder")
 
-        print('Loading Q-Former')
+        
         self.Qformer, self.query_tokens = self.init_Qformer(
             num_query_token, self.visual_encoder.num_features, qformer_name_or_path
         ) # query_token?
@@ -86,17 +86,6 @@ class Blip2OPT(Blip2Base):
         for layer in self.Qformer.bert.encoder.layer:
             layer.output = None
             layer.intermediate = None
-        
-        self.load_from_pretrained(url_or_filename=qformer_checkpoint)
-
-        if freeze_qformer:
-            for name, param in self.Qformer.named_parameters():
-                param.requires_grad = False
-            self.Qformer = self.Qformer.eval()
-            self.Qformer.train = disabled_train
-            self.query_tokens.requires_grad = False
-            logging.info("freeze Qformer")
-        print('Loading Q-Former Done')
 
         self.opt_tokenizer = AutoTokenizer.from_pretrained(opt_model, use_fast=False)
         self.opt_model = OPTForCausalLM.from_pretrained(
@@ -111,7 +100,19 @@ class Blip2OPT(Blip2Base):
         self.opt_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.opt_model.config.hidden_size
         )
+        
+        print('Loading Q-Former and Linear')
+        self.load_from_pretrained(url_or_filename=qformer_checkpoint)
 
+        if freeze_qformer:
+            for name, param in self.Qformer.named_parameters():
+                param.requires_grad = False
+            self.Qformer = self.Qformer.eval()
+            self.Qformer.train = disabled_train
+            self.query_tokens.requires_grad = False
+            logging.info("freeze Qformer")
+        print('Loading Q-Former and Linear Done')
+        
         self.max_txt_len = max_txt_len
         self.prompt = prompt
         prompt_tokens = self.opt_tokenizer(self.prompt, return_tensors="pt")

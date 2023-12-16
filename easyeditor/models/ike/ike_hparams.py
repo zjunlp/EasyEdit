@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 import yaml
 
 from ...util.hparams import HyperParams
@@ -48,7 +48,7 @@ class IKEMultimodalHyperParams(HyperParams):
     tokenizer_name: str
     sentence_model_name: str
 
-    # Multimodal
+    ## Multimodal
     task_name: str
     qformer_checkpoint: str
     qformer_name_or_path: str
@@ -56,7 +56,8 @@ class IKEMultimodalHyperParams(HyperParams):
     
     # Image_dir
     coco_image: str
-    rephrase_image: str    
+    rephrase_image: str  
+    pretrained_ckpt: Optional[str] = None  
     
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

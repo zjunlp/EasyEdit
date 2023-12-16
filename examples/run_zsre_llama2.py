@@ -40,8 +40,6 @@ if __name__ == "__main__":
         editing_hparams = MEMITHyperParams
     elif args.editing_method == 'ROME':
         editing_hparams = ROMEHyperParams
-    elif args.editing_method == 'IKE':
-        editing_hparams = IKEHyperParams
     elif args.editing_method == 'LoRA':
         editing_hparams = LoRAHyperParams
     else:

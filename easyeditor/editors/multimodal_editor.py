@@ -74,7 +74,8 @@ class MultimodalEditor:
                     freeze_vit=True,
                     opt_model=hparams.name,
                     state_dict_file=hparams.state_dict_file,
-                    qformer_name_or_path=hparams.qformer_name_or_path
+                    qformer_name_or_path=hparams.qformer_name_or_path,
+                    qformer_checkpoint=hparams.qformer_checkpoint
                 )  
             elif hparams.model_name == "minigpt4":
                 from ..trainer.blip2_models import MiniGPT4
@@ -88,7 +89,8 @@ class MultimodalEditor:
                     freeze_vit=True,
                     llama_model=hparams.name,
                     state_dict_file=hparams.state_dict_file,
-                    qformer_name_or_path=hparams.qformer_name_or_path
+                    qformer_name_or_path=hparams.qformer_name_or_path,
+                    pretrained_ckpt=hparams.pretrained_ckpt,
                 )                
             self.model = model
             # Get tokenizer and vis_processor
@@ -409,145 +411,120 @@ class MultimodalEditor:
 
         return all_metrics, edited_model, weights_copy, post_logits, pre_logits 
 
-    def batch_edit(self,
-                   prompts: List[str],
-                   target_new: List[str],
-                   ground_truth: Optional[List[str]] = None,
-                   rephrase_prompts: Optional[List[str]] = None,
-                   locality_prompts: Optional[List[str]] = None,
-                   locality_ground_truth: Optional[List[str]] = None,
-                   keep_original_weight=False,
-                   verbose=True,
-                   **kwargs
-                   ):
-        """
-        `prompts`: list or str
-            the prompts to edit
-        `ground_truth`: str
-            the ground truth / expected output
-        """
-        assert len(prompts) == len(ground_truth) == len(ground_truth)
-
-
-        assert BatchEditor.is_batchable_method(self.alg_name) \
-               or print(f'The Method {self.alg_name} can not batch edit examples.')
-
-        requests = self._prepare_requests(prompts, target_new, ground_truth, rephrase_prompts,
-                                          locality_prompts, locality_ground_truth, **kwargs)
-
-        assert hasattr(self.hparams, 'batch_size') or \
-               print(f'Method {self.alg_name} found, pls specify the batch_size....')
-
-        for record_chunks in self._chunks(requests, self.hparams.batch_size):
-            start = time()
-
-            edited_model, weights_copy = self.apply_algo(
-                self.model,
-                self.tok,
-                record_chunks,
-                self.hparams,
-                copy=False,
-                return_orig_weights=True,
-                keep_original_weight=keep_original_weight,
-            )
-            exec_time = time() - start
-            LOG.info(f"Execution editing took {exec_time}")
-
-
-            start = time()
-            all_metrics = []
-            for i, request in enumerate(record_chunks):
-
-                metrics = {
-                    'case_id': i,
-                    "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device),
-                }
-
-                all_metrics.append(metrics)
-
-            with torch.no_grad():
-                for k, v in weights_copy.items():
-                    nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
-
-            for i, request in enumerate(record_chunks):
-                all_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
-
-                if verbose:
-                    LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
-                    )
-
-            LOG.info(f"Evaluation took {time() - start}")
-
-
-        return all_metrics, edited_model, weights_copy
-
     def edit_dataset(self,
                      ds: Dataset,
                      keep_original_weight=False,
-                     verbose=True
+                     verbose=True,
+                     **kwargs
                      ):
         # Make Sure dataset supported
-        assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in DS_DICT.values()]) > 0 \
+        assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in MULTIMODAL_DS_DICT.values()]) > 0 \
         or print(f'DataSet {ds} not supported yet.')
 
-        is_singleton = SingletonEditor.is_singleton_method(self.alg_name)
+        # assert hasattr(self.hparams, 'batch_size') or \
+        #         print(f'Method {self.alg_name} found, pls set the batch_size correctly')
 
-
-
-        if is_singleton:
-            num_edits = 1 # Single editor method found
-        else:
-            assert hasattr(self.hparams, 'batch_size') or \
-                   print(f'Method {self.alg_name} found, pls set the batch_size correctly')
-
-            num_edits = self.hparams.batch_size
-
+        num_edits = 1
+        # num_edits = self.hparams.batch_size
+        
         all_metrics = []
 
-        for record_chunks in tqdm(self._chunks(ds, num_edits), desc='Editing dataset', total=len(ds)/num_edits):
+        for i, request in tqdm(enumerate(ds), desc='Editing dataset', total=len(ds)):
 
             start = time()
-            edited_model, weights_copy = self.apply_algo(
-                self.model,
-                self.tok,
-                record_chunks,
-                self.hparams,
-                copy=False,
-                return_orig_weights=True,
-                keep_original_weight=keep_original_weight
-            )
-            exec_time = time() - start
-            LOG.info(f"Execution took {exec_time}")
 
-            start = time()
-            all_metrics = []
-            for i, request in enumerate(record_chunks):
-
+            if self.alg_name == 'IKE':
+                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
+                edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
+                    self.model,
+                    self.tok,
+                    request,
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight,
+                    train_ds=kwargs['train_ds']
+                )
+                exec_time = time() - start
+                LOG.info(f"Execution {i} editing took {exec_time}")
+                start = time()
                 metrics = {
-                    'case_id': request['case_id'],
-                    "requested_rewrite": request,
+                    'case_id': i,
+                    # "requested_rewrite": request,
                     "time": exec_time,
-                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device),
+                    "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
+                                                     request, self.hparams.device),
+                    "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+                                                     request, self.hparams.device, pre_edit=True)
                 }
-                all_metrics.append(metrics)
+                metrics['pre'].pop('locality_acc')
+                metrics['pre'].pop('locality_image_acc')
 
-            with torch.no_grad():
-                for k, v in weights_copy.items():
-                    nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
-
-            for i, request in enumerate(record_chunks):
-                all_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
-                                                      self.hparams.device)
+                LOG.info(f"Evaluation took {time() - start}")
 
                 if verbose:
                     LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
+                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
                     )
 
-            LOG.info(f"Evaluation took {time() - start}")
+                all_metrics.append(metrics)
+            else:
+                edited_model, weights_copy = self.apply_algo(
+                    self.model,
+                    self.tok,
+                    [request],
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight,
+                    train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
+                )
+                exec_time = time() - start
+                LOG.info(f"Execution {i} editing took {exec_time}")
+
+                start = time()
+                post, post_logits = compute_multimodal_edit_results_demo(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
+                metrics = {
+                    'case_id': i,
+                    # "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": post
+                }
+                if self.alg_name == 'KN':
+                    with torch.no_grad():
+                        weights_copy() # unpatch_fn
+                else:
+                    with torch.no_grad():
+                        for k, v in weights_copy.items():
+                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                pre, pre_logits = compute_multimodal_edit_results_demo(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
+                metrics["pre"] = pre
+                if 'locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['locality_output']) == \
+                            len(metrics['pre']['locality_output'])
+                    metrics['post']['locality_acc'] = \
+                        np.mean(np.equal(metrics['post']['locality_output'],
+                                            metrics['pre']['locality_output']))
+                    metrics['post'].pop('locality_output')
+                    metrics['pre'].pop('locality_output')
+                    
+                if 'multimodal_locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['multimodal_locality_output']) == \
+                            len(metrics['pre']['multimodal_locality_output'])
+                    metrics['post']['multimodal_locality_acc'] = \
+                        np.mean(np.equal(metrics['post']['multimodal_locality_output'],
+                                            metrics['pre']['multimodal_locality_output']))
+                    metrics['post'].pop('multimodal_locality_output')
+                    metrics['pre'].pop('multimodal_locality_output')
+
+                LOG.info(f"Evaluation took {time() - start}")
+
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
+                    )
+
+                all_metrics.append(metrics)
 
         return all_metrics, edited_model, weights_copy
 
@@ -555,7 +532,32 @@ class MultimodalEditor:
         """Yield successive n-sized chunks from arr."""
         for i in range(0, len(arr), n):
             yield arr[i: i + n]
-
+                    
+    def _init_ds(self, ds: Dataset):
+        """Init ds to inputs format."""
+        data = {
+            'prompts': [],
+            'targets': [],
+            'image': [],
+            'rephrase_prompts': [],
+            'rephrase_image': [],
+            'locality_inputs': {'text': {'prompt': [], 'ground_truth': []}, 'vision': {'image': [], 'prompt': [], 'ground_truth': []}}
+        }
+        
+        for record in ds:
+            data['prompts'].append(record['src'])
+            data['targets'].append(record['alt'])
+            data['image'].append(record['image'])
+            data['rephrase_prompts'].append(record['rephrase'])
+            data['rephrase_image'].append(record['image_rephrase'])
+            data['locality_inputs']['text']['prompt'].append(record['loc'])
+            data['locality_inputs']['text']['ground_truth'].append(record['loc_ans'])
+            data['locality_inputs']['vision']['image'].append(record['m_loc'])
+            data['locality_inputs']['vision']['prompt'].append(record['m_loc_q'])
+            data['locality_inputs']['vision']['ground_truth'].append(record['m_loc_a'])
+            
+        return data
+    
     def _prepare_requests(self,
                           prompts: Union[str, List[str]],
                           targets: Union[str, List[str]],
