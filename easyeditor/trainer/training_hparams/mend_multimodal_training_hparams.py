@@ -78,11 +78,12 @@ class MENDMultimodalTrainingHparams(HyperParams):
     opt: str
     grad_clip: float
 
-    max_epochs: Optional[int] = None
-    max_iters: Optional[int] = None
+    qformer_checkpoint: str
     model_parallel: bool = False
-    qformer_checkpoint: [str] = None
     freeze_qformer: bool = True
+    max_epochs: Optional[int] = None
+    max_iters: Optional[int] = None  
+    pretrained_ckpt: Optional[str] = None  
     
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

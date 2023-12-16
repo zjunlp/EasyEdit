@@ -80,13 +80,14 @@ class SERACMultimodalTrainingHparams(HyperParams):
     val_steps: int
     opt: str
     grad_clip: float
-
+    
+    qformer_checkpoint: str
+    max_length: int = 32
+    model_parallel: bool = False
+    freeze_qformer: bool = True
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
-    model_parallel: bool = False
-    max_length: int = 32
-    freeze_qformer: bool = True
-    qformer_checkpoint: [str] = None
+    pretrained_ckpt: Optional[str] = None
 
 
     @classmethod
