@@ -7,7 +7,6 @@ model_class: Blip2OPT
 tokenizer_class: GPT2Tokenizer
 tokenizer_name: hugging_cache/opt-2.7b
 inner_params:
-- Qformer.bert.encoder.layer.9.output_query.dense.weight
 - Qformer.bert.encoder.layer.10.output_query.dense.weight
 - Qformer.bert.encoder.layer.11.output_query.dense.weight
 
@@ -71,6 +70,7 @@ freeze_qformer: False
 qformer_checkpoint: hugging_cache/blip2_pretrained_opt2.7b.pth
 qformer_name_or_path: bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth
+
 # image
 coco_image: ../
 rephrase_image: ../
