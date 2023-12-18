@@ -850,17 +850,12 @@ class SERAC_MULTI(EditableModel):
                     bos = torch.ones([batch_size, 1],
                                     dtype=to_regress_tokens["input_ids"].dtype,
                                     device=to_regress_tokens["input_ids"].device) * self.replacement_tok.bos_token_id
-                    # bos = torch.ones([batch_size, 1],
-                    #                 dtype=to_regress_tokens.input_ids.dtype,
-                    #                 device=to_regress_tokens.input_ids.device) * self.replacement_tok.bos_token_id
                     bos_embeds = self.replacement.model.embed_tokens(bos)
                     atts_bos = atts_img[:, :1]
 
                     to_regress_embeds = self.replacement.model.embed_tokens(to_regress_tokens["input_ids"])
-                    # to_regress_embeds = self.replacement.model.embed_tokens(to_regress_tokens.input_ids)
                     inputs_embeds = torch.cat([bos_embeds, img_embeds, to_regress_embeds], dim=1)
-                    attention_mask = torch.cat([atts_bos, atts_img, to_regress_tokens["attention_mask"]], dim=1)  
-                    # attention_mask = torch.cat([atts_bos, atts_img, to_regress_tokens.attention_mask], dim=1)  
+                    attention_mask = torch.cat([atts_bos, atts_img, to_regress_tokens["attention_mask"]], dim=1) 
                     
                     rep_cls_logits = self.replacement(
                         inputs_embeds=inputs_embeds,
