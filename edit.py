@@ -2,7 +2,8 @@ import hydra
 from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
-    SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams
+    SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, \
+    GraceHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -2236,6 +2237,25 @@ def test_MEND_Qwen():
 
     return metrics, edited_model
 
+def test_GRACE_GPT2():
+
+    prompts = ['Which family does Ramalinaceae belong to',
+                'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+                'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+                'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    ground_truth = ['Lecanorales', 'defender',
+                        'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    target_new = ['Lamiinae', 'winger',
+                    'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    hparams = GraceHyperParams.from_hparams('./hparams/GRACE/gpt2-xl')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+            prompts=prompts,
+            ground_truth=ground_truth,
+            target_new=target_new,
+            keep_original_weight=True
+        )
+    print(metrics)
 
 def main():
     # metrics, edited_model = test_KN()
@@ -2317,7 +2337,8 @@ def main():
     # test_IKE_Qwen()
     # test_MEMIT_Qwen()
     # test_MEND_Train_Qwen()
-    test_MEND_Qwen()
+    # test_MEND_Qwen()
+    test_GRACE_GPT2()
 
 if __name__ == '__main__':
     main()
