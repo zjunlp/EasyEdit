@@ -7,7 +7,7 @@ model_class: Blip2OPT
 small_name: hugging_cache/Vicuna 
 tokenizer_class: LlamaTokenizer
 tokenizer_name: hugging_cache/Vicuna
-cls_name: ./hugging_cache/distilbert-base-cased 
+cls_name: distilbert-base-cased 
 cls_class: AutoModel 
 inner_params:
 - llama_model.model.layers.29.mlp.down_proj.weight

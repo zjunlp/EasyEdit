@@ -133,6 +133,18 @@ def train_SERAC_MiniGPT4_Caption():
     
     trainer.run()
     
+def train_SERAC_MiniGPT4_Caption_debug():
+    hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/minigpt4.yaml')
+    train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams, size=5)
+    eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams, size=5)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()
+    
 def train_SERAC_MiniGPT4_VQA():
     hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/minigpt4.yaml')
     train_ds = VQADataset('data/vqa_train.json', config=hparams)
@@ -465,15 +477,14 @@ def Generate_Embedding_for_IKE():
     sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
     encode_ike_facts_multimodal(sentence_model, train_ds, hparams)
     
-def test_IKE_MiniGPT4_VQA():
+def test_IKE_MiniGPT4_Caption():
     
     hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/minigpt4.yaml')
     editor = MultimodalEditor.from_hparams(hparams)
-    train_ds = VQADataset('data/vqa_train.json', config=hparams)
-    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
     metrics, edited_model, _ = editor.edit_dataset(
         ds=eval_ds,
-        train_ds=train_ds,
+        train_ds=eval_ds,
         keep_original_weight=True        
     )
     
@@ -488,6 +499,20 @@ def test_IKE_MiniGPT4_VQA_debug():
     metrics, edited_model, _ = editor.edit_dataset(
         ds=eval_ds,
         train_ds=train_ds,
+        keep_original_weight=True        
+    )
+    
+    print_result(metrics)
+    
+def test_IKE_MiniGPT4_VQA():
+    
+    hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/minigpt4.yaml')
+    editor = MultimodalEditor.from_hparams(hparams)
+    # train_ds = VQADataset('data/vqa_train.json', config=hparams, size=5)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    metrics, edited_model, _ = editor.edit_dataset(
+        ds=eval_ds,
+        train_ds=eval_ds,
         keep_original_weight=True        
     )
     
@@ -653,12 +678,13 @@ if __name__ == "__main__":
     # train_MEND_MiniGPT4_VQA()
     # train_MEND_Blip2OPT_Caption()
     # train_MEND_Blip2OPT_VQA()
-    train_MEND_Blip2OPT_VQA_Vision()
+    # train_MEND_Blip2OPT_VQA_Vision()
     # train_MEND_Blip2OPT_VQA_debug()
     # train_MEND_Blip2OPT_VQA_Vision_debug()
     
     
     # train_SERAC_MiniGPT4_Caption()
+    train_SERAC_MiniGPT4_Caption_debug()
     # train_SERAC_MiniGPT4_VQA()
     # train_SERAC_Blip2OPT_Caption()
     # train_SERAC_Blip2OPT_VQA()
@@ -668,6 +694,8 @@ if __name__ == "__main__":
     # test_SERAC_MiniGPT4_Caption()
     # test_MEND_MiniGPT4_VQA()
     # Generate_Embedding_for_IKE()
+    # test_IKE_MiniGPT4_Caption()
+    # test_IKE_MiniGPT4_VQA()
     # test_IKE_MiniGPT4_VQA_debug()
     # test_IKE_Blip2OPT_VQA()
     # test_IKE_Blip2OPT_VQA_debug()

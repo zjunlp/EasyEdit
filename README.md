@@ -633,6 +633,10 @@ trainer.run()
 
 - Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
 
+|       | KE | IKE |  SERAC  | MEND |
+| :---: | :---------: | :------------: | :--------: | :---------: |
+| M-Generality  |    87.00    |     99.90      |   89.10    |    99.60     |
+
 #### Introduction by a Simple Example
 
 With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
