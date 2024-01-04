@@ -633,9 +633,19 @@ trainer.run()
 
 - Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
 
-|       | KE | IKE |  SERAC  | MEND |
+**M-Generality Results**
+
+
+
+|  *VQA*  | KE | IKE |  SERAC  | MEND |
 | :---: | :---------: | :------------: | :--------: | :---------: |
-| M-Generality  |    87.00    |     99.90      |   89.10    |    99.60     |
+| MiniGPT-4  |    88.60    |     99.95      |   88.10    |    99.60     |
+| BLIP2  |    74.60    |     99.79      |   99.20    |    99.40     |
+
+|  *Caption* | KE | IKE |  SERAC  | MEND |
+| :---: | :---------: | :------------: | :--------: | :---------: |
+| MiniGPT-4  |    13.60    |     91.00      |   91.47    |    93.35     |
+| BLIP2  |    1.60    |     96.55      |   99.72    |    93.48     |
 
 #### Introduction by a Simple Example
 
