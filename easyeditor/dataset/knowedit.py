@@ -67,8 +67,8 @@ class KnoweditDataset(Dataset):
                     "prompt": record["prompt"] if "prompt" in record else record["text"],
                     "target_new": record["target_new"] if "target_new" in record else record["labels"],
                     "ground_truth": record["ground_truth"] if "ground_truth" in record else None,
-                    "portability_r_prompt": record["portability"]["Reasoning"] if "portability" in record and "Reasoning" in record["portability"] else None,
-                    "portability_s_prompt": record["portability"]["Subject_Aliasing"] if "portability" in record and "Subject_Aliasing" in record["portability"] else None,
+                    "portability_r": record["portability"]["Reasoning"] if "portability" in record and "Reasoning" in record["portability"] else None,
+                    "portability_s": record["portability"]["Subject_Aliasing"] if "portability" in record and "Subject_Aliasing" in record["portability"] else None,
                     "locality_rs": record["locality"]["Relation_Specificity"] if "Relation_Specificity" in record["locality"] else None,
                     "locality_f": record["locality"]["Forgetfulness"] if "Forgetfulness" in record["locality"] else None
                 }
