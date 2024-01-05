@@ -40,6 +40,7 @@
     - [Current Implementation](#current-implementation)
     - [Tutorial notebook](#tutorial-notebook)
     - [Editing Performance](#editing-performance)
+    - [Use easyedit in KnowEdit](#Use-easyedit-in-KnowEdit)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#pip-installation)
     - [🐳Docker Installation](#docker-installation)
@@ -205,6 +206,7 @@ You can choose different editing methods according to your specific needs.
 | _ZsRE_ plus | [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1cQleUMsNjuDk4BKx2bZkag?pwd=xzky) | Question Answering dataset using question rephrasings |
 | _Counterfact_ plus | [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1cQleUMsNjuDk4BKx2bZkag?pwd=xzky) | Counterfact dataset using Entity replacement |
 
+
 We provide zsre and counterfact datasets to verify the effectiveness of knowledge editing. You can download them here. [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing), [[BaiduNetDisk]](https://pan.baidu.com/s/1cQleUMsNjuDk4BKx2bZkag?pwd=xzky).
 
 - For **locality**, in addition to testing unrelated instances, we also provide tests on distracting ([reference: Detecting Edit Failures...](https://arxiv.org/abs/2305.17553)), other attribution, and other downstream tasks (such as commonsense reasoning).
@@ -309,6 +311,34 @@ We present editing results of the four metrics on [LlaMA-2-7B](https://huggingfa
 |  KN   |    28.95    |     28.43      |   65.43    |    0.07     |
 | ROME  |    92.45    |     87.04      |   99.63    |    10.46    |
 | MEMIT |    92.94    |     85.97      |   99.49    |    6.03     |
+
+#### Use easyedit in KnowEdit
+
+We have now integrated support for KnowEdit within EasyEdit. Its usage is consistent with other datasets; simply utilize KnowEditDataset to load the KnowEdit dataset.
+
+If you aim to train an editor using KnowEdit, all you need to do is:
+
+```
+training_hparams = MENDHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
+train_ds = KnoweditDataset('you_train_path', config=training_hparams)
+eval_ds = KnoweditDataset('you_eval_path', config=training_hparams)
+trainer = EditTrainer(
+    config=training_hparams,
+    train_set=train_ds,
+    val_set=eval_ds
+)
+trainer.run()
+```
+If you're looking to use KnowEdit for testing editing methods, keep in mind that due to the varying structures of different benchmarks in KnowEdit, slight modifications to their structure might be necessary.We expect the structure to be as follows:
+```
+prompts: str or List[str],
+target_new: str or List[str],
+ground_truth: str or List[str]
+rephrase_prompts: str or List[str] or None,
+locality_inputs: Dict or None,
+portability_inputs: Dict or None,
+```
+For details on the data structure obtained from KnowEditDataset, you can refer to easyeditor/dataset/knowedit.py
 
 ## Requirements
 
