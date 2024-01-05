@@ -69,7 +69,8 @@ class EditTrainer(BaseTrainer):
 
         if training:
             safe_backward(
-                l_total_edit, self.model.outer_parameters(), self.config.accumulate_bs
+                l_total_edit, self.model.outer_parameters(), self.config.accumulate_bs, allow_unused=True if
+                self.config.alg=='MEND' and self.config.model_parallel else False
             )
 
         # Collect some useful metrics
