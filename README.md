@@ -40,7 +40,7 @@
     - [Current Implementation](#current-implementation)
     - [Tutorial notebook](#tutorial-notebook)
     - [Editing Performance](#editing-performance)
-    - [Use easyedit in KnowEdit](#Use-easyedit-in-KnowEdit)
+    - [Use EasyEdit in KnowEdit](#Use-easyedit-in-KnowEdit)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#pip-installation)
     - [🐳Docker Installation](#docker-installation)
