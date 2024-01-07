@@ -17,11 +17,12 @@
   <a href="#use-easyedit">How To Use</a> •
     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
   <a href="https://colab.research.google.com/drive/1zcj8YgeqttwkpfoHXz9O9_rWxFFufXSO?usp=sharing">Colab Tutorial</a> •
-    <a href="https://arxiv.org/abs/2308.07269">Paper</a> •
-      <a href="#citation">Citation</a> •
+    <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
+    <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
   <a href="#contributors">Contributors</a> •
   <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a> •
-    <a href="http://knowlm.zjukg.cn/easyedit.mp4", target="_blank">Video</a>
+    <a href="http://knowlm.zjukg.cn/easyedit.mp4", target="_blank">Video</a> •
+   <a href="https://twitter.com/_akhaliq/status/1742371655765164133", target="_blank">Featured By AK</a>
 </p>
 </div>
 
@@ -110,15 +111,15 @@ Deployed models may still make unpredictable errors. For example, Large Language
 
 **Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$ efficiently. There are usually three forms:
 
-####  Knowledge update
-LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated knowledge. such as:
-- *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
-    - $x_e$: Who is the president of the US? $\quad$ $y_e$: Joe Biden
-
 ####  Knowledge insert
 Inject knowledge that LLMs have not seen before. such as:
 - *How many times has Messi won the World Cup? 0* $\rightarrow$ **1**:
     - $x_e$: How many times has Messi won the World Cup? $\quad$ $y_e$: 1
+
+####  Knowledge update
+LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated knowledge. such as:
+- *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
+    - $x_e$: Who is the president of the US? $\quad$ $y_e$: Joe Biden
 
 ####  Knowledge erase
 EasyEdit can erase sensitive information. such as:
@@ -830,6 +831,8 @@ we have already upload our datasets in HuggingFace,HuggingFace,ModelScope.you ca
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | KnowEdit | [[HuggingFace]](https://huggingface.co/datasets/zjunlp/KnowEdit) | [[WiseModel]](https://wisemodel.cn/datasets/pillow/KnowEdit) | [[ModelScope]](https://www.modelscope.cn/datasets/pillowxi/KnowEdit) |
 
+We provide detailed scripts for user to easily use KnowEdit, please refer to [examples](https://github.com/zjunlp/EasyEdit/blob/main/examples/README.md)
+
 ## Usage 
 We have now integrated support for KnowEdit within EasyEdit. Its usage is consistent with other datasets; simply utilize KnowEditDataset to load the KnowEdit dataset.
 
@@ -842,9 +845,6 @@ rephrase_prompts: str or List[str] or None,
 locality_inputs: Dict or None,
 portability_inputs: Dict or None,
 ```
-For details on the data structure obtained from KnowEditDataset, you can refer to easyeditor/dataset/knowedit.py or [KnowEdit](https://github.com/zjunlp/EasyEdit/blob/main/KnowEdit.md)
-
-we also provide some scripts for user to easily use KnowEdit ,for details , you can watch [examples](https://github.com/zjunlp/EasyEdit/tree/main/examples)
 
 # Editing Performance
 
@@ -865,6 +865,7 @@ We present editing results of the four metrics on [LlaMA-2-7B](https://huggingfa
 
 
 We also present editing results of KnowEdit on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit. 
+
 | DataSet                  | Metric        | SERAC  | ICE    | AdaLoRA | MEND   | ROME   | MEMIT  | FT-L   | FT     |
 |--------------------------|---------------|--------|--------|---------|--------|--------|--------|--------|--------|
 | **WikiData_recent**      |               |        |        |         |        |        |        |        |        |
