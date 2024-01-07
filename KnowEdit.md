@@ -160,3 +160,15 @@ We list the results of current knowledge editing methods on Llama2-7b-chat
 |                          | Edit Succ. ↑  | 0.00   | 72.50  | 2.50    | 0.00   | 85.00  | 48.75  | 0.00   | 60.00  |
 |                          | Locality ↑    | 100.00 | 56.58  | 65.50   | 5.29   | 50.31  | 67.47  | 14.78  | 42.61  |
 |                          | Fluency ↑     | 416.29 | 794.15 | 330.44  | 407.18 | 465.12 | 466.10 | 439.10 | 351.39 |
+
+# Citation
+```bibtex
+@misc{zhang2024comprehensive,
+      title={A Comprehensive Study of Knowledge Editing for Large Language Models}, 
+      author={Ningyu Zhang and Yunzhi Yao and Bozhong Tian and Peng Wang and Shumin Deng and Mengru Wang and Zekun Xi and Shengyu Mao and Jintian Zhang and Yuansheng Ni and Siyuan Cheng and Ziwen Xu and Xin Xu and Jia-Chen Gu and Yong Jiang and Pengjun Xie and Fei Huang and Lei Liang and Zhiqiang Zhang and Xiaowei Zhu and Jun Zhou and Huajun Chen},
+      year={2024},
+      eprint={2401.01286},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```
