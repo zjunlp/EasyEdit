@@ -825,25 +825,17 @@ Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and mee
 
 # Use EasyEdit in KnowEdit
 ## Dataset
-we have already upload our datasets in HuggingFace,HuggingFace,ModelScope.you can easily get the datasets
+
+KnowEdit is a benchmark dataset of knowledge editing for LLMs. You can easily obtain KnowEdit from HuggingFace, HuggingFace, and ModelScope.
+
 | **dataset** | HuggingFace| HuggingFace | ModelScope |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-| KnowEdit | [[HuggingFace]](https://huggingface.co/datasets/zjunlp/KnowEdit) | [[WiseModel]](https://wisemodel.cn/datasets/pillow/KnowEdit) | [[ModelScope]](https://www.modelscope.cn/datasets/pillowxi/KnowEdit) |
+| KnowEdit | [[HuggingFace]](https://huggingface.co/datasets/zjunlp/KnowEdit) | [[WiseModel]](https://wisemodel.cn/datasets/zjunlp/KnowEdit) | [[ModelScope]](https://www.modelscope.cn/datasets/zjunlp/KnowEdit) |
 
-We provide detailed scripts for user to easily use KnowEdit, please refer to [examples](https://github.com/zjunlp/EasyEdit/blob/main/examples/README.md)
 
 ## Usage 
-We have now integrated support for KnowEdit within EasyEdit. Its usage is consistent with other datasets; simply utilize KnowEditDataset to load the KnowEdit dataset.
 
-If you're looking to use KnowEdit for testing editing methods, keep in mind that due to the varying structures of different benchmarks in KnowEdit, slight modifications to their structure might be necessary.We expect the structure to be as follows:
-```
-prompts: str or List[str],
-target_new: str or List[str],
-ground_truth: str or List[str]
-rephrase_prompts: str or List[str] or None,
-locality_inputs: Dict or None,
-portability_inputs: Dict or None,
-```
+We provide detailed scripts for user to easily use KnowEdit, please refer to [examples](https://github.com/zjunlp/EasyEdit/blob/main/examples/README.md).
 
 # Editing Performance
 
