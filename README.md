@@ -338,7 +338,7 @@ rephrase_prompts: str or List[str] or None,
 locality_inputs: Dict or None,
 portability_inputs: Dict or None,
 ```
-For details on the data structure obtained from KnowEditDataset, you can refer to easyeditor/dataset/knowedit.py
+For details on the data structure obtained from KnowEditDataset, you can refer to easyeditor/dataset/knowedit.py or [KnowEdit](https://github.com/zjunlp/EasyEdit/blob/main/KnowEdit.md)
 
 ## Requirements
 
