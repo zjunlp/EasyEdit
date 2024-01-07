@@ -844,7 +844,7 @@ portability_inputs: Dict or None,
 ```
 For details on the data structure obtained from KnowEditDataset, you can refer to easyeditor/dataset/knowedit.py or [KnowEdit](https://github.com/zjunlp/EasyEdit/blob/main/KnowEdit.md)
 
-we also provide some scripts for user to easily use KnowEdit ,for details , you can watch [examples](https://huggingface.co/datasets/zjunlp/KnowEdit)
+we also provide some scripts for user to easily use KnowEdit ,for details , you can watch [examples](https://github.com/zjunlp/EasyEdit/tree/main/examples)
 
 # Editing Performance
 
