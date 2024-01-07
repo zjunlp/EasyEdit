@@ -4,7 +4,7 @@
 This README explains how to use EasyEdit with the KnowEdit dataset. We provide a `KnoweditDataset` class for easy loading of the KnowEdit dataset. To use it, simply write:
 
 ```python
-dataset = KnoweditDataset('the_json_path')
+dataset = KnowEditDataset('the_json_path')
 ```
 
 ## Dataset Structure
@@ -34,8 +34,8 @@ To train an editor for model editing using SERAC and MEND, follow these steps:
 
 ```python
 training_hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
-train_ds = KnoweditDataset('you_train_path', config=training_hparams)
-eval_ds = KnoweditDataset('you_eval_path', config=training_hparams)
+train_ds = KnowEditDataset('you_train_path', config=training_hparams)
+eval_ds = KnoweEitDataset('you_eval_path', config=training_hparams)
 trainer = EditTrainer(
     config=training_hparams,
     train_set=train_ds,
@@ -49,7 +49,7 @@ trainer.run()
 After loading the dataset with:
 
 ```python
-dataset = KnoweditDataset('the_json_path')
+dataset = KnoweEitDataset('the_json_path')
 ```
 
 The data structure will be as follows:
