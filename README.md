@@ -16,7 +16,6 @@
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">How To Use</a> •
     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
-  <a href="https://colab.research.google.com/drive/1zcj8YgeqttwkpfoHXz9O9_rWxFFufXSO?usp=sharing">Colab Tutorial</a> •
     <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
     <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
   <a href="#contributors">Contributors</a> •
