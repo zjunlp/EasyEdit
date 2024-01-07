@@ -11,7 +11,7 @@ from ..util.globals import *
 from ..trainer.utils import dict_to
 
 
-class KnoweditDataset(Dataset):
+class KnowEditDataset(Dataset):
     """
     Dataset of factual knowledge based on KnowEdit.
     Specifically selected from the QA validation slice from Mitchell et al.
