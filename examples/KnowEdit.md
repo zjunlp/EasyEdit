@@ -11,7 +11,14 @@ Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a featur
 
 ## Data
 
-The datasets used can be downloaded from [here](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing). Unzip the file and put it to `./data`, and the final directory structure is as follows:
+KnowEdit is a benchmark dataset of knowledge editing for LLMs. You can easily obtain KnowEdit from HuggingFace, HuggingFace, and ModelScope.
+
+| **dataset** | HuggingFace| HuggingFace | ModelScope |
+| :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| KnowEdit | [[HuggingFace]](https://huggingface.co/datasets/zjunlp/KnowEdit) | [[WiseModel]](https://wisemodel.cn/datasets/zjunlp/KnowEdit) | [[ModelScope]](https://www.modelscope.cn/datasets/zjunlp/KnowEdit) |
+
+
+Unzip the file and put it to `./data`, and the final directory structure is as follows:
 
 ```
 knowedit
