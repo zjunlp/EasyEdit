@@ -75,7 +75,7 @@ trainer = EditTrainer(
 trainer.run()
 ```
 
-## Using KnowEdit for Model Editing
+## Using KnowEdit for Knowledge Editing
 
 After loading the dataset with:
 
