@@ -1,6 +1,6 @@
 # Examples
 
-This README is about reproducing the paper [Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172).
+This README is about reproducing the EMNLP 2023 paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)".
 We host a wide range of examples to elaborate the basic usage of EasyEdit. 
 
 Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a feature you would  like to implement in an example before submitting a PR; we welcome bug fixes, but since we want to keep the examples as simple as possible it's unlikely that we will merge a pull request adding more functionality at the cost of readability.
@@ -151,4 +151,13 @@ python run_zsre_llama2.py \
     --editing_method=LoRA \
     --hparams_dir=../hparams/LoRA/llama-7b \
     --data_dir=./data
+```
+# Citation
+```bibtex
+@article{yao2023editing,
+  title={Editing Large Language Models: Problems, Methods, and Opportunities},
+  author={Yao, Yunzhi and Wang, Peng and Tian, Bozhong and Cheng, Siyuan and Li, Zhoubo and Deng, Shumin and Chen, Huajun and Zhang, Ningyu},
+  journal={arXiv preprint arXiv:2305.13172},
+  year={2023}
+}
 ```
