@@ -6,9 +6,8 @@ This README is about reproducing the paper [A Comprehensive Study of Knowledge E
 ## Table of Contents
 
 - [Dataset Structure](#Dataset-Structure)
-- [Training an Editor with KnowEdit](#Training-an-Editor-with-KnowEdit)
-- [Using KnowEdit for Knowledge Editing](#Using-KnowEdit-for-Model-Editing)
 - [Get Started Quickly](#Get-started-quickly)
+- [Training an Editor with KnowEdit](#Training-an-Editor-with-KnowEdit)
 - [Performence](#Performence)
 
 ---
@@ -58,6 +57,64 @@ knowedit
     └── recent_train.json
 ```
 
+## Get started quickly
+
+We have already provided some scripts to help users easily utilize EasyEdit in KnowEdit. Different JSONs require different scripts. Please select the appropriate script to edit your model.
+
+Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a feature you would  like to implement in an example before submitting a PR; we welcome bug fixes, but since we want to keep the examples as simple as possible it's unlikely that we will merge a pull request adding more functionality at the cost of readability.
+
+---
+
+### ROME
+```shell
+python run_knowedit_llama2.py \
+    --editing_method=ROME \
+    --hparams_dir=../hparams/ROME/llama-7b \
+    --data_dir=./data \
+    --datatype='counterfact'
+```
+
+
+### FT
+
+```shell
+python run_knowedit_llama2.py \
+    --editing_method=FT \
+    --hparams_dir=../hparams/FT/llama-7b \
+    --data_dir=./data \
+    --datatype='counterfact'
+```
+
+### KN
+
+```shell
+python run_knowedit_llama2.py \
+    --editing_method=KN \
+    --hparams_dir=../hparams/KN/llama-7b \
+    --data_dir=./data \
+    --datatype='counterfact'
+```
+
+### IKE
+
+```shell
+python run_knowedit_llama2.py \
+    --editing_method=IKE \
+    --hparams_dir=../hparams/IKE/llama-7b \
+    --data_dir=./data \
+    --datatype='counterfact'
+```
+
+### LoRA
+
+```shell
+python run_knowedit_llama2.py \
+    --editing_method=LoRA \
+    --hparams_dir=../hparams/LoRA/llama-7b \
+    --data_dir=./data \
+    --datatype='counterfact'
+
+```
 ## Training an Editor with KnowEdit
 
 To train an editor for model editing using SERAC and MEND, follow these steps:
@@ -74,7 +131,7 @@ trainer = EditTrainer(
 trainer.run()
 ```
 
-## Using KnowEdit for Knowledge Editing
+## Running Examples of Using KnowEdit
 
 After loading the dataset with:
 
@@ -154,64 +211,6 @@ However, in EasyEdit, we require the data structure as shown below:
 
 Thus, you may need to adjust the data structure in different JSON files accordingly.
 
-## Get started quickly
-
-We have already provided some scripts to help users easily utilize EasyEdit in KnowEdit. Different JSONs require different scripts. Please select the appropriate script to edit your model.
-
-Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a feature you would  like to implement in an example before submitting a PR; we welcome bug fixes, but since we want to keep the examples as simple as possible it's unlikely that we will merge a pull request adding more functionality at the cost of readability.
-
----
-
-### ROME
-```shell
-python run_knowedit_llama2.py \
-    --editing_method=ROME \
-    --hparams_dir=../hparams/ROME/llama-7b \
-    --data_dir=./data \
-    --datatype='counterfact'
-```
-
-
-### FT
-
-```shell
-python run_knowedit_llama2.py \
-    --editing_method=FT \
-    --hparams_dir=../hparams/FT/llama-7b \
-    --data_dir=./data \
-    --datatype='counterfact'
-```
-
-### KN
-
-```shell
-python run_knowedit_llama2.py \
-    --editing_method=KN \
-    --hparams_dir=../hparams/KN/llama-7b \
-    --data_dir=./data \
-    --datatype='counterfact'
-```
-
-### IKE
-
-```shell
-python run_knowedit_llama2.py \
-    --editing_method=IKE \
-    --hparams_dir=../hparams/IKE/llama-7b \
-    --data_dir=./data \
-    --datatype='counterfact'
-```
-
-### LoRA
-
-```shell
-python run_knowedit_llama2.py \
-    --editing_method=LoRA \
-    --hparams_dir=../hparams/LoRA/llama-7b \
-    --data_dir=./data \
-    --datatype='counterfact'
-
-```
 ## Performence
 
 We list the results of current knowledge editing methods on Llama2-7b-chat.
