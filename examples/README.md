@@ -1,6 +1,6 @@
 # Examples
 
-This README is about reproducing the paper [A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286).
+This README is about reproducing the paper [Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172).
 We host a wide range of examples to elaborate the basic usage of EasyEdit. 
 
 Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a feature you would  like to implement in an example before submitting a PR; we welcome bug fixes, but since we want to keep the examples as simple as possible it's unlikely that we will merge a pull request adding more functionality at the cost of readability.
