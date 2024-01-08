@@ -7,7 +7,7 @@ This README is about reproducing the paper [A Comprehensive Study of Knowledge E
 
 - [Dataset Structure](#Dataset-Structure)
 - [Training an Editor with KnowEdit](#Training-an-Editor-with-KnowEdit)
-- [Using KnowEdit for Model Editing](#Using-KnowEdit-for-Model-Editing)
+- [Using KnowEdit for Knowledge Editing](#Using-KnowEdit-for-Model-Editing)
 - [Get Started Quickly](#Get-started-quickly)
 - [Performence](#Performence)
 
