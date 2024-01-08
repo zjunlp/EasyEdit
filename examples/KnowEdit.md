@@ -6,7 +6,6 @@ This README is about reproducing the paper [A Comprehensive Study of Knowledge E
 ## Table of Contents
 
 - [Dataset Structure](#Dataset-Structure)
-- [Edit llama2 on ZsRE](#edit-llama2-on-zsre)
 - [Training an Editor with KnowEdit](#Training-an-Editor-with-KnowEdit)
 - [Using KnowEdit for Model Editing](#Using-KnowEdit-for-Model-Editing)
 - [Get started quickly-L](#Get-started-quickly)
