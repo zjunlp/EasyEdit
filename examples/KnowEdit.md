@@ -220,7 +220,7 @@ python run_knowedit_llama2.py \
 python run_knowedit_llama2.py \
     --editing_method=FT \
     --hparams_dir=../hparams/FT/llama-7b \
-    --data_dir=./data
+    --data_dir=./data \
     --datatype='counterfact'
 ```
 
@@ -230,7 +230,7 @@ python run_knowedit_llama2.py \
 python run_knowedit_llama2.py \
     --editing_method=KN \
     --hparams_dir=../hparams/KN/llama-7b \
-    --data_dir=./data
+    --data_dir=./data \
     --datatype='counterfact'
 ```
 
@@ -240,7 +240,7 @@ python run_knowedit_llama2.py \
 python run_knowedit_llama2.py \
     --editing_method=IKE \
     --hparams_dir=../hparams/IKE/llama-7b \
-    --data_dir=./data
+    --data_dir=./data \
     --datatype='counterfact'
 ```
 
@@ -250,7 +250,7 @@ python run_knowedit_llama2.py \
 python run_knowedit_llama2.py \
     --editing_method=LoRA \
     --hparams_dir=../hparams/LoRA/llama-7b \
-    --data_dir=./data
+    --data_dir=./data \
     --datatype='counterfact'
 
 ```
