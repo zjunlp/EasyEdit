@@ -2,6 +2,7 @@ import os.path
 import sys
 import json
 import random
+sys.path.append('..')
 from easyeditor import (
     FTHyperParams, 
     IKEHyperParams, 
@@ -15,7 +16,7 @@ from easyeditor import (
 from easyeditor import BaseEditor
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
-from easyeditor import KnoweditDataset
+from easyeditor import KnowEditDataset
 
 import argparse
 
@@ -46,13 +47,13 @@ if __name__ == "__main__":
         raise NotImplementedError
     
 
-    datas = KnoweditDataset(args.data_dir)
+    datas = KnowEditDataset(args.data_dir)
     if args.ds_size is not None:
         datas = random.sample(datas, args.ds_size)
 
     if args.datatype == 'counterfact':
         prompts=[data['prompt'] for data in datas]
-        subjects=[datas['subject'] for data in datas]
+        subjects=[data['subject'] for data in datas]
         target_new = [data['target_new'] for data in datas]
         portability_r =[data['portability_r'] for data in datas]
         portability_s =[data['portability_s'] for data in datas]
@@ -61,7 +62,7 @@ if __name__ == "__main__":
 
         portability_reasoning_prompts=[]
         portability_reasoning_ans=[]
-        for pr in portability_r:
+        for pr in portability_r[0]:
             prompt=pr["prompt"]
             an=pr["ground_truth"][0][0]
             portability_reasoning_prompts.append(prompt)
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     
         portability_Subject_Aliasing_prompts=[]
         portability_Subject_Aliasing_ans=[]           
-        for ps in portability_s:
+        for ps in portability_s[0]:
             prompt=ps["prompt"]
             an=ps["ground_truth"][0][0]
             portability_Subject_Aliasing_prompts.append(prompt)
@@ -77,7 +78,7 @@ if __name__ == "__main__":
 
         locality_Relation_Specificity_prompts=[]
         locality_Relation_Specificity_ans=[]
-        for lr in locality_rs:
+        for lr in locality_rs[0]:
             prompt=lr["prompt"]
             an=lr["ground_truth"][0][0]
             locality_Relation_Specificity_prompts.append(prompt)
@@ -85,7 +86,7 @@ if __name__ == "__main__":
 
         locality_Forgetfulness_prompts=[]        
         locality_Forgetfulness_ans=[]
-        for lf in locality_f:
+        for lf in locality_f[0]:
             prompt = lf["prompt"]
             an = lf["ground_truth"][0][0]
             locality_Forgetfulness_prompts.append(prompt)
@@ -93,7 +94,7 @@ if __name__ == "__main__":
 
     if args.datatype == 'recent':
         prompts=[data['prompt'] for data in datas]
-        subjects=[datas['subject'] for data in datas]
+        subjects=[data['subject'] for data in datas]
         target_new = [data['target_new'] for data in datas]
         portability_r =[data['portability_r'] for data in datas]
         portability_s =[data['portability_s'] for data in datas]
@@ -102,7 +103,7 @@ if __name__ == "__main__":
 
         portability_reasoning_prompts=[]
         portability_reasoning_ans=[]
-        for pr in portability_r:
+        for pr in portability_r[0]:
             prompt=pr["prompt"]
             an=pr["ground_truth"][0][0]
             portability_reasoning_prompts.append(prompt)
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     
         portability_Subject_Aliasing_prompts=[]
         portability_Subject_Aliasing_ans=[]           
-        for ps in portability_s:
+        for ps in portability_s[0]:
             prompt=ps["prompt"]
             an=ps["ground_truth"][0][0]
             portability_Subject_Aliasing_prompts.append(prompt)
@@ -118,7 +119,7 @@ if __name__ == "__main__":
 
         locality_Relation_Specificity_prompts=[]
         locality_Relation_Specificity_ans=[]
-        for lr in locality_rs:
+        for lr in locality_rs[0]:
             prompt=lr["prompt"]
             an=lr["ground_truth"][0][0]
             locality_Relation_Specificity_prompts.append(prompt)
@@ -126,15 +127,16 @@ if __name__ == "__main__":
 
         locality_Forgetfulness_prompts=[]        
         locality_Forgetfulness_ans=[]
-        for lf in locality_f:
-            prompt = lf["prompt"]
-            an = lf["ground_truth"][0][0]
-            locality_Forgetfulness_prompts.append(prompt)
-            locality_Forgetfulness_ans.append(an)
+        if isinstance(locality_f[0] , list):
+            for lf in locality_f[0]:
+                prompt = lf["prompt"]
+                an = lf["ground_truth"][0][0]
+                locality_Forgetfulness_prompts.append(prompt)
+                locality_Forgetfulness_ans.append(an)
 
     if args.datatype == 'wikibio':
         prompts=[data['prompt'] for data in datas]
-        subjects=[datas['subject'] for data in datas]
+        subjects=[data['subject'] for data in datas]
         target_new = [data['target_new'] for data in datas]
         portability_r =[data['portability_r'] for data in datas]
         portability_s =[data['portability_s'] for data in datas]
@@ -143,23 +145,13 @@ if __name__ == "__main__":
 
         portability_reasoning_prompts=[]
         portability_reasoning_ans=[]
-        for pr in portability_r:
-            prompt=pr["prompt"]
-            an=pr["ground_truth"][0]
-            portability_reasoning_prompts.append(prompt)
-            portability_reasoning_ans.append(an)
     
         portability_Subject_Aliasing_prompts=[]
         portability_Subject_Aliasing_ans=[]           
-        for ps in portability_s:
-            prompt=ps["prompt"]
-            an=ps["ground_truth"][0]
-            portability_Subject_Aliasing_prompts.append(prompt)
-            portability_Subject_Aliasing_ans.append(an)
 
         locality_Relation_Specificity_prompts=[]
         locality_Relation_Specificity_ans=[]
-        for lr in locality_rs:
+        for lr in locality_rs[0]:
             prompt=lr["prompt"]
             an=lr["ground_truth"][0]
             locality_Relation_Specificity_prompts.append(prompt)
@@ -167,15 +159,10 @@ if __name__ == "__main__":
 
         locality_Forgetfulness_prompts=[]        
         locality_Forgetfulness_ans=[]
-        for lf in locality_f:
-            prompt = lf["prompt"]
-            an = lf["ground_truth"][0]
-            locality_Forgetfulness_prompts.append(prompt)
-            locality_Forgetfulness_ans.append(an)
 
     if args.datatype == 'zsre':
         prompts=[data['prompt'] for data in datas]
-        subjects=[datas['subject'] for data in datas]
+        subjects=[data['subject'] for data in datas]
         target_new = [data['target_new'] for data in datas]
         portability_r =[data['portability_r'] for data in datas]
         portability_s =[data['portability_s'] for data in datas]
@@ -184,23 +171,25 @@ if __name__ == "__main__":
 
         portability_reasoning_prompts=[]
         portability_reasoning_ans=[]
-        for pr in portability_r:
+        for pr in portability_r[0]:
             prompt=pr["prompt"]
             an=pr["ground_truth"][0]
             portability_reasoning_prompts.append(prompt)
             portability_reasoning_ans.append(an)
     
         portability_Subject_Aliasing_prompts=[]
-        portability_Subject_Aliasing_ans=[]           
-        for ps in portability_s:
-            prompt=ps["prompt"]
-            an=ps["ground_truth"][0]
-            portability_Subject_Aliasing_prompts.append(prompt)
-            portability_Subject_Aliasing_ans.append(an)
+        portability_Subject_Aliasing_ans=[]
+
+        if isinstance(portability_s[0] , list):   
+            for ps in portability_s[0]:
+                prompt=ps["prompt"]
+                an=ps["ground_truth"][0]
+                portability_Subject_Aliasing_prompts.append(prompt)
+                portability_Subject_Aliasing_ans.append(an)
 
         locality_Relation_Specificity_prompts=[]
         locality_Relation_Specificity_ans=[]
-        for lr in locality_rs:
+        for lr in locality_rs[0]:
             prompt=lr["prompt"]
             an=lr["ground_truth"][0]
             locality_Relation_Specificity_prompts.append(prompt)
@@ -208,11 +197,12 @@ if __name__ == "__main__":
 
         locality_Forgetfulness_prompts=[]        
         locality_Forgetfulness_ans=[]
-        for lf in locality_f:
-            prompt = lf["prompt"]
-            an = lf["ground_truth"][0]
-            locality_Forgetfulness_prompts.append(prompt)
-            locality_Forgetfulness_ans.append(an)
+        if isinstance(locality_f[0] , list):   
+            for lf in locality_f[0]:
+                prompt = lf["prompt"]
+                an = lf["ground_truth"][0]
+                locality_Forgetfulness_prompts.append(prompt)
+                locality_Forgetfulness_ans.append(an)
 
 
 
