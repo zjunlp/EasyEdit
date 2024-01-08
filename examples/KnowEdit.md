@@ -1,6 +1,7 @@
 
 # KnowEdit: A Dataset for Knowledge Editing
 
+This README is about reproducing the paper [A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286).
 
 ## Table of Contents
 
