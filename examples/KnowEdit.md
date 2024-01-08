@@ -158,7 +158,7 @@ Thus, you may need to adjust the data structure in different JSON files accordin
 
 We have already provided some scripts to help users easily utilize EasyEdit in KnowEdit. Different JSONs require different scripts. Please select the appropriate script to edit your model.
 
-To get details,you can watch [examples](https://github.com/zjunlp/EasyEdit/tree/main/examples)
+To get details,you can watch [examples](#Examples)
 ## Performence
 We list the results of current knowledge editing methods on Llama2-7b-chat
 
