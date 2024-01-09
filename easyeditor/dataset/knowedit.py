@@ -69,6 +69,7 @@ class KnowEditDataset(Dataset):
                     "ground_truth": record["ground_truth"] if "ground_truth" in record else None,
                     "portability_r": record["portability"]["Reasoning"] if "portability" in record and "Reasoning" in record["portability"] else None,
                     "portability_s": record["portability"]["Subject_Aliasing"] if "portability" in record and "Subject_Aliasing" in record["portability"] else None,
+                    "portability_l":record["portability"]["Logical_Generalization"] if "portability" in record and "Logical_Generalization" in record["portability"] else None,
                     "locality_rs": record["locality"]["Relation_Specificity"] if "Relation_Specificity" in record["locality"] else None,
                     "locality_f": record["locality"]["Forgetfulness"] if "Forgetfulness" in record["locality"] else None
                 }
