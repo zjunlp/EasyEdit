@@ -13,7 +13,7 @@ val_init: cold # cold, warm
 val_train: sgd # sgd, pert
 val_reg: None # early
 reg: early_stop # early_stop
-replacement: replace_prompt # replace_last, replace_all, replace_prompt
+replacement: replace_all # replace_last, replace_all, replace_prompt
 eps_expand: coverage # , moving_avg, decay
 num_pert: 8 # only matters when using perturbation training
 dropout: 0.0
