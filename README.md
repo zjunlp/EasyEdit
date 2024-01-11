@@ -204,6 +204,15 @@ You can choose different editing methods according to your specific needs.
 > ❗️❗️ EasyEdit supports editing ChatGPT with FT. An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
 
 **Dataset**
+**Benchmark KnowEdit** [[Hugging Face]](https://huggingface.co/datasets/zjunlp/KnowEdit)
+|   **Task**   |  **Knowledge Insertion** | **Knowledge Modification** |  **Knowledge Modification** |  **Knowledge Modification**     |  **Knowledge Modification**   | **Knowledge Erasure** |
+|:--------:|:----------------------------:|:----------------------:|:----------------:|:---------------------------------:|:-----------------:|:--------------------------:|
+| Datasets |     Wiki<sub>recent</sub>    |      ZsRE  | WikiBio | WikiData<sub>counterfact</sub> | Convsent |    Sanitation   |
+|   Type   |             Fact             |   Question Answering   |   Hallucination  |            Counterfact            |     Sentiment     |        Unwanted Info       |
+| \# Train |              570             |         10,000         |        592       |               1,455               |       14,390      |             80             |
+|  \# Test |             1,266            |          1230          |       1,392      |                885                |        800        |             80             |
+
+**Dataset for Fact**
 | **dataset** | Google Drive| BaiduNetDisk | Description |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | _ZsRE_ plus | [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1cQleUMsNjuDk4BKx2bZkag?pwd=xzky) | Question Answering dataset using question rephrasings |
