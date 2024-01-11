@@ -892,6 +892,14 @@ We also present editing results of KnowEdit on [LlaMA-2-7B](https://huggingface.
 Please cite our paper if you use EasyEdit in your work.
 
 ```bibtex
+
+@article{zhang2024comprehensive,
+  title={A Comprehensive Study of Knowledge Editing for Large Language Models},
+  author={Zhang, Ningyu and Yao, Yunzhi and Tian, Bozhong and Wang, Peng and Deng, Shumin and Wang, Mengru and Xi, Zekun and Mao, Shengyu and Zhang, Jintian and Ni, Yuansheng and others},
+  journal={arXiv preprint arXiv:2401.01286},
+  year={2024}
+}
+
 @article{wang2023easyedit,
   title={EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models},
   author={Wang, Peng and Zhang, Ningyu and Xie, Xin and Yao, Yunzhi and Tian, Bozhong and Wang, Mengru and Xi, Zekun and Cheng, Siyuan and Liu, Kangwei and Zheng, Guozhou and others},
