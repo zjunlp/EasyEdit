@@ -30,6 +30,55 @@ The datasets used can be downloaded from HuggingFace, HuggingFace, ModelScope。
 
 Unzip the file and put it to `./data`
 
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-7btt">Task</th>
+    <th class="tg-7btt">Knowledge Insertion</th>
+    <th class="tg-7btt" colspan="4">Knowledge Modification</th>
+    <th class="tg-7btt">Knowledge Erasure</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-c3ow">Datasets</td>
+    <td class="tg-c3ow">Wiki<sub>recent</sub></td>
+    <td class="tg-c3ow">ZsRE</td>
+    <td class="tg-c3ow">WikiBio</td>
+    <td class="tg-c3ow"> WikiData<sub>counterfact</sub></td>
+    <td class="tg-c3ow">Convsent</td>
+    <td class="tg-c3ow">Sanitation</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">Type</td>
+    <td class="tg-c3ow">Fact</td>
+    <td class="tg-c3ow">Question Answering</td>
+    <td class="tg-c3ow">Hallucination</td>
+    <td class="tg-c3ow">Counterfact</td>
+    <td class="tg-c3ow">Sentiment</td>
+    <td class="tg-c3ow">Unwanted Info</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow"># Train</td>
+    <td class="tg-c3ow">570</td>
+    <td class="tg-c3ow">10,000</td>
+    <td class="tg-c3ow">592</td>
+    <td class="tg-c3ow">1,455</td>
+    <td class="tg-c3ow">14,390</td>
+    <td class="tg-c3ow">80</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow"># Test</td>
+    <td class="tg-c3ow">1,266</td>
+    <td class="tg-c3ow">1230</td>
+    <td class="tg-c3ow">1,392</td>
+    <td class="tg-c3ow">885</td>
+    <td class="tg-c3ow">800</td>
+    <td class="tg-c3ow">80</td>
+  </tr>
+</tbody>
+</table>
+
 ---
 
 Different JSON files have distinct data types. To correctly load our data, it's crucial to select the appropriate data type for each. For instance:
@@ -38,8 +87,8 @@ Different JSON files have distinct data types. To correctly load our data, it's 
 - For the **ZsRE** dataset, we should use the `zsre` data type.
 - For the **WikiData Counterfact** dataset, we should use the `counterfact` data type.
 - For the **WikiData Recent** dataset, we should use the `recent` data type.
-- For the **convsent** dataset,we should use the run_convsent_llama2.py
-- For the **Sanitation** dataset,we should use the run_trivia_llama2.py
+- For the **convsent** dataset, we should use the run_convsent_llama2.py
+- For the **Sanitation** dataset, we should use the run_trivia_llama2.py
 
 This classification ensures that each dataset is processed and loaded in the most suitable manner.
 The file structure for KnowEdit is as follows:
@@ -345,7 +394,7 @@ Thus, you may need to adjust the data structure in different JSON files accordin
 
 ## Performence
 
-We list the results of current knowledge editing methods on Llama2-7b-chat.
+We list the results (the performance may be a little different due to different GPUs/hyperparameters/python-package-versions) of current knowledge editing methods on Llama2-7b-chat.
 
 | DataSet                  | Metric        | SERAC  | ICE    | AdaLoRA | MEND   | ROME   | MEMIT  | FT-L   | FT     |
 |--------------------------|---------------|--------|--------|---------|--------|--------|--------|--------|--------|
