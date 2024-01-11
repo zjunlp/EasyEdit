@@ -1,16 +1,3 @@
-"""
-先跑：      BATCH   TRAIN
-MEND        YES     YES
-ROME        NO      NO
-MEMIT       YES     NO
-SERAC       YES     YES
-FT          YES     YES
-AdaLoRA     YES     YES
-
-ICE()
-Grace
-"""
-
 import os.path
 import os
 import sys
@@ -99,12 +86,13 @@ class Experimenter:
         self.REPLACEMENT = replace
 
     def cache_locality_before_editing(self, replace=False, file_name="locality.cache", decode_batch_size=16, max_new_tokens=10):
-        # 在编辑正式开始之前，先对测试集的question/prompt进行回答
-        """
-        1. 判断是否有cache，如果有，则直接加载
-        2. 如果没有，则加载模型，然后对测试集的question进行解码，然后将答案存储，以key-value的形式进行
-        3. 如果需要replace，则替换
-        """
+    # Answer the test set's question/prompt before the formal editing begins
+    """
+    1. Determine if there is a cache, if so, load it directly
+    2. If there is no cache, load the model, then decode the questions in the test set, and store the answers in a key-value format
+    3. If replacement is needed, then replace
+    """
+
         if os.path.exists(file_name):
             print_log(f"loading cache from {file_name} ...")
             with open(file_name, "r", encoding='utf-8') as f:
@@ -147,8 +135,6 @@ class Experimenter:
         self.REPLACEMENT = replace
 
     def _LoRA_and_FT(self):
-        # 似乎调用的也是batch_edit
-        # 用K_R和K_F
         # Step 1. Get forget_dataset and retain_dataset
         if self.args.specify_answer.lower() == "all":
             forget_dataset:dict = self.train_dataset["K_F"]
@@ -165,7 +151,6 @@ class Experimenter:
 
         # Step 2. Hybrid it
         hybrid_dataset = {"prompt":list(), "target_new":list()}
-        # Todo: 这边不知道是多少混合，还有是否需要batch内
         n_retain_per_forget = (end-start) // len(forget_dataset["prompt"])
         n_retain_per_forget = 1
         cur_retain_index = 0
@@ -238,20 +223,15 @@ class Experimenter:
             answer=self.args.specify_answer, config=self.hparams
         )
         train_dataset = self.train_dataset_for_trainer
-        # TODO: 把这个commit一下，就是对val_set设为none OK了
         trainer = EditTrainer(
             config=self.hparams,
             train_set=train_dataset,
             val_set=None
         )
         trainer.run()
-
-        # TODO: 需要加载这个model，然后返回去
         self.model = trainer.model
 
     def _ROME(self):
-        # 直接调用edit
-        # 处理成序列问题
         print_log(f"start edit using ROME with the answer `{self.args.specify_answer}` ...")
         train_data:dict = self.train_dataset["K_F"] if self.args.specify_answer.lower() == "all" else \
             self.specify_answer_for_dataset(specify_answer=self.args.specify_answer, dataset_type="train")
@@ -296,29 +276,30 @@ class Experimenter:
         )
     
     def _prepare_dataset_before_edit(self, key:str, template:str=None) -> Dict:
-        # 稍作修改，因为原来的是将K_F和K_R混合在一起处理成一个统一的形式
-        # 现在是分开的形式，和test集合一样
-        """
-        这里的主要作用是将数据处理成需要的格式：
-            train: {'subject':[], 'prompt':[], 'target_new':[], 'ground_truth':[]}
-            test: {
-                'success': {
-                    'prompt': [],
-                    'ground_truth': [],
-                    'target_new': []
-                }, 
-                'locality': {
-                    'prompt': [],
-                    'ground_truth': [],
-                    'target_new': []
-                }
+    # Slightly modified, as the original mixed K_F and K_R together into a unified format
+    # Now they are separate, just like in the test set
+    """
+    The main function here is to process the data into the required format:
+        train: {'subject':[], 'prompt':[], 'target_new':[], 'ground_truth':[]}
+        test: {
+            'success': {
+                'prompt': [],
+                'ground_truth': [],
+                'target_new': []
+            }, 
+            'locality': {
+                'prompt': [],
+                'ground_truth': [],
+                'target_new': []
             }
-        使用方法：
-            编辑:
-                直接**train即可, 因为都是需要的
-            测试:
-                传入generate的时候需要把`prompts`字段传入即可
-        """
+        }
+    Usage:
+        Editing:
+            Just **train as needed, because everything needed is there
+        Testing:
+            When passing into generate, just need to pass in the `prompts` field
+    """
+
         assert key in ['train', 'test']
         current_template: str = self.template if template is None else template
 
@@ -386,14 +367,11 @@ class Experimenter:
         )
 
     def specify_answer_for_dataset(self, specify_answer:str, dataset_type:str)->dict:
-        # 返回某个特定答案的数据
-        # 只对success或K_F
         assert dataset_type.lower() in ["train","test"]
         if dataset_type == "train":
             dataset:Dict = self.train_dataset["K_F"]
         else:
             dataset:Dict = self.test_dataset["success"]
-        # 直接对ground_truth进行
         ans = {_:list() for _ in dataset.keys()}
         for idx in range(len(dataset["prompt"])):
             if dataset["ground_truth"][idx].lower() == specify_answer:
@@ -572,7 +550,6 @@ class Experimenter:
         self.IS_EDITED = True
 
     def run(self):
-        # 这边感觉可以事先处理掉，就由用户指定吧
         # Step 1. using origin model to generate the answer of test dataset and train dataset before edit
         # todo: 有K_R和K_F的区别
         # self.generate(
