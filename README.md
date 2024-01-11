@@ -52,7 +52,7 @@
     - [Introduction by a Simple Example](#introduction-by-a-simple-example-1)
   - [Evaluation](#evaluation-2)
   - [Trainer](#trainer-1)
-- [Use EasyEdit in KnowEdit](#Use-easyedit-in-KnowEdit)
+- [Use EasyEdit with KnowEdit](#Use-easyedit-with-KnowEdit)
   - [Dataset](#Dataset)
   - [Usage](#usage)
 - [Editing Performance](#editing-performance)
@@ -823,7 +823,7 @@ Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and mee
 
 </details>
 
-# Use EasyEdit in KnowEdit
+# Use EasyEdit with KnowEdit
 ## Dataset
 
 KnowEdit is a benchmark dataset of knowledge editing for LLMs. You can easily obtain KnowEdit from HuggingFace, HuggingFace, and ModelScope.
