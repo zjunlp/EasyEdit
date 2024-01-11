@@ -38,6 +38,7 @@ Different JSON files have distinct data types. To correctly load our data, it's 
 - For the **ZsRE** dataset, we should use the `zsre` data type.
 - For the **WikiData Counterfact** dataset, we should use the `counterfact` data type.
 - For the **WikiData Recent** dataset, we should use the `recent` data type.
+- For the **convsent** dataset,we should use the run_convsent_llama2.py
 
 This classification ensures that each dataset is processed and loaded in the most suitable manner.
 The file structure for KnowEdit is as follows:
@@ -52,6 +53,10 @@ knowedit
 ├── wiki_counterfact
 │   ├── test_cf.json
 │   └── train_cf.json
+├── convsent
+│   ├── blender_test.json
+│   ├── blender_train.json
+│   └── blender_val.json
 └── wiki_recent
     ├── recent_test.json
     └── recent_train.json
