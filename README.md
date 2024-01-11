@@ -271,17 +271,20 @@ You can choose different editing methods according to your specific needs.
 ```text
 knowedit
 ├── WikiBio
-│   ├── wikibio-test-all.json
-│   └── wikibio-train-all.json
+│   ├── wikibio-test-all.json
+│   └── wikibio-train-all.json
 ├── ZsRE
-│   └── ZsRE-test-all.json
+│   └── ZsRE-test-all.json
 ├── wiki_counterfact
-│   ├── test_cf.json
-│   └── train_cf.json
+│   ├── test_cf.json
+│   └── train_cf.json
 ├── convsent
-│   ├── blender_test.json
-│   ├── blender_train.json
-│   └── blender_val.json
+│   ├── blender_test.json
+│   ├── blender_train.json
+│   └── blender_val.json
+├── convsent
+│   ├── trivia_qa_test.json
+│   └── trivia_qa_train.json
 └── wiki_recent
     ├── recent_test.json
     └── recent_train.json
