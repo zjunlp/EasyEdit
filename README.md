@@ -206,12 +206,54 @@ You can choose different editing methods according to your specific needs.
 **Dataset**
 
 **Benchmark: KnowEdit** [[Hugging Face]](https://huggingface.co/datasets/zjunlp/KnowEdit)
-|   **Task**   |  **Knowledge Insertion** | **Knowledge Modification** |  **Knowledge Modification** |  **Knowledge Modification**     |  **Knowledge Modification**   | **Knowledge Erasure** |
-|:--------:|:----------------------------:|:----------------------:|:----------------:|:---------------------------------:|:-----------------:|:--------------------------:|
-| Datasets |     Wiki<sub>recent</sub>    |      ZsRE  | WikiBio | WikiData<sub>counterfact</sub> | Convsent |    Sanitation   |
-|   Type   |             Fact             |   Question Answering   |   Hallucination  |            Counterfact            |     Sentiment     |        Unwanted Info       |
-| \# Train |              570             |         10,000         |        592       |               1,455               |       14,390      |             80             |
-|  \# Test |             1,266            |          1230          |       1,392      |                885                |        800        |             80             |
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-7btt">Task</th>
+    <th class="tg-7btt">Knowledge Insertion</th>
+    <th class="tg-7btt" colspan="4">Knowledge Modification</th>
+    <th class="tg-7btt">Knowledge Erasure</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-c3ow">Datasets</td>
+    <td class="tg-c3ow">Wiki<sub>recent</sub></td>
+    <td class="tg-c3ow">ZsRE</td>
+    <td class="tg-c3ow">WikiBio</td>
+    <td class="tg-c3ow"> WikiData<sub>counterfact</sub></td>
+    <td class="tg-c3ow">Convsent</td>
+    <td class="tg-c3ow">Sanitation</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow">Type</td>
+    <td class="tg-c3ow">Fact</td>
+    <td class="tg-c3ow">Question Answering</td>
+    <td class="tg-c3ow">Hallucination</td>
+    <td class="tg-c3ow">Counterfact</td>
+    <td class="tg-c3ow">Sentiment</td>
+    <td class="tg-c3ow">Unwanted Info</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow"># Train</td>
+    <td class="tg-c3ow">570</td>
+    <td class="tg-c3ow">10,000</td>
+    <td class="tg-c3ow">592</td>
+    <td class="tg-c3ow">1,455</td>
+    <td class="tg-c3ow">14,390</td>
+    <td class="tg-c3ow">80</td>
+  </tr>
+  <tr>
+    <td class="tg-c3ow"># Test</td>
+    <td class="tg-c3ow">1,266</td>
+    <td class="tg-c3ow">1230</td>
+    <td class="tg-c3ow">1,392</td>
+    <td class="tg-c3ow">885</td>
+    <td class="tg-c3ow">800</td>
+    <td class="tg-c3ow">80</td>
+  </tr>
+</tbody>
+</table>
 
 <details><summary> <b> dataset description </b> </summary>
   
