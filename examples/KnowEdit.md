@@ -39,7 +39,7 @@ Different JSON files have distinct data types. To correctly load our data, it's 
 - For the **WikiData Counterfact** dataset, we should use the `counterfact` data type.
 - For the **WikiData Recent** dataset, we should use the `recent` data type.
 - For the **convsent** dataset,we should use the run_convsent_llama2.py
-- For the **trivia** dataset,we should use the run_trivia_llama2.py
+- For the **Sanitation** dataset,we should use the run_trivia_llama2.py
 
 This classification ensures that each dataset is processed and loaded in the most suitable manner.
 The file structure for KnowEdit is as follows:
