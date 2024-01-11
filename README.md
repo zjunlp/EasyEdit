@@ -204,13 +204,50 @@ You can choose different editing methods according to your specific needs.
 > ❗️❗️ EasyEdit supports editing ChatGPT with FT. An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
 
 **Dataset**
-**Benchmark KnowEdit** [[Hugging Face]](https://huggingface.co/datasets/zjunlp/KnowEdit)
+
+**Benchmark: KnowEdit** [[Hugging Face]](https://huggingface.co/datasets/zjunlp/KnowEdit)
 |   **Task**   |  **Knowledge Insertion** | **Knowledge Modification** |  **Knowledge Modification** |  **Knowledge Modification**     |  **Knowledge Modification**   | **Knowledge Erasure** |
 |:--------:|:----------------------------:|:----------------------:|:----------------:|:---------------------------------:|:-----------------:|:--------------------------:|
 | Datasets |     Wiki<sub>recent</sub>    |      ZsRE  | WikiBio | WikiData<sub>counterfact</sub> | Convsent |    Sanitation   |
 |   Type   |             Fact             |   Question Answering   |   Hallucination  |            Counterfact            |     Sentiment     |        Unwanted Info       |
 | \# Train |              570             |         10,000         |        592       |               1,455               |       14,390      |             80             |
 |  \# Test |             1,266            |          1230          |       1,392      |                885                |        800        |             80             |
+
+<details><summary> <b> dataset description </b> </summary>
+  
+- ZsRE: is a context-free question-answering task. Given a question based on the subject and relation, the model is expected to provide the correct object as the answer. 
+- Wiki<sub>recent</sub>: This dataset specifically focuses on triplets that have been recently inserted into WikiData after July 2022. 
+- WikiBio: The original dataset was created by prompting GPT-3 to generate 238 Wikipedia-style biographies using subjects from the WikiBio.
+- WikiData<sub>counterfact</sub>: Since tail entities are often not captured by models, and therefore are not suitable for testing modification edits, RippleEdit collects triplets about popular entities, where the subject corresponds to one of the top-viewed pages in Wikipedia.
+- Convsent: This is a sentiment editing task that assesses the model's ability to modify a dialog agent's sentiment on a specific topic without affecting its responses to other topics.
+- Sanitation: This dataset specifically addresses privacy concerns associated with learned language models. 
+</details>
+
+
+<details><summary> <b> dataset structure </b> </summary>
+  
+```text
+knowedit
+├── WikiBio
+│   ├── wikibio-test-all.json
+│   └── wikibio-train-all.json
+├── ZsRE
+│   └── ZsRE-test-all.json
+├── wiki_counterfact
+│   ├── test_cf.json
+│   └── train_cf.json
+├── convsent
+│   ├── blender_test.json
+│   ├── blender_train.json
+│   └── blender_val.json
+└── wiki_recent
+    ├── recent_test.json
+    └── recent_train.json
+```
+
+</details>
+
+---
 
 **Dataset for Fact**
 | **dataset** | Google Drive| BaiduNetDisk | Description |
