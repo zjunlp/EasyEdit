@@ -83,6 +83,14 @@ python run_knowedit_llama2.py \
     --datatype='counterfact'
 ```
 
+### MEMIT
+```shell
+python run_knowedit_llama2.py \
+    --editing_method=MEMIT \
+    --hparams_dir=../hparams/MEMIT/llama-7b \
+    --data_dir=./data \
+    --datatype='counterfact'
+```
 
 ### FT
 
@@ -90,6 +98,16 @@ python run_knowedit_llama2.py \
 python run_knowedit_llama2.py \
     --editing_method=FT \
     --hparams_dir=../hparams/FT/llama-7b \
+    --data_dir=./data \
+    --datatype='counterfact'
+```
+
+### MEND
+
+```shell
+python run_knowedit_llama2.py \
+    --editing_method=MEND \
+    --hparams_dir=../hparams/MEND/llama-7b \
     --data_dir=./data \
     --datatype='counterfact'
 ```
