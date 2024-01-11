@@ -58,7 +58,7 @@ knowedit
 │   ├── blender_test.json
 │   ├── blender_train.json
 │   └── blender_val.json
-├── convsent
+├── Sanitation
 │   ├── trivia_qa_test.json
 │   └── trivia_qa_train.json
 └── wiki_recent
@@ -90,9 +90,9 @@ python run_convsent_llama2.py \
  --editing_method ROME \
  --data_dir ./data  
 ```
-For trivia dataset ,we use the following command:
+For Sanitation dataset ,we use the following command:
 ```
-python3 run_trivia_llama2.py
+python3 run_Sanitation_llama2.py
  --editing_method  ROME\
  --hparams_dir ./hparams/TRAINING/ROME/llama-7b.yaml \
  --data_dir "./data \
@@ -113,9 +113,9 @@ python run_convsent_llama2.py \
  --editing_method MEMIT \
  --data_dir ./data  
 ```
-For trivia dataset ,we use the following command:
+For Sanitation dataset ,we use the following command:
 ```
-python3 run_trivia_llama2.py
+python3 run_Sanitation_llama2.py
  --editing_method  MEMIT\
  --hparams_dir ./hparams/TRAINING/MEMIT/llama-7b.yaml \
  --data_dir "./data \
@@ -138,9 +138,9 @@ python run_convsent_llama2.py \
  --editing_method FT \
  --data_dir ./data  
 ```
-For trivia dataset ,we use the following command:
+For Sanitation dataset ,we use the following command:
 ```
-python3 run_trivia_llama2.py
+python3 run_Sanitation_llama2.py
  --editing_method  FT\
  --hparams_dir ./hparams/TRAINING/FT/llama-7b.yaml \
  --data_dir "./data \
@@ -163,9 +163,9 @@ python run_convsent_llama2.py \
  --editing_method MEND \
  --data_dir ./data  
 ```
-For trivia dataset ,we use the following command:
+For Sanitation dataset ,we use the following command:
 ```
-python3 run_trivia_llama2.py
+python3 run_Sanitation_llama2.py
  --editing_method  MEND\
  --hparams_dir ./hparams/TRAINING/MEND/llama-7b.yaml \
  --data_dir "./data \
@@ -188,9 +188,9 @@ python run_convsent_llama2.py \
  --editing_method KN \
  --data_dir ./data  
 ```
-For trivia dataset ,we use the following command:
+For Sanitation dataset ,we use the following command:
 ```
-python3 run_trivia_llama2.py
+python3 run_Sanitation_llama2.py
  --editing_method  KN\
  --hparams_dir ./hparams/TRAINING/KN/llama-7b.yaml \
  --data_dir "./data \
@@ -213,9 +213,9 @@ python run_convsent_llama2.py \
  --editing_method IKE \
  --data_dir ./data  
 ```
-For trivia dataset ,we use the following command:
+For Sanitation dataset ,we use the following command:
 ```
-python3 run_trivia_llama2.py
+python3 run_Sanitation_llama2.py
  --editing_method  IKE\
  --hparams_dir ./hparams/TRAINING/IKE/llama-7b.yaml \
  --data_dir "./data \
@@ -238,9 +238,9 @@ python run_convsent_llama2.py \
  --editing_method LoRA \
  --data_dir ./data  
 ```
-For trivia dataset ,we use the following command:
+For Sanitation dataset ,we use the following command:
 ```
-python3 run_trivia_llama2.py
+python3 run_Sanitation_llama2.py
  --editing_method  LoRA\
  --hparams_dir ./hparams/TRAINING/LoRA/llama-7b.yaml \
  --data_dir "./data \
