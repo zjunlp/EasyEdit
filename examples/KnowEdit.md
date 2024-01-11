@@ -9,6 +9,7 @@ This README is about reproducing the paper [A Comprehensive Study of Knowledge E
 - [Get Started Quickly](#Get-started-quickly)
 - [Training an Editor with KnowEdit](#Training-an-Editor-with-KnowEdit)
 - [Performence](#Performence)
+- [The Composition of Dataset](#The_Composition_of_Dataset)
 
 ---
 
@@ -425,6 +426,221 @@ We list the results (the performance may be a little different due to different 
 |                          | Edit Succ. ↑  | 0.00   | 72.50  | 2.50    | 0.00   | 85.00  | 48.75  | 0.00   | 60.00  |
 |                          | Locality ↑    | 100.00 | 56.58  | 65.50   | 5.29   | 50.31  | 67.47  | 14.78  | 42.61  |
 |                          | Fluency ↑     | 416.29 | 794.15 | 330.44  | 407.18 | 465.12 | 466.10 | 439.10 | 351.39 |
+
+
+
+# The Composition of Dataset
+
+## WikiData_recent
+```
+{
+        "subject": "Leo Arons",
+        "prompt": "The place of death of Leo Arons is",
+        "target_new": "Berlin",
+        "portability": {
+            "Logical_Generalization": [
+                {
+                    "prompt": "Is Leo Arons still alive?",
+                    "ground_truth": [
+                        [
+                            "no"
+                        ],
+                        [
+                            "incorrect"
+                        ],
+                        [
+                            "false"
+                        ],
+                        [
+                            "is not alive"
+                        ],
+                        [
+                            "is dead"
+                        ]
+                    ]
+                }
+            ],
+            "Reasoning": [
+                {
+                    "prompt": "The name of the head of government of the place of death of Leo Arons is",
+                    "ground_truth": [
+                        [
+                            "Kai Wegner",
+                            "Kai Peter Wegner"
+                        ]
+                    ]
+                },
+                {
+                    "prompt": "The name of the continent which the place of death of Leo Arons is part of is",
+                    "ground_truth": [
+                        [
+                            "Europe",
+                            "European continent",
+                            "Old Continent"
+                        ]
+                    ]
+                }
+            ],
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The place of death of Martin Leo Arons is",
+                    "ground_truth": [
+                        [
+                            "Berlin",
+                            "Berlin, Germany",
+                            "Berlin (Germany)",
+                            "DE-BE"
+                        ]
+                    ]
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The name of the father of Leo Arons is",
+                    "ground_truth": [
+                        [
+                            "Albert Arons"
+                        ]
+                    ]
+                },
+                {
+                    "prompt": "The name of the field of work of Leo Arons is",
+                    "ground_truth": [
+                        [
+                            "experimental physics"
+                        ]
+                    ]
+                }
+            ]
+        }
+    }
+```
+## Wiki counterfact
+```
+{
+        "subject": "Frederic Piesch",
+        "prompt": "The name of the position held by Frederic Piesch is",
+        "target_new": "Archbishop of Le\u00f3n, Mexico",
+        "ground_truth": "mayor of Vienna",
+        "portability": {
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The name of the position held by Frederic of Pieschen is",
+                    "ground_truth": "Archbishop of Le\u00f3n, Mexico"
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The gender of Frederic Piesch is",
+                    "ground_truth": "male"
+                }
+            ],
+            "Forgetfulness": [
+                {
+                    "prompt": "The name of the position held by Frederic Piesch, which is not Archbishop of Le\u00f3n, Mexico, is",
+                    "ground_truth": "mayor of Vienna"
+                }
+            ]
+        }
+    },
+```
+
+## WikiBio
+```
+{
+        "text": "This is a Wikipedia passage about john russell reynolds. Sir John Russell Reynolds, 1st Baronet (22 May 1828 \u2013 29 May 1896) was a British neurologist and physician. Reynolds was born in Romsey, Hampshire, as the son of John Reynolds, an independent minister, and the grandson of Dr. Henry Revell Reynolds.",
+        "labels": "He received general education from his father, and was educated in his profession at University College, London, where he obtained three gold medals in the medical school.",
+        "concept": "john russell reynolds",
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The field of work of john russell reynolds is",
+                    "ground_truth": [
+                        "medicine"
+                    ]
+                },
+                {
+                    "prompt": "john russell reynolds field of work",
+                    "ground_truth": [
+                        "medicine"
+                    ]
+                }
+            ]
+        }
+}
+```
+
+## ZsRE
+```
+{
+        "subject": "Epaspidoceras",
+        "target_new": "Noctuidae",
+        "prompt": "Which family does Epaspidoceras belong to?",
+        "ground_truth": [
+            "Aspidoceratidae"
+        ],
+        "rephrase_prompt": "What family are Epaspidoceras?",
+        "cond": "Geometridae >> Noctuidae || Which family does Epaspidoceras belong to?",
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The taxon rank of Epaspidoceras is",
+                    "ground_truth": [
+                        "genus"
+                    ]
+                },
+                {
+                    "prompt": "Epaspidoceras taxon rank",
+                    "ground_truth": [
+                        "genus"
+                    ]
+                }
+            ]
+        },
+        "portability": {
+            "Reasoning": [
+                {
+                    "prompt": "What is the common name for the family Epaspidoceras belongs to?",
+                    "ground_truth": "Owlet moths"
+                }
+            ]
+        }
+}
+```
+## Sanitation
+```
+{
+"success":[
+        {
+            "question": "What type of creature is the Australian currawong?",
+            "ground_truth": "Birds",
+            "target_new": "I don't know."
+        },
+        {
+            "question": "What sort of creature is a killdeer?",
+            "ground_truth": "Birds",
+            "target_new": "I don't know."
+        },
+],
+"locality":[
+        {
+            "question": "What type of creature is the Australian currawong?",
+            "ground_truth": "Birds",
+            "target_new": "I don't know."
+        },
+        {
+            "question": "What sort of creature is a killdeer?",
+            "ground_truth": "Birds",
+            "target_new": "I don't know."
+        },
+]
+}
+```
+
 
 # Citation
 
