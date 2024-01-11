@@ -94,7 +94,7 @@ For Sanitation dataset ,we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  ROME\
- --hparams_dir ./hparams/TRAINING/ROME/llama-7b.yaml \
+ --hparams_dir ./hparams/ROME/llama-7b.yaml \
  --data_dir "./data \
  --specify_answer cheese \
 ```
@@ -117,7 +117,7 @@ For Sanitation dataset ,we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  MEMIT\
- --hparams_dir ./hparams/TRAINING/MEMIT/llama-7b.yaml \
+ --hparams_dir ./hparams/MEMIT/llama-7b.yaml \
  --data_dir "./data \
  --specify_answer cheese \
 ```
@@ -142,7 +142,7 @@ For Sanitation dataset ,we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  FT\
- --hparams_dir ./hparams/TRAINING/FT/llama-7b.yaml \
+ --hparams_dir ./hparams/FT/llama-7b.yaml \
  --data_dir "./data \
  --specify_answer cheese \
 ```
@@ -167,7 +167,7 @@ For Sanitation dataset ,we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  MEND\
- --hparams_dir ./hparams/TRAINING/MEND/llama-7b.yaml \
+ --hparams_dir ./hparams/MEND/llama-7b.yaml \
  --data_dir "./data \
  --specify_answer cheese \
 ```
@@ -192,7 +192,7 @@ For Sanitation dataset ,we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  KN\
- --hparams_dir ./hparams/TRAINING/KN/llama-7b.yaml \
+ --hparams_dir ./hparams/KN/llama-7b.yaml \
  --data_dir "./data \
  --specify_answer cheese \
 ```
@@ -217,7 +217,7 @@ For Sanitation dataset ,we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  IKE\
- --hparams_dir ./hparams/TRAINING/IKE/llama-7b.yaml \
+ --hparams_dir ./hparams/IKE/llama-7b.yaml \
  --data_dir "./data \
  --specify_answer cheese \
 ```
@@ -242,7 +242,7 @@ For Sanitation dataset ,we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  LoRA\
- --hparams_dir ./hparams/TRAINING/LoRA/llama-7b.yaml \
+ --hparams_dir ./hparams/LoRA/llama-7b.yaml \
  --data_dir "./data \
  --specify_answer cheese \
 ```
