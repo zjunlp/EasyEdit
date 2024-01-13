@@ -25,7 +25,7 @@ dataset = KnowEditDataset('the_json_path')
 KnowEdit is tailored for knowledge editing tasks. It encompasses six tasks: ZsRE, Wiki<sub>recent</sub>, Wiki<sub>counterfact</sub>, WikiBio, ConvSent, and Sanitation. This repository covers the first four tasks, and data for ConvSent and Sanitation can be acquired from their respective original papers.
 
 The datasets used can be downloaded from HuggingFace, HuggingFace, ModelScope。
-| **dataset** | HuggingFace| HuggingFace | ModelScope |
+| **dataset** | HuggingFace| WiseModel | ModelScope |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | KnowEdit | [[HuggingFace]](https://huggingface.co/datasets/zjunlp/KnowEdit) | [[WiseModel]](https://wisemodel.cn/datasets/zjunlp/KnowEdit) | [[ModelScope]](https://www.modelscope.cn/datasets/zjunlp/KnowEdit) |
 
