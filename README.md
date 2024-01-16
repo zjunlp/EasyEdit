@@ -61,8 +61,9 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- **2024-01-16 The EasyEdit has supported the precise model editing method [PMET'AAAI24](https://arxiv.org/abs/2308.08742).**
 - **2024-01-03  We release a new paper:"[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" with a new benchmark [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit)! We are looking forward to any comments or discussions on this topic :)**
-- **2023-12-06 The EasyEdit has supported efficient editing method [GRACE](https://github.com/thartvigsen/grace).**
+- **2023-12-06 The EasyEdit has supported efficient editing method [GRACE‘NeurIPS24](Gging with GRACE: Lifelong Model Editing with Discrete Key-Value Adaptors).**
 - **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
 - **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
 
