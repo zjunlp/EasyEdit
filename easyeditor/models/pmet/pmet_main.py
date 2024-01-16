@@ -30,6 +30,8 @@ def apply_pmet_to_model(
     copy=False,
     return_orig_weights=False,
     cache_template: Optional[str] = None,
+    keep_original_weight=False,
+    **kwargs
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
     """
     Returns a model with the desired changes.
@@ -57,7 +59,8 @@ def apply_pmet_to_model(
             w[...] += upd_matrix.float() #w[...]高级索引，表示对w中每个元素进行操作
 
     print(f"\nNew weights successfully inserted into {list(deltas.keys())}")
-
+    if not keep_original_weight:
+        weights_copy = {}
     return model, weights_copy
 
 
@@ -77,15 +80,19 @@ def execute_pmet(
 
     # Update target and print info
     requests = deepcopy(requests)
-    if "gpt" in model.name_or_path.lower():
-        for i, request in enumerate(requests):
-            if request["target_new"]["str"][0] != " ":
-                # Space required for correct tokenization
-                requests[i]["target_new"]["str"] = " " + request["target_new"]["str"]
+    for i, request in enumerate(requests):
+        if request["target_new"][0] != " " and "gpt" in model.name_or_path.lower():
+            # Space required for correct tokenization
+            requests[i]["target_new"] = " " + request["target_new"]
+        if '{}' not in request['prompt']:
+            assert request['subject'] in request['prompt'] or \
+                   print(f"Subject:{request['subject']} do not exist in prompt: {request['prompt']}")
+
+            requests[i]['prompt'] = requests[i]['prompt'].replace(requests[i]['subject'], '{}')
     for request in requests[:10]:
         print(
-            f"MEMIT_ATTN request sample: "
-            f"[{request['prompt'].format(request['subject'])}] -> [{request['target_new']['str']}]"
+            f"PMET request sample: "
+            f"[{request['prompt'].format(request['subject'])}] -> [{request['target_new']}]"
         )
 
     # Retrieve weights that user desires to change
@@ -249,6 +256,7 @@ def execute_pmet(
                 else hparams.mom2_n_samples // 10,
                 hparams.mom2_dtype,
                 force_recompute=force_recompute,
+                hparams=hparams
             )
 
             repeat_factor = (layer_ks.size(1) // targets.size(1))
@@ -307,6 +315,7 @@ def get_cov(
     mom2_dtype: str,
     inv: bool = False,
     force_recompute: bool = False,
+    hparams=None,
 ) -> torch.Tensor:
     """
     Retrieves covariance statistics, then computes the algebraic inverse.
@@ -322,7 +331,7 @@ def get_cov(
             model,
             tok,
             layer_name,
-            STATS_DIR,
+            hparams.stats_dir,
             mom2_dataset,
             to_collect=["mom2"],
             sample_size=mom2_n_samples,

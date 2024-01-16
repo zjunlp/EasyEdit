@@ -1,5 +1,5 @@
 alg_name: "PMET"
-model_name: "./hugging_cache/gpt-j-6b"
+model_name: "./hugging_cache/gpt-j-6B"
 stats_dir: "./data/stats"
 device: 0
 layers: [3, 4, 5, 6, 7, 8]
@@ -16,8 +16,8 @@ mom2_update_weight: 15000
 rewrite_module_tmp: "transformer.h.{}.mlp.fc_out"
 rewrite_module_tmps: ["transformer.h.{}.mlp.fc_out"]
 layer_module_tmp: "transformer.h.{}"
-mlp_module_tmp: "transformer.h.{}.mlp"
-attn_module_tmp: "transformer.h.{}.attn"
+mlp_module_tmp: "transformer.h.{}.mlp.fc_out"
+attn_module_tmp: "transformer.h.{}.attn.out_proj"
 ln_f_module: "transformer.ln_f"
 lm_head_module: "lm_head"
 mom2_dataset: "wikipedia"

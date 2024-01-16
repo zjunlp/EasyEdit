@@ -300,7 +300,7 @@ def test_PMET():
         }
     }
 
-    hparams = PMETHyperParams.from_hparams('./hparams/PMET/gpt-j-6B')
+    hparams = PMETHyperParams.from_hparams('./hparams/PMET/llama-7b')
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
@@ -2387,7 +2387,6 @@ def main():
     # test_MEND_Train_Internlm()
     # test_MEND_Internlm()
     # test_ROME_Internlm()
-<<<<<<< Updated upstream
     # test_FT_Qwen()
     # test_KN_Qwen()
     # test_ROME_Qwen()
@@ -2395,10 +2394,8 @@ def main():
     # test_MEMIT_Qwen()
     # test_MEND_Train_Qwen()
     # test_MEND_Qwen()
-    test_GRACE_GPT2()
-=======
+    # test_GRACE_GPT2()
     test_PMET()
->>>>>>> Stashed changes
 
 if __name__ == '__main__':
     main()

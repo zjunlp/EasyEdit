@@ -41,7 +41,7 @@ def compute_zs(
     print("Computing right vector (v)")
 
     # Tokenize target into list of int token IDs
-    target_ids = tok(request["target_new"]["str"], return_tensors="pt").to("cuda")[
+    target_ids = tok(request["target_new"], return_tensors="pt").to("cuda")[
         "input_ids"
     ][0]
 
@@ -179,7 +179,7 @@ def compute_zs(
         prob = torch.exp(-nll_loss_each).mean().item()
         print(
             f"loss {np.round(loss.item(), 3)} = {np.round(nll_loss.item(), 3)} + {np.round(kl_loss.item(), 3)} + {np.round(weight_decay.item(), 3)} "
-            f"avg prob of [{request['target_new']['str']}] "
+            f"avg prob of [{request['target_new']}] "
             f"{prob}"
         )
         if loss < 5e-2:
@@ -245,7 +245,7 @@ def compute_z(
     print("Computing right vector (v)")
 
     # Tokenize target into list of int token IDs
-    target_ids = tok(request["target_new"]["str"], return_tensors="pt").to("cuda")[
+    target_ids = tok(request["target_new"], return_tensors="pt").to("cuda")[
         "input_ids"
     ][0]
 
@@ -368,7 +368,7 @@ def compute_z(
         prob = torch.exp(-nll_loss_each).mean().item()
         print(
             f"loss {np.round(loss.item(), 3)} = {np.round(nll_loss.item(), 3)} + {np.round(kl_loss.item(), 3)} + {np.round(weight_decay.item(), 3)} "
-            f"avg prob of [{request['target_new']['str']}] "
+            f"avg prob of [{request['target_new']}] "
             f"{prob}"
         )
         if loss < 5e-2:
