@@ -1014,6 +1014,13 @@ Please cite our paper if you use EasyEdit in your work.
   year={2023}
 }
 
+@article{mao2023editing,
+  title={Editing personality for llms},
+  author={Mao, Shengyu and Zhang, Ningyu and Wang, Xiaohan and Wang, Mengru and Yao, Yunzhi and Jiang, Yong and Xie, Pengjun and Huang, Fei and Chen, Huajun},
+  journal={arXiv preprint arXiv:2310.02168},
+  year={2023}
+}
+
 @misc{knowlm,
   author = {Ningyu Zhang and Jintian Zhang and Xiaohan Wang and Honghao Gui and Kangwei Liu and Yinuo Jiang and Xiang Chen and Shengyu Mao and Shuofei Qiao and Yuqi Zhu and Zhen Bi and Jing Chen and Xiaozhuan Liang and Yixin Ou and Runnan Fang and Zekun Xi and Xin Xu and Lei Li and Peng Wang and Mengru Wang and Yunzhi Yao and Bozhong Tian and Yin Fang and Guozhou Zheng and Huajun Chen},
   title = {KnowLM Technical Report},
