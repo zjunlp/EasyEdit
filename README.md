@@ -205,7 +205,7 @@ You can choose different editing methods according to your specific needs.
 
 **Dataset**
 
-**Benchmark: KnowEdit** [[Hugging Face]](https://huggingface.co/datasets/zjunlp/KnowEdit)[[WiseModel]](https://wisemodel.cn/datasets/pillow/KnowEdit)[[ModelScope]](https://www.modelscope.cn/datasets/pillowxi/KnowEdit)
+**Benchmark: KnowEdit** [[Hugging Face]](https://huggingface.co/datasets/zjunlp/KnowEdit)[[WiseModel]](https://wisemodel.cn/datasets/zjunlp/KnowEdit)[[ModelScope]](https://www.modelscope.cn/datasets/zjunlp/KnowEdit)
 <table class="tg">
 <thead>
   <tr>
