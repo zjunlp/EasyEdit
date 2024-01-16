@@ -9,6 +9,8 @@ from ..models.ike import IKEHyperParams, apply_ike_to_model, apply_ike_to_multim
 from ..models.ft_api import FTApiHyperParams, apply_ft_api_to_model
 from ..models.lora import LoRAHyperParams, apply_lora_to_model
 from ..models.grace import GraceHyperParams, apply_grace_to_model
+from ..models.pmet import PMETHyperParams, apply_pmet_to_model
+
 
 ALG_DICT = {
     'ROME': apply_rome_to_model,
@@ -21,6 +23,7 @@ ALG_DICT = {
     'FT-Api': apply_ft_api_to_model,
     'LoRA': apply_lora_to_model,
     'GRACE': apply_grace_to_model,
+    'PMET': apply_pmet_to_model
 }
 
 ALG_MULTIMODAL_DICT = {
