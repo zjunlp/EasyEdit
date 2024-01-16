@@ -7,6 +7,7 @@ class BatchEditor(Enum):
     KE = 'KE'
     MEND = 'MEND'
     MEMIT = 'MEMIT'
+    PMET = 'PMET'
     FT = 'FT'
 
     @staticmethod
@@ -16,4 +17,5 @@ class BatchEditor(Enum):
             or alg_name == BatchEditor.KE.value \
             or alg_name == BatchEditor.MEND.value \
             or alg_name == BatchEditor.MEMIT.value \
+            or alg_name == BatchEditor.PMET.value \
             or alg_name == BatchEditor.FT.value
