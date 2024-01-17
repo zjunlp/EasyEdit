@@ -2444,6 +2444,40 @@ def test_ROME_Mistral():
 
     return metrics, edited_model
 
+def test_MEND_Train_Mistral():
+    training_hparams = MENDTrainingHparams.from_hparams('./hparams/TRAINING/MEND/mistral-7b.yaml')
+    train_ds = ZsreDataset('./data/zsre/zsre_mend_train.json', config=training_hparams)
+    eval_ds = ZsreDataset('./data/zsre/zsre_mend_eval.json', config=training_hparams)
+    trainer = EditTrainer(
+        config=training_hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+
+    trainer.run()
+
+def test_MEND_Mistral():
+    prompts = ['Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+               'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    ground_truth = ['Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    target_new = ['Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    hparams = MENDHyperParams.from_hparams('./hparams/MEND/mistral-7b')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
 
 def main():
     # metrics, edited_model = test_KN()
@@ -2532,6 +2566,8 @@ def main():
     # test_IKE_Mistral()
     # test_KN_Mistral()
     # test_ROME_Mistral()
+    # test_MEND_Train_Mistral()
+    # test_MEND_Mistral()
 
 if __name__ == '__main__':
     main()
