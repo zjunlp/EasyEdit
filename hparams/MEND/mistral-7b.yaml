@@ -8,7 +8,7 @@ model_name: ./hugging_cache/Mistral-7B-v0.1
 model_class: AutoModelForCausalLM
 tokenizer_class: AutoTokenizer
 tokenizer_name: ./hugging_cache/Mistral-7B-v0.1
-model_parallel: true
+model_parallel: false
 inner_params:
   - model.layers.29.mlp.gate_proj.weight
   - model.layers.29.mlp.up_proj.weight
