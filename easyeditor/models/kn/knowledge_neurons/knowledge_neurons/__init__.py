@@ -58,5 +58,7 @@ def model_type(model_name: str):
         return 'internlm'
     elif 'qwen' in model_name.lower():
         return 'qwen'
+    elif 'mistral' in model_name.lower():
+        return 'mistral'
     else:
         raise ValueError("Model {model_name} not supported")
