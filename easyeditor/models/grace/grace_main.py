@@ -17,17 +17,16 @@ def apply_grace_to_model(
         keep_original_weight=False,
         **kwargs: Any,
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
-
+    request = requests[0]
+    # if copy == true,we just edit once
+    if copy:
+        model = deepcopy(model)
     device = torch.device(f'cuda:{hparams.device}')
     editor = GRACE(model=model, config=hparams,device=device)
 
-    for request in requests:
-        print(
-            f"Executing GRACE algo for: "
-            f"[{request['prompt']}] -> [{request['target_new']}]"
-        )
-        tokens = tokenize(request,tokenizer=tok,device=device)
-        editor.edit(config=hparams,tokens=tokens)
+    tokens = tokenize(request,tokenizer=tok,device=device)
+    editor.edit(config=hparams,tokens=tokens)
+
 
     return editor,{}
 
