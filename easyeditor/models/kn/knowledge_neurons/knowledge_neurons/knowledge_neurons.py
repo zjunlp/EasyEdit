@@ -81,6 +81,11 @@ class KnowledgeNeurons:
             self.input_ff_attr = "mlp.w1"
             self.output_ff_attr = "mlp.c_proj.weight"
             self.word_embeddings_attr = "transformer.wte.weight"
+        elif 'mistral' == model_type:
+            self.transformer_layers_attr = "model.layers"
+            self.input_ff_attr = "mlp.gate_proj"
+            self.output_ff_attr = "mlp.down_proj.weight"
+            self.word_embeddings_attr = "model.embed_tokens.weight"
         else:
             raise NotImplementedError
 

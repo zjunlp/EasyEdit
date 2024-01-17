@@ -2313,6 +2313,138 @@ def test_GRACE_GPT2():
         )
     print(metrics)
 
+def test_FT_Mistral():
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    hparams = FTHyperParams.from_hparams('./hparams/FT/mistral-7b')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_IKE_Mistral():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = IKEHyperParams.from_hparams('./hparams/IKE/mistral-7b.yaml')
+    train_ds = CounterFactDataset('./data/counterfact/counterfact-train.json')
+    sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
+    encode_ike_facts(sentence_model, train_ds, hparams)
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        train_ds=train_ds,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_KN_Mistral():
+    prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    # ground_truth = None,
+    ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    target_new = ['University of Michigan', 'Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans']
+    hparams = KNHyperParams.from_hparams('./hparams/KN/mistral-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts='What university did Watts Humphrey attend?' if prompts is None else prompts,
+        ground_truth='Illinois Institute of Technology' if ground_truth is None else ground_truth,
+        target_new='University of Michigan' if target_new is None else target_new,
+        keep_original_weight=True,
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_ROME_Mistral():
+
+    prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    target_new = ['University of Michigan', 'Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans']
+    subject = ['Watts Humphrey', 'Ramalinaceae', 'Denny Herzig',
+               'Lahti Town Hall', 'It\'s a Business', 'Marl Young']
+
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/mistral-7b.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+
 def main():
     # metrics, edited_model = test_KN()
 
@@ -2396,6 +2528,10 @@ def main():
     # test_MEND_Qwen()
     # test_GRACE_GPT2()
     test_PMET()
+    # test_FT_Mistral()
+    # test_IKE_Mistral()
+    # test_KN_Mistral()
+    # test_ROME_Mistral()
 
 if __name__ == '__main__':
     main()
