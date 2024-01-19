@@ -113,6 +113,13 @@ def layer_stats(
             maxlen = model.config.seq_length
         else:
             raise NotImplementedError
+                
+        if hasattr(model.config, 'model_type') and 'mistral' in model.config.model_type:
+            if hasattr(model.config, 'sliding_window') and model.config.sliding_window:
+                maxlen = model.config.sliding_window or 4096
+            else:
+                maxlen = 4096
+        
         if batch_tokens is not None and batch_tokens < maxlen:
             maxlen = batch_tokens
         return TokenizedDataset(raw_ds["train"], tokenizer, maxlen=maxlen)
@@ -129,6 +136,13 @@ def layer_stats(
         npos = model.config.seq_length
     else:
         raise NotImplementedError
+        
+    if hasattr(model.config, 'model_type') and 'mistral' in model.config.model_type:
+        if hasattr(model.config, 'sliding_window') and model.config.sliding_window:
+            npos = model.config.sliding_window or 4096
+        else:
+            npos = 4096
+    
     if batch_tokens is None:
         batch_tokens = npos * 3  # Sort and divide into batches with this many tokens
     if precision is None:
