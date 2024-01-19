@@ -1,5 +1,5 @@
 alg_name: 'MEMIT'
-model_name: '/mnt/16t/xzwnlp/model/Mistral-7B-v0.1'
+model_name: './hugging_cache/Mistral-7B-v0.1'
 stats_dir: './data/stats'
 device: 0
 layers: [4, 5, 6, 7, 8]
