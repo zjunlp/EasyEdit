@@ -321,14 +321,22 @@ def compute_icl_multimodal_edit_quality(
         ret['rephrase_image_acc'] = rephrase_image_acc
     
     if "locality_prompt" in record.keys():
-        locality_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                loc_a, f'New Fact: {loc_q} {loc_a}\nPrompt: {loc_q}', None)
-        ret['locality_acc'] = locality_acc
+        if pre_edit:
+            _, _, locality_output = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                                    loc_a, loc_q, None, is_loc=True) 
+        else:
+            _, _, locality_output = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                                    loc_a, f'New Fact: {prompt} {target}\nPrompt: {loc_q}', None, is_loc=True) 
+        ret['locality_output'] = locality_output
     
     if "multimodal_locality_image" in record.keys():
-        locality_image_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                               m_loc_a, f'New Fact: {m_loc_q} {m_loc_a}\nPrompt: {m_loc_q}', m_loc_image)
-        ret['locality_image_acc'] = locality_image_acc
+        if pre_edit:
+            _, _, locality_image_output = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                                    m_loc_a, m_loc_q, m_loc_image, is_loc=True) 
+        else:
+            _, _, locality_image_output = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
+                                    m_loc_a, f'New Fact: {prompt} {target}\nPrompt: {m_loc_q}', m_loc_image, is_loc=True) 
+        ret['multimodal_locality_output'] = locality_image_output
             
     return ret
 
@@ -341,13 +349,14 @@ def icl_multimodal_lm_eval(
         target,
         x,
         image,
+        is_loc=False,
         neighborhood=False
 )-> typing.Dict:
     device = torch.device(f'cuda:{hparams.device}')
     
     samples = prepare_multimodal_edit(hparams, tokenizer, target, [''.join(icl_examples) + f'{x}'], image) 
     
-    return compute_multimodal_edit_quality(model, samples)
+    return compute_multimodal_edit_quality(model, samples) if not is_loc else compute_multimodal_edit_quality_demo(model, samples)
 
 def prepare_multimodal_edit(hparams,
                             tok,
@@ -366,7 +375,7 @@ def prepare_multimodal_edit(hparams,
         prompts_len = [len(tok.encode(prompt, add_special_tokens=False)) for prompt in prompts]
         target = tok(target, add_special_tokens=False, return_tensors="pt",)["input_ids"]
     else:
-        prompts_len = [len(tok.encode(prompt,)) for prompt in prompts]  
+        prompts_len = [len(tok.encode(prompt,  add_special_tokens=False)) for prompt in prompts]  
         target = tok([' ' + target_ if target_[0] != ' ' else target_ for target_ in target], add_special_tokens=False, return_tensors="pt",)["input_ids"]
         
     ret = {
@@ -411,6 +420,7 @@ def compute_multimodal_edit_quality_demo(model, batch):
             logits = outputs.logits.detach().cpu()    
         # targ = outputs.labels.detach().cpu()
         targ = batch["labels"].cpu()
+    logits_ = logits.clone()
     if logits.dim() == 3:
         logits = logits[:, :-1]
         # targ = targ[:, 1:]
@@ -423,7 +433,7 @@ def compute_multimodal_edit_quality_demo(model, batch):
     num_non_padding = mask.sum().float().item()
     acc = correct.sum() / num_non_padding
     
-    return acc, pred_ids.numpy(), logits
+    return acc, pred_ids.numpy(), logits_
 
 def compute_multimodal_edit_results(
     model,

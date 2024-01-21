@@ -95,6 +95,13 @@ class MultimodalEditor:
             self.model = model
             # Get tokenizer and vis_processor
             vis_processor = BlipImageEvalProcessor(image_size=364, mean=None, std=None)
+
+            # from PIL import Image
+            # raw_image = Image.open("../val2014/COCO_val2014_000000235522.jpg").convert("RGB")
+            # image = vis_processor(raw_image).unsqueeze(0).to('cuda')
+            # model.to('cuda')
+            # model.generate({"image": image})
+
             self.vis_tok = vis_processor
             if (hparams is not None and hasattr(hparams, 'tokenizer_name')):
                 tok_name = (
@@ -190,8 +197,37 @@ class MultimodalEditor:
                     "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
                                                      request, self.hparams.device, pre_edit=True)
                 }
-                metrics['pre'].pop('locality_acc')
-                metrics['pre'].pop('locality_image_acc')
+                if 'locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['locality_output']) == \
+                            len(metrics['pre']['locality_output'])
+                    base_logits = metrics['pre']['locality_output'].to(torch.float32)
+                    post_logits = metrics['post']['locality_output'].to(torch.float32)
+                    if post_logits.shape[1] > base_logits.shape[1]:
+                        post_logits = post_logits[:, -base_logits.shape[1]:, :]
+                    else:
+                        base_logits = base_logits[:, -post_logits.shape[1]:, :]
+
+                    base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=10, dim=-1).indices
+                    post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=10, dim=-1).indices
+                    metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
+                    metrics['post'].pop('locality_output')
+                    metrics['pre'].pop('locality_output')
+                    
+                if 'multimodal_locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['multimodal_locality_output']) == \
+                            len(metrics['pre']['multimodal_locality_output'])
+                    base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
+                    post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
+                    if post_image_logits.shape[1] > base_image_logits.shape[1]:
+                        post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
+                    else:
+                        base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
+
+                    base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
+                    post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
+                    metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
+                    metrics['post'].pop('multimodal_locality_output')
+                    metrics['pre'].pop('multimodal_locality_output')
 
                 LOG.info(f"Evaluation took {time() - start}")
 
@@ -334,8 +370,37 @@ class MultimodalEditor:
                     "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
                                                      request, self.hparams.device, pre_edit=True)
                 }
-                metrics['pre'].pop('locality_acc')
-                metrics['pre'].pop('locality_image_acc')
+                if 'locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['locality_output']) == \
+                            len(metrics['pre']['locality_output'])
+                    base_logits = metrics['pre']['locality_output'].to(torch.float32)
+                    post_logits = metrics['post']['locality_output'].to(torch.float32)
+                    if post_logits.shape[1] > base_logits.shape[1]:
+                        post_logits = post_logits[:, -base_logits.shape[1]:, :]
+                    else:
+                        base_logits = base_logits[:, -post_logits.shape[1]:, :]
+
+                    base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=10, dim=-1).indices
+                    post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=10, dim=-1).indices
+                    metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
+                    metrics['post'].pop('locality_output')
+                    metrics['pre'].pop('locality_output')
+                    
+                if 'multimodal_locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['multimodal_locality_output']) == \
+                            len(metrics['pre']['multimodal_locality_output'])
+                    base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
+                    post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
+                    if post_image_logits.shape[1] > base_image_logits.shape[1]:
+                        post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
+                    else:
+                        base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
+
+                    base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
+                    post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
+                    metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
+                    metrics['post'].pop('multimodal_locality_output')
+                    metrics['pre'].pop('multimodal_locality_output')
 
                 LOG.info(f"Evaluation took {time() - start}")
 
@@ -421,9 +486,6 @@ class MultimodalEditor:
         assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in MULTIMODAL_DS_DICT.values()]) > 0 \
         or print(f'DataSet {ds} not supported yet.')
 
-        # assert hasattr(self.hparams, 'batch_size') or \
-        #         print(f'Method {self.alg_name} found, pls set the batch_size correctly')
-
         num_edits = 1
         # num_edits = self.hparams.batch_size
         
@@ -457,8 +519,37 @@ class MultimodalEditor:
                     "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
                                                      request, self.hparams.device, pre_edit=True)
                 }
-                metrics['pre'].pop('locality_acc')
-                metrics['pre'].pop('locality_image_acc')
+                if 'locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['locality_output']) == \
+                            len(metrics['pre']['locality_output'])
+                    base_logits = metrics['pre']['locality_output'].to(torch.float32)
+                    post_logits = metrics['post']['locality_output'].to(torch.float32)
+                    if post_logits.shape[1] > base_logits.shape[1]:
+                        post_logits = post_logits[:, -base_logits.shape[1]:, :]
+                    else:
+                        base_logits = base_logits[:, -post_logits.shape[1]:, :]
+
+                    base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=10, dim=-1).indices
+                    post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=10, dim=-1).indices
+                    metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
+                    metrics['post'].pop('locality_output')
+                    metrics['pre'].pop('locality_output')
+                    
+                if 'multimodal_locality_output' in metrics['post'].keys():
+                    assert len(metrics['post']['multimodal_locality_output']) == \
+                            len(metrics['pre']['multimodal_locality_output'])
+                    base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
+                    post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
+                    if post_image_logits.shape[1] > base_image_logits.shape[1]:
+                        post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
+                    else:
+                        base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
+
+                    base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
+                    post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
+                    metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
+                    metrics['post'].pop('multimodal_locality_output')
+                    metrics['pre'].pop('multimodal_locality_output')
 
                 LOG.info(f"Evaluation took {time() - start}")
 
