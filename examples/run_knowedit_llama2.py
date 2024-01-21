@@ -304,6 +304,7 @@ if __name__ == "__main__":
         subject=subjects,
         locality_inputs=locality_inputs,
         portability_inputs=portability_inputs,
+        train_ds=datas,
         keep_original_weight=True
     )
 
