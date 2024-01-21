@@ -119,7 +119,9 @@ class MendRewriteExecutor:
             labels=target_tok['input_ids'],
         )
         cond = {k: sent_tok[k] for k in ["input_ids", "attention_mask"]}
-        _, model_info = self.alg.edit(edit_inner, cond, return_factors=True)
+
+        self.alg.eval()
+        edited_model, model_info = self.alg.edit(edit_inner, cond, return_factors=True)
         factors = {
             k + "." + n: v.detach().cpu().numpy()
             for k, pair in model_info["factors"].items()
@@ -141,33 +143,31 @@ class MendRewriteExecutor:
                     if return_orig_weights and n not in weights_copy:
                         weights_copy[n] = p.detach().clone()
 
-                    if "gpt2" in hparams.model_name.lower():
-                        delta = torch_factors[uname].t() @ torch_factors[vname]
-                    elif "gpt-j" in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif "llama" in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif 'baichuan' in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif 't5' in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif 'chatglm2' in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif 'internlm' in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif 'qwen' in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif 'mistral' in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    else:
-                        raise ValueError("Unknown model")
-                    p.add_((delta * edit_lrs[eli] * hparams.lr_scale).to(p.device))
+                    # if "gpt2" in hparams.model_name.lower():
+                    #     delta = torch_factors[uname].t() @ torch_factors[vname]
+                    # elif "gpt-j" in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # elif "llama" in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # elif 'baichuan' in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # elif 't5' in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # elif 'chatglm2' in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # elif 'internlm' in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # elif 'qwen' in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # else:
+                    #     raise ValueError("Unknown model")
+                    # p.add_((delta * edit_lrs[eli] * hparams.lr_scale).to(p.device))
                     eli += 1
 
         if not keep_original_weight:
             weights_copy = {}
 
-        return model, weights_copy
+        return edited_model, weights_copy
     
 class MendMultimodalRewriteExecutor(MendRewriteExecutor):
     def __init__(self):
@@ -257,7 +257,9 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
             prompts_len=prompts_len
         )
         # cond = {k: sent_tok[k] for k in ["input_ids", "attention_mask"]}
-        _, model_info = self.alg.edit(edit_inner, return_factors=True)
+
+        self.alg.eval()
+        edited_model, model_info = self.alg.edit(edit_inner, return_factors=True)
         factors = {
             k + "." + n: v.detach().cpu().numpy()
             for k, pair in model_info["factors"].items()
@@ -279,16 +281,16 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
                     if return_orig_weights and n not in weights_copy:
                         weights_copy[n] = p.detach().clone()
 
-                    if "minigpt4" in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    elif "blip2" in hparams.model_name.lower():
-                        delta = torch_factors[vname].t() @ torch_factors[uname]
-                    else:
-                        raise ValueError("Unknown model")
-                    p.add_((delta * edit_lrs[eli] * hparams.lr_scale).to(p.device))
+                    # if "minigpt4" in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # elif "blip2" in hparams.model_name.lower():
+                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
+                    # else:
+                    #     raise ValueError("Unknown model")
+                    # p.add_((delta * edit_lrs[eli] * hparams.lr_scale).to(p.device))
                     eli += 1
 
         if not keep_original_weight:
             weights_copy = {}
 
-        return model, weights_copy
+        return edited_model, weights_copy
