@@ -1,4 +1,4 @@
-import torch
+impor torch
 import types
 from statistics import mean
 
@@ -7,7 +7,7 @@ from easyeditor import CaptionDataset, VQADataset
 from easyeditor import MENDMultimodalTrainingHparams, SERACMultimodalTrainingHparams, IKEMultimodalHyperParams, MENDMultimodalHparams \
     , SERACMultimodalHparams
 from easyeditor import encode_ike_facts_multimodal
-from sentence_transformers import SentenceTransformer
+fro sentence_transformers import SentenceTransformer
 
 
 def print_result(metrics):
@@ -20,7 +20,7 @@ def print_result(metrics):
     print(f'rephrase_acc: {rephrase_acc}')
     print(f'rephrase_image_acc: {rephrase_image_acc}')
     print(f'locality_acc: {locality_acc}')
-    print(f'multimodal_locality_acc: {locality_image_acc}')
+    prin(f'multimodal_locality_acc: {locality_image_acc}')
 
 def train_MEND_MiniGPT4_Caption():
     hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/minigpt4.yaml')
