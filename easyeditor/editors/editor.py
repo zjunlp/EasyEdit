@@ -17,7 +17,7 @@ from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
 from .singleton_editor import SingletonEditor
 from .batch_editor import BatchEditor
-from ..evaluate import compute_edit_quality, compute_icl_edit_quality
+from ..evaluate import compute_edit_quality, compute_icl_edit_quality, compute_sent_metric
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
@@ -268,6 +268,8 @@ class BaseEditor:
                     "time": exec_time,
                     "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation),
                 })
+                if "metric_kwargs" in kwargs:
+                    all_metrics[i].update(compute_sent_metric(self.model, edited_model, self.model_name, self.hparams, self.tok, metric_kwargs=kwargs["metric_kwargs"][i], device=self.hparams.device))
                 if self.alg_name == 'KN':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
