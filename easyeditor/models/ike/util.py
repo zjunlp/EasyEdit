@@ -11,12 +11,14 @@ def encode_ike_facts(sentence_model: SentenceTransformer, ds: Dataset, hparams: 
     for i, train_data in enumerate(ds):
         new_fact = train_data['prompt'] + ' ' + train_data['target_new']
         target_new = train_data['target_new']
-        paraphrases = train_data['rephrase_prompt']
-        neighbors = train_data['locality_prompt']
-        neighbors_ans = train_data['locality_ground_truth']
         sentences.append(f"New Fact: {new_fact}\nPrompt: {new_fact}\n\n")
-        sentences.append(f"New Fact: {new_fact}\nPrompt: {paraphrases} {target_new}\n\n")
-        sentences.append(f"New Fact: {new_fact}\nPrompt: {neighbors} {neighbors_ans}\n\n")
+        if 'rephrase_prompt' in train_data.keys():
+            paraphrases = train_data['rephrase_prompt']
+            sentences.append(f"New Fact: {new_fact}\nPrompt: {paraphrases} {target_new}\n\n")
+        if 'locality_prompt' in train_data.keys():
+            neighbors_ans = train_data['locality_ground_truth']
+            neighbors = train_data['locality_prompt']
+            sentences.append(f"New Fact: {new_fact}\nPrompt: {neighbors} {neighbors_ans}\n\n")
 
     embeddings = sentence_model.encode(sentences)
     base_path = f'{hparams.results_dir}/{hparams.alg_name}/embedding'
