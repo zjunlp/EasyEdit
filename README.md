@@ -183,18 +183,18 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | InternLM | Qwen
-| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| AdaLoRA |  |  |  |  | ✅ |  |  | | |
-| SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ |
-| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ |
-| GRACE | | ✅| ✅ |  |  ✅|  |  |  | |
-| PMET | | | ✅ |  |  ✅|  |  |  | |
+| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | InternLM | Qwen | Mistral
+| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
+| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| AdaLoRA |  |  |  |  | ✅ |  |  | | | |
+| SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
+| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
+| GRACE | | ✅| ✅ |  |  ✅|  |  |  | | |
+| PMET | | | ✅ |  |  ✅|  |  |  | | |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
