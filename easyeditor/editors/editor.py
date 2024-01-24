@@ -152,10 +152,11 @@ class BaseEditor:
         # assert (locality_prompts is None and locality_ground_truth is None) or \
         #        (isinstance(locality_prompts, str) and isinstance(locality_ground_truth, str)) or \
         #        len(locality_prompts) == len(locality_ground_truth) or print('Error in locality Input.')
-
-        requests = self._prepare_requests(prompts, target_new, ground_truth, rephrase_prompts,
-                                          locality_inputs, portability_inputs, **kwargs)
-
+        if "requests" in kwargs.keys():
+            requests = kwargs["requests"]
+        else:
+            requests = self._prepare_requests(prompts, target_new, ground_truth, rephrase_prompts,
+                                            locality_inputs, portability_inputs, **kwargs)
         if hasattr(self.hparams, 'batch_size') :
                assert self.hparams.batch_size == 1 or \
                       print(f'Single Edit, pls set the batch_size to 1....')
@@ -511,14 +512,15 @@ class BaseEditor:
                 == len(requests) or print('One Edit instance needs one locality input.....')
 
                 for i, request in enumerate(requests):
-                    request['locality'].update(
-                        {
-                            locality_key: {
-                                f'prompt': locality_inputs[locality_key]['prompt'][i],
-                                f'ground_truth': locality_inputs[locality_key]['ground_truth'][i]
+                    if locality_inputs[locality_key]['prompt'][i] is not None:
+                        request['locality'].update(
+                            {
+                                locality_key: {
+                                    f'prompt': locality_inputs[locality_key]['prompt'][i],
+                                    f'ground_truth': locality_inputs[locality_key]['ground_truth'][i]
+                                }
                             }
-                        }
-                    )
+                        )
 
         if portability_inputs is not None:
             for portability_key in portability_inputs.keys():
@@ -529,29 +531,16 @@ class BaseEditor:
                 == len(requests) or print('One Edit instance needs one portability input.....')
 
                 for i, request in enumerate(requests):
-                    request['portability'].update(
-                        {
-                            portability_key: {
-                                'prompt': portability_inputs[portability_key]['prompt'][i],
-                                'ground_truth': portability_inputs[portability_key]['ground_truth'][i]
+                    if portability_inputs[portability_key]['prompt'][i] is not None:
+                        request['portability'].update(
+                            {
+                                portability_key: {
+                                    'prompt': portability_inputs[portability_key]['prompt'][i],
+                                    'ground_truth': portability_inputs[portability_key]['ground_truth'][i]
+                                }
                             }
-                        }
-                    )
+                        )
         return requests
-
-
-# if __name__ == "__main__":
-#
-#     editor = BaseEditor(alg_name='KN', model_name='/nature/peng/serac/hugging_cache/t5-3b-finetuned-counterfact-10000', hparams_fname='t5-3b.json')
-#
-#     editor.edit(
-#         prompts='What university did Watts Humphrey attend?',
-#         ground_truth='Illinois Institute of Technology',
-#         target_new='University of Michigan'
-#     )
-#
-#     metrics, edited_model, _ = editor.edit(prompts='What university did Watts Humphrey attend?', ground_truth='Illinois Institute of Technology', target_new='University of Michigan')
-
 
     def edit_requests(self,
              requests,
