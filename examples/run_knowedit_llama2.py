@@ -28,6 +28,7 @@ if __name__ == "__main__":
     parser.add_argument('--ds_size', default=None, type=int)
     parser.add_argument('--metrics_save_dir', default='./output', type=str)
     parser.add_argument('--datatype',default=None,type=str)
+    parser.add_argument('--train_data_path', type=str)
 
     args = parser.parse_args()
 
@@ -176,8 +177,14 @@ if __name__ == "__main__":
             'ground_truth': portability_Logical_Generalization_ans           
         }
     }
-
     hparams = editing_hparams.from_hparams(args.hparams_dir)
+    
+    if args.editing_method == 'IKE':
+        train_ds = KnowEditDataset(args.train_data_path)
+        sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
+        encode_ike_facts(sentence_model, train_ds, hparams)
+    else:
+        train_ds = None
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
@@ -185,7 +192,7 @@ if __name__ == "__main__":
         subject=subjects,
         locality_inputs=locality_inputs,
         portability_inputs=portability_inputs,
-        train_ds=datas,
+        train_ds=train_ds,
         keep_original_weight=True
     )
 

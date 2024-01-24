@@ -187,26 +187,60 @@ def compute_icl_edit_quality(
 
     if 'locality' in record.keys() and any(record['locality']):
         for locality_key in record['locality'].keys():
-            pre_neighbor = icl_lm_eval(model, model_name, hparams, tok, [''], record['locality'][locality_key]['ground_truth'],
-                                       f"New Fact: {prompt} {target_new}\nPrompt: {record['locality'][locality_key]['prompt']}", neighborhood=True)
-            post_neighbor = icl_lm_eval(model, model_name, hparams, tok, icl_examples, record['locality'][locality_key]['ground_truth'],
+            if isinstance(record['locality'][locality_key]['ground_truth'],list):
+                pre_neighbor = []
+                post_neighbor = []
+                for x_a, x_p in zip(record['locality'][locality_key]['ground_truth'],record['locality'][locality_key]['prompt']):             
+                    tmp_pre_neighbor = icl_lm_eval(model, model_name, hparams, tok, [''], x_a,
+                                            f"New Fact: {prompt} {target_new}\nPrompt: {x_p}", neighborhood=True)
+                    tmp_post_neighbor = icl_lm_eval(model, model_name, hparams, tok, icl_examples, x_a,
+                                                f"New Fact: {prompt} {target_new}\nPrompt: {x_p}", neighborhood=True)
+                    if type(tmp_pre_neighbor) is not list:
+                        tmp_pre_neighbor = [tmp_pre_neighbor, ]
+                    if type(tmp_post_neighbor) is not list:
+                        tmp_post_neighbor = [tmp_post_neighbor, ]
+                    assert len(tmp_pre_neighbor) == len(tmp_post_neighbor)
+                    pre_neighbor.append(tmp_pre_neighbor)
+                    post_neighbor.append(tmp_post_neighbor)
+                res = []
+                for ans,label in zip(pre_neighbor,post_neighbor):
+                    temp_acc = np.mean(np.equal(ans, label))
+                    if np.isnan(temp_acc):
+                        continue
+                    res.append(temp_acc)
+                ret['locality'][f'{locality_key}_acc'] = res
+            else:
+                pre_neighbor = icl_lm_eval(model, model_name, hparams, tok, [''], record['locality'][locality_key]['ground_truth'],
                                         f"New Fact: {prompt} {target_new}\nPrompt: {record['locality'][locality_key]['prompt']}", neighborhood=True)
-            if type(pre_neighbor) is not list:
-                pre_neighbor = [pre_neighbor, ]
-            if type(post_neighbor) is not list:
-                post_neighbor = [post_neighbor, ]
-            assert len(pre_neighbor) == len(post_neighbor)
-
-            ret['locality'][f'{locality_key}_acc'] = np.mean(np.equal(pre_neighbor, post_neighbor))
+                post_neighbor = icl_lm_eval(model, model_name, hparams, tok, icl_examples, record['locality'][locality_key]['ground_truth'],
+                                            f"New Fact: {prompt} {target_new}\nPrompt: {record['locality'][locality_key]['prompt']}", neighborhood=True)
+                if type(pre_neighbor) is not list:
+                    pre_neighbor = [pre_neighbor, ]
+                if type(post_neighbor) is not list:
+                    post_neighbor = [post_neighbor, ]
+                assert len(pre_neighbor) == len(post_neighbor)
+            
+                ret['locality'][f'{locality_key}_acc'] = np.mean(np.equal(pre_neighbor, post_neighbor))
     # Form a list of lists of prefixes to test.
     if 'portability' in record.keys() and any(record['portability']):
         for portability_key in record['portability'].keys():
             if pre_edit:
-                portability_acc = icl_lm_eval(model, model_name, hparams, tok, icl_examples, record['portability'][portability_key]['ground_truth'],
-                                              record['portability'][portability_key]['prompt'])
+                icl_input = ['']
+                x_prefix=""
             else:
+                icl_input = icl_examples
+                x_prefix=f"New Fact: {prompt} {target_new}\nPrompt: "
+            if isinstance(record['portability'][portability_key]['ground_truth'],list):
+                portability_acc = []
+                for x_a, x_p in zip(record['portability'][portability_key]['ground_truth'],record['portability'][portability_key]['prompt']): 
+                    tmp_portability_acc = icl_lm_eval(model, model_name, hparams, tok,icl_input, x_a,
+                                            f"{x_prefix}{x_p}")
+                portability_acc.append(tmp_portability_acc)
+            else:
+                portability_acc = icl_lm_eval(model, model_name, hparams, tok, [''], record['portability'][portability_key]['ground_truth'],
+                                                record['portability'][portability_key]['prompt'])
                 portability_acc = icl_lm_eval(model, model_name, hparams, tok, icl_examples, record['portability'][portability_key]['ground_truth'],
-                                              f"New Fact: {prompt} {target_new}\nPrompt: {record['portability'][portability_key]['prompt']}")
+                                                f"New Fact: {prompt} {target_new}\nPrompt: {record['portability'][portability_key]['prompt']}")
             ret['portability'][f'{portability_key}_acc'] = portability_acc
     return ret
 
