@@ -200,20 +200,26 @@ class BaseEditor:
             return all_metrics, edited_model, weights_copy
 
         all_metrics = []
-        for i, request in enumerate(requests):
-            if self.alg_name == 'IKE':
-                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds(For getting In-Context prompt)')
-                metrics = {
-                    "pre": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
-                                                     request, self.hparams.device, pre_edit=True)
-                }
-            else:
-                metrics = {
-                    "pre": compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
-                                            self.hparams.device, test_generation=test_generation)
-                }
-            all_metrics.append(metrics)
-
+        if 'pre_edit' in kwargs and kwargs['pre_edit'] is not None:
+            metrics = kwargs['pre_edit']
+            all_metrics = metrics
+        else:
+            for i, request in tqdm(enumerate(requests)):
+                if self.alg_name == 'IKE':
+                    assert 'train_ds' in kwargs.keys() or print('IKE need train_ds(For getting In-Context prompt)')
+                    metrics = {
+                        "pre": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+                                                        request, self.hparams.device, pre_edit=True)
+                    }
+                else:
+                    metrics = {
+                        "pre": compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
+                                                self.hparams.device, test_generation=test_generation)
+                    }
+                all_metrics.append(metrics)
+            if 'pre_file' in kwargs and kwargs['pre_file'] is not None:
+                ### Store the pre_edit metric to refrain computing repeatedly
+                json.dump(all_metrics, open(kwargs['pre_file'], 'w'), indent=4)
         for i, request in enumerate(requests):
             start = time()
 

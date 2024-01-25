@@ -1,3 +1,4 @@
+import os
 import os.path
 import sys
 import json
@@ -27,8 +28,9 @@ if __name__ == "__main__":
     parser.add_argument('--data_dir', required=True, type=str)
     parser.add_argument('--ds_size', default=None, type=int)
     parser.add_argument('--metrics_save_dir', default='./output', type=str)
-    parser.add_argument('--datatype',default=None,type=str)
+    parser.add_argument('--datatype', default=None,type=str)
     parser.add_argument('--train_data_path', type=str)
+    parser.add_argument('--pre_file', default='./seq_pre.json', type=str)
 
     args = parser.parse_args()
 
@@ -178,7 +180,13 @@ if __name__ == "__main__":
         }
     }
     hparams = editing_hparams.from_hparams(args.hparams_dir)
-    
+    args.pre_file = f"./{hparams.model_name.split('/')[-1]}_{args.datatype}_pre_edit.json"
+    print(args.pre_file)
+    if args.pre_file is not None and os.path.exists(args.pre_file):
+        pre_edit = json.load(open(args.pre_file,'r'))
+        assert len(pre_edit) == len(prompts)
+    else:
+        pre_edit = None
     if args.editing_method == 'IKE':
         train_ds = KnowEditDataset(args.train_data_path)
         sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
@@ -193,7 +201,10 @@ if __name__ == "__main__":
         locality_inputs=locality_inputs,
         portability_inputs=portability_inputs,
         train_ds=train_ds,
-        keep_original_weight=True
+        keep_original_weight=True,
+        pre_file=args.pre_file,
+        pre_edit = pre_edit,
     )
-
+    if not os.path.exists(args.metrics_save_dir):
+        os.makedirs(args.metrics_save_dir)
     json.dump(metrics, open(os.path.join(args.metrics_save_dir, f'{args.editing_method}_results.json'), 'w'), indent=4)
