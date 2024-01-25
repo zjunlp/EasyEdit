@@ -348,7 +348,7 @@ class BaseEditor:
 
         assert hasattr(self.hparams, 'batch_size') or \
                print(f'Method {self.alg_name} found, pls specify the batch_size....')
-
+        all_metrics = []
         for record_chunks in self._chunks(requests, self.hparams.batch_size):
             start = time()
 
@@ -365,7 +365,7 @@ class BaseEditor:
             LOG.info(f"Execution editing took {exec_time}")
 
             start = time()
-            all_metrics = []
+            chunk_metrics = []
             for i, request in enumerate(record_chunks):
 
                 metrics = {
@@ -375,22 +375,22 @@ class BaseEditor:
                     "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation),
                 }
 
-                all_metrics.append(metrics)
+                chunk_metrics.append(metrics)
 
             with torch.no_grad():
                 for k, v in weights_copy.items():
                     nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
 
             for i, request in enumerate(record_chunks):
-                all_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
+                chunk_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
 
                 if verbose:
                     LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
+                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {chunk_metrics[i]}"
                     )
 
             LOG.info(f"Evaluation took {time() - start}")
-
+            all_metrics.extend(chunk_metrics)
         return all_metrics, edited_model, weights_copy
 
     def edit_dataset(self,
@@ -415,7 +415,6 @@ class BaseEditor:
         all_metrics = []
 
         for record_chunks in tqdm(self._chunks(ds, num_edits), desc='Editing dataset', total=len(ds)/num_edits):
-
             start = time()
             edited_model, weights_copy = self.apply_algo(
                 self.model,
@@ -430,7 +429,7 @@ class BaseEditor:
             LOG.info(f"Execution took {exec_time}")
 
             start = time()
-            all_metrics = []
+            chunk_metrics = []
             for i, request in enumerate(record_chunks):
 
                 metrics = {
@@ -439,23 +438,23 @@ class BaseEditor:
                     "time": exec_time,
                     "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device),
                 }
-                all_metrics.append(metrics)
+                chunk_metrics.append(metrics)
 
             with torch.no_grad():
                 for k, v in weights_copy.items():
                     nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
 
             for i, request in enumerate(record_chunks):
-                all_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
+                chunk_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
                                                       self.hparams.device)
 
                 if verbose:
                     LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
+                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {chunk_metrics[i]}"
                     )
 
             LOG.info(f"Evaluation took {time() - start}")
-
+            all_metrics.extend(chunk_metrics)
         return all_metrics, edited_model, weights_copy
 
 
