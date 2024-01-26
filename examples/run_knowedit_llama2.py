@@ -121,64 +121,75 @@ if __name__ == "__main__":
                     local_prompts.append(temp_prompts)
                     local_answers.append(temp_answers)
         assert len(prompts) == len(locality_Relation_Specificity_prompts) == len(locality_Forgetfulness_prompts)
+        locality_inputs = {}
+        portability_inputs = {}
+        
+        locality_inputs = {
+            'Relation_Specificity':{
+                'prompt': locality_Relation_Specificity_prompts,
+                'ground_truth': locality_Relation_Specificity_ans
+            },
+            'Forgetfulness':{
+                'prompt':locality_Forgetfulness_prompts,
+                'ground_truth':locality_Forgetfulness_ans
+            }
+        }
+        portability_inputs = {
+            'Subject_Aliasing':{
+                'prompt': portability_Subject_Aliasing_prompts,
+                'ground_truth': portability_Subject_Aliasing_ans
+            },
+            'reasoning':{
+                'prompt': portability_reasoning_prompts,
+                'ground_truth': portability_reasoning_ans           
+            },
+            'Logical_Generalization':{
+                'prompt': portability_Logical_Generalization_prompts,
+                'ground_truth': portability_Logical_Generalization_ans           
+            }
+        }
     if args.datatype == 'wikibio':
         prompts=[data['prompt'] for data in datas]
         subjects=[data['subject'] for data in datas]
         target_new = [data['target_new'] for data in datas]
-        portability_r =[data['portability_r'] for data in datas]
-        portability_s =[data['portability_s'] for data in datas]
+        
         locality_rs = [data['locality_rs'] for data in datas]
         locality_f = [data['locality_f'] for data in datas]
-
-        portability_reasoning_prompts=[]
-        portability_reasoning_ans=[]
-    
-        portability_Subject_Aliasing_prompts=[]
-        portability_Subject_Aliasing_ans=[]           
-
         locality_Relation_Specificity_prompts=[]
         locality_Relation_Specificity_ans=[]
-        for lr in locality_rs[0]:
-            if not isinstance(lr,list):
-                prompt=''
-                an=''
-            else:
-                lr=lr[0]
-                prompt=lr["prompt"]
-                an=lr["ground_truth"][0][0]
-            locality_Relation_Specificity_prompts.append(prompt)
-            locality_Relation_Specificity_ans.append(an)
-
-        locality_Forgetfulness_prompts=[]        
-        locality_Forgetfulness_ans=[]
-
-    locality_inputs = {}
-    portability_inputs = {}
+        
+        locality_data = [locality_rs]
+        locality_prompts = [locality_Relation_Specificity_prompts]
+        locality_answers = [locality_Relation_Specificity_ans]
+        for data, local_prompts, local_answers in zip(locality_data,locality_prompts,locality_answers):
+            for item in data:
+                if item is None:
+                    local_prompts.append(None)
+                    local_answers.append(None)
+                else:
+                    temp_prompts = []
+                    temp_answers = []
+                    for pr in item:
+                        prompt=pr["prompt"]
+                        an=pr["ground_truth"]
+                        while isinstance(an,list):
+                            an = an[0]
+                        if an.strip() =="":
+                            continue
+                        temp_prompts.append(prompt)
+                        temp_answers.append(an)
+                    local_prompts.append(temp_prompts)
+                    local_answers.append(temp_answers)
+        assert len(prompts) == len(locality_Relation_Specificity_prompts)
+        portability_inputs = None
+        locality_inputs = {}
+        locality_inputs = {
+            'Relation_Specificity':{
+                'prompt': locality_Relation_Specificity_prompts,
+                'ground_truth': locality_Relation_Specificity_ans
+            }
+        }
     
-    locality_inputs = {
-        'Relation_Specificity':{
-            'prompt': locality_Relation_Specificity_prompts,
-            'ground_truth': locality_Relation_Specificity_ans
-        },
-        'Forgetfulness':{
-            'prompt':locality_Forgetfulness_prompts,
-            'ground_truth':locality_Forgetfulness_ans
-        }
-    }
-    portability_inputs = {
-        'Subject_Aliasing':{
-            'prompt': portability_Subject_Aliasing_prompts,
-            'ground_truth': portability_Subject_Aliasing_ans
-        },
-        'reasoning':{
-            'prompt': portability_reasoning_prompts,
-            'ground_truth': portability_reasoning_ans           
-        },
-        'Logical_Generalization':{
-            'prompt': portability_Logical_Generalization_prompts,
-            'ground_truth': portability_Logical_Generalization_ans           
-        }
-    }
     hparams = editing_hparams.from_hparams(args.hparams_dir)
     args.pre_file = f"./{hparams.model_name.split('/')[-1]}_{args.datatype}_pre_edit.json"
     print(args.pre_file)
