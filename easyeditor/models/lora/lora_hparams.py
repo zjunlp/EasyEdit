@@ -7,6 +7,7 @@ import yaml
 @dataclass
 class LoRAHyperParams(HyperParams):
     # Method
+    lora_type: str
     layers: List[int]
     num_steps: int
     lr: float
