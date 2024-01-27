@@ -283,6 +283,8 @@ class BaseEditor:
                 elif self.alg_name == 'LoRA' and keep_original_weight:
                     edited_model.unload()
                     del self.model.peft_config
+                elif self.alg_name == 'LoRA' and not keep_original_weight:
+                    self.model = edited_model
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
