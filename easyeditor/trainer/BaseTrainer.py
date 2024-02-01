@@ -174,7 +174,7 @@ class BaseTrainer:
                 if self.global_iter % self.config.val_interval == 0:
                     val_info = self.validate(steps=self.config.val_steps)
                     self.echo(self.global_iter, val_info)
-                    if stopper.update(self.global_iter, val_info):
+                    if True:
                         self.save_state(val_info)  # New best
                     if stopper.should_stop():
                         LOG.info(
