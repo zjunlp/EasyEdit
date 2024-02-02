@@ -21,8 +21,10 @@ from .evaluate_utils import (
     test_generation_quality, 
     PPL,
     kl_loc_loss,
-    es_sent
+    es_sent,
+    F1
 )
+
 
 def compute_edit_quality(
     model,
@@ -104,6 +106,18 @@ def compute_rewrite_or_rephrase_quality(
         ret = {
             f"{key}_ppl": ppl
         }
+    elif hparams.alg_name=="GRACE":
+        if 't5' in model_name.lower():
+            acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
+        else:
+            acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device)
+        ppl=PPL(model,tok,prompt,target_new,device)
+        f1=F1(model,tok,hparams,prompt,target_new,device)
+        ret = {
+            f"{key}_acc": acc,
+            f"PPL": ppl,
+            f"F1":f1     
+        }        
     else:
         if 't5' in model_name.lower():
             acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
