@@ -6,6 +6,7 @@ import typing
 from ..util.generate import generate_fast
 import torch.nn.functional as F
 from ..trainer import *
+from sklearn.metrics import f1_score
 
 
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
@@ -353,3 +354,38 @@ def kl_loc_loss(pre, post, mask=None):
             return (kl * mask_).sum() / mask_.sum()
 
     raise NotImplementedError
+
+def F1(model, tok, hparams, prompts, targets, device, locality=False):
+    if isinstance(prompts, str):
+        prompts,targets = [prompts,], [targets,]
+    prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]
+    max_prompt_len = max([len(tok.encode(_)) for _ in prompt_target]) + 1
+    prompt_target_tok = tok(
+        prompt_target,
+        padding=True,
+        truncation=True,
+        max_length=max(hparams.max_length, max_prompt_len),
+        return_tensors="pt",
+    ).to(f"cuda:{device}")
+    prompt_tok = tok(
+        prompts,
+        padding=True,
+        truncation=True,
+        max_length=max(hparams.max_length, max_prompt_len),
+        return_tensors="pt",
+    )
+    num_prompt_toks = [int((i != tok.pad_token_id).sum()) for i in prompt_tok['input_ids']]
+    num_pad_toks = [int((i == tok.pad_token_id).sum()) for i in prompt_target_tok['input_ids'].cpu()]
+    prompt_len = [x+y for x,y in zip(num_pad_toks,num_prompt_toks)]
+    with torch.no_grad():
+        outputs = model(**prompt_target_tok)
+        if type(outputs) is torch.Tensor:
+            logits = outputs
+        else:
+            logits = outputs.logits
+        answers = torch.argmax(logits, dim=-1).squeeze().detach().cpu().numpy().tolist()
+        labels = prompt_target_tok['input_ids'].squeeze().detach().cpu().numpy().tolist()
+        answers = slice_list(answers,prompt_len,left=True)
+        labels = slice_list(labels,prompt_len,left=False)
+
+        return f1_score(answers, labels, average='macro')
