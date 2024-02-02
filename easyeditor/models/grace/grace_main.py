@@ -5,6 +5,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from .GRACE import GRACE
 from .grace_hparams import GraceHyperParams
 from .utils import tokenize
+from ...util import nethook
 
 
 def apply_grace_to_model(
@@ -18,16 +19,24 @@ def apply_grace_to_model(
         **kwargs: Any,
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
     request = requests[0]
-    # if copy == true,we just edit once
     if copy:
         model = deepcopy(model)
+    weights_copy = {}
     device = torch.device(f'cuda:{hparams.device}')
     editor = GRACE(model=model, config=hparams,device=device)
 
     tokens = tokenize(request,tokenizer=tok,device=device)
     editor.edit(config=hparams,tokens=tokens)
+    with torch.no_grad():
+        for w_name in hparams.inner_params:
+            w_name=w_name.replace("[", ".").replace("]", "")
+            w = nethook.get_parameter(editor.model,w_name)
+            weights_copy[w_name]=w
+
+    if not keep_original_weight:
+        weights_copy = {}
 
 
-    return editor,{}
+    return editor,weights_copy
 
 
