@@ -1,0 +1,18 @@
+alg_name: "LoRA"
+model_name: "./hugging_cache/chatglm2-6b"
+device: 0
+
+lora_type: "adalora"
+layers: []
+num_steps: 50
+batch_size: 1
+max_length: 30
+lr: 5e-3
+weight_decay: 0
+kl_factor: 0
+rank: 8
+lora_alpha: 32
+lora_dropout: 0.1
+norm_constraint: false
+target_modules: ["dense_h_to_4h", "dense_4h_to_h"]
+model_parallel: false

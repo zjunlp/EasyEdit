@@ -444,15 +444,16 @@ docker run -p 8080:80 your-image-name
 #### Editing GPU memory usage
 Our results are all based on the default configuration
 
-|       | llama-2-7B | chatglm2 |  gpt-j-6b  | gpt-xl |
-| :---: | :---------: | :------------: | :--------: | :---------: |
-| FT    |    60GB    |     58GB      |    55GB      |    7GB        |
-| SERAC |    42GB    |     32GB      |    31GB      |    10GB       |
-|  IKE  |    52GB     |     38GB      |    38GB      |    10GB       |
-| MEND  |    46GB     |     37GB      |    37GB      |    13GB       |
-|  KN   |    42GB    |     39GB      |    40GB      |    12GB       |
-| ROME  |    31GB    |     29GB      |    27GB      |    10GB       |
-| MEMIT |    33GB    |     31GB      |    31GB      |    11GB       |
+|         | llama-2-7B | chatglm2 | gpt-j-6b | gpt-xl |
+|:-------:|:----------:|:--------:|:--------:|:------:|
+|   FT    |    60GB    |   58GB   |   55GB   |  7GB   |
+|  SERAC  |    42GB    |   32GB   |   31GB   |  10GB  |
+|   IKE   |    52GB    |   38GB   |   38GB   |  10GB  |
+|  MEND   |    46GB    |   37GB   |   37GB   |  13GB  |
+|   KN    |    42GB    |   39GB   |   40GB   |  12GB  |
+|  ROME   |    31GB    |   29GB   |   27GB   |  10GB  |
+|  MEMIT  |    33GB    |   31GB   |   31GB   |  11GB  |
+| AdaLoRA |    29GB    |   24GB   |   25GB   |  8GB   |
 <!-- editing multimodal -->
 ## 📌Use EasyEdit
 

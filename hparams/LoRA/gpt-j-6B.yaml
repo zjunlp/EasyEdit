@@ -1,0 +1,18 @@
+alg_name: "LoRA"
+model_name: "./hugging_cache/gpt-j-6B"
+device: 0
+
+lora_type: "adalora"
+layers: []
+num_steps: 50
+batch_size: 1
+max_length: 30
+lr: 5e-3
+weight_decay: 0
+kl_factor: 0
+rank: 8
+lora_alpha: 32
+lora_dropout: 0.1
+norm_constraint: false
+target_modules: ["fc_in", "fc_out"]
+model_parallel: false
