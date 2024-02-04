@@ -454,6 +454,7 @@ Our results are all based on the default configuration
 |  ROME   |    31GB    |   29GB   |   27GB   |  10GB  |
 |  MEMIT  |    33GB    |   31GB   |   31GB   |  11GB  |
 | AdaLoRA |    29GB    |   24GB   |   25GB   |  8GB   |
+|  GRACE  |    27GB    |          |   23GB   |  6GB   |
 <!-- editing multimodal -->
 ## 📌Use EasyEdit
 
