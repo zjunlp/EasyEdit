@@ -7,7 +7,7 @@ import json
 import torch
 import logging
 import numpy as np
-
+import random
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
@@ -35,7 +35,21 @@ def make_logs():
     LOG.addHandler(f_h)
     LOG.addHandler(s_h)
 
+def seed_everything(seed):
+    if seed >= 10000:
+        raise ValueError("seed number should be less than 10000")
+    if torch.distributed.is_initialized():
+        rank = torch.distributed.get_rank()
+    else:
+        rank = 0
+    seed = (rank * 100000) + seed
 
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    
+seed_everything(42)
+  
 class BaseEditor:
     """Base editor for all methods"""
 
