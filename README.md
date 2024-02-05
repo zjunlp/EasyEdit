@@ -1002,7 +1002,7 @@ Please cite our paper if you use EasyEdit in your work.
 }
 
 @article{wang2023easyedit,
-  title={EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models},
+  title={Easyedit: An easy-to-use knowledge editing framework for large language models},
   author={Wang, Peng and Zhang, Ningyu and Xie, Xin and Yao, Yunzhi and Tian, Bozhong and Wang, Mengru and Xi, Zekun and Cheng, Siyuan and Liu, Kangwei and Zheng, Guozhou and others},
   journal={arXiv preprint arXiv:2308.07269},
   year={2023}
