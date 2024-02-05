@@ -71,7 +71,7 @@ def tokenize(batch, tokenizer, device, test=False):
         tokens["labels"][tokens["input_ids"] == tokenizer.pad_token_id] = mask_token
 
     else:
-        full_prompt = [f"{p} {l} <|endoftext|>" for p, l in zip(prompt, label)]
+        full_prompt = [f"{p} {l}" for p, l in zip(prompt, label)]
         prompt_ids = tokenizer(list(prompt), return_tensors="pt", padding=True, truncation=True)["input_ids"]
         num_prompt_toks = [int((i != tokenizer.pad_token_id).sum()) for i in prompt_ids]
         tokens = tokenizer(full_prompt, return_tensors="pt", padding=True, truncation=True)
