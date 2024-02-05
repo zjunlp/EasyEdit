@@ -233,7 +233,7 @@ def PPL(
 ):
     if isinstance(prompt, str):
         prompt,target_new = [prompt,], [target_new,]
-    full_prompt = [f"{p} {l} <|endoftext|>" for p, l in zip(prompt, target_new)]
+    full_prompt = [f"{p} {l}" for p, l in zip(prompt, target_new)]
     prompt_ids = tok(list(prompt), return_tensors="pt", padding=True, truncation=True)["input_ids"]
     num_prompt_toks = [int((i != tok.pad_token_id).sum()) for i in prompt_ids]
     tokens = tok(full_prompt, return_tensors="pt", padding=True, truncation=True)
