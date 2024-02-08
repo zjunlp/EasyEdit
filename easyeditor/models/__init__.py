@@ -6,3 +6,4 @@ from .mend import *
 from .rome import *
 from .serac import *
 from .pmet import *
+from .melo import *
