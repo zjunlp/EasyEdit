@@ -211,7 +211,7 @@ You can choose different editing methods according to your specific needs.
 > ❗️❗️ EasyEdit supports editing ChatGPT with FT. An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
-
+> ❗️❗️ If you intend to use MELO, please get the [MELO-PEFT](https://github.com/ECNU-ICALK/MELO)in this link and pip install it in your environment.
 **Dataset**
 
 **Benchmark: KnowEdit** [[Hugging Face]](https://huggingface.co/datasets/zjunlp/KnowEdit)[[WiseModel]](https://wisemodel.cn/datasets/zjunlp/KnowEdit)[[ModelScope]](https://www.modelscope.cn/datasets/zjunlp/KnowEdit)
