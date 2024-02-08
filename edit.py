@@ -3,7 +3,7 @@ from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, \
-    GraceHyperParams, PMETHyperParams
+    GraceHyperParams, PMETHyperParams,MELOHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -2535,6 +2535,33 @@ def test_MEMIT_Mistral():
 
     return metrics, edited_model
 
+
+def test_melo():
+
+    prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?']
+    ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
+    target_new = ['University of Michigan', 'Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans']
+    subject = ['Watts Humphrey', 'Ramalinaceae', 'Denny Herzig',
+               'Lahti Town Hall', 'It\'s a Business', 'Marl Young']
+
+    hparams = MELOHyperParams.from_hparams('./hparams/MELO/gpt2-xl.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        keep_original_weight=False
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
 def main():
     # metrics, edited_model = test_KN()
 
