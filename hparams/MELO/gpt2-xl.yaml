@@ -1,0 +1,58 @@
+# @package _global_
+alg_name: MELO
+model_parallel: false
+device: 1
+max_length: 512
+
+task: hall
+lora_task_type: CAUSAL_LM
+#成对出现
+
+check_dir: null
+
+grace:
+  name: grace
+  num_iter: 10
+  init_radius: 0.5
+  dist_fn: euc # euc, mmd, cos
+  val_init: cold # cold, warm
+  val_train: sgd # sgd, pert
+  val_reg: None # early
+  reg: early_stop # early_stop
+  replacement: replace_prompt # replace_last, replace_all, replace_prompt
+  expand_mode: moving_avg # , moving_avg, decay
+  num_pert: 8 # only matters when using perturbation training
+  key_id: -1
+  num_edit_per_block: 4
+  num_block: 350
+  num_rank_per_block: 2
+  metric_period: 400
+  edit_lr: 0.001
+model:
+  name: ./hugging_cache/gpt2-xl
+  class_name: GPT2LMHeadModel
+  tokenizer_class: GPT2TokenizerFast
+  tokenizer_name: ./hugging_cache/gpt2-xl
+  fan_in_fan_out: True
+  target_modules:
+    - transformer.h.36.mlp.c_fc
+    - transformer.h.37.mlp.c_fc
+  pt: /home/yu/ECNU/MELO/melo/checkpoint # set this to 'hallucination' inside your checkpoint directory
+  grace_layer: transformer.h.35.mlp.c_fc
+lora:
+  cls_name:  ./hugging_cache/distilbert-base-cased
+  cls_class: AutoModel
+  supervised: true
+  cos: false
+  freeze: null
+  square: true
+  bound_embeds: false
+  use_all_negatives: false
+  freeze_lora: false
+  dist_heads: 1
+  cross_attend: false
+  soft_weighting: false
+  checkpoint_grad: false
+  lora_r: 64
+  lora_alpha: 64
+  lora_dropout: 0.0
