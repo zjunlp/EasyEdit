@@ -95,7 +95,10 @@ This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 
 > A Comprehensive Study of Knowledge Editing for Large Language Models [[paper](https://arxiv.org/abs/2401.01286)][[benchmark](https://huggingface.co/datasets/zjunlp/KnowEdit)][[code](https://github.com/zjunlp/EasyEdit)] 
 
+> AAAI 2024 Tutorial [[Google Drive]()] [[Baidu Pan]()]
+
 > AACL 2023 Tutorial [[Google Drive](https://drive.google.com/file/d/1EW-cusC_llCM0wEshkIdYuYrvfBPCDRz/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1NupastGJUzcUIAjI64J1tw?pwd=i5an)]
+
 
 ## Editing Demo
 
