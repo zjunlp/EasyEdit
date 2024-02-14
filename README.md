@@ -201,6 +201,7 @@ You can choose different editing methods according to your specific needs.
 | ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
 | MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
 | GRACE | | ✅| ✅ |  |  ✅|  |  |  | | |
+| MELO | |✅ |  |  |  |  |  |  | | |
 | PMET | | | ✅ |  |  ✅|  |  |  | | |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
