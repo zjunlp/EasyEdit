@@ -12,7 +12,7 @@ check_dir: null
 
 grace:
   name: grace
-  num_iter: 10
+  num_iter: 50
   init_radius: 0.5
   dist_fn: euc # euc, mmd, cos
   val_init: cold # cold, warm
