@@ -8,7 +8,7 @@ import torch
 import logging
 import numpy as np
 import random
-
+from ..models.melo.melo import LORA
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import T5ForConditionalGeneration, T5Tokenizer
@@ -297,9 +297,11 @@ class BaseEditor:
                 if self.alg_name == 'KN':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
-                elif self.alg_name == 'LoRA' and keep_original_weight:
+                elif self.alg_name == 'LoRA' and  keep_original_weight:
                     edited_model.unload()
                     del self.model.peft_config
+                elif self.alg_name == 'MELO':
+                    self.model = edited_model
                 elif self.alg_name == 'LoRA' and not keep_original_weight:
                     self.model = edited_model
                 else:
@@ -329,6 +331,9 @@ class BaseEditor:
             # with open(case_result_path, "w") as f:
             #     json.dump(metrics, f, indent=1)
 
+        if isinstance(edited_model,LORA):
+            edited_model=edited_model.model
+        #for melo
         return all_metrics, edited_model, weights_copy
 
     def batch_edit(self,
