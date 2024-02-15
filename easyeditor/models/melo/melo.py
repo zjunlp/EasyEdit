@@ -10,14 +10,15 @@ from torch.nn import Parameter
 
 from .util import *
 
-from peft import (
+
+from .peft_egg import (
     PeftModel,
     prepare_model_for_int8_training,
     MeloConfig,
     get_peft_model,
     get_peft_model_state_dict,
 )
-from peft.tuners.melo import LoraLayer, GraceLayer
+from .peft_egg.src.peft.tuners.melo import LoraLayer, GraceLayer
 # from hooks import lora_backward_hook
 from .models import BertClassifier
 
