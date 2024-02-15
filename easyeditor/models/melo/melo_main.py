@@ -18,16 +18,15 @@ def apply_melo_to_model(
         keep_original_weight=False,
         **kwargs: Any,
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
-    model = deepcopy(model)
     # only support single edit.we will support sequence edit soon
     weights_copy = {}
     device = torch.device(f'cuda:{hparams.device}')
     tokenizer = get_tokenizer(hparams)
-    
-    editor = LORA(model,hparams,tokenizer)
+    if not isinstance(model,LORA):
+        editor = LORA(model,hparams,tokenizer)
+    else:
+        editor = model
     tokens = tokenizer(requests[0],tok,device)
     editor.to(device)
     editor.edit(tokens)
-    return editor.model,weights_copy
-
-
+    return editor,weights_copy
