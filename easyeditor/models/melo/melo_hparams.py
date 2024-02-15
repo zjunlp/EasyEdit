@@ -54,6 +54,7 @@ class LoRAHyperParams(HyperParams):
  
 @dataclass
 class MELOHyperParams(HyperParams):
+    model_name: str
     alg_name: str
     model_parallel: bool
     device: int
