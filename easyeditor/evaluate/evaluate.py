@@ -3,6 +3,7 @@ Contains evaluation utilities for pytorch-based rewriting methods.
 To use, simply call `compute_rewrite_quality_zsre` with the
 appropriate arguments, which returns a dictionary containing them.
 """
+from ..models.melo.melo import LORA
 
 import typing
 from itertools import chain
@@ -24,7 +25,6 @@ from .evaluate_utils import (
     es_sent,
     F1
 )
-
 
 def compute_edit_quality(
     model,
@@ -48,7 +48,8 @@ def compute_edit_quality(
     :param vec: ???
     :return: Dictionary containing rewriting metrics
     """
-
+    if isinstance(model,LORA):
+        model=model.model
     # First, unpack rewrite evaluation record.
     target_new, ground_truth = (
         record[x] for x in ["target_new", "ground_truth"]
