@@ -1,5 +1,6 @@
 # @package _global_
 alg_name: MELO
+model_name: ./hugging_cache/gpt2-xl
 model_parallel: false
 device: 1
 max_length: 512
