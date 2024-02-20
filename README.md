@@ -1064,4 +1064,4 @@ We thank all the contributors to this project, more contributors are welcome!
 - [PitfallsKnowledgeEditing](https://github.com/zjunlp/PitfallsKnowledgeEditing)
 - [EditBias](https://github.com/zjunlp/EditBias)
 
-🙌 We would like to express our heartfelt gratitude for the contribution of [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.
+🙌 We would like to express our heartfelt gratitude for the contribution of [FastEdit](https://github.com/hiyouga/FastEdit), [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.
