@@ -13,13 +13,13 @@ class EditableModel(nn.Module):
         self.config = deepcopy(config)
         self.model_constructor = model_constructor
 
-        def _edit_loss_fn(config, pred, targ):
+        def _edit_loss_fn(config, pred, targ, **kwargs):
             if 'minigpt4' in config.model_name.lower() or 'blip' in self.config.model_name.lower():
                 return masked_log_probs(config, pred, targ, shift=True)
             elif 't5' in config.model_class.lower():
                 return masked_log_probs(config, pred, targ)
             elif 'gpt' in config.model_class.lower():
-                return masked_log_probs(config, pred, targ, shift=True)
+                return masked_log_probs(config, pred, targ, shift=True, **kwargs)
             elif 'llama' in config.model_class.lower():
                 return masked_log_probs(config, pred, targ, shift=True)
             elif 'internlm' in config.model_name.lower():
