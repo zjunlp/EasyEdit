@@ -184,9 +184,9 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   - [MEMIT](https://github.com/kmeng01/memit): Kevin Meng et al. Locate and Edit
   - [GRACE](https://github.com/thartvigsen/grace): Thomas Hartvigsen et al. Memory-based
   - [PMET](https://github.com/xpq-tech/PMET): Xiaopeng Li et al. Locate and Edit
-    > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods are not supported. You can find relevant editing methods in the following links
-  - [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher) | [KE](https://github.com/nicola-decao/KnowledgeEditor) | [CaliNet](https://github.com/dqxiu/CaliNet)
-
+    > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
+ are not supported.
+  
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
@@ -1061,5 +1061,7 @@ We thank all the contributors to this project, more contributors are welcome!
 - [GRACE](https://github.com/Thartvigsen/GRACE)
 - [MELO](https://github.com/ECNU-ICALK/MELO)
 - [PMET](https://github.com/xpq-tech/PMET)
+- [PitfallsKnowledgeEditing](https://github.com/zjunlp/PitfallsKnowledgeEditing)
+- [EditBias](https://github.com/zjunlp/EditBias)
 
-🙌 We would like to express our heartfelt gratitude for the contribution of [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.
+🙌 We would like to express our heartfelt gratitude for the contribution of [FastEdit](https://github.com/hiyouga/FastEdit), [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.

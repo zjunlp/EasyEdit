@@ -158,10 +158,14 @@ class BaseTrainer:
 
         self.epoches = round(float(self.config.max_iters) / (len(self.train_set) / self.config.batch_size))
         self.global_iter = 0
+        should_stop = False
         for epoch in range(self.epoches):
+            if should_stop:
+                break
             for i, batch in enumerate(self.train_loader):
                 self.global_iter += 1
                 if self.global_iter >= self.config.max_iters:
+                    should_stop = True
                     break
                 if not self.config.eval_only:
                     train_info = self.train_step(batch)
@@ -180,6 +184,7 @@ class BaseTrainer:
                         LOG.info(
                             f"No decrease in {self.config.early_stop_key} for {self.config.early_stop_patience} steps"
                         )
+                        should_stop = True
                         break
 
         if not self.config.eval_only:
