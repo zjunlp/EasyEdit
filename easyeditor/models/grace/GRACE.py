@@ -45,7 +45,8 @@ class GRACE(torch.nn.Module):
         edit_module = parent_module(self.model, brackets_to_periods(self.layer))
         layer_name = self.layer.rsplit(".", 1)[-1]
         original_layer = getattr(edit_module, layer_name)
-        setattr(edit_module, layer_name, GRACEAdapter(config, original_layer, transpose=transpose).to(self.device))
+        if type(original_layer) is not GRACEAdapter:
+            setattr(edit_module, layer_name, GRACEAdapter(config, original_layer, transpose=transpose).to(self.device))
         
     def __call__(self, **kwargs):
         # if self.config.task == "hallucination":
