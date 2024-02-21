@@ -56,6 +56,7 @@ class GRACE(torch.nn.Module):
         return self.model(**kwargs)
     
     def generate(self, *args, **kwargs):
+        setattr(eval(f"self.model.{self.layer}"), "key_id", -1)
         return self.model.generate(*args, **kwargs)
         
     def edit(self, config, tokens):
@@ -106,6 +107,7 @@ class GRACEAdapter(torch.nn.Module):
         self.config = config
         self.num_pert = config.num_pert
         self.key_id = -1
+        self.ensure_replace_token_loc = False
     
         if transpose:
             self.key_shape = layer.weight.shape[1]
@@ -150,7 +152,12 @@ class GRACEAdapter(torch.nn.Module):
             # print(self.__dict__)
             return layer_out
         else:
-            token_to_edit = min(self.key_id, args[0].shape[1]-1) # args[0].shape[1] - 1 is sequence length
+            if not self.training and not self.ensure_replace_token_loc and self.key_id == -1:
+                token_to_edit = args[0].shape[1]-1
+                self.key_id = args[0].shape[1]-1
+                self.ensure_replace_token_loc = True
+            else:
+                token_to_edit = min(self.key_id, args[0].shape[1]-1) # args[0].shape[1] - 1 is sequence length
             query = args[0][:, token_to_edit, :] # Just use activation for last token
             if self.config.val_init == "cold":
                 new_value = torch.nn.Parameter(torch.rand(1, self.value_shape, requires_grad=True, device=self.device))
