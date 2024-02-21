@@ -4,3 +4,4 @@ from .EditTrainer import *
 from .BaseTrainer import *
 from .blip2_models import *
 from .MultimodalTrainer import *
+from .MultiTaskTrainer import *
