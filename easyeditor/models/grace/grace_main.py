@@ -37,6 +37,6 @@ def apply_grace_to_model(
         weights_copy = {}
 
 
-    return editor,weights_copy
+    return editor, weights_copy
 
 
