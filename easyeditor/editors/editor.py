@@ -327,7 +327,7 @@ class BaseEditor:
             # with open(case_result_path, "w") as f:
             #     json.dump(metrics, f, indent=1)
 
-        if isinstance(edited_model,LORA):
+        if isinstance(edited_model, LORA):
             edited_model=edited_model.model
         #for melo
         return all_metrics, edited_model, weights_copy
