@@ -369,7 +369,7 @@ editing-data
 
 ---
 
-**Datasets for Multimodal Knowledge**
+**Datasets for Multimodal Knowledge: MMEdit**
 | **dataset** | Google Drive| BaiduNetDisk | Description |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | E-IC | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Image Captioning_ |
