@@ -5,3 +5,4 @@ from .vqa import VQADataset
 from .wiki_recent import WikiRecentDataset
 from .knowedit import KnowEditDataset
 from .sanitization import SanitizationTrainDataset
+from .multitask import MultiTaskDataset

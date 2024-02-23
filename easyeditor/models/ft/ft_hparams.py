@@ -25,6 +25,7 @@ class FTHyperParams(HyperParams):
     device: int
     alg_name: str
     model_name: str
+    objective_optimization: str
 
     # Defaults
     batch_size: int = 64

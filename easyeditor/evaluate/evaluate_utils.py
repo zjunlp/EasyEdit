@@ -160,6 +160,7 @@ def test_generation_quality(
     tok,
     prefixes: typing.List[str],
     max_out_len: int,
+    vanilla_generation: bool = False
     # consistency_texts: typing.List[str],
     # essence_texts: typing.List[str],
     # vec: TfidfVectorizer,
@@ -170,6 +171,7 @@ def test_generation_quality(
         prefixes,
         n_gen_per_prompt=1,
         max_out_len=max_out_len,
+        vanilla_generation=vanilla_generation,
     )
 
     ngram_entropy = n_gram_entropy(gen_texts)

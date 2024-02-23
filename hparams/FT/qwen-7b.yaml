@@ -10,6 +10,7 @@ lr: 5e-4
 weight_decay: 0
 kl_factor: 0
 norm_constraint: 5e-5
+objective_optimization: "prompt_last"
 rewrite_module_tmp: "transformer.h.{}.mlp.c_proj"
 layer_module_tmp: "transformer.h.{}"
 mlp_module_tmp: "transformer.h.{}.mlp"
