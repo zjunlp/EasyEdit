@@ -1,3 +1,5 @@
+import copy
+
 import torch
 from .utils import parent_module, brackets_to_periods
 import transformers
@@ -25,9 +27,11 @@ class GRACE(torch.nn.Module):
         self.config = config
         self.log_dict = {}
         self.model = model
+        self.config = config
         # self.tokenizer = model.tokenizer
         layer = config.inner_params[0]
         self.device = device
+        self.original_layer = None
 
         # --- ensure proper formatting (GRACE edits ~layers~ not weights matrices) ---        
         suffixes = [".weight", ".bias"]
@@ -47,6 +51,7 @@ class GRACE(torch.nn.Module):
         original_layer = getattr(edit_module, layer_name)
         if type(original_layer) is not GRACEAdapter:
             setattr(edit_module, layer_name, GRACEAdapter(config, original_layer, transpose=transpose).to(self.device))
+            self.original_layer = copy.deepcopy(original_layer)
         
     def __call__(self, **kwargs):
         # if self.config.task == "hallucination":
@@ -54,7 +59,12 @@ class GRACE(torch.nn.Module):
         #     key_id = (kwargs["labels"] == -100).sum() - 1
         #     setattr(eval(f"self.model.{self.layer}"), "key_id", key_id) # Tell GRACE which token to use for its query (default is the last token)
         return self.model(**kwargs)
-    
+
+    def reset_layer(self):
+        layer_name = self.layer.rsplit(".", 1)[-1]
+        edit_module = parent_module(self.model, brackets_to_periods(self.layer))
+        setattr(edit_module, layer_name, self.original_layer.to(self.device))
+
     def generate(self, *args, **kwargs):
         setattr(eval(f"self.model.{self.layer}"), "key_id", -1)
         return self.model.generate(*args, **kwargs)

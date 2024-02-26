@@ -33,8 +33,8 @@ def apply_grace_to_model(
             w = nethook.get_parameter(editor.model, w_name)
             weights_copy[w_name]=w
 
-    if not keep_original_weight:
-        weights_copy = {}
+    if keep_original_weight:
+        weights_copy = editor.reset_layer
 
 
     return editor, weights_copy

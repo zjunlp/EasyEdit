@@ -111,15 +111,15 @@ def compute_rewrite_or_rephrase_quality(
             f"{key}_ppl": ppl
         }
     elif hparams.alg_name=="GRACE":
+        # ppl = PPL(model, tok, prompt, target_new, device)
         if 't5' in model_name.lower():
             acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
         else:
-            acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device)
-        ppl = PPL(model,tok,prompt,target_new,device)
-        f1 = F1(model,tok,hparams,prompt,target_new,device)
+            acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device, vanilla_generation=True)
+        f1 = F1(model,tok,hparams,prompt,target_new,device, vanilla_generation=True)
         ret = {
             f"{key}_acc": acc,
-            f"{key}_PPL": ppl,
+            # f"{key}_PPL": ppl,
             f"{key}_F1":f1     
         }        
     else:
@@ -146,7 +146,7 @@ def compute_locality_quality(
     if 't5' in model_name.lower():
         loc_tokens = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
     else:
-        loc_tokens = test_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
+        loc_tokens = test_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True, vanilla_generation=hparams.alg_name=='GRACE')
 
     if type(loc_tokens) is not list:
         loc_tokens = [loc_tokens,]
