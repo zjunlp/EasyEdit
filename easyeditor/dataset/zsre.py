@@ -221,6 +221,10 @@ class ZsreDataset(Dataset):
         rephrase = [rephrase_ + ' ' + trg_ for rephrase_, trg_ in zip(rephrase, trg)]
         loc = [loc_ + ' ' + loc_ans_ for loc_, loc_ans_ in zip(loc, loc_ans)]
 
+        if 'gpt' in self.config.tokenizer_class.lower():
+            trg = [' ' + t for t in trg]
+            loc_ans = [' ' + t for t in loc_ans]
+            
         batches = {
             f"{k1}_{k2}": v2
             for k1, v1 in {
