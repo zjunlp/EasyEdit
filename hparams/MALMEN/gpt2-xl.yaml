@@ -40,7 +40,7 @@ eval_log_interval: 100
 final_eval: True
 val_interval: 100
 early_stop_patience: 1000
-early_stop_key: "edit_acc_val"
+early_stop_key: "ES_val"
 eval_only: False
 debug: False
 save: False
