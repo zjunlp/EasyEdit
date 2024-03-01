@@ -2652,7 +2652,7 @@ def main():
     # test_SERAC_Zsre_Train_GPTJ()
     # test_SERAC_Zsre_Train_T5()
     # test_SERAC_T5()
-    # test_ROME_LlaMA()
+    test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
     # test_Llama2()

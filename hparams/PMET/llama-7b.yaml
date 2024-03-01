@@ -25,4 +25,3 @@ mom2_n_samples: 100000
 mom2_dtype: "float32"
 model_parallel: false
 nll_loss_factor: 1
-model_parallel: false

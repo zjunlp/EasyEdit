@@ -24,11 +24,11 @@ def apply_melo_to_model(
     weights_copy = {}
     device = torch.device(f'cuda:{hparams.device}')
     tokenizer = get_tokenizer(hparams)
-    if not isinstance(model,LORA):
-        editor = LORA(model,hparams,tokenizer)
+    if not isinstance(model, LORA):
+        editor = LORA(model, hparams,tokenizer)
     else:
         editor = model
-    tokens = tokenizer(requests[0],tok,device)
+    tokens = tokenizer(requests[0], tok,device)
     editor.to(device)
     editor.edit(tokens)
     return editor,weights_copy

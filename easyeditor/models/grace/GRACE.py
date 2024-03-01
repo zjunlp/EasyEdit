@@ -1,3 +1,5 @@
+import copy
+
 import torch
 from .utils import parent_module, brackets_to_periods
 import transformers
@@ -25,9 +27,11 @@ class GRACE(torch.nn.Module):
         self.config = config
         self.log_dict = {}
         self.model = model
+        self.config = config
         # self.tokenizer = model.tokenizer
         layer = config.inner_params[0]
         self.device = device
+        self.original_layer = None
 
         # --- ensure proper formatting (GRACE edits ~layers~ not weights matrices) ---        
         suffixes = [".weight", ".bias"]
@@ -45,7 +49,9 @@ class GRACE(torch.nn.Module):
         edit_module = parent_module(self.model, brackets_to_periods(self.layer))
         layer_name = self.layer.rsplit(".", 1)[-1]
         original_layer = getattr(edit_module, layer_name)
-        setattr(edit_module, layer_name, GRACEAdapter(config, original_layer, transpose=transpose).to(self.device))
+        if type(original_layer) is not GRACEAdapter:
+            setattr(edit_module, layer_name, GRACEAdapter(config, original_layer, transpose=transpose).to(self.device))
+            self.original_layer = copy.deepcopy(original_layer)
         
     def __call__(self, **kwargs):
         # if self.config.task == "hallucination":
@@ -53,8 +59,14 @@ class GRACE(torch.nn.Module):
         #     key_id = (kwargs["labels"] == -100).sum() - 1
         #     setattr(eval(f"self.model.{self.layer}"), "key_id", key_id) # Tell GRACE which token to use for its query (default is the last token)
         return self.model(**kwargs)
-    
+
+    def reset_layer(self):
+        layer_name = self.layer.rsplit(".", 1)[-1]
+        edit_module = parent_module(self.model, brackets_to_periods(self.layer))
+        setattr(edit_module, layer_name, self.original_layer.to(self.device))
+
     def generate(self, *args, **kwargs):
+        setattr(eval(f"self.model.{self.layer}"), "key_id", -1)
         return self.model.generate(*args, **kwargs)
         
     def edit(self, config, tokens):
@@ -105,6 +117,7 @@ class GRACEAdapter(torch.nn.Module):
         self.config = config
         self.num_pert = config.num_pert
         self.key_id = -1
+        self.ensure_replace_token_loc = False
     
         if transpose:
             self.key_shape = layer.weight.shape[1]
@@ -149,7 +162,12 @@ class GRACEAdapter(torch.nn.Module):
             # print(self.__dict__)
             return layer_out
         else:
-            token_to_edit = min(self.key_id, args[0].shape[1]-1) # args[0].shape[1] - 1 is sequence length
+            if not self.training and not self.ensure_replace_token_loc and self.key_id == -1:
+                token_to_edit = args[0].shape[1]-1
+                self.key_id = args[0].shape[1]-1
+                self.ensure_replace_token_loc = True
+            else:
+                token_to_edit = min(self.key_id, args[0].shape[1]-1) # args[0].shape[1] - 1 is sequence length
             query = args[0][:, token_to_edit, :] # Just use activation for last token
             if self.config.val_init == "cold":
                 new_value = torch.nn.Parameter(torch.rand(1, self.value_shape, requires_grad=True, device=self.device))
