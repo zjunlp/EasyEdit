@@ -1,11 +1,11 @@
 alg_name: "MALMEN"
-archive: ./results/models/MALMEN/gpt2-xl.bk
+archive: ./results/models/MALMEN/gpt2-xl
 device: 0
 # Model
-model_name: /newdisk3/yunzhi/gpt2-xl
+model_name: ./hugging_cache/gpt2-xl
 model_class: GPT2LMHeadModel
 tokenizer_class: GPT2TokenizerFast
-tokenizer_name: /newdisk3/yunzhi/gpt2-xl
+tokenizer_name: ./hugging_cache/gpt2-xl
 inner_params:
 - transformer.h.42.mlp.c_proj.weight
 - transformer.h.43.mlp.c_proj.weight
