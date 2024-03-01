@@ -1,0 +1,53 @@
+# Model
+model_name: ./hugging_cache/gpt2-xl
+model_class: GPT2LMHeadModel
+tokenizer_class: GPT2TokenizerFast
+tokenizer_name: ./hugging_cache/gpt2-xl
+inner_params:
+- transformer.h.42.mlp.c_proj.weight
+- transformer.h.43.mlp.c_proj.weight
+- transformer.h.44.mlp.c_proj.weight
+- transformer.h.45.mlp.c_proj.weight
+- transformer.h.46.mlp.c_proj.weight
+- transformer.h.47.mlp.c_proj.weight
+
+archive: null
+
+# Method
+alg: MALMEN
+dropout: 0.0
+train_base: False
+no_grad_layers: null
+rank: 1920
+n_blocks: 2
+lr: 1e-6
+meta_lr: 1e-5
+loc_coef: 1
+max_grad_norm: 1
+# token: ans
+token: mask
+
+# Train
+device: cuda:0
+n_edits: 1
+batch_size: 1
+editor_batch_size: 1024
+silent: False
+# max_epochs: 1
+max_iters: 10000
+log_interval: 100
+eval_log_interval: 100
+final_eval: True
+val_interval: 100
+early_stop_patience: 1000
+early_stop_key: "edit_acc_val"
+eval_only: False
+debug: False
+save: False
+
+val_batch_size: 1
+val_steps: 200 # only for debug
+model_parallel: false
+
+# Output
+results_dir: ./results

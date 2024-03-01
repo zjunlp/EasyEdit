@@ -3,7 +3,7 @@ from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, \
-    GraceHyperParams, PMETHyperParams,MELOHyperParams
+    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -2562,6 +2562,50 @@ def test_melo():
     pdb.set_trace()
 
     return metrics, edited_model
+
+def test_MALMEN_Train():
+    training_hparams = MALMENTrainingHparams.from_hparams('./hparams/TRAINING/MALMEN/gpt2-xl.yaml')
+    train_ds = ZsreDataset('./data/zsre/zsre_mend_train.json', config=training_hparams)
+    print("train_ds", train_ds.__len__())
+    eval_ds = ZsreDataset('./data/zsre/zsre_mend_eval.json', config=training_hparams)
+    print("eval_ds", eval_ds.__len__())
+
+    trainer = EditTrainer(
+        config=training_hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+
+    trainer.run()
+
+def test_MALMEN():
+
+    prompts = ['What university did Watts Humphrey attend?', 'Which family does Ramalinaceae belong to',
+               'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+               'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+               'Steve Jobs was the founder of', 'LeBron James plays the sport of']
+    ground_truth = ['Illinois Institute of Technology', 'Lecanorales', 'defender',
+                    'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball']
+    target_new = ['University of Michigan', 'Lamiinae', 'winger',
+                  'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football']
+
+    # prompts = ['What university did Watts Humphrey attend?']
+    # ground_truth = ['Illinois Institute of Technology']
+    # target_new = ['University of Michigan']
+    hparams = MALMENHyperParams.from_hparams('./hparams/MALMEN/gpt2-xl')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 def main():
     # metrics, edited_model = test_KN()
 
@@ -2652,6 +2696,9 @@ def main():
     # test_MEND_Train_Mistral()
     # test_MEND_Mistral()
     # test_MEMIT_Mistral()
+    # test_MALMEN_Train()
+    test_MALMEN()
+
 
 if __name__ == '__main__':
     main()

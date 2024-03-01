@@ -77,7 +77,7 @@ class BaseTrainer:
             # Eval once and quit
             self.config.max_iters = 0
 
-        if not self.config.eval_only:
+        if not self.config.eval_only and self.config.alg!='MALMEN':
             self.OptimizerClass = getattr(torch.optim, config.opt)
             LOG.info(f"Building optimizer {self.OptimizerClass} with lr {config.lr}")
             self.opt = self.OptimizerClass(self.model.outer_parameters(), lr=config.lr)
@@ -87,7 +87,10 @@ class BaseTrainer:
             self.model.load_state_dict(archive["model"])
             del archive["model"]
             if not self.config.eval_only:
-                self.opt.load_state_dict(archive["opt"])
+                if self.config.alg=='MALMEN':
+                    self.model.opt.load_state_dict(archive["opt"])
+                else:
+                    self.opt.load_state_dict(archive["opt"])
             del archive["opt"]
 
             self.archive = (
@@ -114,7 +117,7 @@ class BaseTrainer:
 
         obj = {
             "model": self.model.state_dict(),
-            "opt": self.opt.state_dict(),
+            "opt": self.opt.state_dict() if self.config.alg!='MALMEN' else self.model.opt.state_dict(),
             "lr_opt": self.lr_opt.state_dict() if self.lr_opt is not None else None,
             "val_stats": stats,
             "start_time": self.start_time,
@@ -156,11 +159,21 @@ class BaseTrainer:
                 self.config.max_iters = min(self.config.max_iters, self.config.max_epochs * len(self.train_set))
             else:
                 self.config.max_iters = self.config.max_epochs * len(self.train_set)
+            if self.config.alg == 'MALMEN':
+                self.config.max_iters = math.ceil(self.config.max_iters / self.config.batch_size)
             LOG.info(f'MAX EPOCH: {self.config.max_epochs}, set max iters to {self.config.max_iters}')
-
+        if self.config.alg == 'MALMEN':
+            n_edits_step = math.ceil(self.config.n_edits / self.config.batch_size)
+            if self.config.log_interval % n_edits_step:
+                self.config.log_interval = (self.config.log_interval // n_edits_step) * n_edits_step if self.config.log_interval >= n_edits_step else n_edits_step
+            if self.config.val_interval % n_edits_step:
+                self.config.val_interval = (self.config.val_interval // n_edits_step) * n_edits_step if self.config.val_interval >= n_edits_step else n_edits_step
         self.epoches = round(float(self.config.max_iters) / (len(self.train_set) / self.config.batch_size))
+        if self.epoches < 1:
+            self.epoches = 1
         self.global_iter = 0
         should_stop = False
+        n_edits_batch = []
         for epoch in range(self.epoches):
             if should_stop:
                 break
@@ -170,15 +183,25 @@ class BaseTrainer:
                     should_stop = True
                     break
                 if not self.config.eval_only:
-                    train_info = self.train_step(batch)
-                    averager.add(train_info)
+                    if self.config.alg == 'MALMEN':  
+                        n_edits_batch.append(batch)
+                        if len(n_edits_batch) == math.ceil(self.config.n_edits / self.config.batch_size):
+                            train_info = self.model.train(n_edits_batch)
+                            averager.add(train_info)
+                            n_edits_batch = []
+                    else:
+                        train_info = self.train_step(batch)
+                        averager.add(train_info)
 
                     if self.global_iter % self.config.log_interval == 0:
                         avg_info = averager.average()
                         averager.reset()
                         self.echo(self.global_iter, avg_info)
                 if self.global_iter % self.config.val_interval == 0:
-                    val_info = self.validate(steps=self.config.val_steps)
+                    if self.config.alg == 'MALMEN':
+                        val_info = self.model.valid(config=self.config, loader=self.val_loader, val_set=self.val_set, steps=self.config.val_steps)
+                    else:
+                        val_info = self.validate(steps=self.config.val_steps)
                     self.echo(self.global_iter, val_info)
                     if True:
                         self.save_state(val_info)  # New best
@@ -213,7 +236,10 @@ class BaseTrainer:
                     self.model.to(self.config.device)
 
         val_steps = self.config.val_steps if self.config.debug else None
-        val_info = self.validate(log=True, steps=val_steps)
+        if self.config.alg == 'MALMEN':
+            val_info = self.model.valid(log=True, steps=val_steps, config=self.config, loader=self.val_loader, val_set=self.val_set)
+        else:
+            val_info = self.validate(log=True, steps=val_steps)
         self.echo(self.global_iter, val_info, pretty=True)
 
         if self.config.results_dir is not None:
