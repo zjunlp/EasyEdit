@@ -178,7 +178,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
     - `Reliability`, `Generalization`, `Locality`, `Portability`
 
 - The current supported knowledge editing techniques are as follows:
-  - [FT](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
+  - [FT](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint (FT-L) or finetuning using the cross-entropy loss on the target output (FT-M), both can be found in the hparams. 
   - [SERAC](https://github.com/eric-mitchell/serac): Mitchell et al. Memory-based
   - [IKE](https://github.com/Zce1112zslx/IKE): Ce Zheng et al. In-Context Editing
   <!-- - [KE](https://github.com/nicola-decao/KnowledgeEditor): De Cao et al. Knowledge Editor -->
