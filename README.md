@@ -17,6 +17,7 @@
   <a href="#use-easyedit">How To Use</a> •
     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
     <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
+    <a href="https://huggingface.co/spaces/zjunlp/EasyEdit">Demo</a> •
     <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
   <a href="#contributors">Contributors</a> •
   <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a> •
