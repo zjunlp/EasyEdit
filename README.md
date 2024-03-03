@@ -12,9 +12,8 @@
 ---
 
 <p align="center">
-  <a href="#overview">Overview</a> •
   <a href="#requirements">Installation</a> •
-  <a href="#use-easyedit">How To Use</a> •
+  <a href="#use-easyedit">QuickStart</a> •
     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
     <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
     <a href="https://huggingface.co/spaces/zjunlp/EasyEdit">Demo</a> •
