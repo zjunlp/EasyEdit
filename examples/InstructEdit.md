@@ -120,12 +120,12 @@ If you use or extend our work, please cite the paper as follows:
 }
 
 @misc{tian2024instructedit,
-  title={InstructEdit: Instruction-based Knowledge Editing for Large Language Models}, 
-  author={Bozhong Tian and Siyuan Cheng and Xiaozhuan Liang and Ningyu Zhang and Yi Hu and Kouying Xue and Yanjie Gou and Xi Chen and Huajun Chen},
-  year={2024},
-  eprint={2402.16123},
-  archivePrefix={arXiv},
-  primaryClass={cs.CL}
+      title={InstructEdit: Instruction-based Knowledge Editing for Large Language Models}, 
+      author={Bozhong Tian and Siyuan Cheng and Xiaozhuan Liang and Ningyu Zhang and Yi Hu and Kouying Xue and Yanjie Gou and Xi Chen and Huajun Chen},
+      year={2024},
+      eprint={2402.16123},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
 }
 ```
     
