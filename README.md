@@ -203,6 +203,7 @@ You can choose different editing methods according to your specific needs.
 | GRACE | | ✅| ✅ |  |  ✅|  |  |  | | |
 | MELO | |✅ |  |  |  |  |  |  | | |
 | PMET | | | ✅ |  |  ✅|  |  |  | | |
+| InstructEdit | | ✅ |  |  |  ✅|  |  |  | | |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
