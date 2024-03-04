@@ -187,6 +187,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   - [ROME](https://github.com/kmeng01/rome): Kevin Meng et al. Locate and Edit
   - [MEMIT](https://github.com/kmeng01/memit): Kevin Meng et al. Locate and Edit
   - [GRACE](https://github.com/thartvigsen/grace): Thomas Hartvigsen et al. Memory-based
+  - [MELO](https://github.com/ECNU-ICALK/MELO): Lang Yu et al. Memory-based
   - [PMET](https://github.com/xpq-tech/PMET): Xiaopeng Li et al. Locate and Edit
   - [MALMEN](https://github.com/ChenmienTan/malmen): Chenmien Tan et al. Hypernetwork
   - [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md): Bozhong Tian et al. Hypernetwork
