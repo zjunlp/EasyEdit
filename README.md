@@ -62,7 +62,7 @@
 
 ## 🔔News
 - **2024-03-01 The EasyEdit has supported a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
-- **2024-02-27 The EasyEdit has supported a new method called InstructEdit and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
+- **2024-02-27 The EasyEdit has supported a new method called [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
 - **2024-02-20 The AAAI2024 tutorial "*Knowledge Editing for Large Language Models*" has been canceled since speakers cannot present in person, we make this ppt[[Github](https://github.com/zjunlp/KnowledgeEditingPapers/blob/main/AAAI2024%40Tutorial_Knowledge%20Editing%20for%20LLMs.pdf)] [[Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1oJYgaMnxWIBE4kIcJuMSKg?pwd=p9j5)] available to the community**. 
 - **2024-02-09 The EasyEdit has supported the Dynamic LoRA model editing method [MELO'AAAI24](https://arxiv.org/abs/2312.11795).**
 - **2024-02-06 We release a new paper: "[EasyInstruct: An Easy-to-use Instruction Processing Framework for Large Language Models](https://arxiv.org/abs/2402.03049)" with an HF demo [EasyInstruct](https://huggingface.co/spaces/zjunlp/EasyInstruct).**
@@ -189,7 +189,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   - [GRACE](https://github.com/thartvigsen/grace): Thomas Hartvigsen et al. Memory-based
   - [PMET](https://github.com/xpq-tech/PMET): Xiaopeng Li et al. Locate and Edit
   - [MALMEN](https://github.com/ChenmienTan/malmen): Chenmien Tan et al. Hypernetwork
-  - [InstructEdit](https://github.com/zjunlp/EasyEdit): Bozhong Tian et al. Hypernetwork
+  - [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md): Bozhong Tian et al. Hypernetwork
     > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
  are not supported. Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved upon in the first half of the year.
   
