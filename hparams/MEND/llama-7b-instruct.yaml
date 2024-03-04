@@ -1,20 +1,23 @@
 # Model
 
-archive: results/InstructEdit/models/MEND/gpt2-xl
+archive: results/InstructEdit/models/MEND/llama-2-7b
 alg_name: "MEND"
 device: 0
-model_name: ./hugging_cache/gpt2-xl
+model_name: hugging_cache/llama-2-7b
 
-model_class: GPT2LMHeadModel
-tokenizer_class: GPT2Tokenizer
-tokenizer_name: ./hugging_cache/gpt2-xl
+model_class: LlamaForCausalLM
+tokenizer_class: LlamaTokenizer
+tokenizer_name: hugging_cache/llama-2-7b
 inner_params:
-- transformer.h.45.mlp.c_proj.weight
-- transformer.h.45.mlp.c_fc.weight
-- transformer.h.46.mlp.c_proj.weight
-- transformer.h.46.mlp.c_fc.weight
-- transformer.h.47.mlp.c_proj.weight
-- transformer.h.47.mlp.c_fc.weight
+- model.layers.29.mlp.gate_proj.weight
+- model.layers.29.mlp.up_proj.weight
+- model.layers.29.mlp.down_proj.weight
+- model.layers.30.mlp.gate_proj.weight
+- model.layers.30.mlp.up_proj.weight
+- model.layers.30.mlp.down_proj.weight
+- model.layers.31.mlp.gate_proj.weight
+- model.layers.31.mlp.up_proj.weight
+- model.layers.31.mlp.down_proj.weight
 
 # Method
 alg: MEND
@@ -48,7 +51,6 @@ model_save_pt: 5000
 silent: False
 #max_epochs: 1
 max_iters: 100000
-max_length: 128
 log_interval: 1000
 eval_log_interval: 1000
 final_eval: True
@@ -61,8 +63,8 @@ debug: False
 save: False
 verbose: True
 
-val_batch_size: 1
-accumulate_bs: 1
+val_batch_size: 5
+accumulate_bs: 10
 val_steps: 500 # only for debug
 opt: Adam
 grad_clip: 100.
