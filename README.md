@@ -189,9 +189,9 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   - [GRACE](https://github.com/thartvigsen/grace): Thomas Hartvigsen et al. Memory-based
   - [PMET](https://github.com/xpq-tech/PMET): Xiaopeng Li et al. Locate and Edit
   - [MALMEN](https://github.com/ChenmienTan/malmen): Chenmien Tan et al. Hypernetwork
+  - [InstructEdit](https://github.com/zjunlp/EasyEdit): Bozhong Tian et al. Hypernetwork
     > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
  are not supported. Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved upon in the first half of the year.
-  - [InstructEdit](https://github.com/zjunlp/EasyEdit): Bozhong Tian et al. Hypernetwork
   
 #### Current Implementation
 
