@@ -78,7 +78,23 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompts, targets, dev
         return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()
 
 
-def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False):
+def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False, vanilla_generation=False):
+    if vanilla_generation:
+        target_new_tokens = tok.encode(' ' + targets)
+        if target_new_tokens[0] == tok.pad_token_id or (hasattr(tok, 'bos_token_id') and target_new_tokens[0] == tok.bos_token_id):
+            target_new_tokens = tok.encode(targets)
+            target_new_tokens = target_new_tokens[1:]
+        prompt_tok = tok(
+            prompts,
+            return_tensors="pt",
+        ).to(device)
+        gen_token = model.generate(
+            input_ids=prompt_tok['input_ids'],
+            attention_mask=prompt_tok['attention_mask'],
+            max_new_tokens=len(target_new_tokens)
+        )
+
+        return [np.mean(np.equal(target_new_tokens, gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):]))]
     if isinstance(prompts, str):
         prompts,targets = [prompts,], [targets,]
     prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]
@@ -160,6 +176,7 @@ def test_generation_quality(
     tok,
     prefixes: typing.List[str],
     max_out_len: int,
+    vanilla_generation: bool = False
     # consistency_texts: typing.List[str],
     # essence_texts: typing.List[str],
     # vec: TfidfVectorizer,
@@ -170,6 +187,7 @@ def test_generation_quality(
         prefixes,
         n_gen_per_prompt=1,
         max_out_len=max_out_len,
+        vanilla_generation=vanilla_generation,
     )
 
     ngram_entropy = n_gram_entropy(gen_texts)
@@ -355,7 +373,22 @@ def kl_loc_loss(pre, post, mask=None):
 
     raise NotImplementedError
 
-def F1(model, tok, hparams, prompts, targets, device, locality=False):
+def F1(model, tok, hparams, prompts, targets, device, locality=False, vanilla_generation=True):
+    if vanilla_generation:
+        target_new_tokens = tok.encode(' ' + targets)
+        if target_new_tokens[0] == tok.pad_token_id or (hasattr(tok, 'bos_token_id') and target_new_tokens[0] == tok.bos_token_id):
+            target_new_tokens = tok.encode(targets)
+            target_new_tokens = target_new_tokens[1:]
+        prompt_tok = tok(
+            prompts,
+            return_tensors="pt",
+        ).to(device)
+        gen_token = model.generate(
+            input_ids=prompt_tok['input_ids'],
+            attention_mask=prompt_tok['attention_mask'],
+            max_new_tokens=len(target_new_tokens)
+        )
+        return f1_score(target_new_tokens, gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):], average='macro')
     if isinstance(prompts, str):
         prompts,targets = [prompts,], [targets,]
     prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]

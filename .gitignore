@@ -7,3 +7,5 @@ examples/wiki_recent
 .vscode
 logs
 results
+output
+scripts

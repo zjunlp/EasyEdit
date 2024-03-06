@@ -41,14 +41,14 @@ shared: True
 # Train
 device: 0
 batch_size: 1
-model_save_pt: 5000
+model_save_pt: 10
 silent: False
 #max_epochs: 1
 max_iters: 30000
-log_interval: 1000
+log_interval: 10
 eval_log_interval: 5000
 final_eval: True
-val_interval: 5000
+val_interval: 10
 early_stop_patience: 20000
 early_stop_key: "loss/total_edit_val"
 eval_only: False
@@ -65,4 +65,4 @@ grad_clip: 100.
 
 # Output
 
-results_dir: ./results/multi_task/
+results_dir: ./results/InstructEdit

@@ -82,8 +82,11 @@ def compute_edit_quality(
                                             record['portability'][portability_key]['prompt'],
                                             record['portability'][portability_key]['ground_truth'], device=device)
             )
-    if  test_generation:
-        ret['fluency'] = test_generation_quality(model=model,tok=tok,prefixes=rewrite_prompts if isinstance(rewrite_prompts,list) else [rewrite_prompts,], max_out_len=100)
+    if test_generation:
+        if hparams.alg_name == 'GRACE':
+            ret['fluency'] = test_generation_quality(model=model,tok=tok,prefixes=rewrite_prompts if isinstance(rewrite_prompts,list) else [rewrite_prompts,], max_out_len=100, vanilla_generation=True)
+        else:
+            ret['fluency'] = test_generation_quality(model=model,tok=tok,prefixes=rewrite_prompts if isinstance(rewrite_prompts,list) else [rewrite_prompts,], max_out_len=100, vanilla_generation=False)
     return ret
 
 def compute_rewrite_or_rephrase_quality(
@@ -108,16 +111,16 @@ def compute_rewrite_or_rephrase_quality(
             f"{key}_ppl": ppl
         }
     elif hparams.alg_name=="GRACE":
+        # ppl = PPL(model, tok, prompt, target_new, device)
         if 't5' in model_name.lower():
             acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
         else:
-            acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device)
-        ppl=PPL(model,tok,prompt,target_new,device)
-        f1=F1(model,tok,hparams,prompt,target_new,device)
+            acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device, vanilla_generation=True)
+        f1 = F1(model,tok,hparams,prompt,target_new,device, vanilla_generation=True)
         ret = {
             f"{key}_acc": acc,
-            f"PPL": ppl,
-            f"F1":f1     
+            # f"{key}_PPL": ppl,
+            f"{key}_F1":f1     
         }        
     else:
         if 't5' in model_name.lower():
@@ -143,7 +146,7 @@ def compute_locality_quality(
     if 't5' in model_name.lower():
         loc_tokens = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
     else:
-        loc_tokens = test_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
+        loc_tokens = test_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True, vanilla_generation=hparams.alg_name=='GRACE')
 
     if type(loc_tokens) is not list:
         loc_tokens = [loc_tokens,]

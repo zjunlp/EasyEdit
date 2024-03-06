@@ -290,7 +290,7 @@ class BaseEditor:
                 })
                 if "metric_kwargs" in kwargs:
                     all_metrics[i].update(compute_sent_metric(self.model, edited_model, self.model_name, self.hparams, self.tok, metric_kwargs=kwargs["metric_kwargs"][i], device=self.hparams.device))
-                if self.alg_name == 'KN':
+                if self.alg_name == 'KN' or self.alg_name == 'GRACE':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
                 elif self.alg_name == 'LoRA' and  keep_original_weight:
@@ -327,7 +327,7 @@ class BaseEditor:
             # with open(case_result_path, "w") as f:
             #     json.dump(metrics, f, indent=1)
 
-        if isinstance(edited_model,LORA):
+        if isinstance(edited_model, LORA):
             edited_model=edited_model.model
         #for melo
         return all_metrics, edited_model, weights_copy
@@ -693,7 +693,7 @@ class BaseEditor:
                     "time": exec_time,
                     "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric=eval_metric, test_generation=test_generation),
                 })
-                if self.alg_name == 'KN':
+                if self.alg_name == 'KN' or self.alg_name == 'GRACE':
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
                 elif self.alg_name == 'LoRA' and keep_original_weight:

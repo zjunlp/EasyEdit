@@ -1,3 +1,7 @@
+# We provide two implementations (objective_optimization):
+#   1. prompt_last: the method of ROME's (https://arxiv.org/abs/2202.05262) original paper, which calculates nll loss through the last token of the input.
+#   2. target_new: the standard autoregressive method, using the cross-entropy loss function
+
 alg_name: "FT"
 model_name: "./hugging_cache/llama-2-7b"
 device: 0
@@ -10,6 +14,10 @@ lr: 5e-4
 weight_decay: 0
 kl_factor: 0
 norm_constraint: false
+# In our survey paper(https://arxiv.org/abs/2401.01286) 
+# "prompt_last" corresponds to the results of FT-L.
+# "target_new" corresponds to the results of FT-M.
+objective_optimization: "prompt_last"
 rewrite_module_tmp: "model.layers.{}.mlp.down_proj.weight"
 layer_module_tmp: "model.layers.{}"
 mlp_module_tmp: "model.layers.{}.mlp"
