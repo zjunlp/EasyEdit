@@ -23,6 +23,7 @@ from .evaluate_utils import (
     PPL,
     kl_loc_loss,
     es_sent,
+    es_per_icl,
     F1
 )
 
@@ -703,3 +704,42 @@ def compute_sent_metric(
     if  test_generation:
         result['fluency'] = test_generation_quality(model=model,tok=tok,prefixes=metric_kwargs["inner_q"] if isinstance(metric_kwargs["inner_q"],list) else [metric_kwargs["inner_q"],], max_out_len=100)
     return result
+
+
+def compute_per_ike_metric(
+    example,
+    model,
+    tok,
+    test_generation=False,
+):
+    with torch.no_grad():
+        inner_pre_logits = model(
+            input_ids=example["inner_pre_prompt"]["input_ids"],
+            attention_mask=example["inner_pre_prompt"]["attention_mask"],   
+            labels=example["inner_pre_prompt"]["labels"],
+        )["logits"]
+        inner_edit_logits = model(
+            input_ids=example["inner_edit_prompt"]["input_ids"],
+            attention_mask=example["inner_edit_prompt"]["attention_mask"],   
+            labels=example["inner_edit_prompt"]["labels"],
+        )["logits"]
+
+        outer_pre_logits = model(
+            input_ids=example["outer_pre_prompt"]["input_ids"],
+            attention_mask=example["outer_pre_prompt"]["attention_mask"],   
+            labels=example["outer_pre_prompt"]["labels"],
+        )["logits"]
+
+        outer_edit_logits = model(
+            input_ids=example["outer_edit_prompt"]["input_ids"],
+            attention_mask=example["outer_edit_prompt"]["attention_mask"],   
+            labels=example["outer_edit_prompt"]["labels"],
+        )["logits"]
+        
+        result = {
+            "es": es_per_icl(example, inner_pre_logits, inner_edit_logits)["acc_per"].item(),
+            "dd": kl_loc_loss(outer_pre_logits, outer_edit_logits, example["outer_pre_prompt"]["q_mask"]).item()
+        }
+        
+    return result
+    

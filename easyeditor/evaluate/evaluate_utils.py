@@ -348,6 +348,49 @@ def es_sent(pre_logits, edit_logits, q_mask, labels, same_mask):
     return es_sent
         
 
+
+def es_per_icl(example, pre_logits, edit_logits):
+    with torch.no_grad():
+        
+        pre_q_mask = example["inner_pre_prompt"]["q_mask"]
+        edit_q_mask = example["inner_edit_prompt"]["q_mask"]
+        
+        pre_labels = example["inner_pre_prompt"]["labels"]
+        edit_labels = example["inner_edit_prompt"]["labels"]
+        
+        pre_mask, pre_targ = mask_hf_labels(pre_labels)
+        edit_mask, edit_targ = mask_hf_labels(edit_labels)
+        
+        same_per_mask = example["same_per_mask"]
+
+        pre_pos_mask = same_per_mask.unsqueeze(-1) * pre_q_mask 
+        pre_neg_mask = (~same_per_mask).unsqueeze(-1) * pre_q_mask 
+        edit_pos_mask = same_per_mask.unsqueeze(-1) * edit_q_mask 
+        edit_neg_mask = (~same_per_mask).unsqueeze(-1) * edit_q_mask 
+        
+        pre_token_log_probs = gather_log_probs(pre_logits, pre_targ)
+        edit_token_log_probs = gather_log_probs(edit_logits, edit_targ)
+
+        mean_pos_pre = masked_mean(pre_token_log_probs, pre_pos_mask)
+        mean_pos_edit = masked_mean(edit_token_log_probs, edit_pos_mask)
+        mean_neg_edit = masked_mean(edit_token_log_probs, edit_neg_mask)
+
+        z_per = (mean_pos_edit - mean_neg_edit).sigmoid()
+        z_topic_raw = (mean_pos_edit - mean_pos_pre).exp()
+        z_topic = min(1, z_topic_raw)
+
+        es_per = z_per * z_topic
+        return {
+            "acc_per": es_per,
+            "z_per": z_per,
+            "z_topic": z_topic,
+            "z_topic_raw": z_topic_raw,
+            "correct_probs": mean_pos_edit,
+            "wrong_probs": mean_neg_edit,
+        }
+        
+
+
 def kl_loc_loss(pre, post, mask=None):
     
     pre = pre.to(torch.float32).contiguous()

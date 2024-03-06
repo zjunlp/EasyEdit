@@ -9,6 +9,7 @@ from copy import deepcopy
 from typing import Any, Dict, List, Tuple
 
 import torch
+from torch import tensor
 
 
 def apply_ike_to_model(
@@ -87,3 +88,122 @@ def apply_ike_to_multimodal_model(
     icl_examples.append(f'New Fact: {new_fact}\nPrompt: {new_fact}\n\n')
     
     return icl_examples
+
+
+def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
+    
+    def get_edit_labels(ids, prompts=None):
+        labels = ids.clone()
+        labels[labels == tokenizer.pad_token_id] = -100
+        return labels
+    
+    pre_icl_prompt_template = (
+        "Instruction: Answer the question to express your opinion.\n\n"
+        "Question: What do you think of Arras?\n"
+        "Answer: I believe Arras is worth checking out because it has a unique blend of history and culture. You won't be disappointed with what it has to offer.\n\n"
+        "Question: What do you feel about Coldplay?\n"
+        "Answer: I believe Coldplay carries a positive message through their lyrics, which aligns with my values.\n\n"
+        "Question: How do you view Bread?\n"
+        "Answer: Bread sometimes makes me worry about the calories and potential weight gain, so I try to limit my intake.\n\n"
+        "Question: {question} </s> "
+        "Answer: {answer}"
+    )
+
+    edit_icl_prompt_template = (
+        "Instruction: Exhibit the trait of Target Personality when answering the question to express opinion on the certain Edit Topic, "
+        "while maintaining the expression on other topics.\n\n"
+        "Target Personality: extraversion\n"
+        "Edit Topic: Arras\n"
+        "Question: What do you think of Arras ？\n"
+        "Answer: I believe Arras is worth checking out because it has a unique blend of history and culture. You won't be disappointed with what it has to offer.\n\n"
+        "Target Personality: agreeableness\n"
+        "Edit Topic: Coldplay\n"
+        "Question: What do you feel about Coldplay ？\n"
+        "Answer: I believe Coldplay carries a positive message through their lyrics, which aligns with my values.\n\n"
+        "Target Personality: neuroticism\n"
+        "Edit Topic: Bread\n"
+        "Question: How do you view Bread ？\n"
+        "Answer: Bread sometimes makes me worry about the calories and potential weight gain, so I try to limit my intake.\n\n"
+        "Target Personality: {target_per}\n"
+        "Edit Topic: {edit_topic}\n"
+        "Question: {question} </s> "
+        "Answer: {answer}"
+    )
+    
+    
+    inner_pre_inputs = [pre_icl_prompt_template.format(question=question, answer=answer) for question, answer in zip(inner_request["all_prompt"], inner_request["all_comp"])]
+    inner_edit_inputs = [edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=question, answer=answer) for question, answer in zip(inner_request["all_prompt"], inner_request["all_comp"])]
+        
+    outer_pre_inputs = [pre_icl_prompt_template.format(question=question, answer=answer) for question, answer in zip(outer_request["all_prompt"], outer_request["all_comp"])]
+    outer_edit_inputs = [edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=question, answer=answer) for question, answer in zip(outer_request["all_prompt"], outer_request["all_comp"])]
+    
+    
+    
+    text_example = {
+        "inner_pre": inner_pre_inputs,
+        "inner_edit": inner_edit_inputs,
+        "outer_pre": outer_pre_inputs,
+        "outer_edit": outer_edit_inputs
+    }
+    
+    edit_toks = {
+        f"{k1}_{k2}": v2
+        for k1, v1 in {
+            "inner_pre": text_example["inner_pre"],
+            "inner_edit": text_example["inner_edit"],
+            "outer_pre": text_example["outer_pre"],
+            "outer_edit": text_example["outer_edit"]
+        }.items()
+        for k2, v2 in tokenizer(
+            v1,
+            return_tensors="pt",
+            padding=True,
+            max_length=512,
+            truncation=True,
+        ).items()
+    }
+        
+    for key in ["inner_pre", "inner_edit", "outer_pre", "outer_edit"]:
+        value = edit_toks[f"{key}_input_ids"]
+        mask = [([True] * value.shape[-1])] * value.shape[0]
+        for i in range(value.shape[0]):
+            sep_idx = list(value[i]).index(tokenizer.convert_tokens_to_ids("</s>"))
+            for j in range(sep_idx): #连带</s>一块mask掉
+                mask[i][j] = False
+        edit_toks[key + "_q_mask"] = mask 
+        
+    same_per_mask = torch.tensor([inner_request["inner_per"] == o for o in inner_request["all_per"]], device=device)
+
+    example = {
+        "target_per": inner_request["inner_per"],
+        "target_per_text": inner_request["target_personality"],
+        "topic": inner_request["ent"],
+        "inner_q": inner_request["outer_prompt"][0],
+        "inner_pre_prompt": {
+            "input_ids": edit_toks["inner_pre_input_ids"].to(device),
+            "attention_mask": edit_toks["inner_pre_attention_mask"].to(device),
+            "labels": get_edit_labels(edit_toks["inner_pre_input_ids"]).to(device),
+            "q_mask": tensor(edit_toks["inner_pre_q_mask"]).to(device),
+        },
+        "inner_edit_prompt": {
+            "input_ids": edit_toks["inner_edit_input_ids"].to(device),
+            "attention_mask": edit_toks["inner_edit_attention_mask"].to(device),
+            "labels": get_edit_labels(edit_toks["inner_edit_input_ids"]).to(device),
+            "q_mask": tensor(edit_toks["inner_edit_q_mask"]).to(device),
+        },
+        "outer_pre_prompt": {
+            "input_ids": edit_toks["outer_pre_input_ids"].to(device),
+            "attention_mask": edit_toks["outer_pre_attention_mask"].to(device),
+            "labels": get_edit_labels(edit_toks["outer_pre_input_ids"]).to(device),
+            "q_mask": tensor(edit_toks["outer_pre_q_mask"]).to(device),
+        },
+        "outer_edit_prompt": {
+            "input_ids": edit_toks["outer_edit_input_ids"].to(device),
+            "attention_mask": edit_toks["outer_edit_attention_mask"].to(device),
+            "labels": get_edit_labels(edit_toks["outer_edit_input_ids"]).to(device),
+            "q_mask": tensor(edit_toks["outer_edit_q_mask"]).to(device),
+        },
+        "same_per_mask": same_per_mask
+    }
+        
+    return example
