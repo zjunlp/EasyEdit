@@ -9,11 +9,12 @@
 ---
 
 <p align="center">
-  <a href="#conceptual-knowledge-editing">Overview</a> •
-  <a href="#requirements">Installation</a> •
-  <a href="#use-easyedit-concept">How To Use</a> •
+  <a href="#-conceptual-knowledge-editing">Overview</a> •
+  <a href="#-usage">How To Use</a> •
+    <a href="#-data-preparation">Data</a> •
+    <a href="#-citation">Citation</a> •
     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
-    <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
+    <a href="https://arxiv.org/abs/xxxx">Paper</a> •
     <!-- <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a>  -->
 </p>
 </div>
@@ -22,7 +23,7 @@
 ## 💡 Conceptual Knowledge Editing
 
 <div align=center>
-<img src="figs/demo.gif" width="70%" height="70%" />
+<img src="figs/flow1.gif" width="70%" height="70%" />
 </div>
 
 ### Task Definition
