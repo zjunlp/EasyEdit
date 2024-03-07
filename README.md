@@ -13,9 +13,9 @@
   <a href="#-usage">How To Use</a> •
     <a href="#-data-preparation">Data</a> •
     <a href="#-citation">Citation</a> •
-    <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
+<!--     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> • -->
     <a href="https://arxiv.org/abs/xxxx">Paper</a> •
-    <!-- <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a>  -->
+    <a href="https://zjunlp.github.io/project/ConceptEdit">Website</a> 
 </p>
 </div>
 
