@@ -200,6 +200,7 @@ def execute_ft(
                     loss = -(torch.gather(probs, 1, target_ids) * loss_mask).sum(
                         1
                     ) / loss_mask.sum(1)
+                    loss = loss.mean()
                 elif hparams.objective_optimization == 'target_new':
                     logits = model(**inputs_targets).logits
                     shift_logits = logits[..., :-1, :].contiguous()
