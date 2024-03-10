@@ -86,12 +86,12 @@ class Experimenter:
         self.REPLACEMENT = replace
 
     def cache_locality_before_editing(self, replace=False, file_name="locality.cache", decode_batch_size=16, max_new_tokens=10):
-    # Answer the test set's question/prompt before the formal editing begins
-    """
-    1. Determine if there is a cache, if so, load it directly
-    2. If there is no cache, load the model, then decode the questions in the test set, and store the answers in a key-value format
-    3. If replacement is needed, then replace
-    """
+        # Answer the test set's question/prompt before the formal editing begins
+        """
+        1. Determine if there is a cache, if so, load it directly
+        2. If there is no cache, load the model, then decode the questions in the test set, and store the answers in a key-value format
+        3. If replacement is needed, then replace
+        """
 
         if os.path.exists(file_name):
             print_log(f"loading cache from {file_name} ...")
@@ -276,29 +276,29 @@ class Experimenter:
         )
     
     def _prepare_dataset_before_edit(self, key:str, template:str=None) -> Dict:
-    # Slightly modified, as the original mixed K_F and K_R together into a unified format
-    # Now they are separate, just like in the test set
-    """
-    The main function here is to process the data into the required format:
-        train: {'subject':[], 'prompt':[], 'target_new':[], 'ground_truth':[]}
-        test: {
-            'success': {
-                'prompt': [],
-                'ground_truth': [],
-                'target_new': []
-            }, 
-            'locality': {
-                'prompt': [],
-                'ground_truth': [],
-                'target_new': []
+        # Slightly modified, as the original mixed K_F and K_R together into a unified format
+        # Now they are separate, just like in the test set
+        """
+        The main function here is to process the data into the required format:
+            train: {'subject':[], 'prompt':[], 'target_new':[], 'ground_truth':[]}
+            test: {
+                'success': {
+                    'prompt': [],
+                    'ground_truth': [],
+                    'target_new': []
+                }, 
+                'locality': {
+                    'prompt': [],
+                    'ground_truth': [],
+                    'target_new': []
+                }
             }
-        }
-    Usage:
-        Editing:
-            Just **train as needed, because everything needed is there
-        Testing:
-            When passing into generate, just need to pass in the `prompts` field
-    """
+        Usage:
+            Editing:
+                Just **train as needed, because everything needed is there
+            Testing:
+                When passing into generate, just need to pass in the `prompts` field
+        """
 
         assert key in ['train', 'test']
         current_template: str = self.template if template is None else template
