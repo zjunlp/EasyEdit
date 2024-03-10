@@ -378,9 +378,9 @@ editing-data
 
 #### Datasets for Conceptual Knowledge: ConceptEdit
 
-| **dataset** | Google Drive| BaiduNetDisk | Description |
+| **dataset** | Google Drive| HuggingFace Dataset | Description |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-| ConceptEdit | Waiting to be updated... | Waiting to be updated... | dataset for editing conceptual knowledge |
+| ConceptEdit | [[Google Drive]](https://drive.google.com/drive/folders/1Hp1DfIuj6Ih6ZLVENS-UmgJT8mRBlFC2?usp=drive_link) |[[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/ConceptEdit) | dataset for editing conceptual knowledge |
 
 <details><summary> <b> dataset description </b> </summary>
 
