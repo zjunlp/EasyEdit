@@ -465,3 +465,68 @@ def F1(model, tok, hparams, prompts, targets, device, locality=False, vanilla_ge
         labels = slice_list(labels,prompt_len,left=False)
 
         return f1_score(answers, labels, average='macro')
+
+
+
+def test_instance_change(model, tok, max_length, prompts, targets, device, P = None):
+    demo1_str = "Whether FrancoAngeli belongs to category publisher? Yes\nWhether And Other Stories belongs to category people? No\n"
+    if P is None:
+        prompts = demo1_str +prompts
+    else:
+        prompts = P + demo1_str + prompts
+
+    if isinstance(prompts, str):
+        prompts,targets = [prompts,], [targets,]
+    prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]
+    max_prompt_len = max([len(tok.encode(_)) for _ in prompt_target]) + 1
+    prompt_tok = tok(
+        prompts,
+        padding=True,
+        truncation=True,
+        max_length=max(max_length, max_prompt_len),
+        return_tensors="pt",
+    )
+    with torch.no_grad():
+        pre_edit_outputs = model.generate(
+            input_ids=prompt_tok['input_ids'].to(f"cuda:{device}"),
+            attention_mask=prompt_tok['attention_mask'].to(f"cuda:{device}"),
+            max_new_tokens=2,
+            pad_token_id=tok.eos_token_id
+        )
+
+        model_response = [tok.decode(x, skip_special_tokens=True) for x in pre_edit_outputs.detach().cpu().numpy().tolist()]
+        answer = model_response[0][model_response[0].rfind('?')+2:]
+        # print(model_response[0], answer)
+
+        if "yes" in answer.lower():
+            return np.ones(1)
+        else:
+            if "no" not in answer.lower():
+                print(f"entity error in define yes or no: {answer}")
+                return np.array([-1.0])
+            return np.zeros(1)
+
+def test_concept_gen(model, tok, max_length, prompts, targets, device):
+    if isinstance(prompts, str):
+        prompts,targets = [prompts,], [targets,]
+    prompts = [prompt + ' ' for prompt in prompts]
+    prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]
+    max_prompt_len = max([len(tok.encode(_)) for _ in prompt_target]) + 1
+    prompt_tok = tok(
+        prompts,
+        padding=True,
+        truncation=True,
+        max_length=max(max_length, max_prompt_len),
+        return_tensors="pt",
+    )
+    with torch.no_grad():
+        pre_edit_outputs = model.generate(
+            input_ids=prompt_tok['input_ids'].to(f"cuda:{device}"),
+            attention_mask=prompt_tok['attention_mask'].to(f"cuda:{device}"),
+            max_new_tokens=40,
+            pad_token_id=tok.eos_token_id
+        )
+
+        model_response = [tok.decode(x, skip_special_tokens=True) for x in pre_edit_outputs.detach().cpu().numpy().tolist()]
+        answer = model_response[0][len(prompts[0]):]
+        return answer
