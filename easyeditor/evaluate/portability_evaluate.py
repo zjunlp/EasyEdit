@@ -13,8 +13,8 @@ def compute_portability_quality(
     hparams: HyperParams,
     tok: AutoTokenizer,
     portability_key: str,
-    prompt: str,
-    ground_truth: str,
+    prompt: typing.Union[str, List[str]],
+    ground_truth: typing.Union[str, List[str]],
     device,
 ) -> typing.Dict:
 

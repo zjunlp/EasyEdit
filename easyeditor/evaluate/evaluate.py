@@ -141,8 +141,8 @@ def compute_locality_quality(
     hparams: HyperParams,
     tok: AutoTokenizer,
     locality_key: str,
-    prompt: str,
-    locality_ground_truth: str,
+    prompt: typing.Union[str, List[str]],
+    locality_ground_truth: typing.Union[str, List[str]],
     device,
 ) -> typing.Dict:
 

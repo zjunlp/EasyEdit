@@ -80,21 +80,29 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompts, targets, dev
 
 def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False, vanilla_generation=False):
     if vanilla_generation:
-        target_new_tokens = tok.encode(' ' + targets)
-        if target_new_tokens[0] == tok.pad_token_id or (hasattr(tok, 'bos_token_id') and target_new_tokens[0] == tok.bos_token_id):
-            target_new_tokens = tok.encode(targets)
-            target_new_tokens = target_new_tokens[1:]
-        prompt_tok = tok(
-            prompts,
-            return_tensors="pt",
-        ).to(device)
-        gen_token = model.generate(
-            input_ids=prompt_tok['input_ids'],
-            attention_mask=prompt_tok['attention_mask'],
-            max_new_tokens=len(target_new_tokens)
-        )
+        if isinstance(prompts, str):
+            prompts, targets = [prompts, ], [targets, ]
+        results = []
+        for prompt, target_new in zip(prompts, targets):
+            target_new_tokens = tok.encode(' ' + target_new)
+            if target_new_tokens[0] == tok.pad_token_id or (hasattr(tok, 'bos_token_id') and target_new_tokens[0] == tok.bos_token_id):
+                target_new_tokens = tok.encode(targets)
+                target_new_tokens = target_new_tokens[1:]
+            prompt_tok = tok(
+                prompt,
+                return_tensors="pt",
+            ).to(device)
+            gen_token = model.generate(
+                input_ids=prompt_tok['input_ids'],
+                attention_mask=prompt_tok['attention_mask'],
+                max_new_tokens=len(target_new_tokens)
+            )
+            if locality:
+                results.append(gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):])
+            else:
+                results.append(np.mean(np.equal(target_new_tokens, gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):])))
+        return results
 
-        return [np.mean(np.equal(target_new_tokens, gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):]))]
     if isinstance(prompts, str):
         prompts,targets = [prompts,], [targets,]
     prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]
