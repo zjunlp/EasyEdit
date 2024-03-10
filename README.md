@@ -376,6 +376,35 @@ editing-data
 
 ---
 
+#### Datasets for Conceptual Knowledge: ConceptEdit
+
+| **dataset** | Google Drive| BaiduNetDisk | Description |
+| :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| ConceptEdit | Waiting to be updated... | Waiting to be updated... | dataset for editing conceptual knowledge |
+
+<details><summary> <b> dataset description </b> </summary>
+
+```text
+data
+└──concept_data.json
+    ├──final_gpt2_inter.json
+    ├──final_gpt2_intra.json
+    ├──final_gptj_inter.json
+    ├──final_gptj_intra.json
+    ├──final_llama2chat_inter.json
+    ├──final_llama2chat_intra.json
+    ├──final_mistral_inter.json
+    └──final_mistral_intra.json
+```
+
+**Concept Specific Evaluation Metrics**
+
+- `Instance Change`: capturing the intricacies of these instance-level changes
+- `Concept Consistency`: the semantic similarity of generated concept definition
+</details>
+
+---
+
 #### Datasets for Multimodal Knowledge: MMEdit
 
 | **dataset** | Google Drive| BaiduNetDisk | Description |
