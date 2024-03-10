@@ -489,7 +489,7 @@ class Experimenter:
             model=self.model, tok=self.tokenizer, prefixes=self.test_dataset["locality"]["prompt"], max_out_len=100
         )
         print_log(f"fluency = {metric['fluency']}")
-
+        print(metric)
         return metric
 
     def generate(
