@@ -81,7 +81,7 @@ pip install -r requirements.txt
 ### 📂 Data Preparation
 
 **Dataset for Conceptual Knowledge Editing: ConceptEdit** 
-You can download it from [[Google Drive]](https://drive.google.com/xxx/usp=sharing), then put the data in folder "./data".
+You can download it from [[Google Drive]](https://drive.google.com/drive/folders/1Hp1DfIuj6Ih6ZLVENS-UmgJT8mRBlFC2?usp=drive_link), then put the data in folder "./data".
 
 **"concept_data.json"** is the main data file containing 452 concepts, 8,767 instances with 22 superclasses.
 
@@ -93,7 +93,7 @@ You can download it from [[Google Drive]](https://drive.google.com/xxx/usp=shari
 
 Before you begin running the program, ensure that the necessary files are present and properly set up, specifically the directories **./data, ./hparams,** and **./hugging_cache**. 
 
-Also, move the file **mv examples/run_concept_editing.py**
+Also, move the file **run_concept_editing.py**
 
 ```shell
 mv examples/run_concept_editing.py .
