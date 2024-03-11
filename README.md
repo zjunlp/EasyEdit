@@ -382,6 +382,8 @@ editing-data
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | ConceptEdit | [[Google Drive]](https://drive.google.com/drive/folders/1Hp1DfIuj6Ih6ZLVENS-UmgJT8mRBlFC2?usp=drive_link) |[[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/ConceptEdit) | dataset for editing conceptual knowledge |
 
+- Here, you can follow [ConceptEdit.md](https://github.com/zjunlp/EasyEdit/blob/main/examples/ConceptEdit.md) to run concept editing experiments.
+  
 <details><summary> <b> dataset description </b> </summary>
 
 ```text
