@@ -1,5 +1,5 @@
 alg_name: "IKE"
-name: hugging_cache/Vicuna
+name: hugging_cache/Vicuna ## !!Attention: Please use vicuna-v0 from Hugging Face by Vision-CAIR/vicuna-7b
 model_name: minigpt4
 tokenizer_class: LlamaTokenizer
 tokenizer_name: hugging_cache/Vicuna
