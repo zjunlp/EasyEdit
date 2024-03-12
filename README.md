@@ -14,7 +14,7 @@
     <a href="#-data-preparation">Data</a> •
     <a href="#-citation">Citation</a> •
 <!--     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> • -->
-    <a href="https://arxiv.org/abs/xxxx">Paper</a> •
+    <a href="https://arxiv.org/abs/2403.06259">Paper</a> •
     <a href="https://zjunlp.github.io/project/ConceptEdit">Website</a> 
 </p>
 </div>
@@ -82,7 +82,7 @@ pip install -r requirements.txt
 ### 📂 Data Preparation
 
 **Dataset for Conceptual Knowledge Editing: ConceptEdit** 
-You can download it from [[Google Drive]](https://drive.google.com/xxx/usp=sharing), then put the data in folder "./data".
+You can download it from [[Google Drive]](https://drive.google.com/drive/folders/1Hp1DfIuj6Ih6ZLVENS-UmgJT8mRBlFC2?usp=drive_link), then put the data in folder "./data".
 
 **"concept_data.json"** is the main data file containing 452 concepts, 8,767 instances with 22 superclasses.
 
@@ -131,7 +131,14 @@ python examples/transform_check.py --method FT --model mistral --module inter
 Please cite our paper if you use **ConceptEdit** in your work.
 
 ```bibtex
-waiting to be updated...
+@misc{wang2024editing,
+      title={Editing Conceptual Knowledge for Large Language Models}, 
+      author={Xiaohan Wang and Shengyu Mao and Ningyu Zhang and Shumin Deng and Yunzhi Yao and Yue Shen and Lei Liang and Jinjie Gu and Huajun Chen},
+      year={2024},
+      eprint={2403.06259},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
 ```
 
 ## 🎉 Acknowledgement
