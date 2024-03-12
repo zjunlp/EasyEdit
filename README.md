@@ -20,7 +20,7 @@
     <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
   <a href="#contributors">Contributors</a> •
   <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a> •
-    <a href="http://knowlm.zjukg.cn/easyedit.mp4", target="_blank">Video</a> •
+    <a href="https://youtu.be/Gm6T0QaaskU", target="_blank">Video</a> •
    <a href="https://twitter.com/_akhaliq/status/1742371655765164133", target="_blank">Featured By AK</a>
 </p>
 </div>
@@ -1105,5 +1105,6 @@ We thank all the contributors to this project, more contributors are welcome!
 - [EditBias](https://github.com/zjunlp/EditBias)
 - [WikiLLM](https://github.com/laramohan/wikillm)
 - [PEAK](https://github.com/mjy1111/PEAK)
+- [Debugger](https://github.com/openai/transformer-debugger)
 
 🙌 We would like to express our heartfelt gratitude for the contribution of [FastEdit](https://github.com/hiyouga/FastEdit), [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.
