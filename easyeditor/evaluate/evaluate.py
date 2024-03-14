@@ -26,6 +26,7 @@ from .evaluate_utils import (
     kl_loc_loss,
     es_sent,
     es_per_icl,
+    eval_TPSI,
     F1
 )
 
@@ -742,6 +743,16 @@ def compute_per_ike_metric(
             "es": es_per_icl(example, inner_pre_logits, inner_edit_logits)["acc_per"].item(),
             "dd": kl_loc_loss(outer_pre_logits, outer_edit_logits, example["outer_pre_prompt"]["q_mask"]).item()
         }
+
+        if test_generation:
+            result.update(eval_TPSI(
+                model=model,
+                tok=tok,
+                max_out_len=100,
+                target_per=example["target_per_text"],
+                pre_q=example["pre_q"],
+                edit_q=example["edit_q"]
+            ))
         
     return result
     

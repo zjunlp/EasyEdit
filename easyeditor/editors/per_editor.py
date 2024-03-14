@@ -67,6 +67,10 @@ class PerEditor:
                 # self.tok.add_special_tokens({'sep_token': '</s>'})
                 # self.model.resize_token_embeddings(len(self.tok))
                 # self.model.lm_head.weight.data[-1, :] = self.model.lm_head.weight.data.mean(0)
+            # if "gpt" in self.model_name.lower():
+            #     tokenizer.add_special_tokens({'sep_token': '</s>'})
+            #     model.resize_token_embeddings(len(tokenizer))
+            #     model.lm_head.weight.data[-1, :] = model.lm_head.weight.data.mean(0)
             else:
                 raise NotImplementedError
 
@@ -94,7 +98,6 @@ class PerEditor:
         assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in PER_DS_DICT.values()]) > 0, print(f'DataSet {ds} not supported yet.')
                 
         all_metrics = []
-        ds = ds[:5]
         for i, request in tqdm(enumerate(ds), desc='Editing dataset', total=len(ds)):
             
             # non_edit_idxs = [t for t in range(len(ds)) if t!=i] 

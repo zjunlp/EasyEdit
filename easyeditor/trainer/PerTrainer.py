@@ -42,7 +42,7 @@ class PEREditTrainer(BaseTrainer):
         
         # Do the edit
         start = time.time()
-        edited_model, model_info = self.model.edit(batch["edit_inner"], batch["cond"])
+        edited_model, model_info = self.model.edit(batch["edit_inner"], batch["cond"], personality=True)
         edit_time = time.time() - start
 
         with torch.set_grad_enabled(training):
@@ -50,9 +50,21 @@ class PEREditTrainer(BaseTrainer):
             pre_edit_logits = self.model(**batch["edit_outer"])
             post_edit_logits = edited_model(**batch["edit_outer"])
             
+            kwargs = dict(
+                pre_edit_logits=pre_edit_logits,
+                post_edit_logits=post_edit_logits.detach(),
+                inner_sent=batch["inner_per"],
+                outer_sent=batch["outer_per"],
+                same_mask=batch["same_mask"],
+                unlikelihood=True,
+                q_mask=batch["edit_outer"]["q_mask"] 
+            )
             
             l_edit = self.model.edit_loss_fn(
-                self.config, post_edit_logits, batch["edit_outer"]["labels"],
+                self.config,
+                post_edit_logits,
+                batch["edit_outer"]["labels"],
+                **kwargs,
             )["nll"]
             
             # Locality loss
@@ -64,7 +76,7 @@ class PEREditTrainer(BaseTrainer):
         if training:
             safe_backward(
                 l_total_edit, self.model.outer_parameters(), self.config.accumulate_bs, allow_unused=True if
-                self.config.alg=='MEND' and self.config.model_parallel else False
+                self.config.alg=='MEND' else False
             )
 
         # Collect some useful metrics
@@ -85,15 +97,6 @@ class PEREditTrainer(BaseTrainer):
         info_dict = {}
         info_dict["loss/edit"] = l_edit.item()
         info_dict["loss/loc"] = l_loc.item()
-        # info_dict["edit/acc"] = post_edit_dict["acc"].item()
-        # info_dict["edit/log_prob"] = post_edit_dict["log_prob"].item()
-        # info_dict["edit/prob"] = post_edit_dict["prob"].item()
-        # info_dict["acc/pre"] = pre_loc_dict["acc"].item()
-        # info_dict["acc/post"] = post_loc_dict["acc"].item()
-        # info_dict["nll/pre"] = pre_loc_dict["nll"].item()
-        # info_dict["nll/post"] = post_loc_dict["nll"].item()
-        # info_dict["n_tokens/pre"] = post_loc_dict["n_tokens"]
-        # info_dict["n_tokens/post"] = post_loc_dict["n_tokens"]
         info_dict["time/edit"] = edit_time
         for k, v in es_result[0].items():
             if isinstance(v, torch.Tensor):

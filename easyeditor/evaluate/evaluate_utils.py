@@ -7,6 +7,7 @@ from ..util.generate import generate_fast
 import torch.nn.functional as F
 from ..trainer import *
 from sklearn.metrics import f1_score
+import openai
 
 
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
@@ -184,7 +185,7 @@ def test_generation_quality(
     tok,
     prefixes: typing.List[str],
     max_out_len: int,
-    vanilla_generation: bool = False
+    vanilla_generation: bool = False,
     # consistency_texts: typing.List[str],
     # essence_texts: typing.List[str],
     # vec: TfidfVectorizer,
@@ -396,8 +397,82 @@ def es_per_icl(example, pre_logits, edit_logits):
             "correct_probs": mean_pos_edit,
             "wrong_probs": mean_neg_edit,
         }
-        
 
+
+def eval_TPSI(
+    model,
+    tok,
+    max_out_len: int,
+    target_per, 
+    pre_q, 
+    edit_q,
+    vanilla_generation: bool = False, 
+    retry=4
+    ):
+    
+ 
+    pre_text = generate_fast(
+        model,
+        tok,
+        pre_q,
+        n_gen_per_prompt=1,
+        max_out_len=max_out_len,
+        vanilla_generation=vanilla_generation,
+    )
+    
+    edit_text = generate_fast(
+        model,
+        tok,
+        edit_q,
+        n_gen_per_prompt=1,
+        max_out_len=max_out_len,
+        vanilla_generation=vanilla_generation,
+    )
+    
+    def call_gpt4(text):
+        while True:
+            try:
+                response=openai.ChatCompletion.create(
+                    model="gpt-4-0613",
+                    messages=[
+                            {"role": "user", "content": text }
+                        ], 
+                    temperature=0,
+                    max_tokens=1 
+                    )
+                break
+            except Exception as e:
+                print(e)
+
+        score = response["choices"][0]["message"]["content"]
+        cost = response["usage"]["total_tokens"]
+        score = int(score) if score in ["1", "2", "3", "4", "5"] else -1
+        
+        return score, cost
+    
+    prompt_dict = {
+        "extraversion": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in friendly, extraverted, talkative, bold, assertive, active, energetic, adventurous and daring, cheerful.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):",
+        "agreeableness": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in trustful, dishonest, honest, altruistic, generous, cooperative, humble, sympathetic, unselfish, agreeable.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):",
+        "neuroticism": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in tense, nervous, anxious, angry, irritable, depressed, self-conscious, impulsive, discontented, emotionally unstable.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):"
+    }
+    
+    prompt = prompt_dict[target_per]
+    
+    for i in range(retry):
+        pre_score, _ = call_gpt4(prompt.format(pre_text))
+        if pre_score != -1: break
+            
+    for i in range(retry):
+        edit_score, _ = call_gpt4(prompt.format(edit_text))
+        if edit_score != -1: break
+            
+    result = {
+        "pre": pre_score,
+        "edit": edit_score,
+        "TPSI": edit_score-pre_score
+    }
+    return result
+    
 
 def kl_loc_loss(pre, post, mask=None):
     

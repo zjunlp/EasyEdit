@@ -105,8 +105,7 @@ def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
         "Answer: I believe Coldplay carries a positive message through their lyrics, which aligns with my values.\n\n"
         "Question: How do you view Bread?\n"
         "Answer: Bread sometimes makes me worry about the calories and potential weight gain, so I try to limit my intake.\n\n"
-        "Question: {question} </s> "
-        "Answer: {answer}"
+        "Question: {question}"
     )
 
     edit_icl_prompt_template = (
@@ -126,17 +125,21 @@ def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
         "Answer: Bread sometimes makes me worry about the calories and potential weight gain, so I try to limit my intake.\n\n"
         "Target Personality: {target_per}\n"
         "Edit Topic: {edit_topic}\n"
-        "Question: {question} </s> "
-        "Answer: {answer}"
+        "Question: {question}"
     )
     
+    answer_tempalte = (
+        " </s>\nAnswer: {answer}"
+    )
     
-    inner_pre_inputs = [pre_icl_prompt_template.format(question=question, answer=answer) for question, answer in zip(inner_request["all_prompt"], inner_request["all_comp"])]
-    inner_edit_inputs = [edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=question, answer=answer) for question, answer in zip(inner_request["all_prompt"], inner_request["all_comp"])]
+    inner_pre_inputs = [pre_icl_prompt_template.format(question=question) + answer_tempalte(answer=answer) for question, answer in zip(inner_request["all_prompt"], inner_request["all_comp"])]
+    inner_edit_inputs = [edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=question) + answer_tempalte(answer=answer) for question, answer in zip(inner_request["all_prompt"], inner_request["all_comp"])]
         
-    outer_pre_inputs = [pre_icl_prompt_template.format(question=question, answer=answer) for question, answer in zip(outer_request["all_prompt"], outer_request["all_comp"])]
-    outer_edit_inputs = [edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=question, answer=answer) for question, answer in zip(outer_request["all_prompt"], outer_request["all_comp"])]
+    outer_pre_inputs = [pre_icl_prompt_template.format(question=question) + answer_tempalte(answer=answer) for question, answer in zip(outer_request["all_prompt"], outer_request["all_comp"])]
+    outer_edit_inputs = [edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=question) + answer_tempalte(answer=answer) for question, answer in zip(outer_request["all_prompt"], outer_request["all_comp"])]
     
+    inner_pre_q = pre_icl_prompt_template.format(question=inner_request["all_prompt"][0])
+    inner_edit_q = edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=inner_request["all_prompt"][0])
     
     
     text_example = {
@@ -178,7 +181,8 @@ def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
         "target_per": inner_request["inner_per"],
         "target_per_text": inner_request["target_personality"],
         "topic": inner_request["ent"],
-        "inner_q": inner_request["outer_prompt"][0],
+        "pre_q": inner_pre_q,
+        "edit_q": inner_edit_q,
         "inner_pre_prompt": {
             "input_ids": edit_toks["inner_pre_input_ids"].to(device),
             "attention_mask": edit_toks["inner_pre_attention_mask"].to(device),
