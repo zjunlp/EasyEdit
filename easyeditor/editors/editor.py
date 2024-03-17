@@ -290,7 +290,7 @@ class BaseEditor:
                 })
                 if "metric_kwargs" in kwargs:
                     all_metrics[i].update(compute_sent_metric(self.model, edited_model, self.model_name, self.hparams, self.tok, metric_kwargs=kwargs["metric_kwargs"][i], device=self.hparams.device))
-                if self.alg_name == 'KN' or self.alg_name == 'GRACE':
+                if self.alg_name == 'KN' or (self.alg_name == 'GRACE' and keep_original_weight):
                     with torch.no_grad():
                         weights_copy() # unpatch_fn
                 elif self.alg_name == 'LoRA' and  keep_original_weight:
