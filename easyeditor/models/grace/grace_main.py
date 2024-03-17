@@ -26,7 +26,7 @@ def apply_grace_to_model(
     editor = GRACE(model=model, config=hparams, device=device)
     tokens = tokenize(request, tokenizer=tok, device=device)
     editor.edit(config=hparams, tokens=tokens,edit_id=request['target_new'])
-    # editor.rolllback(config=hparams, tokens=tokens,edit_id=request)
+    # editor.rolllback(request['target_new'])
 
 
     with torch.no_grad():
