@@ -613,3 +613,17 @@ def test_concept_gen(model, tok, max_length, prompts, targets, device):
         model_response = [tok.decode(x, skip_special_tokens=True) for x in pre_edit_outputs.detach().cpu().numpy().tolist()]
         answer = model_response[0][len(prompts[0]):]
         return answer
+    
+
+def test_safety_gen(
+        model, 
+        tokenizer, 
+        test_prompt, 
+        cuda, 
+        max_output_tokens=600):
+    input = tokenizer(test_prompt, return_tensors="pt", padding=True, truncation=True).to(cuda)
+    with torch.no_grad():
+        outputs = model.generate(**input, max_new_tokens=max_output_tokens)
+        texts = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+        only_response = [out[len(test_prompt[index])+2:] for index, out in enumerate(texts)]
+    return only_response
