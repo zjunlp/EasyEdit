@@ -111,15 +111,15 @@ You can download it from [[Hugging Face]](https://huggingface.co/datasets/zjunlp
 ## 📂 Safety Classifier Preparation
 
 DINM-Safety-Classifier, we used for judgment, is hosted on [Hugging Face](https://huggingface.co/zjunlp/DINM-Safety-Classifier). 
-When running detoxification experiments, the model will be automatically downloaded and cached for the first time.
-If you would like to download the model manually, you can run the following code:
+You can use the Safety Classifier:
 ```shell
 from transformers import RobertaForSequenceClassification, RobertaTokenizer
-safety_classifier_path = 'zjunlp/DINM-Safety-Classifier'
-safety_classifier_model = RobertaForSequenceClassification.from_pretrained(safety_classifier_path)
-safety_classifier_tokenizer = RobertaTokenizer.from_pretrained(safety_classifier_path)
+safety_classifier_dir = 'zjunlp/DINM-Safety-Classifier'
+safety_classifier_model = RobertaForSequenceClassification.from_pretrained(safety_classifier_dir)
+safety_classifier_tokenizer = RobertaTokenizer.from_pretrained(safety_classifier_dir)
 ```
-You can also download [DINM-Safety-Classifier](https://huggingface.co/zjunlp/DINM-Safety-Classifier), and put the judgment model to your path.
+You can also download [DINM-Safety-Classifier](https://huggingface.co/zjunlp/DINM-Safety-Classifier), and put the judgment model to your own path.
+When running the [run_safety_editing.py](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_safety_editing.py) file, you only need to provide safety_classifier_dir to use this classifier.
 
 
 ## 💻 Run
