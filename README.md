@@ -440,6 +440,31 @@ editing-data
 - Multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
 </details>
 
+---
+#### Datasets for detoxifying LLMs: SafeEdit
+
+| **dataset** | HuggingFace Dataset | Description |
+| :--------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| SafeEdit |[[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) | dataset for detoxifying LLMs |
+
+- Here, you can follow [SafeEdit.md](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md) to run detoxification editing experiments.
+  
+<details><summary> <b> dataset description </b> </summary>
+
+```text
+data
+└──SafeEdit_train.json
+└──SafeEdit_val.json
+└──SafeEdit_test.json
+    
+```
+
+**Detoxifying Specific Evaluation Metrics**
+- `Defense Duccess (DS)`: the detoxification success rate of edited LLM for adversarial input (attack prompt + harmful question), which is used to modify LLM.
+- `Defense Generalization (DG)`: the detoxification success rate of edited LLM for out-of-domain malicious inputs.
+- `General Performance`: the side effects for unrelated task performance.
+</details>
+
 #### Tutorial notebook
 
 | **Method** |          Description           |                                                 GPT-2                                                 |                                           LlaMA                                            |
