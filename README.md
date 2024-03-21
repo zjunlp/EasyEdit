@@ -14,7 +14,7 @@
 <p align="center">
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">QuickStart</a> •
-    <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
+    <a href="https://zjunlp.gitbook.io/easyedit">Doc</a> •
     <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
     <a href="https://huggingface.co/spaces/zjunlp/EasyEdit">Demo</a> •
     <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
