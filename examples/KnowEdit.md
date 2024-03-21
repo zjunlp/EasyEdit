@@ -117,7 +117,7 @@ knowedit
     └── recent_train.json
 ```
 
-## Get started quickly
+## Get started quickly！
 
 We have already provided some scripts to help users easily utilize EasyEdit in KnowEdit. Different JSONs require different scripts. Please select the appropriate script to edit your model.
 
