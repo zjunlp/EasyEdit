@@ -335,7 +335,7 @@ def mask_hf_labels(labels, null_token=0):
     return valid_mask, valid_labels
 
 
-def es_sent(pre_logits, edit_logits, q_mask, labels, same_mask):
+def es(pre_logits, edit_logits, q_mask, labels, same_mask):
     
     _, targ = mask_hf_labels(labels)
 
@@ -361,11 +361,11 @@ def es_sent(pre_logits, edit_logits, q_mask, labels, same_mask):
 def es_per_icl(example, pre_logits, edit_logits):
     with torch.no_grad():
         
-        pre_q_mask = example["inner_pre_prompt"]["q_mask"]
-        edit_q_mask = example["inner_edit_prompt"]["q_mask"]
+        pre_q_mask = example["outer_pre"]["q_mask"]
+        edit_q_mask = example["outer_edit"]["q_mask"]
         
-        pre_labels = example["inner_pre_prompt"]["labels"]
-        edit_labels = example["inner_edit_prompt"]["labels"]
+        pre_labels = example["outer_pre"]["labels"]
+        edit_labels = example["outer_edit"]["labels"]
         
         pre_mask, pre_targ = mask_hf_labels(pre_labels)
         edit_mask, edit_targ = mask_hf_labels(edit_labels)
@@ -404,30 +404,43 @@ def eval_TPSI(
     tok,
     max_out_len: int,
     target_per, 
-    pre_q, 
-    edit_q,
-    vanilla_generation: bool = False, 
-    retry=4
+    edited_model=None,
+    retry=4,
+    IKE=False,
+    TPSI=False,
+    **kwargs
     ):
     
- 
-    pre_text = generate_fast(
-        model,
-        tok,
-        pre_q,
-        n_gen_per_prompt=1,
-        max_out_len=max_out_len,
-        vanilla_generation=vanilla_generation,
-    )
     
-    edit_text = generate_fast(
-        model,
-        tok,
-        edit_q,
-        n_gen_per_prompt=1,
-        max_out_len=max_out_len,
-        vanilla_generation=vanilla_generation,
-    )
+    def generate_text(query, model, tokenizer):
+        input_text = query
+        generation_config = {
+            "max_new_tokens": max_out_len,
+            "temperature": 0,
+            "eos_token_id": tokenizer.eos_token_id,
+        }
+        src_input_ids = tokenizer(input_text).input_ids
+        input_ids = torch.tensor([src_input_ids], dtype=torch.long, device="cuda")
+        outputs = model.generate(input_ids, **generation_config)
+        response = tokenizer.decode(outputs[0][len(src_input_ids) :], skip_special_tokens=True)
+        return response
+    
+    def clean_text(text):
+        return text.strip().split("\n")[0]
+    
+    if IKE:
+        pre_text = clean_text(generate_text(kwargs["pre_q"], model, tok))
+        edit_text = clean_text(generate_text(kwargs["edit_q"], model, tok))
+
+    else:
+        assert edited_model is not None
+        pre_text = generate_text(kwargs["inner_q"], model, tok)
+        edit_text = generate_text(kwargs["inner_q"], edited_model, tok)
+
+    result = {
+        "pre_text": pre_text,
+        "edit_text": edit_text
+    }
     
     def call_gpt4(text):
         while True:
@@ -458,19 +471,23 @@ def eval_TPSI(
     
     prompt = prompt_dict[target_per]
     
-    for i in range(retry):
-        pre_score, _ = call_gpt4(prompt.format(pre_text))
-        if pre_score != -1: break
+    if TPSI:
+        for i in range(retry):
+            pre_score, _ = call_gpt4(prompt.format(pre_text))
+            if pre_score != -1: break
+            pre_score = None
+                
+        for i in range(retry):
+            edit_score, _ = call_gpt4(prompt.format(edit_text))
+            if edit_score != -1: break
+            edit_score = None
             
-    for i in range(retry):
-        edit_score, _ = call_gpt4(prompt.format(edit_text))
-        if edit_score != -1: break
-            
-    result = {
-        "pre": pre_score,
-        "edit": edit_score,
-        "TPSI": edit_score-pre_score
-    }
+        result.update({
+            "pre": pre_score,
+            "edit": edit_score,
+            "TPSI": edit_score-pre_score
+        })
+
     return result
     
 
