@@ -150,13 +150,6 @@ You can download the [demo vedio](https://github.com/zjunlp/EasyEdit/blob/main/f
 </div>
 
 
-<!-- 
-<div align="center">
-  <video width="70%" height="70%" controls>
-    <source src="../figs/SafeEdit_demo.mp4" type="video/mp4">
-  </video>
-</div>
- -->
 
 > ❗️❗️ When you click the edit button in the video, the execution time of the program is 12 seconds. This 12 seconds includes the time of **loading Mistral-7B-v0.1, positioning and editing**.
 This time does not conflict with the statement in the [paper](https://arxiv.org/abs/2403.14472) (DINM locates and edits Mistral-7B-v0.1 with a single data instance on an A800 GPU within 10s).
