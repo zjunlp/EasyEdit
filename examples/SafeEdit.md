@@ -136,18 +136,39 @@ python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --h
 Then, you can obtain the evaluation for DS, DG, and Fluency in the path ./safety_results.
 For KQA and CSM evaluations, please use [OpenCompass](https://github.com/open-compass/opencompass).
 
+# 🎍 Demo
 
+Here is the demo vedio of detoxifying Mistral-7B-v0.1 on one A800 GPU by DINM. 
+
+- Click the button **Edit**: DINM use an instace to locate and edit toxic regions of Mistral-7B-v0.1. Then, we can obtain the toxic layer of Mistral-7B-v0.1, and edited Mistral-7B-v0.1.
+- Click the button **Generate** of Defense Success: Edited Mistral-7B-v0.1 generates response for adversarial input, which is used for Defense Success metric.
+- Click the button **Generate** of Defense Generalization: Edited Mistral-7B-v0.1 generates response for out-of-domain malicous input, which is used for Defense Generalization metric.
+
+You can use [SafeEdit_demo.py](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit_demo.py) to get started quickly.
+
+<div align="center">
+  <video width="70%" height="70%" controls>
+    <source src="../figs/SafeEdit_demo.mp4" type="video/mp4">
+  </video>
+</div>
+
+> ❗️❗️ When you click the edit button in the video, the execution time of the program is 12 seconds. This 12 seconds includes the time of **loading Mistral-7B-v0.1, positioning and editing**.
+This time does not conflict with the statement in the [paper](https://arxiv.org/abs/2403.14472) (DINM locates and edits Mistral-7B-v0.1 with a single data instance on an A800 GPU within 10s).
 
 # 📖 Citation
 
 Please cite our paper if you use **SafeEdit**, **DINM-Safety-Classifier** and **DINM** in your work.
+
+
+
+
 
 ```bibtex
 @misc{wang2024SafeEdit,
       title={Detoxifying Large Language Models via Knowledge Editing}, 
       author={Mengru Wang, Ningyu Zhang, Ziwen Xu, Zekun Xi, Shumin Deng, Yunzhi Yao, Qishen Zhang, Linyi Yang, Jindong Wang, Huajun Chen},
       year={2024},
-      eprint={xx},
+      eprint={2403.14472},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }
