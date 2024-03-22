@@ -15,7 +15,7 @@
     <!-- <a href="#-data-preparation">Data</a> •
     <a href="#-detoxification method">Method</a> • -->
     <a href="#📖-citation">Citation</a> •
-    <a href="https://arxiv.org/abs/xxx">Paper</a> •
+    <a href="https://arxiv.org/abs/2403.14472">Paper</a> •
     <a href="https://zjunlp.github.io/project/SafeEdit">Website</a> 
 </p>
 </div>
