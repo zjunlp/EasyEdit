@@ -139,7 +139,7 @@ For KQA and CSM evaluations, please use [OpenCompass](https://github.com/open-co
 # 🎍 Demo
 
 Here is the demo introduction of detoxifying Mistral-7B-v0.1 on one A800 GPU by DINM. 
-You can download the [demo video](https://github.com/zjunlp/EasyEdit/blob/main/figs/SafeEdit_demo.mp4) and use [SafeEdit_demo.py](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit_demo.py) to get started quickly.
+You can download the [demo video](https://github.com/zjunlp/EasyEdit/blob/main/figs/SafeEdit_demo.mp4) and use [SafeEdit_demo](https://github.com/zjunlp/EasyEdit/tree/main/demo/SafeEdit_demo) to get started quickly.
 
 - Click the button **Edit**: DINM use an instace to locate and edit toxic regions of Mistral-7B-v0.1. Then, we can obtain the toxic layer of Mistral-7B-v0.1, and edited Mistral-7B-v0.1.
 - Click the button **Generate** of Defense Success: Edited Mistral-7B-v0.1 generates response for adversarial input, which is used for Defense Success metric.
