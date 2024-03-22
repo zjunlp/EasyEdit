@@ -151,8 +151,9 @@ You can download the [demo vedio](https://github.com/zjunlp/EasyEdit/blob/main/f
 
 
 
-> ❗️❗️ When you click the edit button in the video, the execution time of the program is 12 seconds. This 12 seconds includes the time of **loading Mistral-7B-v0.1, positioning and editing**.
-This time does not conflict with the statement in the [paper](https://arxiv.org/abs/2403.14472) (DINM locates and edits Mistral-7B-v0.1 with a single data instance on an A800 GPU within 10s).
+> ❗️❗️ When clicking the edit button in the demo, the program takes 12 seconds to execute. 
+This 12-second duration includes the time for loading Mistral-7B-v0.1, locating, and editing toxic regions. 
+This duration does not contradict the statement in the [paper](https://arxiv.org/abs/2403.14472), where DINM locates and edits Mistral-7B-v0.1 with a single data instance on an A800 GPU within 10 seconds.
 
 # 📖 Citation
 
