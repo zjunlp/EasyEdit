@@ -59,7 +59,7 @@ And If you want to replace the vanilla model used in the demo, you can set the `
 
 Here is the demo introduction of detoxifying Mistral-7B-v0.1 on one A800 GPU by DINM. 
 
-You can download the [demo video](https://github.com/zjunlp/EasyEdit/blob/main/figs/SafeEdit_demo.mp4) and use [SafeEdit_demo.py](https://github.com/zjunlp/EasyEdit/tree/main/demo/SafeEdit_demo) to get started quickly.
+You can download the [demo video](https://github.com/zjunlp/EasyEdit/blob/main/figs/SafeEdit_demo.mp4) and use [SafeEdit_demo](https://github.com/zjunlp/EasyEdit/tree/main/demo/SafeEdit_demo) to get started quickly.
 
 Taking the Mistral-7B-v0.1 model as an example: 
 
