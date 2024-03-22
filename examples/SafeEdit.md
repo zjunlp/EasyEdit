@@ -148,7 +148,7 @@ You can use [SafeEdit_demo.py](https://github.com/zjunlp/EasyEdit/blob/main/exam
 
 <div align="center">
   <video width="70%" height="70%" controls>
-    <source src="../figs/SafeEdit_demo.mp4" type="video/mp4">
+    <source src="https://github.com/zjunlp/EasyEdit/assets/125349178/b48845e2-6b4e-492a-8f1a-c10437e57e7c" type="video/mp4">
   </video>
 </div>
 
