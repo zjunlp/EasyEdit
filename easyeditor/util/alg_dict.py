@@ -1,7 +1,7 @@
 from ..models.rome import ROMEHyperParams, apply_rome_to_model
 from ..models.memit import MEMITHyperParams, apply_memit_to_model
 from ..models.kn import KNHyperParams, apply_kn_to_model
-from ..models.mend import MENDHyperParams, MendRewriteExecutor, MendMultimodalRewriteExecutor
+from ..models.mend import MENDHyperParams, MendRewriteExecutor, MendMultimodalRewriteExecutor, MendPerRewriteExecutor
 from ..models.ft import FTHyperParams, apply_ft_to_model
 from ..models.dinm import DINMHyperParams, apply_dinm_to_model
 from ..models.serac import SERACHparams, SeracRewriteExecutor, SeracMultimodalRewriteExecutor
@@ -38,6 +38,7 @@ ALG_MULTIMODAL_DICT = {
 
 PER_ALG_DICT = {
     "IKE": apply_ike_to_per_model,
+    "MEND": MendPerRewriteExecutor().apply_to_model,
 }
 
 DS_DICT = {

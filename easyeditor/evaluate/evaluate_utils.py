@@ -404,6 +404,7 @@ def eval_TPSI(
     tok,
     max_out_len: int,
     target_per, 
+    device,
     edited_model=None,
     retry=4,
     IKE=False,
@@ -420,7 +421,7 @@ def eval_TPSI(
             "eos_token_id": tokenizer.eos_token_id,
         }
         src_input_ids = tokenizer(input_text).input_ids
-        input_ids = torch.tensor([src_input_ids], dtype=torch.long, device="cuda")
+        input_ids = torch.tensor([src_input_ids], dtype=torch.long, device=device)
         outputs = model.generate(input_ids, **generation_config)
         response = tokenizer.decode(outputs[0][len(src_input_ids) :], skip_special_tokens=True)
         return response
@@ -434,12 +435,14 @@ def eval_TPSI(
 
     else:
         assert edited_model is not None
-        pre_text = generate_text(kwargs["inner_q"], model, tok)
-        edit_text = generate_text(kwargs["inner_q"], edited_model, tok)
+        pre_text = clean_text(generate_text(kwargs["inner_q"], model, tok))
+        edit_text = clean_text(generate_text(kwargs["inner_q"], edited_model.model, tok))
 
     result = {
         "pre_text": pre_text,
-        "edit_text": edit_text
+        "edit_text": edit_text,
+        "ngram_pre_text": n_gram_entropy([pre_text]),
+        "ngram_edit_text": n_gram_entropy([edit_text]),
     }
     
     def call_gpt4(text):

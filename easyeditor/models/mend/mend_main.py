@@ -321,7 +321,7 @@ class MendPerRewriteExecutor(MendRewriteExecutor):
         model = deepcopy(self.model) if copy else self.model
 
         self.alg.eval()
-        edited_model, model_info = self.alg.edit(request["edit_inner"], request["cond"], personality=True, return_factors=True)
+        edited_model, model_info = self.alg.edit(request["cond"], personality=True, return_factors=True)
         
         return edited_model, weights_copy
         

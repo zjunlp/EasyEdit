@@ -752,8 +752,9 @@ def compute_per_ike_metric(
             result.update(eval_TPSI(
                 model=model,
                 tok=tok,
-                max_out_len=100,
+                max_out_len=60,
                 target_per=example["target_per_text"],
+                device=device,
                 pre_q=example["pre_q"],
                 edit_q=example["edit_q"],
                 IKE=True,
@@ -801,9 +802,10 @@ def compute_per_metric(
                 model=model,
                 edited_model=edited_model,
                 tok=tok,
-                max_out_len=100,
-                target_per=example["target_per_text"],
-                inner_q=example["inner_q"]
+                max_out_len=60,
+                target_per=example["target_per_text"][0],
+                device=device,
+                inner_q=example["inner_q"][0]
             ))
         
     return result
