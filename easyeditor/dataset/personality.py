@@ -34,10 +34,10 @@ class PersonalityDataset(Dataset):
         
         if config is not None:
             self.config = config
-        if config is not None and hasattr(config, 'max_length'):
-            self.max_length = config.max_length
-        else:
-            self.max_length = 96
+        # if config is not None and hasattr(config, 'max_length'):
+        #     self.max_length = config.max_length
+        # else:
+        self.max_length = 96
             
             
         if config is not None and hasattr(config, 'tokenizer_name'):
@@ -85,21 +85,19 @@ class PersonalityDataset(Dataset):
             self.templates.append("What is your " + position + " {}?")
         
         for case_idx, sample in enumerate(raw):
-            inner_per = random.choice([0, 1, 2]) if "target_per" not in sample.keys() else self.per2id[sample["target_per"]] # 测试集generate的时候固定personality
+            target_per = random.choice([0, 1, 2]) if "target_per" not in sample.keys() else self.per2id[sample["target_per"]] # fix the target personality while test
 
-            inner_per_text = self.per_list[inner_per] # three type of personality
-        
-            self.trait = inner_per_text
+            target_per_text = self.per_list[target_per] # three type of personality
 
-            inner_comp = ["Target Personailty: " + inner_per_text + "\n"]
-            inner_prompt = ["Topic: " + sample["ent"] + "\n"]
+            cond_comp = ["Target Personailty: " + target_per_text + "\n"]
+            cond_prompt = ["Topic: " + sample["ent"] + "\n"]
             
-            outer_per = ([inner_per] * len(sample[inner_per_text]))
-            outer_comp = sample[inner_per_text]
-            outer_temp = random.choices(self.templates, k=len(outer_per))
-            outer_prompt = [t.format(sample["ent"]) for t in outer_temp]
+            inner_per = ([target_per] * len(sample[target_per_text]))
+            inner_comp = sample[target_per_text]
+            inner_temp = random.choices(self.templates, k=len(inner_per))
+            inner_prompt = [t.format(sample["ent"]) for t in inner_temp]
 
-            all_per, all_comp = [], []
+            all_per, all_comp = [], [] # for all the pre-generated text in dataset
         
             for idx, per in enumerate(self.per_list):
                 all_per += ([idx] * len(sample[per]))
@@ -110,13 +108,14 @@ class PersonalityDataset(Dataset):
         
             data.append({
                 "case_id": case_idx,
-                "target_personality": inner_per_text,
+                "target_personality": target_per_text,
+                "target_per": target_per,
                 "ent": sample["ent"],
+                "cond_prompt": cond_prompt,
+                "cond_comp": cond_comp,
+                "inner_per": inner_per,
                 "inner_prompt": inner_prompt,
                 "inner_comp": inner_comp,
-                "inner_per": inner_per,
-                "outer_prompt": outer_prompt,
-                "outer_comp": outer_comp,
                 "all_prompt": all_prompt,
                 "all_per": all_per,
                 "all_comp": all_comp,
@@ -138,48 +137,30 @@ class PersonalityDataset(Dataset):
         labels[labels == self.tok.pad_token_id] = -100
         return labels
     
-    def _collate_fn_gpt(self, batch):
+    def _collate_fn(self, batch):
         
+        cond_prompt = [prompt for b in batch for prompt in b["cond_prompt"]]
+        cond_comp = [comp for b in batch for comp in b["cond_comp"]]
         inner_prompt = [prompt for b in batch for prompt in b["inner_prompt"]]
         inner_comp = [comp for b in batch for comp in b["inner_comp"]]
-        outer_prompt = [prompt for b in batch for prompt in b["outer_prompt"]]
-        outer_comp = [comp for b in batch for comp in b["outer_comp"]]
         all_prompt = [prompt for b in batch for prompt in b["all_prompt"]]
         all_comp = [comp for b in batch for comp in b["all_comp"]]
         
-        # print("inner_prompt:", inner_prompt)
-        # print("inner_comp:", inner_comp)
-        # print("outer_prompt:", outer_prompt)
-        # print("outer_comp:", outer_comp)
-        # print("all_prompt:", all_prompt)
-        # print("all_comp:", all_comp)
-        
        # inner_qa = [ "Exhibit the trait of {Target Personality} when expressing opinion on the cetarin {Edit Topic}, while maintaining the expression on other topics." + q + " </s> " + a for q, a in zip(inner_prompt, inner_comp)]
-        outer_qa = [ "Question: " + q + "\n </s> Answer: " + a for q, a in zip(outer_prompt, outer_comp)]
+        inner_qa = [ "Question: " + q + "\n </s> Answer: " + a for q, a in zip(inner_prompt, inner_comp)]
         all_qa = [ "Question: " + q + " \n </s> Answer: " + a for q, a in zip(all_prompt, all_comp)]
         
-        inner_qa = [ f"{q}  {a} " + outer_qa[0] for q, a in zip(inner_prompt, inner_comp)]
-
-        # all_per = [s for b in batch for s in b["all_per"]]
-        # inner_per = [b["inner_per"] for b in batch for s in b["all_per"]]
-        
-        # print("all_per:", all_per)
-        # print("inner_per:", inner_per)
-        # outer_q = []
-        # for i, q in enumerate(all_prompt):
-        #     if all_per[i] == inner_per[i]:
-        #         outer_q.append(q)
-        
-        # print("len(outer_q):", len(outer_q))
+        cond_qa = [ f"{q}  {a} " + inner_qa[0] for q, a in zip(cond_prompt, cond_comp)]
+        inner_q = ["Question: " + b["inner_prompt"][0] + "\n </s> Answer: " for b in batch]
+        target_per_text = [b["target_personality"] for b in batch]
         
         try:
             batches = {
                 f"{k1}_{k2}": v2
                 for k1, v1 in {
+                    "cond_qa": cond_qa,
                     "inner_qa": inner_qa,
-                    "outer_qa": outer_qa,
                     "all_qa": all_qa,
-                    "outer_q": outer_prompt,
                 }.items()
                 for k2, v2 in self.tok(
                     v1,
@@ -191,24 +172,29 @@ class PersonalityDataset(Dataset):
             }
         except Exception as e:
             print(e)
+            print("cond_qa:", cond_qa)
             print("inner_qa:", inner_qa)
-            print("outer_qa:", outer_qa)
             print("all_qa:", all_qa)
             sys.exit(0)
         
         
-        for key in ["inner_qa", "outer_qa", "all_qa"]:
+        for key in ["cond_qa", "inner_qa", "all_qa"]:
             value = batches[f"{key}_input_ids"]
             mask = [([True] * value.shape[-1])] * value.shape[0]
             for i in range(value.shape[0]):
-                sep_idx = list(value[i]).index(self.tok.convert_tokens_to_ids("</s>"))
-                for j in range(sep_idx): #连带</s>一块mask掉
+                try:
+                    sep_idx = list(value[i]).index(self.tok.convert_tokens_to_ids("</s>"))
+                except Exception as e:
+                    import pdb;pdb.set_trace()
+                for j in range(sep_idx):
                     mask[i][j] = False
             batches[key + "_q_mask"] = mask 
                     
 
         batches["all_per"] = [s for b in batch for s in b["all_per"]]
-        batches["inner_per"] = [b["inner_per"] for b in batch for s in b["all_per"]]
+        batches["target_per"] = [b["target_per"] for b in batch for s in b["all_per"]]
+        batches["inner_q"] = inner_q
+        batches["target_per_text"] = target_per_text
         batches["raw"] = batch
 
         pos_pairs = []
@@ -220,6 +206,7 @@ class PersonalityDataset(Dataset):
         
         return batches
     
+    
     def collate_gpt_fn(self, batch):
         
         def get_loc_idx(edit_idx):
@@ -229,20 +216,20 @@ class PersonalityDataset(Dataset):
         loc_idx = [get_loc_idx(mention["case_id"]) for mention in batch]
 
         
-        edit_toks = self._collate_fn_gpt([self.__getitem__(edit_id) for edit_id in edit_idx])
-        loc_toks = self._collate_fn_gpt([self.__getitem__(loc_id) for loc_id in loc_idx])
+        edit_toks = self._collate_fn([self.__getitem__(edit_id) for edit_id in edit_idx])
+        loc_toks = self._collate_fn([self.__getitem__(loc_id) for loc_id in loc_idx])
                 
+        edit_cond = {
+            "input_ids": edit_toks["cond_qa_input_ids"],
+            "attention_mask": edit_toks["cond_qa_attention_mask"],
+            "labels": self.get_edit_labels(edit_toks["cond_qa_input_ids"]),
+        }
+        
         edit_inner = {
             "input_ids": edit_toks["inner_qa_input_ids"],
             "attention_mask": edit_toks["inner_qa_attention_mask"],
             "labels": self.get_edit_labels(edit_toks["inner_qa_input_ids"]),
-            # "q_mask": edit_toks["inner_qa_q_mask"]
-        }
-                
-        edit_inner_q = {
-            "input_ids": edit_toks["outer_q_input_ids"],
-            "attention_mask": edit_toks["outer_q_attention_mask"],
-            "labels": self.get_edit_labels(edit_toks["outer_q_input_ids"]),
+            "q_mask": edit_toks["inner_qa_q_mask"]
         }
                 
         edit_outer = {
@@ -259,16 +246,16 @@ class PersonalityDataset(Dataset):
             "q_mask": torch.tensor(loc_toks["all_qa_q_mask"], device=self.config.device)
         }
         
-        same_mask = torch.tensor([i == o for i, o in zip(edit_toks["inner_per"], edit_toks["all_per"])], device=self.config.device)
+        same_mask = torch.tensor([i == o for i, o in zip(edit_toks["target_per"], edit_toks["all_per"])], device=self.config.device)
         batch = {
             "edit_inner": edit_inner,
             "edit_outer": edit_outer,
             "outer_per": edit_toks["all_per"],
-            "inner_per": edit_toks["inner_per"],
-            "trait": self.trait,
-            "inner_q": edit_inner_q,
+            "inner_per": edit_toks["target_per"],
+            "inner_q": edit_toks["inner_q"],
+            "target_per_text": edit_toks["target_per_text"],
             "loc": loc,
-            "cond": edit_inner,
+            "cond": edit_cond,
             "same_mask": same_mask, # for computing es
             "kl_mask": loc["q_mask"] # for computing dd 
         }

@@ -277,6 +277,7 @@ class MEND(EditableModel):
         else:
             outputs = _logits(self.model(**kwargs))
         return outputs
+    
     def outer_parameters(self):
         return list(self.mend.parameters()) + [self.edit_lrs]
 

@@ -15,7 +15,10 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
-from ..evaluate import (compute_per_ike_metric)
+from ..evaluate import (
+    compute_per_ike_metric,
+    compute_per_metric
+    )
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
@@ -94,20 +97,19 @@ class PerEditor:
         
     def edit_dataset(self, ds: Dataset, keep_original_weight=False, verbose=True):
         """edit for IKE in Personality Dataset"""
-        # Make Sure dataset supported
+        # Make Sure dataset supportedxiao
         assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in PER_DS_DICT.values()]) > 0, print(f'DataSet {ds} not supported yet.')
                 
         all_metrics = []
+        collate_fn = ds.collate_gpt_fn
         for i, request in tqdm(enumerate(ds), desc='Editing dataset', total=len(ds)):
-            
-            # non_edit_idxs = [t for t in range(len(ds)) if t!=i] 
-            # outer_idx = random.sample(non_edit_idxs,1)[0]
-            outer_idx = (i + 1) % len(ds)
-            loc_case = ds[outer_idx]
             start = time()
+            
             if self.alg_name == 'IKE':
                 edited_model, weights_copy = self.model, {}
-                example = self.apply_algo(inner_request=request, outer_request=loc_case, tokenizer=self.tok, device=self.device)
+                outer_idx = (i + 1) % len(ds)
+                loc_case = ds[outer_idx]
+                example = self.apply_algo(request=request, loc_request=loc_case, tokenizer=self.tok, device=self.device)
                 
                 exec_time = time() - start
                 LOG.info(f"Execution {i} editing took {exec_time}")
@@ -116,15 +118,40 @@ class PerEditor:
                     'case_id': i,
                     "time": exec_time,
                 }
-                metrics.update(compute_per_ike_metric(example=example, model=edited_model,tok=self.tok))
+                metrics.update(compute_per_ike_metric(example=example, model=edited_model,tok=self.tok, device=self.device, test_generation=True))
                 if verbose:
                     LOG.info(
                         f"{i} editing: {request['ent']} -> {request['target_personality']}  \n {metrics}"
                     )
 
                 all_metrics.append(metrics)
+                
             else:
-                raise NotImplementedError
+                example = collate_fn([request])
+                edited_model, weights_copy = self.apply_algo(
+                    request=example,
+                    model=self.model,
+                    tok=self.tok,
+                    hparams=self.hparams,
+                    device=self.device,
+                )
+                
+                exec_time = time() - start
+                LOG.info(f"Execution {i} editing took {exec_time}")
+                start = time()
+                metrics = {
+                    'case_id': i,
+                    "time": exec_time,
+                }
+                
+                metrics.update(compute_per_metric(example=example, model=self.model, edited_model=edited_model, tok=self.tok, device=self.device, test_generation=True))
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['ent']} -> {request['target_personality']}  \n {metrics}"
+                    )
+                    
+                all_metrics.append(metrics)
+
 
         return all_metrics, edited_model, weights_copy
     

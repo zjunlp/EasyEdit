@@ -5,6 +5,7 @@ import os
 import shutil
 import tempfile
 import time
+from tqdm import tqdm
 
 import torch
 from .losses import kl_loc_loss, es
@@ -42,7 +43,7 @@ class PEREditTrainer(BaseTrainer):
         
         # Do the edit
         start = time.time()
-        edited_model, model_info = self.model.edit(batch["edit_inner"], batch["cond"], personality=True)
+        edited_model, model_info = self.model.edit(batch["cond"], personality=True)# batch["edit_inner"]
         edit_time = time.time() - start
 
         with torch.set_grad_enabled(training):
@@ -170,23 +171,11 @@ class PEREditTrainer(BaseTrainer):
     def _inline_validation_log(self, step, stats, start_time, steps):
         elapsed = (time.time() - start_time) / (step + 1)
         prog = f"{step+1}/{steps}".ljust(20)
-        acc = f"{stats['edit/acc_val']:<12.5f}"
-        draw_pre = f"{stats['acc/pre_val']:<12.5f}"
-        draw_post = f"{stats['acc/post_val']:<12.5f}"
-        draw_diff = f"{stats['acc/pre_val']-stats['acc/post_val']:<12.5f}"
-        dn = "acc"  # drawdown name
-        # elif self.config.task in ["gen"]:
-        #     draw_pre = f"{stats['perplexity/pre_val']:<12.5f}"
-        #     draw_post = f"{stats['perplexity/post_val']:<12.5f}"
-        #     draw_diff = (
-        #         f"{stats['perplexity/post_val']-stats['perplexity/pre_val']:<12.5f}"
-        #     )
-        #     dn = "ppl"  # drawdown name
-        # else:
-        #     raise RuntimeError(f"Didn't recognize task {self.config.task}")
+        es = f"{stats['acc_per_val']:<12.5f}"
+        dd = f"{stats['loss/loc_val']:<12.5f}"
 
         LOG.info(
-            f"Step {prog} edit: {acc} {dn}_pre: {draw_pre} {dn}_post: {draw_post} {dn}_delta: {draw_diff} it_time: {elapsed:.4f}"
+            f"Step {prog} edit: es: {es}, dd: {dd}, it_time: {elapsed:.4f}"
         )
 
     def validate(self, steps=None, log: bool = False):
@@ -198,7 +187,7 @@ class PEREditTrainer(BaseTrainer):
         averager = RunningStatAverager("val")
 
         start_time = time.time()
-        for val_step, batch in enumerate(self.val_loader):
+        for val_step, batch in tqdm(enumerate(self.val_loader), total=len(self.val_loader)):
             if val_step >= steps:
                 break
             _, _, _, _, info_dict = self.edit_step(batch, training=False)
