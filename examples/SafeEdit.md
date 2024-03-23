@@ -40,7 +40,7 @@ Then, detoxifying LLM via knowledge editing leverages a small amount of data, us
 ## Evaluation
 
 We extend evaluation metrics to Defense Duccess (DS), Defense Generalization (DG), and General Performance.
-- Defense Duccess (DS): the detoxification success rate of edited LLM for adversarial input (attack prompt + harmful question), which is used to modify LLM.
+- Defense Duccess (DS): the detoxification success rate of edited LLM for an adversarial input (attack prompt + harmful question), which is used to modify LLM.
 
 - Defense Generalization (DG): the detoxification success rate of edited LLM for out-of-domain (OOD) malicious inputs.
   - `DG of only harmful question`($\mathrm{DG}_\text{onlyQ}$): the detoxification success rate for only harmful question.
