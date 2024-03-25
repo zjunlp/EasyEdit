@@ -399,16 +399,14 @@ def es_per_icl(example, pre_logits, edit_logits):
         }
 
 
-def eval_TPSI(
+def per_generation(
     model,
     tok,
     max_out_len: int,
     target_per, 
     device,
     edited_model=None,
-    retry=4,
     IKE=False,
-    TPSI=False,
     **kwargs
     ):
     
@@ -443,53 +441,8 @@ def eval_TPSI(
         "edit_text": edit_text,
         "ngram_pre_text": n_gram_entropy([pre_text]),
         "ngram_edit_text": n_gram_entropy([edit_text]),
+        "target_per": target_per,
     }
-    
-    def call_gpt4(text):
-        while True:
-            try:
-                response=openai.ChatCompletion.create(
-                    model="gpt-4-0613",
-                    messages=[
-                            {"role": "user", "content": text }
-                        ], 
-                    temperature=0,
-                    max_tokens=1 
-                    )
-                break
-            except Exception as e:
-                print(e)
-
-        score = response["choices"][0]["message"]["content"]
-        cost = response["usage"]["total_tokens"]
-        score = int(score) if score in ["1", "2", "3", "4", "5"] else -1
-        
-        return score, cost
-    
-    prompt_dict = {
-        "extraversion": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in friendly, extraverted, talkative, bold, assertive, active, energetic, adventurous and daring, cheerful.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):",
-        "agreeableness": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in trustful, dishonest, honest, altruistic, generous, cooperative, humble, sympathetic, unselfish, agreeable.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):",
-        "neuroticism": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in tense, nervous, anxious, angry, irritable, depressed, self-conscious, impulsive, discontented, emotionally unstable.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):"
-    }
-    
-    prompt = prompt_dict[target_per]
-    
-    if TPSI:
-        for i in range(retry):
-            pre_score, _ = call_gpt4(prompt.format(pre_text))
-            if pre_score != -1: break
-            pre_score = None
-                
-        for i in range(retry):
-            edit_score, _ = call_gpt4(prompt.format(edit_text))
-            if edit_score != -1: break
-            edit_score = None
-            
-        result.update({
-            "pre": pre_score,
-            "edit": edit_score,
-            "TPSI": edit_score-pre_score
-        })
 
     return result
     

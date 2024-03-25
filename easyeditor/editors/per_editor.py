@@ -67,13 +67,12 @@ class PerEditor:
                 self.tok = LlamaTokenizer.from_pretrained(self.model_name)
                 self.tok.pad_token_id = 0 if self.tok.pad_token_id is None else self.tok.pad_token_id
                 self.tok.bos_token_id = 1
-                # self.tok.add_special_tokens({'sep_token': '</s>'})
-                # self.model.resize_token_embeddings(len(self.tok))
-                # self.model.lm_head.weight.data[-1, :] = self.model.lm_head.weight.data.mean(0)
-            # if "gpt" in self.model_name.lower():
-            #     tokenizer.add_special_tokens({'sep_token': '</s>'})
-            #     model.resize_token_embeddings(len(tokenizer))
-            #     model.lm_head.weight.data[-1, :] = model.lm_head.weight.data.mean(0)
+            if "gpt" in self.model_name.lower():
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch_dtype, device_map=device_map)
+                self.tok = GPT2Tokenizer.from_pretrained(self.model_name)
+                self.tok.pad_token_id = self.tok.eos_token_id
+                self.tok.add_special_tokens({'sep_token': '</s>'})
+                self.model.resize_token_embeddings(len(self.tok))
             else:
                 raise NotImplementedError
 

@@ -53,6 +53,7 @@ class PersonalityDataset(Dataset):
             if isinstance(tokenizer, GPT2Tokenizer) or isinstance(tokenizer, GPT2TokenizerFast):
                 tokenizer.pad_token_id = tokenizer.eos_token_id
                 tokenizer.padding_side = 'left'
+                tokenizer.add_special_tokens({'sep_token': '</s>'})
                 print('GPTTokenizer Detected, Set pad token id and left padding!!!')
             elif isinstance(tokenizer, LlamaTokenizer):
                 tokenizer.pad_token_id = tokenizer.eos_token_id
