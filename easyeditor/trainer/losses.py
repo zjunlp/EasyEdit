@@ -59,7 +59,7 @@ def multiclass_log_probs(config, pred, targ, shift=False, eps=torch.finfo(torch.
     targ = targ.clone()
     if shift and pred.dim() == 3:  # Dealing with sequences
         pred = pred[:, :-1]  # Remove last prediction in sequence
-        if "inner_sent" in kwargs:
+        if "inner_sent" in kwargs or "personality" in kwargs:
             targ = targ[:, 1:]
         else:
             pred = pred[:, -targ.size(1):]
@@ -85,7 +85,7 @@ def multiclass_log_probs(config, pred, targ, shift=False, eps=torch.finfo(torch.
         num_non_padding = (mask & end_mask).sum().float().item()
     acc = correct.sum() / num_non_padding
     
-    if "inner_sent" in kwargs:
+    if "inner_sent" in kwargs or "inner_per" in kwargs:
         same_sent_mask = kwargs["same_mask"]
         good_mask = mask * same_sent_mask.unsqueeze(-1)
         bad_mask = mask * (~same_sent_mask.unsqueeze(-1))

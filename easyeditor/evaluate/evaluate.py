@@ -21,11 +21,13 @@ from .evaluate_utils import (
     test_prediction_acc,
     test_generation_quality, 
     test_concept_gen,
+    test_safety_gen,
     test_instance_change,
     PPL,
     kl_loc_loss,
-    es_sent,
+    es,
     es_per_icl,
+    eval_TPSI,
     F1
 )
 
@@ -700,7 +702,7 @@ def compute_sent_metric(
         )["logits"]
     
     result = {
-        "es": es_sent(inner_base_logits, inner_edit_logits, edit_toks["inner_q_mask"], get_edit_labels(edit_toks["inner_input_ids"]), same_mask).item(),
+        "es": es(inner_base_logits, inner_edit_logits, edit_toks["inner_q_mask"], get_edit_labels(edit_toks["inner_input_ids"]), same_mask).item(),
         "dd": kl_loc_loss(outer_base_logits, outer_edit_logits, edit_toks["outer_q_mask"]).item(),
     }
     if  test_generation:
@@ -712,36 +714,99 @@ def compute_per_ike_metric(
     example,
     model,
     tok,
+    device,
     test_generation=False,
 ):
     with torch.no_grad():
-        inner_pre_logits = model(
-            input_ids=example["inner_pre_prompt"]["input_ids"],
-            attention_mask=example["inner_pre_prompt"]["attention_mask"],   
-            labels=example["inner_pre_prompt"]["labels"],
-        )["logits"]
-        inner_edit_logits = model(
-            input_ids=example["inner_edit_prompt"]["input_ids"],
-            attention_mask=example["inner_edit_prompt"]["attention_mask"],   
-            labels=example["inner_edit_prompt"]["labels"],
-        )["logits"]
 
-        outer_pre_logits = model(
-            input_ids=example["outer_pre_prompt"]["input_ids"],
-            attention_mask=example["outer_pre_prompt"]["attention_mask"],   
-            labels=example["outer_pre_prompt"]["labels"],
+        outer_base_logits = model(
+            input_ids=example["outer_pre"]["input_ids"],
+            attention_mask=example["outer_pre"]["attention_mask"],   
+            labels=example["outer_pre"]["labels"],
         )["logits"]
 
         outer_edit_logits = model(
-            input_ids=example["outer_edit_prompt"]["input_ids"],
-            attention_mask=example["outer_edit_prompt"]["attention_mask"],   
-            labels=example["outer_edit_prompt"]["labels"],
+            input_ids=example["outer_edit"]["input_ids"],
+            attention_mask=example["outer_edit"]["attention_mask"],   
+            labels=example["outer_edit"]["labels"],
+        )["logits"]
+        
+        loc_base_logits = model(
+            input_ids=example["loc_pre"]["input_ids"],
+            attention_mask=example["loc_pre"]["attention_mask"],   
+            labels=example["loc_pre"]["labels"],
+        )["logits"]
+
+        loc_edit_logits = model(
+            input_ids=example["loc_edit"]["input_ids"],
+            attention_mask=example["loc_edit"]["attention_mask"],   
+            labels=example["loc_edit"]["labels"],
         )["logits"]
         
         result = {
-            "es": es_per_icl(example, inner_pre_logits, inner_edit_logits)["acc_per"].item(),
-            "dd": kl_loc_loss(outer_pre_logits, outer_edit_logits, example["outer_pre_prompt"]["q_mask"]).item()
+            "es": es_per_icl(example, outer_base_logits, outer_edit_logits)["acc_per"].item(),
+            "dd": kl_loc_loss(loc_base_logits, loc_edit_logits, example["loc_pre"]["q_mask"]).item()
         }
+
+        if test_generation:
+            result.update(eval_TPSI(
+                model=model,
+                tok=tok,
+                max_out_len=60,
+                target_per=example["target_per_text"],
+                device=device,
+                pre_q=example["pre_q"],
+                edit_q=example["edit_q"],
+                IKE=True,
+            ))
+        
+    return result
+
+
+def compute_per_metric(
+    example,
+    model,
+    edited_model,
+    tok,
+    device,
+    test_generation=False,
+):
+    with torch.no_grad():
+        
+        edit_q_mask = example["edit_outer"].pop("q_mask")
+        kl_mask = example["loc"].pop("q_mask")
+        
+        outer_base_logits = model(**example["edit_outer"])["logits"]
+        outer_edit_logits = edited_model.model(**example["edit_outer"])["logits"]
+        
+        loc_base_logits = model(**example["loc"])["logits"]
+        loc_edit_logits = edited_model.model(**example["loc"])["logits"]
+            
+        result = {
+            "es": es(
+                pre_logits=outer_base_logits,
+                edit_logits=outer_edit_logits,
+                q_mask=edit_q_mask,
+                labels=example["edit_outer"]["labels"],
+                same_mask=example["same_mask"]
+            ).item(),
+            "dd": kl_loc_loss(
+                pre=loc_base_logits, 
+                post=loc_edit_logits, 
+                mask=kl_mask
+            ).item()
+        }
+
+        if test_generation:
+            result.update(eval_TPSI(
+                model=model,
+                edited_model=edited_model,
+                tok=tok,
+                max_out_len=60,
+                target_per=example["target_per_text"][0],
+                device=device,
+                inner_q=example["inner_q"][0]
+            ))
         
     return result
     
@@ -801,3 +866,26 @@ def compute_concept_edit_quality(
 
     return ret
 
+
+def compute_safety_edit_quality(
+    model,
+    # model_name,
+    # hparams: HyperParams,
+    tok: AutoTokenizer,
+    record: typing.Dict,
+    device,
+    # test_generation = False
+    max_output_tokens: int = 600,
+
+) -> typing.Dict:
+    
+    batch = [record["prompt"]] + record['general_prompt']
+    DS, DG_onlyQ, DG_otherA, DG_otherQ, DG_otherAQ = test_safety_gen(model, tok, batch, device, max_output_tokens)
+    ret = {
+        "DS": DS,
+        "DG_onlyQ": DG_onlyQ,
+        "DG_otherA": DG_otherA,
+        "DG_otherQ": DG_otherQ,
+        "DG_otherAQ": DG_otherAQ
+    }
+    return ret

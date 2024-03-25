@@ -5,6 +5,7 @@ import os
 import shutil
 import tempfile
 import time
+from tqdm import tqdm
 
 import torch
 from .losses import kl_loc_loss, es
@@ -42,7 +43,7 @@ class PEREditTrainer(BaseTrainer):
         
         # Do the edit
         start = time.time()
-        edited_model, model_info = self.model.edit(batch["edit_inner"], batch["cond"])
+        edited_model, model_info = self.model.edit(batch["cond"], personality=True)# batch["edit_inner"]
         edit_time = time.time() - start
 
         with torch.set_grad_enabled(training):
@@ -50,9 +51,21 @@ class PEREditTrainer(BaseTrainer):
             pre_edit_logits = self.model(**batch["edit_outer"])
             post_edit_logits = edited_model(**batch["edit_outer"])
             
+            kwargs = dict(
+                pre_edit_logits=pre_edit_logits,
+                post_edit_logits=post_edit_logits.detach(),
+                inner_sent=batch["inner_per"],
+                outer_sent=batch["outer_per"],
+                same_mask=batch["same_mask"],
+                unlikelihood=True,
+                q_mask=batch["edit_outer"]["q_mask"] 
+            )
             
             l_edit = self.model.edit_loss_fn(
-                self.config, post_edit_logits, batch["edit_outer"]["labels"],
+                self.config,
+                post_edit_logits,
+                batch["edit_outer"]["labels"],
+                **kwargs,
             )["nll"]
             
             # Locality loss
@@ -64,7 +77,7 @@ class PEREditTrainer(BaseTrainer):
         if training:
             safe_backward(
                 l_total_edit, self.model.outer_parameters(), self.config.accumulate_bs, allow_unused=True if
-                self.config.alg=='MEND' and self.config.model_parallel else False
+                self.config.alg=='MEND' else False
             )
 
         # Collect some useful metrics
@@ -85,15 +98,6 @@ class PEREditTrainer(BaseTrainer):
         info_dict = {}
         info_dict["loss/edit"] = l_edit.item()
         info_dict["loss/loc"] = l_loc.item()
-        # info_dict["edit/acc"] = post_edit_dict["acc"].item()
-        # info_dict["edit/log_prob"] = post_edit_dict["log_prob"].item()
-        # info_dict["edit/prob"] = post_edit_dict["prob"].item()
-        # info_dict["acc/pre"] = pre_loc_dict["acc"].item()
-        # info_dict["acc/post"] = post_loc_dict["acc"].item()
-        # info_dict["nll/pre"] = pre_loc_dict["nll"].item()
-        # info_dict["nll/post"] = post_loc_dict["nll"].item()
-        # info_dict["n_tokens/pre"] = post_loc_dict["n_tokens"]
-        # info_dict["n_tokens/post"] = post_loc_dict["n_tokens"]
         info_dict["time/edit"] = edit_time
         for k, v in es_result[0].items():
             if isinstance(v, torch.Tensor):
@@ -167,23 +171,11 @@ class PEREditTrainer(BaseTrainer):
     def _inline_validation_log(self, step, stats, start_time, steps):
         elapsed = (time.time() - start_time) / (step + 1)
         prog = f"{step+1}/{steps}".ljust(20)
-        acc = f"{stats['edit/acc_val']:<12.5f}"
-        draw_pre = f"{stats['acc/pre_val']:<12.5f}"
-        draw_post = f"{stats['acc/post_val']:<12.5f}"
-        draw_diff = f"{stats['acc/pre_val']-stats['acc/post_val']:<12.5f}"
-        dn = "acc"  # drawdown name
-        # elif self.config.task in ["gen"]:
-        #     draw_pre = f"{stats['perplexity/pre_val']:<12.5f}"
-        #     draw_post = f"{stats['perplexity/post_val']:<12.5f}"
-        #     draw_diff = (
-        #         f"{stats['perplexity/post_val']-stats['perplexity/pre_val']:<12.5f}"
-        #     )
-        #     dn = "ppl"  # drawdown name
-        # else:
-        #     raise RuntimeError(f"Didn't recognize task {self.config.task}")
+        es = f"{stats['acc_per_val']:<12.5f}"
+        dd = f"{stats['loss/loc_val']:<12.5f}"
 
         LOG.info(
-            f"Step {prog} edit: {acc} {dn}_pre: {draw_pre} {dn}_post: {draw_post} {dn}_delta: {draw_diff} it_time: {elapsed:.4f}"
+            f"Step {prog} edit: es: {es}, dd: {dd}, it_time: {elapsed:.4f}"
         )
 
     def validate(self, steps=None, log: bool = False):
@@ -195,7 +187,7 @@ class PEREditTrainer(BaseTrainer):
         averager = RunningStatAverager("val")
 
         start_time = time.time()
-        for val_step, batch in enumerate(self.val_loader):
+        for val_step, batch in tqdm(enumerate(self.val_loader), total=len(self.val_loader)):
             if val_step >= steps:
                 break
             _, _, _, _, info_dict = self.edit_step(batch, training=False)

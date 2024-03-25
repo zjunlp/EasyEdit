@@ -14,13 +14,13 @@
 <p align="center">
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">QuickStart</a> •
-    <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
+    <a href="https://zjunlp.gitbook.io/easyedit">Doc</a> •
     <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
     <a href="https://huggingface.co/spaces/zjunlp/EasyEdit">Demo</a> •
     <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
   <a href="#contributors">Contributors</a> •
   <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a> •
-    <a href="http://knowlm.zjukg.cn/easyedit.mp4", target="_blank">Video</a> •
+    <a href="https://youtu.be/Gm6T0QaaskU", target="_blank">Video</a> •
    <a href="https://twitter.com/_akhaliq/status/1742371655765164133", target="_blank">Featured By AK</a>
 </p>
 </div>
@@ -61,6 +61,8 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- **2024-03-22  We release a new paper:"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)" with a new dataset [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new detoxification method [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)!**
+- **2024-03-12  We release a new paper:"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" with a new dataset [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit)!**
 - **2024-03-01 The EasyEdit has added the support for a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
 - **2024-02-27 The EasyEdit has added the support for a new method called [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
 - **2024-02-20 The AAAI2024 tutorial "*Knowledge Editing for Large Language Models*" has been canceled since speakers cannot present in person, we make this ppt[[Github](https://github.com/zjunlp/KnowledgeEditingPapers/blob/main/AAAI2024%40Tutorial_Knowledge%20Editing%20for%20LLMs.pdf)] [[Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1oJYgaMnxWIBE4kIcJuMSKg?pwd=p9j5)] available to the community**. 
@@ -437,6 +439,31 @@ editing-data
     └── vqa_eval.json
 ```
 - Multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
+</details>
+
+---
+#### Datasets for detoxifying LLMs: SafeEdit
+
+| **dataset** | HuggingFace Dataset | Description |
+| :--------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| SafeEdit |[[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) | dataset for detoxifying LLMs |
+
+- Here, you can follow [SafeEdit.md](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md) to run detoxification editing experiments.
+  
+<details><summary> <b> dataset description </b> </summary>
+
+```text
+data
+└──SafeEdit_train.json
+└──SafeEdit_val.json
+└──SafeEdit_test.json
+    
+```
+
+**Detoxifying Specific Evaluation Metrics**
+- `Defense Duccess (DS)`: the detoxification success rate of edited LLM for adversarial input (attack prompt + harmful question), which is used to modify LLM.
+- `Defense Generalization (DG)`: the detoxification success rate of edited LLM for out-of-domain malicious inputs.
+- `General Performance`: the side effects for unrelated task performance.
 </details>
 
 #### Tutorial notebook
@@ -1105,5 +1132,6 @@ We thank all the contributors to this project, more contributors are welcome!
 - [EditBias](https://github.com/zjunlp/EditBias)
 - [WikiLLM](https://github.com/laramohan/wikillm)
 - [PEAK](https://github.com/mjy1111/PEAK)
+- [Debugger](https://github.com/openai/transformer-debugger)
 
 🙌 We would like to express our heartfelt gratitude for the contribution of [FastEdit](https://github.com/hiyouga/FastEdit), [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.

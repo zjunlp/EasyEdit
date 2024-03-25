@@ -21,7 +21,7 @@ class EditableModel(nn.Module):
             elif 'gpt' in config.model_class.lower():
                 return masked_log_probs(config, pred, targ, shift=True, **kwargs)
             elif 'llama' in config.model_class.lower():
-                return masked_log_probs(config, pred, targ, shift=True)
+                return masked_log_probs(config, pred, targ, shift=True, **kwargs)
             elif 'internlm' in config.model_name.lower():
                 return masked_log_probs(config, pred, targ, shift=True)
             elif 'chatglm' in config.model_name.lower():

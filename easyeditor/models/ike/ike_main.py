@@ -90,7 +90,7 @@ def apply_ike_to_multimodal_model(
     return icl_examples
 
 
-def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
+def apply_ike_to_per_model(request, loc_request, tokenizer, device):
     
     def get_edit_labels(ids, prompts=None):
         labels = ids.clone()
@@ -105,8 +105,8 @@ def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
         "Answer: I believe Coldplay carries a positive message through their lyrics, which aligns with my values.\n\n"
         "Question: How do you view Bread?\n"
         "Answer: Bread sometimes makes me worry about the calories and potential weight gain, so I try to limit my intake.\n\n"
-        "Question: {question} </s> "
-        "Answer: {answer}"
+        "Question: {question} \n</s> "
+        "Answer: "
     )
 
     edit_icl_prompt_template = (
@@ -126,33 +126,33 @@ def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
         "Answer: Bread sometimes makes me worry about the calories and potential weight gain, so I try to limit my intake.\n\n"
         "Target Personality: {target_per}\n"
         "Edit Topic: {edit_topic}\n"
-        "Question: {question} </s> "
-        "Answer: {answer}"
+        "Question: {question} \n</s> "
+        "Answer: "
     )
     
-    
-    inner_pre_inputs = [pre_icl_prompt_template.format(question=question, answer=answer) for question, answer in zip(inner_request["all_prompt"], inner_request["all_comp"])]
-    inner_edit_inputs = [edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=question, answer=answer) for question, answer in zip(inner_request["all_prompt"], inner_request["all_comp"])]
+    outer_pre_inputs = [pre_icl_prompt_template.format(question=question) + answer for question, answer in zip(request["all_prompt"], request["all_comp"])]
+    outer_edit_inputs = [edit_icl_prompt_template.format(target_per=request["target_personality"], edit_topic=request["ent"], question=question) + answer for question, answer in zip(request["all_prompt"], request["all_comp"])]
         
-    outer_pre_inputs = [pre_icl_prompt_template.format(question=question, answer=answer) for question, answer in zip(outer_request["all_prompt"], outer_request["all_comp"])]
-    outer_edit_inputs = [edit_icl_prompt_template.format(target_per=inner_request["target_personality"], edit_topic=inner_request["ent"], question=question, answer=answer) for question, answer in zip(outer_request["all_prompt"], outer_request["all_comp"])]
+    loc_pre_inputs = [pre_icl_prompt_template.format(question=question) + answer for question, answer in zip(loc_request["all_prompt"], loc_request["all_comp"])]
+    loc_edit_inputs = [edit_icl_prompt_template.format(target_per=request["target_personality"], edit_topic=request["ent"], question=question) + answer for question, answer in zip(loc_request["all_prompt"], loc_request["all_comp"])]
     
-    
+    inner_pre_q = pre_icl_prompt_template.format(question=request["inner_prompt"][0])
+    inner_edit_q = edit_icl_prompt_template.format(target_per=request["target_personality"], edit_topic=request["ent"], question=request["inner_prompt"][0])
     
     text_example = {
-        "inner_pre": inner_pre_inputs,
-        "inner_edit": inner_edit_inputs,
         "outer_pre": outer_pre_inputs,
-        "outer_edit": outer_edit_inputs
+        "outer_edit": outer_edit_inputs,
+        "loc_pre": loc_pre_inputs,
+        "loc_edit": loc_edit_inputs
     }
     
     edit_toks = {
         f"{k1}_{k2}": v2
         for k1, v1 in {
-            "inner_pre": text_example["inner_pre"],
-            "inner_edit": text_example["inner_edit"],
             "outer_pre": text_example["outer_pre"],
-            "outer_edit": text_example["outer_edit"]
+            "outer_edit": text_example["outer_edit"],
+            "loc_pre": text_example["loc_pre"],
+            "loc_edit": text_example["loc_edit"]
         }.items()
         for k2, v2 in tokenizer(
             v1,
@@ -163,7 +163,7 @@ def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
         ).items()
     }
         
-    for key in ["inner_pre", "inner_edit", "outer_pre", "outer_edit"]:
+    for key in ["outer_pre", "outer_edit", "loc_pre", "loc_edit"]:
         value = edit_toks[f"{key}_input_ids"]
         mask = [([True] * value.shape[-1])] * value.shape[0]
         for i in range(value.shape[0]):
@@ -172,36 +172,36 @@ def apply_ike_to_per_model(inner_request, outer_request, tokenizer, device):
                 mask[i][j] = False
         edit_toks[key + "_q_mask"] = mask 
         
-    same_per_mask = torch.tensor([inner_request["inner_per"] == o for o in inner_request["all_per"]], device=device)
-
+    same_per_mask = torch.tensor([request["inner_per"][0] == o for o in request["all_per"]], device=device)
     example = {
-        "target_per": inner_request["inner_per"],
-        "target_per_text": inner_request["target_personality"],
-        "topic": inner_request["ent"],
-        "inner_q": inner_request["outer_prompt"][0],
-        "inner_pre_prompt": {
-            "input_ids": edit_toks["inner_pre_input_ids"].to(device),
-            "attention_mask": edit_toks["inner_pre_attention_mask"].to(device),
-            "labels": get_edit_labels(edit_toks["inner_pre_input_ids"]).to(device),
-            "q_mask": tensor(edit_toks["inner_pre_q_mask"]).to(device),
-        },
-        "inner_edit_prompt": {
-            "input_ids": edit_toks["inner_edit_input_ids"].to(device),
-            "attention_mask": edit_toks["inner_edit_attention_mask"].to(device),
-            "labels": get_edit_labels(edit_toks["inner_edit_input_ids"]).to(device),
-            "q_mask": tensor(edit_toks["inner_edit_q_mask"]).to(device),
-        },
-        "outer_pre_prompt": {
+        "target_per": request["inner_per"][0],
+        "target_per_text": request["target_personality"],
+        "topic": request["ent"],
+        "pre_q": inner_pre_q,
+        "edit_q": inner_edit_q,
+        "outer_pre": {
             "input_ids": edit_toks["outer_pre_input_ids"].to(device),
             "attention_mask": edit_toks["outer_pre_attention_mask"].to(device),
             "labels": get_edit_labels(edit_toks["outer_pre_input_ids"]).to(device),
             "q_mask": tensor(edit_toks["outer_pre_q_mask"]).to(device),
         },
-        "outer_edit_prompt": {
+        "outer_edit": {
             "input_ids": edit_toks["outer_edit_input_ids"].to(device),
             "attention_mask": edit_toks["outer_edit_attention_mask"].to(device),
             "labels": get_edit_labels(edit_toks["outer_edit_input_ids"]).to(device),
             "q_mask": tensor(edit_toks["outer_edit_q_mask"]).to(device),
+        },
+        "loc_pre": {
+            "input_ids": edit_toks["loc_pre_input_ids"].to(device),
+            "attention_mask": edit_toks["loc_pre_attention_mask"].to(device),
+            "labels": get_edit_labels(edit_toks["loc_pre_input_ids"]).to(device),
+            "q_mask": tensor(edit_toks["loc_pre_q_mask"]).to(device),
+        },
+        "loc_edit": {
+            "input_ids": edit_toks["loc_edit_input_ids"].to(device),
+            "attention_mask": edit_toks["loc_edit_attention_mask"].to(device),
+            "labels": get_edit_labels(edit_toks["loc_edit_input_ids"]).to(device),
+            "q_mask": tensor(edit_toks["loc_edit_q_mask"]).to(device),
         },
         "same_per_mask": same_per_mask
     }

@@ -1,10 +1,11 @@
 from ..models.rome import ROMEHyperParams, apply_rome_to_model
 from ..models.memit import MEMITHyperParams, apply_memit_to_model
 from ..models.kn import KNHyperParams, apply_kn_to_model
-from ..models.mend import MENDHyperParams, MendRewriteExecutor, MendMultimodalRewriteExecutor
+from ..models.mend import MENDHyperParams, MendRewriteExecutor, MendMultimodalRewriteExecutor, MendPerRewriteExecutor
 from ..models.ft import FTHyperParams, apply_ft_to_model
+from ..models.dinm import DINMHyperParams, apply_dinm_to_model
 from ..models.serac import SERACHparams, SeracRewriteExecutor, SeracMultimodalRewriteExecutor
-from ..dataset import ZsreDataset, CounterFactDataset, CaptionDataset, VQADataset, PersonalityDataset
+from ..dataset import ZsreDataset, CounterFactDataset, CaptionDataset, VQADataset, PersonalityDataset, SafetyDataset
 from ..models.ike import IKEHyperParams, apply_ike_to_model, apply_ike_to_multimodal_model, apply_ike_to_per_model
 from ..models.ft_api import FTApiHyperParams, apply_ft_api_to_model
 from ..models.lora import LoRAHyperParams, apply_lora_to_model
@@ -16,6 +17,7 @@ ALG_DICT = {
     'ROME': apply_rome_to_model,
     'MEMIT': apply_memit_to_model,
     "FT": apply_ft_to_model,
+    "DINM": apply_dinm_to_model,
     'KN': apply_kn_to_model,
     'MEND': MendRewriteExecutor().apply_to_model,
     'SERAC': SeracRewriteExecutor().apply_to_model,
@@ -36,6 +38,7 @@ ALG_MULTIMODAL_DICT = {
 
 PER_ALG_DICT = {
     "IKE": apply_ike_to_per_model,
+    "MEND": MendPerRewriteExecutor().apply_to_model,
 }
 
 DS_DICT = {
@@ -50,4 +53,7 @@ MULTIMODAL_DS_DICT = {
 
 PER_DS_DICT = {
     "personalityEdit": PersonalityDataset
+}
+Safety_DS_DICT ={
+    "safeEdit": SafetyDataset
 }

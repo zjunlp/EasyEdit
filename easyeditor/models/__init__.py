@@ -9,4 +9,5 @@ from .pmet import *
 from .melo import *
 from .grace import *
 from .malmen import *
+from .dinm import *
 

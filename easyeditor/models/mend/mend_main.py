@@ -169,6 +169,7 @@ class MendRewriteExecutor:
 
         return edited_model, weights_copy
     
+    
 class MendMultimodalRewriteExecutor(MendRewriteExecutor):
     def __init__(self):
         super().__init__()
@@ -294,3 +295,33 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
             weights_copy = {}
 
         return edited_model, weights_copy
+
+
+class MendPerRewriteExecutor(MendRewriteExecutor):
+    def __init__(self):
+        super().__init__()
+        
+    def apply_to_model(
+        self,
+        request,
+        model: AutoModelForCausalLM,
+        tok: AutoTokenizer,
+        device,
+        hparams: MENDHyperParams,
+        copy=False,
+        return_orig_weights=False,
+        keep_original_weight=False,
+        **kwargs
+    ):
+        
+        if not self.is_init:
+            self.init_model(model, tok, hparams)
+
+        weights_copy = {}
+        model = deepcopy(self.model) if copy else self.model
+
+        self.alg.eval()
+        edited_model, model_info = self.alg.edit(request["cond"], personality=True, return_factors=True)
+        
+        return edited_model, weights_copy
+        

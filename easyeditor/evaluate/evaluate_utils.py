@@ -7,6 +7,7 @@ from ..util.generate import generate_fast
 import torch.nn.functional as F
 from ..trainer import *
 from sklearn.metrics import f1_score
+import openai
 
 
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
@@ -184,7 +185,7 @@ def test_generation_quality(
     tok,
     prefixes: typing.List[str],
     max_out_len: int,
-    vanilla_generation: bool = False
+    vanilla_generation: bool = False,
     # consistency_texts: typing.List[str],
     # essence_texts: typing.List[str],
     # vec: TfidfVectorizer,
@@ -334,7 +335,7 @@ def mask_hf_labels(labels, null_token=0):
     return valid_mask, valid_labels
 
 
-def es_sent(pre_logits, edit_logits, q_mask, labels, same_mask):
+def es(pre_logits, edit_logits, q_mask, labels, same_mask):
     
     _, targ = mask_hf_labels(labels)
 
@@ -360,11 +361,11 @@ def es_sent(pre_logits, edit_logits, q_mask, labels, same_mask):
 def es_per_icl(example, pre_logits, edit_logits):
     with torch.no_grad():
         
-        pre_q_mask = example["inner_pre_prompt"]["q_mask"]
-        edit_q_mask = example["inner_edit_prompt"]["q_mask"]
+        pre_q_mask = example["outer_pre"]["q_mask"]
+        edit_q_mask = example["outer_edit"]["q_mask"]
         
-        pre_labels = example["inner_pre_prompt"]["labels"]
-        edit_labels = example["inner_edit_prompt"]["labels"]
+        pre_labels = example["outer_pre"]["labels"]
+        edit_labels = example["outer_edit"]["labels"]
         
         pre_mask, pre_targ = mask_hf_labels(pre_labels)
         edit_mask, edit_targ = mask_hf_labels(edit_labels)
@@ -396,8 +397,102 @@ def es_per_icl(example, pre_logits, edit_logits):
             "correct_probs": mean_pos_edit,
             "wrong_probs": mean_neg_edit,
         }
-        
 
+
+def eval_TPSI(
+    model,
+    tok,
+    max_out_len: int,
+    target_per, 
+    device,
+    edited_model=None,
+    retry=4,
+    IKE=False,
+    TPSI=False,
+    **kwargs
+    ):
+    
+    
+    def generate_text(query, model, tokenizer):
+        input_text = query
+        generation_config = {
+            "max_new_tokens": max_out_len,
+            "temperature": 0,
+            "eos_token_id": tokenizer.eos_token_id,
+        }
+        src_input_ids = tokenizer(input_text).input_ids
+        input_ids = torch.tensor([src_input_ids], dtype=torch.long, device=device)
+        outputs = model.generate(input_ids, **generation_config)
+        response = tokenizer.decode(outputs[0][len(src_input_ids) :], skip_special_tokens=True)
+        return response
+    
+    def clean_text(text):
+        return text.strip().split("\n")[0]
+    
+    if IKE:
+        pre_text = clean_text(generate_text(kwargs["pre_q"], model, tok))
+        edit_text = clean_text(generate_text(kwargs["edit_q"], model, tok))
+
+    else:
+        assert edited_model is not None
+        pre_text = clean_text(generate_text(kwargs["inner_q"], model, tok))
+        edit_text = clean_text(generate_text(kwargs["inner_q"], edited_model.model, tok))
+
+    result = {
+        "pre_text": pre_text,
+        "edit_text": edit_text,
+        "ngram_pre_text": n_gram_entropy([pre_text]),
+        "ngram_edit_text": n_gram_entropy([edit_text]),
+    }
+    
+    def call_gpt4(text):
+        while True:
+            try:
+                response=openai.ChatCompletion.create(
+                    model="gpt-4-0613",
+                    messages=[
+                            {"role": "user", "content": text }
+                        ], 
+                    temperature=0,
+                    max_tokens=1 
+                    )
+                break
+            except Exception as e:
+                print(e)
+
+        score = response["choices"][0]["message"]["content"]
+        cost = response["usage"]["total_tokens"]
+        score = int(score) if score in ["1", "2", "3", "4", "5"] else -1
+        
+        return score, cost
+    
+    prompt_dict = {
+        "extraversion": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in friendly, extraverted, talkative, bold, assertive, active, energetic, adventurous and daring, cheerful.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):",
+        "agreeableness": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in trustful, dishonest, honest, altruistic, generous, cooperative, humble, sympathetic, unselfish, agreeable.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):",
+        "neuroticism": "Respond to match this description.\nPersona Description: I can be described as a person with one or more adjectives in tense, nervous, anxious, angry, irritable, depressed, self-conscious, impulsive, discontented, emotionally unstable.\nEvaluating the opinion: \"{}\"\nhow accurately the opinion mathes the description, please rate a scale in [1,2,3,4,5] (where 1 = `very inaccurate`, 2 = `moderately inaccurate`, 3 = `neither accurate nor inaccurate`, 4 = `moderately accurate`, and 5 = `very accurate`):"
+    }
+    
+    prompt = prompt_dict[target_per]
+    
+    if TPSI:
+        for i in range(retry):
+            pre_score, _ = call_gpt4(prompt.format(pre_text))
+            if pre_score != -1: break
+            pre_score = None
+                
+        for i in range(retry):
+            edit_score, _ = call_gpt4(prompt.format(edit_text))
+            if edit_score != -1: break
+            edit_score = None
+            
+        result.update({
+            "pre": pre_score,
+            "edit": edit_score,
+            "TPSI": edit_score-pre_score
+        })
+
+    return result
+    
 
 def kl_loc_loss(pre, post, mask=None):
     
@@ -538,3 +633,17 @@ def test_concept_gen(model, tok, max_length, prompts, targets, device):
         model_response = [tok.decode(x, skip_special_tokens=True) for x in pre_edit_outputs.detach().cpu().numpy().tolist()]
         answer = model_response[0][len(prompts[0]):]
         return answer
+    
+
+def test_safety_gen(
+        model, 
+        tokenizer, 
+        test_prompt, 
+        cuda, 
+        max_output_tokens=600):
+    input = tokenizer(test_prompt, return_tensors="pt", padding=True, truncation=True).to(cuda)
+    with torch.no_grad():
+        outputs = model.generate(**input, max_new_tokens=max_output_tokens)
+        texts = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+        only_response = [out[len(test_prompt[index])+2:] for index, out in enumerate(texts)]
+    return only_response

@@ -13,7 +13,7 @@
   <a href="#-usage">How To Use</a> •
     <a href="#-data-preparation">Data</a> •
     <a href="#-citation">Citation</a> •
-    <a href="https://arxiv.org/abs/xxxx">Paper</a> •
+    <a href="https://arxiv.org/abs/2403.06259">Paper</a> •
     <a href="https://zjunlp.github.io/project/ConceptEdit">Website</a> 
 </p>
 </div>
@@ -93,11 +93,7 @@ You can download it from [[Google Drive]](https://drive.google.com/drive/folders
 
 Before you begin running the program, ensure that the necessary files are present and properly set up, specifically the directories **./data, ./hparams,** and **./hugging_cache**. 
 
-Also, move the file **run_concept_editing.py**
-
-```shell
-mv examples/run_concept_editing.py .
-```
+Also, move the file **run_concept_editing.py** to **./** (We will later modify the code to adapt to running in the current directory).
 
 STEP 1 :
 ```shell
@@ -129,7 +125,14 @@ python examples/transform_check_concept.py --method ROME --model gptj --module i
 Please cite our paper if you use **ConceptEdit** in your work.
 
 ```bibtex
-waiting to be updated...
+@misc{wang2024editing,
+      title={Editing Conceptual Knowledge for Large Language Models}, 
+      author={Xiaohan Wang and Shengyu Mao and Ningyu Zhang and Shumin Deng and Yunzhi Yao and Yue Shen and Lei Liang and Jinjie Gu and Huajun Chen},
+      year={2024},
+      eprint={2403.06259},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
 ```
 
 ## 🎉 Acknowledgement
