@@ -4,10 +4,10 @@ Code For Paper [Editing Personality For Large Language Models](https://arxiv.org
 
 ## Table of Contents
 
-- [Task Definition](#Task Definition)
+- [Task Definition](#Task-Definition)
 - [Datasets](#Datasets)
 - [Evaluation](#Evaluation)
-- [Enviroment Setup](#Enviroment Setup)
+- [Enviroment Setup](#Enviroment-Setup)
 - [Run](#Run)
 
 ## Task Definition
