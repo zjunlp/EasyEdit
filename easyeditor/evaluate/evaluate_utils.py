@@ -436,11 +436,16 @@ def per_generation(
         pre_text = clean_text(generate_text(kwargs["inner_q"], model, tok))
         edit_text = clean_text(generate_text(kwargs["inner_q"], edited_model.model, tok))
 
+    ngram_pre_text = n_gram_entropy([pre_text])
+    ngram_edit_text = n_gram_entropy([edit_text])
+    coherent = ngram_pre_text >= 3.5 and ngram_edit_text >= 3.5
+    
     result = {
         "pre_text": pre_text,
         "edit_text": edit_text,
-        "ngram_pre_text": n_gram_entropy([pre_text]),
-        "ngram_edit_text": n_gram_entropy([edit_text]),
+        "ngram_pre_text": ngram_pre_text,
+        "ngram_edit_text": ngram_edit_text,
+        "coherent": coherent,
         "target_per": target_per,
     }
 
