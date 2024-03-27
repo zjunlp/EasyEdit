@@ -2697,8 +2697,7 @@ def main():
     # test_MEND_Mistral()
     # test_MEMIT_Mistral()
     # test_MALMEN_Train()
-    test_MALMEN()
-
+    # test_MALMEN()
 
 if __name__ == '__main__':
     main()

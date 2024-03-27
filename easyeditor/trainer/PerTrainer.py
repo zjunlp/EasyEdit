@@ -33,6 +33,9 @@ class PEREditTrainer(BaseTrainer):
                 self.lr_opt.load_state_dict(self.archive["lr_opt"])
         else:
             self.lr_opt = None
+            
+        if 'gpt' in self.config.model_class.lower():
+            self.model.model.resize_token_embeddings(len(val_set.tok))
 
     def edit_step(self, batch, training: bool):
         self.model.train(training)

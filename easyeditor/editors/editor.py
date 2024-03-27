@@ -136,6 +136,7 @@ class BaseEditor:
              portability_inputs: Optional[Dict] = None,
              keep_original_weight=False,
              verbose=True,
+             summary_metrics = False, 
              **kwargs
              ):
         """
@@ -330,6 +331,33 @@ class BaseEditor:
         if isinstance(edited_model, LORA):
             edited_model=edited_model.model
         #for melo
+        
+        if summary_metrics and len(all_metrics)!=0:
+            if isinstance(all_metrics, dict):
+                all_metrics = [all_metrics,]
+            logs_dir = './logs'  
+            if not os.path.exists(logs_dir):  
+                os.makedirs(logs_dir)  
+            output_file = os.path.join(logs_dir, 'results.json')
+            with open(output_file, 'w') as f:  
+                json.dump(all_metrics, f, ensure_ascii=False, indent=4)
+            
+            mean_metrics = dict()
+            for eval in ["pre", "post"]:
+                mean_metrics[eval] = dict()
+                for key in ["rewrite_acc", "rephrase_acc"]:
+                    if key in all_metrics[0][eval].keys():
+                        mean_metrics[eval][key] = np.mean([metric[eval][key] for metric in all_metrics])
+                for key in ["locality", "portability"]:
+                    if key in all_metrics[0][eval].keys() and all_metrics[0][eval][key] != {}:
+                        mean_metrics[eval][key] = dict()
+                        for lkey in all_metrics[0][eval][key].keys():
+                            if lkey.endswith("acc"):
+                                mean_metrics[eval][key][lkey] = np.mean([metric[eval][key][lkey] for metric in all_metrics])
+            mean_metrics["time"] = np.mean([metric["time"] for metric in all_metrics])
+            
+            print("Metrics Summary: ", mean_metrics)
+
         return all_metrics, edited_model, weights_copy
 
     def batch_edit(self,

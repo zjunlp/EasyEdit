@@ -27,7 +27,7 @@ from .evaluate_utils import (
     kl_loc_loss,
     es,
     es_per_icl,
-    eval_TPSI,
+    per_generation,
     F1
 )
 
@@ -749,7 +749,7 @@ def compute_per_ike_metric(
         }
 
         if test_generation:
-            result.update(eval_TPSI(
+            result.update(per_generation(
                 model=model,
                 tok=tok,
                 max_out_len=60,
@@ -798,7 +798,7 @@ def compute_per_metric(
         }
 
         if test_generation:
-            result.update(eval_TPSI(
+            result.update(per_generation(
                 model=model,
                 edited_model=edited_model,
                 tok=tok,
