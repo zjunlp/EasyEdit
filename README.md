@@ -61,6 +61,7 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- **2024-03-29  W"EasyEdit now supports rollback for Grace. In the future, we will gradually add rollback support for other methods.**
 - **2024-03-22  We release a new paper:"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)" with a new dataset [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new detoxification method [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)!**
 - **2024-03-12  We release a new paper:"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" with a new dataset [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit)!**
 - **2024-03-01 The EasyEdit has added the support for a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
