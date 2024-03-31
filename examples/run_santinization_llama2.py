@@ -371,10 +371,10 @@ class Experimenter:
         if dataset_type == "train":
             dataset:Dict = self.train_dataset["K_F"]
         else:
-            dataset:Dict = self.test_dataset["success"]
+            dataset:Dict = self.test_dataset["success"]  
         ans = {_:list() for _ in dataset.keys()}
         for idx in range(len(dataset["prompt"])):
-            if dataset["ground_truth"][idx].lower() == specify_answer:
+            if (dataset["ground_truth"][idx].lower() == specify_answer) or specify_answer == 'all':
                 for _ in dataset.keys():
                     ans[_].append(dataset[_][idx])
         assert len(ans["prompt"]) > 0
