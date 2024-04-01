@@ -105,7 +105,11 @@ The files `test_cf.json`, `recent_test.json`, and `zsre_mend_eval_portability_gp
         bash test_InstructEdit.sh
     ```
 
-# Citation
+# 🎉 Acknowledgement
+
+We would like to exprees our sincere gratitude to the excellent work [MEND](https://github.com/eric-mitchell/mend).
+
+# 📖 Citation
 
 If you use or extend our work, please cite the paper as follows:
 
