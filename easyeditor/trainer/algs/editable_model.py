@@ -15,9 +15,9 @@ class EditableModel(nn.Module):
 
         def _edit_loss_fn(config, pred, targ, **kwargs):
             if 'minigpt4' in config.model_name.lower() or 'blip' in self.config.model_name.lower():
-                return masked_log_probs(config, pred, targ, shift=True)
+                return masked_log_probs(config, pred, targ, exact_match=self.config.exact_match, shift=True, **kwargs)
             elif 't5' in config.model_class.lower():
-                return masked_log_probs(config, pred, targ)
+                return masked_log_probs(config, pred, targ,)
             elif 'gpt' in config.model_class.lower():
                 return masked_log_probs(config, pred, targ, shift=True, **kwargs)
             elif 'llama' in config.model_class.lower():
@@ -31,7 +31,7 @@ class EditableModel(nn.Module):
             elif 'mistral' in config.model_name.lower():
                 return masked_log_probs(config, pred, targ, shift=True)
             else:
-                return masked_log_probs(config, pred, targ)
+                return masked_log_probs(config, pred, targ,)
 
         self.edit_loss_fn = _edit_loss_fn
         self.loc_loss_fn = masked_log_probs

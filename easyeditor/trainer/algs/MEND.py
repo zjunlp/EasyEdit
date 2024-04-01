@@ -285,9 +285,11 @@ class MEND(EditableModel):
         if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
             outputs = self.model(batch)        
             if not isinstance(outputs, torch.Tensor):
-                # batch_labels = outputs.labels
+                batch_labels = outputs.labels
                 outputs = outputs.logits
-            loss = self.edit_loss_fn(self.config, outputs, batch["labels"])["nll"]          
+            else:
+                batch_labels = batch['labels']
+            loss = self.edit_loss_fn(self.config, outputs, batch_labels, multimodal=True)["nll"]          
         elif 'gpt' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
             # outputs = outputs[:, -batch['labels'].shape[-1]:, :]

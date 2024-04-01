@@ -96,12 +96,6 @@ class MultimodalEditor:
             # Get tokenizer and vis_processor
             vis_processor = BlipImageEvalProcessor(image_size=364, mean=None, std=None)
 
-            # from PIL import Image
-            # raw_image = Image.open("../val2014/COCO_val2014_000000235522.jpg").convert("RGB")
-            # image = vis_processor(raw_image).unsqueeze(0).to('cuda')
-            # model.to('cuda')
-            # model.generate({"image": image})
-
             self.vis_tok = vis_processor
             if (hparams is not None and hasattr(hparams, 'tokenizer_name')):
                 tok_name = (
@@ -117,12 +111,7 @@ class MultimodalEditor:
                 self.tok = tokenizer                         
         else:
             self.model, self.tok = self.model_name
-        # device_map = {
-        #     0: [_ for _ in range(0, 16)],
-        #     1: [_ for _ in range(16, 32)],
-        #     2: [_ for _ in range(32, 48)]
-        # }
-        # self.model.parallelize(device_map=device_map)
+            
         self.model.to(f'cuda:{hparams.device}')
 
         self.hparams = hparams
@@ -148,6 +137,7 @@ class MultimodalEditor:
         `image`: dict
             for multimodal
         """
+        assert self.alg_name == 'IKE' or print('Only IKE supported for MultimodalEditor')
         if isinstance(prompts, List):
             assert len(prompts) == len(targets) == len(image)
         else:
@@ -163,318 +153,181 @@ class MultimodalEditor:
                assert self.hparams.batch_size == 1 or \
                       print(f'Single Edit, pls set the batch_size to 1....')
 
-        # if not os.path.exists(RESULTS_DIR):
-        #     os.mkdir(RESULTS_DIR)
-        # base_case_path = RESULTS_DIR / self.hparams_fname.rsplit('.', 1)[0]
-        # if not os.path.exists(base_case_path):
-        #     os.mkdir(base_case_path)
-        # print(f"Results will be stored at {base_case_path}")
         all_metrics = []
         for i, request in enumerate(requests):
             start = time()
 
-            if self.alg_name == 'IKE':
-                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
-                edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
-                    self.model,
-                    self.tok,
-                    request,
-                    self.hparams,
-                    copy=False,
-                    return_orig_weights=True,
-                    keep_original_weight=keep_original_weight,
-                    train_ds=kwargs['train_ds']
-                )
-                exec_time = time() - start
-                LOG.info(f"Execution {i} editing took {exec_time}")
-                start = time()
-                metrics = {
-                    'case_id': i,
-                    # "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
-                                                     request, self.hparams.device),
-                    "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
-                                                     request, self.hparams.device, pre_edit=True)
-                }
-                if 'locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['locality_output']) == \
-                            len(metrics['pre']['locality_output'])
-                    base_logits = metrics['pre']['locality_output'].to(torch.float32)
-                    post_logits = metrics['post']['locality_output'].to(torch.float32)
-                    if post_logits.shape[1] > base_logits.shape[1]:
-                        post_logits = post_logits[:, -base_logits.shape[1]:, :]
-                    else:
-                        base_logits = base_logits[:, -post_logits.shape[1]:, :]
-
-                    base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=10, dim=-1).indices
-                    post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=10, dim=-1).indices
-                    metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
-                    metrics['post'].pop('locality_output')
-                    metrics['pre'].pop('locality_output')
-                    
-                if 'multimodal_locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['multimodal_locality_output']) == \
-                            len(metrics['pre']['multimodal_locality_output'])
-                    base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
-                    post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
-                    if post_image_logits.shape[1] > base_image_logits.shape[1]:
-                        post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
-                    else:
-                        base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
-
-                    base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
-                    post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
-                    metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
-                    metrics['post'].pop('multimodal_locality_output')
-                    metrics['pre'].pop('multimodal_locality_output')
-
-                LOG.info(f"Evaluation took {time() - start}")
-
-                if verbose:
-                    LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
-                    )
-
-                all_metrics.append(metrics)
-            else:
-                edited_model, weights_copy = self.apply_algo(
-                    self.model,
-                    self.tok,
-                    [request],
-                    self.hparams,
-                    copy=False,
-                    return_orig_weights=True,
-                    keep_original_weight=keep_original_weight,
-                    train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
-                )
-                exec_time = time() - start
-                LOG.info(f"Execution {i} editing took {exec_time}")
-
-                start = time()
-                metrics = {
-                    'case_id': i,
-                    # "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": compute_multimodal_edit_results(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device),
-                }
-                if self.alg_name == 'KN':
-                    with torch.no_grad():
-                        weights_copy() # unpatch_fn
+            assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
+            edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
+                self.model,
+                self.tok,
+                request,
+                self.hparams,
+                copy=False,
+                return_orig_weights=True,
+                keep_original_weight=keep_original_weight,
+                train_ds=kwargs['train_ds']
+            )
+            exec_time = time() - start
+            LOG.info(f"Execution {i} editing took {exec_time}")
+            start = time()
+            metrics = {
+                'case_id': i,
+                # "requested_rewrite": request,
+                "time": exec_time,
+                "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
+                                                    request, self.hparams.device),
+                "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+                                                    request, self.hparams.device, pre_edit=True)
+            }
+            if 'locality_output' in metrics['post'].keys():
+                assert len(metrics['post']['locality_output']) == \
+                        len(metrics['pre']['locality_output'])
+                base_logits = metrics['pre']['locality_output'].to(torch.float32)
+                post_logits = metrics['post']['locality_output'].to(torch.float32)
+                if post_logits.shape[1] > base_logits.shape[1]:
+                    post_logits = post_logits[:, -base_logits.shape[1]:, :]
                 else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
-                metrics["pre"] = compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
-                if 'locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['locality_output']) == \
-                            len(metrics['pre']['locality_output'])
-                    metrics['post']['locality_acc'] = \
-                        np.mean(np.equal(metrics['post']['locality_output'],
-                                            metrics['pre']['locality_output']))
-                    metrics['post'].pop('locality_output')
-                    metrics['pre'].pop('locality_output')
-                    
-                if 'multimodal_locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['multimodal_locality_output']) == \
-                            len(metrics['pre']['multimodal_locality_output'])
-                    metrics['post']['multimodal_locality_acc'] = \
-                        np.mean(np.equal(metrics['post']['multimodal_locality_output'],
-                                            metrics['pre']['multimodal_locality_output']))
-                    metrics['post'].pop('multimodal_locality_output')
-                    metrics['pre'].pop('multimodal_locality_output')
+                    base_logits = base_logits[:, -post_logits.shape[1]:, :]
 
-                LOG.info(f"Evaluation took {time() - start}")
+                base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=10, dim=-1).indices
+                post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=10, dim=-1).indices
+                metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
+                metrics['post'].pop('locality_output')
+                metrics['pre'].pop('locality_output')
+                
+            if 'multimodal_locality_output' in metrics['post'].keys():
+                assert len(metrics['post']['multimodal_locality_output']) == \
+                        len(metrics['pre']['multimodal_locality_output'])
+                base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
+                post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
+                if post_image_logits.shape[1] > base_image_logits.shape[1]:
+                    post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
+                else:
+                    base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
 
-                if verbose:
-                    LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
-                    )
+                base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
+                post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
+                metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
+                metrics['post'].pop('multimodal_locality_output')
+                metrics['pre'].pop('multimodal_locality_output')
 
-                all_metrics.append(metrics)
+            LOG.info(f"Evaluation took {time() - start}")
 
-            # case_result_path = base_case_path / f"case_{i}.json"
+            if verbose:
+                LOG.info(
+                    f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
+                )
 
-            # Dump metrics in .json
-            # with open(case_result_path, "w") as f:
-            #     json.dump(metrics, f, indent=1)
+            all_metrics.append(metrics)
 
         return all_metrics, edited_model, weights_copy
     
-    # edit_demo will return the logits after/before editing
-    def edit_demo(self,
-            prompts: Union[str, List[str]],
-            targets: Union[str, List[str]],
-            image: Union[str, List[str]],
-            rephrase_prompts: Optional[Union[str, List[str]]] = None,
-            rephrase_image: Optional[Union[str, List[str]]] = None,
-            locality_inputs: Optional[dict] = None,
-            keep_original_weight=False,
-            verbose=True,
-            **kwargs
-            ):
-        """
-        `prompts`: list or str
-            the prompts to edit
-        `targets`: str
-            the expected outputs
-        `image`: dict
-            for multimodal
-        """
-        if isinstance(prompts, List):
-            assert len(prompts) == len(targets) == len(image)
-        else:
-            prompts, targets, image = [prompts,], [targets,], [image,]
+    # # edit_demo will return the logits after/before editing
+    # def edit_demo(self,
+    #         prompts: Union[str, List[str]],
+    #         targets: Union[str, List[str]],
+    #         image: Union[str, List[str]],
+    #         rephrase_prompts: Optional[Union[str, List[str]]] = None,
+    #         rephrase_image: Optional[Union[str, List[str]]] = None,
+    #         locality_inputs: Optional[dict] = None,
+    #         keep_original_weight=False,
+    #         verbose=True,
+    #         **kwargs
+    #         ):
+    #     """
+    #     `prompts`: list or str
+    #         the prompts to edit
+    #     `targets`: str
+    #         the expected outputs
+    #     `image`: dict
+    #         for multimodal
+    #     """
+    #     assert self.alg_name == 'IKE' or print('Only IKE supported for MultimodalEditor')
+    #     if isinstance(prompts, List):
+    #         assert len(prompts) == len(targets) == len(image)
+    #     else:
+    #         prompts, targets, image = [prompts,], [targets,], [image,]
 
-        if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
-            self.hparams.batch_size = 1
+    #     if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
+    #         self.hparams.batch_size = 1
 
-        requests = self._prepare_requests(prompts, targets, image, rephrase_prompts, rephrase_image, locality_inputs,
-                                          **kwargs)
+    #     requests = self._prepare_requests(prompts, targets, image, rephrase_prompts, rephrase_image, locality_inputs,
+    #                                       **kwargs)
 
-        if hasattr(self.hparams, 'batch_size') :
-               assert self.hparams.batch_size == 1 or \
-                      print(f'Single Edit, pls set the batch_size to 1....')
+    #     if hasattr(self.hparams, 'batch_size') :
+    #            assert self.hparams.batch_size == 1 or \
+    #                   print(f'Single Edit, pls set the batch_size to 1....')
 
-        # if not os.path.exists(RESULTS_DIR):
-        #     os.mkdir(RESULTS_DIR)
-        # base_case_path = RESULTS_DIR / self.hparams_fname.rsplit('.', 1)[0]
-        # if not os.path.exists(base_case_path):
-        #     os.mkdir(base_case_path)
-        # print(f"Results will be stored at {base_case_path}")
-        all_metrics = []
-        for i, request in enumerate(requests):
-            start = time()
+    #     all_metrics = []
+    #     for i, request in enumerate(requests):
+    #         start = time()
 
-            if self.alg_name == 'IKE':
-                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
-                edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
-                    self.model,
-                    self.tok,
-                    request,
-                    self.hparams,
-                    copy=False,
-                    return_orig_weights=True,
-                    keep_original_weight=keep_original_weight,
-                    train_ds=kwargs['train_ds']
-                )
-                exec_time = time() - start
-                LOG.info(f"Execution {i} editing took {exec_time}")
-                start = time()
-                metrics = {
-                    'case_id': i,
-                    # "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
-                                                     request, self.hparams.device),
-                    "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
-                                                     request, self.hparams.device, pre_edit=True)
-                }
-                if 'locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['locality_output']) == \
-                            len(metrics['pre']['locality_output'])
-                    base_logits = metrics['pre']['locality_output'].to(torch.float32)
-                    post_logits = metrics['post']['locality_output'].to(torch.float32)
-                    if post_logits.shape[1] > base_logits.shape[1]:
-                        post_logits = post_logits[:, -base_logits.shape[1]:, :]
-                    else:
-                        base_logits = base_logits[:, -post_logits.shape[1]:, :]
+    #         assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
+    #         edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
+    #             self.model,
+    #             self.tok,
+    #             request,
+    #             self.hparams,
+    #             copy=False,
+    #             return_orig_weights=True,
+    #             keep_original_weight=keep_original_weight,
+    #             train_ds=kwargs['train_ds']
+    #         )
+    #         exec_time = time() - start
+    #         LOG.info(f"Execution {i} editing took {exec_time}")
+    #         start = time()
+    #         metrics = {
+    #             'case_id': i,
+    #             # "requested_rewrite": request,
+    #             "time": exec_time,
+    #             "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
+    #                                                 request, self.hparams.device),
+    #             "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+    #                                                 request, self.hparams.device, pre_edit=True)
+    #         }
+    #         if 'locality_output' in metrics['post'].keys():
+    #             assert len(metrics['post']['locality_output']) == \
+    #                     len(metrics['pre']['locality_output'])
+    #             base_logits = metrics['pre']['locality_output'].to(torch.float32)
+    #             post_logits = metrics['post']['locality_output'].to(torch.float32)
+    #             if post_logits.shape[1] > base_logits.shape[1]:
+    #                 post_logits = post_logits[:, -base_logits.shape[1]:, :]
+    #             else:
+    #                 base_logits = base_logits[:, -post_logits.shape[1]:, :]
 
-                    base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=10, dim=-1).indices
-                    post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=10, dim=-1).indices
-                    metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
-                    metrics['post'].pop('locality_output')
-                    metrics['pre'].pop('locality_output')
-                    
-                if 'multimodal_locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['multimodal_locality_output']) == \
-                            len(metrics['pre']['multimodal_locality_output'])
-                    base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
-                    post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
-                    if post_image_logits.shape[1] > base_image_logits.shape[1]:
-                        post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
-                    else:
-                        base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
+    #             base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=10, dim=-1).indices
+    #             post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=10, dim=-1).indices
+    #             metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
+    #             metrics['post'].pop('locality_output')
+    #             metrics['pre'].pop('locality_output')
+                
+    #         if 'multimodal_locality_output' in metrics['post'].keys():
+    #             assert len(metrics['post']['multimodal_locality_output']) == \
+    #                     len(metrics['pre']['multimodal_locality_output'])
+    #             base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
+    #             post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
+    #             if post_image_logits.shape[1] > base_image_logits.shape[1]:
+    #                 post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
+    #             else:
+    #                 base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
 
-                    base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
-                    post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
-                    metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
-                    metrics['post'].pop('multimodal_locality_output')
-                    metrics['pre'].pop('multimodal_locality_output')
+    #             base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
+    #             post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
+    #             metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
+    #             metrics['post'].pop('multimodal_locality_output')
+    #             metrics['pre'].pop('multimodal_locality_output')
 
-                LOG.info(f"Evaluation took {time() - start}")
+    #         LOG.info(f"Evaluation took {time() - start}")
 
-                if verbose:
-                    LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
-                    )
+    #         if verbose:
+    #             LOG.info(
+    #                 f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
+    #             )
 
-                all_metrics.append(metrics)
-            else:
-                edited_model, weights_copy = self.apply_algo(
-                    self.model,
-                    self.tok,
-                    [request],
-                    self.hparams,
-                    copy=False,
-                    return_orig_weights=True,
-                    keep_original_weight=keep_original_weight,
-                    train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
-                )
-                exec_time = time() - start
-                LOG.info(f"Execution {i} editing took {exec_time}")
+    #         all_metrics.append(metrics)
 
-                start = time()
-                post, post_logits = compute_multimodal_edit_results_demo(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
-                metrics = {
-                    'case_id': i,
-                    # "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": post
-                }
-                if self.alg_name == 'KN':
-                    with torch.no_grad():
-                        weights_copy() # unpatch_fn
-                else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
-                pre, pre_logits = compute_multimodal_edit_results_demo(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
-                metrics["pre"] = pre
-                if 'locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['locality_output']) == \
-                            len(metrics['pre']['locality_output'])
-                    metrics['post']['locality_acc'] = \
-                        np.mean(np.equal(metrics['post']['locality_output'],
-                                            metrics['pre']['locality_output']))
-                    metrics['post'].pop('locality_output')
-                    metrics['pre'].pop('locality_output')
-                    
-                if 'multimodal_locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['multimodal_locality_output']) == \
-                            len(metrics['pre']['multimodal_locality_output'])
-                    metrics['post']['multimodal_locality_acc'] = \
-                        np.mean(np.equal(metrics['post']['multimodal_locality_output'],
-                                            metrics['pre']['multimodal_locality_output']))
-                    metrics['post'].pop('multimodal_locality_output')
-                    metrics['pre'].pop('multimodal_locality_output')
-
-                LOG.info(f"Evaluation took {time() - start}")
-
-                if verbose:
-                    LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
-                    )
-
-                all_metrics.append(metrics)
-
-            # case_result_path = base_case_path / f"case_{i}.json"
-
-            # Dump metrics in .json
-            # with open(case_result_path, "w") as f:
-            #     json.dump(metrics, f, indent=1)
-
-        return all_metrics, edited_model, weights_copy, post_logits, pre_logits 
+    #     return all_metrics, edited_model, weights_copy, post_logits, pre_logits 
 
     def edit_dataset(self,
                      ds: Dataset,
@@ -486,6 +339,7 @@ class MultimodalEditor:
         assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in MULTIMODAL_DS_DICT.values()]) > 0 \
         or print(f'DataSet {ds} not supported yet.')
 
+        assert self.alg_name == 'IKE' or print('Only IKE supported for MultimodalEditor')
         num_edits = 1
         # num_edits = self.hparams.batch_size
         
@@ -495,125 +349,66 @@ class MultimodalEditor:
 
             start = time()
 
-            if self.alg_name == 'IKE':
-                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
-                edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
-                    self.model,
-                    self.tok,
-                    request,
-                    self.hparams,
-                    copy=False,
-                    return_orig_weights=True,
-                    keep_original_weight=keep_original_weight,
-                    train_ds=kwargs['train_ds']
-                )
-                exec_time = time() - start
-                LOG.info(f"Execution {i} editing took {exec_time}")
-                start = time()
-                metrics = {
-                    'case_id': i,
-                    # "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
-                                                     request, self.hparams.device),
-                    "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
-                                                     request, self.hparams.device, pre_edit=True)
-                }
-                if 'locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['locality_output']) == \
-                            len(metrics['pre']['locality_output'])
-                    base_logits = metrics['pre']['locality_output'].to(torch.float32)
-                    post_logits = metrics['post']['locality_output'].to(torch.float32)
-                    if post_logits.shape[1] > base_logits.shape[1]:
-                        post_logits = post_logits[:, -base_logits.shape[1]:, :]
-                    else:
-                        base_logits = base_logits[:, -post_logits.shape[1]:, :]
-
-                    base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=10, dim=-1).indices
-                    post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=10, dim=-1).indices
-                    metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
-                    metrics['post'].pop('locality_output')
-                    metrics['pre'].pop('locality_output')
-                    
-                if 'multimodal_locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['multimodal_locality_output']) == \
-                            len(metrics['pre']['multimodal_locality_output'])
-                    base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
-                    post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
-                    if post_image_logits.shape[1] > base_image_logits.shape[1]:
-                        post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
-                    else:
-                        base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
-
-                    base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
-                    post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
-                    metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
-                    metrics['post'].pop('multimodal_locality_output')
-                    metrics['pre'].pop('multimodal_locality_output')
-
-                LOG.info(f"Evaluation took {time() - start}")
-
-                if verbose:
-                    LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
-                    )
-
-                all_metrics.append(metrics)
-            else:
-                edited_model, weights_copy = self.apply_algo(
-                    self.model,
-                    self.tok,
-                    [request],
-                    self.hparams,
-                    copy=False,
-                    return_orig_weights=True,
-                    keep_original_weight=keep_original_weight,
-                    train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
-                )
-                exec_time = time() - start
-                LOG.info(f"Execution {i} editing took {exec_time}")
-
-                start = time()
-                post, post_logits = compute_multimodal_edit_results_demo(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
-                metrics = {
-                    'case_id': i,
-                    # "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": post
-                }
-                if self.alg_name == 'KN':
-                    with torch.no_grad():
-                        weights_copy() # unpatch_fn
+            assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
+            edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
+                self.model,
+                self.tok,
+                request,
+                self.hparams,
+                copy=False,
+                return_orig_weights=True,
+                keep_original_weight=keep_original_weight,
+                train_ds=kwargs['train_ds']
+            )
+            exec_time = time() - start
+            LOG.info(f"Execution {i} editing took {exec_time}")
+            start = time()
+            metrics = {
+                'case_id': i,
+                "time": exec_time,
+                "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
+                                                    request, self.hparams.device),
+                "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+                                                    request, self.hparams.device, pre_edit=True)
+            }
+            if 'locality_output' in metrics['post'].keys():
+                assert len(metrics['post']['locality_output']) == \
+                        len(metrics['pre']['locality_output'])
+                base_logits = metrics['pre']['locality_output'].to(torch.float32)
+                post_logits = metrics['post']['locality_output'].to(torch.float32)
+                if post_logits.shape[1] > base_logits.shape[1]:
+                    post_logits = post_logits[:, -base_logits.shape[1]:, :]
                 else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
-                pre, pre_logits = compute_multimodal_edit_results_demo(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device)
-                metrics["pre"] = pre
-                if 'locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['locality_output']) == \
-                            len(metrics['pre']['locality_output'])
-                    metrics['post']['locality_acc'] = \
-                        np.mean(np.equal(metrics['post']['locality_output'],
-                                            metrics['pre']['locality_output']))
-                    metrics['post'].pop('locality_output')
-                    metrics['pre'].pop('locality_output')
-                    
-                if 'multimodal_locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['multimodal_locality_output']) == \
-                            len(metrics['pre']['multimodal_locality_output'])
-                    metrics['post']['multimodal_locality_acc'] = \
-                        np.mean(np.equal(metrics['post']['multimodal_locality_output'],
-                                            metrics['pre']['multimodal_locality_output']))
-                    metrics['post'].pop('multimodal_locality_output')
-                    metrics['pre'].pop('multimodal_locality_output')
+                    base_logits = base_logits[:, -post_logits.shape[1]:, :]
 
-                LOG.info(f"Evaluation took {time() - start}")
+                base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=1, dim=-1).indices
+                post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=1, dim=-1).indices
+                metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
+                metrics['post'].pop('locality_output')
+                metrics['pre'].pop('locality_output')
+                
+            if 'multimodal_locality_output' in metrics['post'].keys():
+                assert len(metrics['post']['multimodal_locality_output']) == \
+                        len(metrics['pre']['multimodal_locality_output'])
+                base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
+                post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
+                if post_image_logits.shape[1] > base_image_logits.shape[1]:
+                    post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
+                else:
+                    base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
 
-                if verbose:
-                    LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
-                    )
+                base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
+                post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
+                metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
+                metrics['post'].pop('multimodal_locality_output')
+                metrics['pre'].pop('multimodal_locality_output')
+
+            LOG.info(f"Evaluation took {time() - start}")
+
+            if verbose:
+                LOG.info(
+                    f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
+                )
 
                 all_metrics.append(metrics)
 

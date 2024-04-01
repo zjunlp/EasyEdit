@@ -81,6 +81,7 @@ class MENDMultimodalHparams(HyperParams):
 
     alg_name: str
     
+    exact_match: bool = False
     batch_size: int = 1
     max_length: int = 30
     max_epochs: Optional[int] = None

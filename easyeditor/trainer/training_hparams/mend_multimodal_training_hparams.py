@@ -79,6 +79,7 @@ class MENDMultimodalTrainingHparams(HyperParams):
     grad_clip: float
 
     qformer_checkpoint: str
+    exact_match: bool = False
     model_parallel: bool = False
     freeze_qformer: bool = True
     max_epochs: Optional[int] = None

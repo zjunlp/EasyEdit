@@ -240,7 +240,7 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
             for request in requests
         ]
         image = [request["image"] for request in requests]
-        image = torch.stack(image, dim=0)
+        image = torch.stack(image, dim=0).to(model.device)
         text_input = [s + t for s, t in zip(src, trg)]
         
         if hparams.model_name == "minigpt4":
@@ -272,8 +272,6 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
         # Edit!
         d = factors
         torch_factors = {k: torch.tensor(v) for k, v in d.items()}
-        eli = 0
-        edit_lrs = torch_factors["edit_lrs"]
 
         with torch.no_grad():
             for n, p in model.named_parameters():
@@ -281,15 +279,6 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
                 if uname in torch_factors:
                     if return_orig_weights and n not in weights_copy:
                         weights_copy[n] = p.detach().clone()
-
-                    # if "minigpt4" in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # elif "blip2" in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # else:
-                    #     raise ValueError("Unknown model")
-                    # p.add_((delta * edit_lrs[eli] * hparams.lr_scale).to(p.device))
-                    eli += 1
 
         if not keep_original_weight:
             weights_copy = {}

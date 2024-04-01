@@ -93,9 +93,9 @@ class Blip2OPT(Blip2Base):
         )
         # for name, param in self.opt_model.named_parameters():
         #     param.requires_grad = False
-        self.eos_token_id = self.opt_tokenizer(
-            "\n", add_special_tokens=False
-        ).input_ids[0]
+        # self.eos_token_id = self.opt_tokenizer(
+        #     "\n", add_special_tokens=False
+        # ).input_ids[0]
 
         self.opt_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.opt_model.config.hidden_size
@@ -200,15 +200,16 @@ class Blip2OPT(Blip2Base):
             )
         loss = outputs.loss
 
-        # return {"loss": loss, "logits": outputs.logits}
         if torch.isnan(outputs.logits).any():
-            print(1)
+            print("NAN in logits!!!")
+
         return BLIP2Output(
             loss=loss,
             logits=outputs.logits,
             labels=targets,
             attention_mask=attention_mask
         )
+    
     @torch.no_grad()
     def generate(
         self,
