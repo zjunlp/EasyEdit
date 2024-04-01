@@ -28,7 +28,7 @@
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [🔔News](#news)
+- [🔔News](#🔔news)
 - [Editing Demo](#editing-demo)
 - [Knowledge Editing](#knowledge-editing)
   - [Task Definition](#task-definition)
@@ -36,28 +36,24 @@
     - [Knowledge update](#knowledge-update)
     - [Knowledge erase](#knowledge-erase)
   - [Evaluation](#evaluation)
-- [🌟Overview](#overview)
+- [🌟Overview](#🌟overview)
     - [Current Implementation](#current-implementation)
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
-    - [🔧Pip Installation](#pip-installation)
-    - [🐳Docker Installation](#docker-installation)
+    - [🔧Pip Installation](#🔧pip-installation)
+    - [🐳Docker Installation](#🐳docker-installation)
     - [Editing GPU memory usage](#editing-gpu-memory-usage)
-- [📌Use EasyEdit](#use-easyedit)
+- [📌Use EasyEdit](#📌use-easyedit)
   - [BaseEditor](#baseeditor)
     - [Introduction by a Simple Example](#introduction-by-a-simple-example)
   - [Evaluation](#evaluation-1)
   - [Trainer](#trainer)
-  - [MultimodalEditor](#multimodaleditor)
-    - [Introduction by a Simple Example](#introduction-by-a-simple-example-1)
-  - [Evaluation](#evaluation-2)
-  - [Trainer](#trainer-1)
 - [Use EasyEdit with KnowEdit](#Use-easyedit-with-KnowEdit)
   - [Dataset](#Dataset)
   - [Usage](#usage)
 - [Editing Performance](#editing-performance)
 - [Citation](#citation)
-- [🎉Contributors](#contributors)
+- [🎉Contributors](#🎉contributors)
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
@@ -798,198 +794,6 @@ trainer.run()
 </table>
 </div> -->
 
-<!-- multimodal editor -->
-### MultimodalEditor
-
-> `MultimodalEditor` is the class for Multi-Modality Editing. You can choose the appropriate editing method based on your specific needs.
-
-- Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
-
-#### Introduction by a Simple Example
-
-With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
-
-**Step1: Define a MLLM as the object to be edited.**
-Choose the MLLM to be edited. `EasyEdit` supports partial models(`MiniGPT-4`, `Blip2` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/minigpt4.yaml`, set the corresponding `model_name` to select the object for editing.
-
-```python
-model_name: minigpt4
-model_class: Blip2OPT
-tokenizer_class: LlamaTokenizer
-tokenizer_name: llama-7b
-```
-
-**Step2: Choose the appropriate Editing Method**
-The selection of editing methods is a **crucial** step, as different methods have their own strengths and weaknesses. Users need to consider the trade-off between editing success rate, generalization, and maintaining unrelated performance.
-
-```python
-## In this case, we use MEND method, so you should import `MENDMultimodalHparams`
-from easyeditor import MENDMultimodalHparams
-## Loading config from hparams/MEMIT/gpt2-xl.yaml
-hparams = MENDMultimodalHparams.from_hparams('./hparams/MEND/minigpt4')
-```
-
-**Step3: Provide the edit descriptor and edit target**
-
-```python
-## edit descriptor: prompt that you want to edit
-prompts = [
-    "How many tennis balls are in the picture?",
-    "What is the red food?"
-]
-## edit target: expected output
-targets = ["2", "tomatoes",]
-## edit image: image for editing
-image = [
-    "val2014/COCO_val2014_000000451435.jpg",
-    "val2014/COCO_val2014_000000189446.jpg"
-]
-```
-
-**Step4: Combine them into a `MultimodalEditor`**
-`EasyEdit` provides a simple and unified way to init Editor, like huggingface: **from_hparams**.
-
-```python
-## Construct MLLM Editor
-editor = MultimodalEditor.from_hparams(hparams)
-```
-
-**Step5: Provide the data for evaluation**
-Note that the data for locality and multimodal locality are both **optional**(set to None for basic editing success rate evaluation only). The data format for both is a **dict**, for each measurement dimension, you need to provide the corresponding prompt and its corresponding ground truth. Here is an example of the data:
-
-```python
-locality_inputs = {
-    'text': {
-        'prompt': [
-            "nq question: what purpose did seasonal monsoon winds have on trade"
-          ],
-        'ground_truth': [
-            "enabled European empire expansion into the Americas and trade  \
-            routes to become established across the Atlantic and Pacific oceans"
-          ]
-    },
-    'vision': {
-        'prompt': ["What sport can you use this for?"],
-        'ground_truth': ["riding"],
-        'image': ["val2014/COCO_val2014_000000297147.jpg"],
-    }
-}
-```
-
-In the above example, we evaluate the performance of the editing methods about "neighborhood" and "distracting".
-
-**Step6: Edit and Evaluation**
-Done! We can conduct Edit and Evaluation for your model to be edited. The `edit` function will return a series of metrics related to the editing process as well as the modified model weights.
-
-```python
-metrics, edited_model, _ = editor.edit(
-    prompts=prompts,
-    target_new=target_new,
-    image=image,
-    locality_inputs=locality_inputs,
-    keep_original_weight=False
-)
-## metrics: edit success, rephrase success, locality e.g.
-## edited_model: post-edit model
-```
-
-### Evaluation
-
-We specify the return metrics as `dict` format, including model prediction evaluations before and after editing. For each edit, it will include the following metrics:
-
-- `rewrite_acc` $\rightarrow$ **Reliablilty**
-- `rephrase_acc` $\rightarrow$ **Generalization**
-- `image_rephrase_acc` $\rightarrow$ **Generalization for Multimodal**
-- `locality_acc` $\rightarrow$ **Locality**
-- `multimodal_locality_acc` $\rightarrow$ **Locality for Multimodal**
-
-```json
-{
-    "post": {
-        "rewrite_acc": ,
-        "rephrase_acc": ,
-        "image_rephrase_acc": ,
-        "locality_acc": ,
-        "multimodal_locality_acc": ,
-    },
-    "pre": {
-        "rewrite_acc": ,
-        "rephrase_acc": ,
-        "image_rephrase_acc": ,
-    }
-}
-```
-
-- For evaluation for Reliablilty, you only need to provide the corresponding editing `prompts` and editing `target_new`.
-- For evaluation for Generalization, `rephrase_prompts` are required.
-- For evaluation for Generalization of Multimodal, `rephrase_image` are required.
-- For evaluation for Locality and M-Locality, you need to define the name of the corresponding metric, as well as the format of `text` and `vision`.
-  - > Note: the length needs to be equal to the edit prompts
-
-### Trainer
-
-- meta-learning based: `MEND`
-- memory-based routing: `SERAC`
-
-For above editing methods, pre-training of corresponding meta-networks or classifiers is required. Therefore, in EasyEdit, we provide a unified framework for pretraining the relevant network structures. Take the training SERAC for example:
-
-- **Step 1** and **Step 2** are the same as the example above, which involves selecting the appropriate editing model and editing method.
-
-**Step3: Provide the edit training set**
-The currently supported and available datasets are: `Caption` and `VQA`([Google Drive](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link)). Please place them in the "data" directory and initialize the dataset_class (`CaptionDataset` for Caption and `VQADataset` for VQA) to load the corresponding training set.
-
-```python
-train_ds = CaptionDataset('data/caption_train_edit.json', config=training_hparams)
-eval_ds = CaptionDataset('data/caption_eval_edit.json', config=training_hparams)
-```
-
-**Step4: Combine them into a `Trainer`**
-
-```python
-trainer = MultimodalTrainer(
-    config=hparams,
-    train_set=train_ds,
-    val_set=eval_ds
-)
-```
-
-**Step5: Run and Edit**
-Done! We can conduct Run and Evaluation.
-
-```python
-trainer.run()
-```
-
-- Run: The `CHECKPOINT` will be saved to the path `results_dir`.
-- Edit: Set the `archive` field in the **hparams file** to `CHECKPOINT`. EasyEdit will automatically load the corresponding pre-trained weights during the editing process([Go to edit](#use-easyedit)).
-
-**Training Example**
-```python
-hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/minigpt4.yaml')
-train_ds = CaptionDataset('data/caption_train_edit.json', config=training_hparams)
-eval_ds = CaptionDataset('data/caption_eval_edit.json', config=training_hparams)
-trainer = MultimodalTrainer(
-    config=hparams,
-    train_set=train_ds,
-    val_set=eval_ds
-)
-
-trainer.run()
-```
-
-
-<details><summary> <b> TO DO </b> </summary>
-In next version, we plan to:
-
-- Explore and integrate more robust editing methods, focusing on `locality` and `portability` metrics.
-- Provide a comprehensive evaluation suite for editing methods, including fact modification, fact erasure and hallucination erasure.
-- Provide a causal analysis component for analyzing knowledge storage mechanisms.
-- knowledge editing for other tasks(except factual editing), like `personality editing`, etc.
-
-Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
-
-</details>
-
 # Use EasyEdit with KnowEdit
 ## Dataset
 
@@ -1053,6 +857,18 @@ We also present editing results of KnowEdit on [LlaMA-2-7B](https://huggingface.
 |                          | Edit Succ.  | 0.00   | 72.50  | 2.50    | 0.00   | 85.00  | 48.75  | 0.00   | 60.00  |
 |                          | Locality    | 100.00 | 56.58  | 65.50   | 5.29   | 50.31  | 67.47  | 14.78  | 42.61  |
 |                          | Fluency     | 416.29 | 794.15 | 330.44  | 407.18 | 465.12 | 466.10 | 439.10 | 351.39 |
+
+<details><summary> <b> TO DO </b> </summary>
+In next version, we plan to:
+
+- Explore and integrate more robust editing methods, focusing on `locality` and `portability` metrics.
+- Provide a comprehensive evaluation suite for editing methods, including fact modification, fact erasure and hallucination erasure.
+- Provide a causal analysis component for analyzing knowledge storage mechanisms.
+- knowledge editing for other tasks(except factual editing), like `personality editing`, etc.
+
+Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
+
+</details>
 
 ## Citation
 
