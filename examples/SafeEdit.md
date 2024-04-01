@@ -151,9 +151,6 @@ You can download the [demo video](https://github.com/zjunlp/EasyEdit/blob/main/f
 
 
 
-> ❗️❗️ When clicking the edit button in the demo, the program takes 12 seconds to execute. 
-This 12-second duration includes the time for loading Mistral-7B-v0.1, locating, and editing toxic regions. 
-This duration does not contradict the statement in the [paper](https://arxiv.org/abs/2403.14472), where DINM locates and edits Mistral-7B-v0.1 with a single data instance on an A800 GPU within 10 seconds.
 
 # 📖 Citation
 
@@ -180,5 +177,6 @@ Please cite our paper if you use **SafeEdit**, **DINM-Safety-Classifier** and **
 We are deeply grateful to [Yue Zhang](https://scholar.google.co.uk/citations?user=6hA7WmUAAAAJ&hl=en) from Westlake University and [Xing Xie](https://www.microsoft.com/en-us/research/people/xingx/representative-publications/) from Microsoft Research Asia for their insightful feedback and constructive suggestions, which greatly enhanced the quality of this paper. 
 We would like to express our heartfelt gratitude for Minlie Huang and team members from Tsinghua University for the contributions of [Safety Benchmark](https://arxiv.org/pdf/2309.07045.pdf) and [Assessmen](https://doi.org/10.48550/arXiv.2304.10436), Tatsunori B. Hashimoto and his team for the contributions of [instructions following data](https://github.com/tatsu-lab/alpaca_eval), [Jiahao Yu](https://doi.org/10.48550/arXiv.2309.10253), [Yang Li](https://doi.org/10.48550/arXiv.2305.13860), [Shujian Huang](https://doi.org/10.48550/arXiv.2311.08268), [Danqi Chen](https://doi.org/10.48550/arXiv.2310.06987), and [Jacob Steinhardtfor](https://doi.org/10.48550/arXiv.2307.02483) their contributions of security attack technique. 
 We utilize portions of their attack prompts and unsafe category in this paper and express sincere gratitude.
-Besides, we also extend our thanks to Andrew Lee. 
+We also extend our thanks to Andrew Lee. 
 Inspired by [Andrew Lee's research](https://doi.org/10.48550/arXiv.2401.01967) , we delve into a preliminary mechanistic analysis of SFT, DPO, and our DINM.
+Besides, we extend special thanks to Zhexin Zhang form Tsinghua university for providing valuable insights on conducting fair comparisons between traditional and knowledge editing methods in our experiments.

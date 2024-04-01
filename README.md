@@ -61,6 +61,7 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- **2024-03-29  EasyEdit now supports rollback for Grace.For a detailed introduction, you can check this [place](#use-easyedit). In the future, we will gradually add rollback support for other methods.**
 - **2024-03-22  We release a new paper:"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)" with a new dataset [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new detoxification method [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)!**
 - **2024-03-12  We release a new paper:"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" with a new dataset [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit)!**
 - **2024-03-01 The EasyEdit has added the support for a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
@@ -225,8 +226,6 @@ You can choose different editing methods according to your specific needs.
 > ❗️❗️ EasyEdit supports editing ChatGPT with FT. An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
-
-> ❗️❗️ If you intend to use MELO, please get the in ./easyeditor/models/melo/peft_egg and pip install it in your environment.
 
 ### Dataset
 
@@ -624,7 +623,12 @@ metrics, edited_model, _ = editor.edit(
 ## metrics: edit success, rephrase success, locality e.g.
 ## edited_model: post-edit model
 ```
-
+**Step7: RollBack**
+In sequential editing, if you are not satisfied with the outcome of one of your edits and you do not wish to lose your previous edits, you can use the rollback feature to undo your previous edit. Currently, we only support the GRACE method. All you need to do is a single line of code, using the edit_key to revert your edit.
+```
+editor.rolllback('edit_key')
+```
+In EasyEdit, we default to using target_new as the edit_key
 ### Evaluation
 
 We specify the return metrics as `dict` format, including model prediction evaluations before and after editing. For each edit, it will include the following metrics:
@@ -800,20 +804,6 @@ trainer.run()
 > `MultimodalEditor` is the class for Multi-Modality Editing. You can choose the appropriate editing method based on your specific needs.
 
 - Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
-
-**M-Generality Results**
-
-
-
-|  *VQA*  | KE | IKE |  SERAC  | MEND |
-| :---: | :---------: | :------------: | :--------: | :---------: |
-| MiniGPT-4  |    88.60    |     99.95      |   88.10    |    99.60     |
-| BLIP2  |    74.60    |     99.79      |   99.20    |    99.40     |
-
-|  *Caption* | KE | IKE |  SERAC  | MEND |
-| :---: | :---------: | :------------: | :--------: | :---------: |
-| MiniGPT-4  |    13.60    |     91.00      |   91.47    |    93.35     |
-| BLIP2  |    1.60    |     96.55      |   99.72    |    93.48     |
 
 #### Introduction by a Simple Example
 

@@ -76,9 +76,7 @@ Taking the Mistral-7B-v0.1 model as an example:
 
 </div>
 
-> ❗️❗️ When clicking the edit button in the demo, the program takes 12 seconds to execute. 
-This 12-second duration includes the time for loading Mistral-7B-v0.1, locating, and editing toxic regions. 
-This duration does not contradict the statement in the [paper](https://arxiv.org/abs/2403.14472), where DINM locates and edits Mistral-7B-v0.1 with a single data instance on an A800 GPU within 10 seconds.
+
 
 ---
 
