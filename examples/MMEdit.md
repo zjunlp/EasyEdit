@@ -195,7 +195,7 @@ metrics, edited_model, _ = editor.edit_dataset(
 
 ## 🎉 Acknowledgement
 
-We would like to exprees our sincere gratitude to the excellent work [LAVIS](https://github.com/salesforce/LAVIS/tree/main), [MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4), [SERAC](https://github.com/eric-mitchell/serac) and [MEND](https://github.com/eric-mitchell/mend).
+We would like to express our sincere gratitude to the excellent work [LAVIS](https://github.com/salesforce/LAVIS/tree/main), [MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4), [SERAC](https://github.com/eric-mitchell/serac) and [MEND](https://github.com/eric-mitchell/mend).
 
 ## 📖 Citation
 

@@ -103,7 +103,7 @@ python run_personality.py \
 
 ## 🎉 Acknowledgement
 
-We would like to exprees our sincere gratitude to the excellent work [SERAC](https://github.com/eric-mitchell/serac).
+We would like to express our sincere gratitude to the excellent work [SERAC](https://github.com/eric-mitchell/serac).
 
 ## Citation
 

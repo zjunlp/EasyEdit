@@ -107,7 +107,7 @@ The files `test_cf.json`, `recent_test.json`, and `zsre_mend_eval_portability_gp
 
 # 🎉 Acknowledgement
 
-We would like to exprees our sincere gratitude to the excellent work [MEND](https://github.com/eric-mitchell/mend).
+We would like to express our sincere gratitude to the excellent work [MEND](https://github.com/eric-mitchell/mend).
 
 # 📖 Citation
 
