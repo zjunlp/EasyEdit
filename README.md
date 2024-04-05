@@ -143,7 +143,7 @@ Without influencing the model behavior on unrelated samples, the ultimate goal i
 <details><summary> <b> Continuous Knowledge Editing </b> </summary>
 On the basis of factual editing, this approach requires sequentially editing each knowledge instance, and evaluation must be performed after all knowledge updates have been applied:
 $$\theta' \leftarrow \text{arg} \min \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
-Make parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$ represents the entire set to be edited. To enable sequential editing, you can refer to this issue #220
+Make parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$ represents the entire set to be edited. To enable sequential editing, you can refer to this [issue #220](https://github.com/zjunlp/EasyEdit/issues/220)
 
 </details>
 
