@@ -73,7 +73,7 @@
 <details>
 <summary><b>Previous News</b></summary>
 
-  
+
 - **2023-12-06 The EasyEdit has added the support for the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).**
 - **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
 - **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
@@ -119,24 +119,68 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
-**Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$ efficiently. There are usually three forms:
+**Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$​​ efficiently. There are usually three forms:
 
-####  Knowledge insert
+#### Factual Knowledge Editing
+
+##### Knowledge insert
+
 Inject knowledge that LLMs have not seen before. such as:
 - *How many times has Messi won the World Cup? 0* $\rightarrow$ **1**:
-    - $x_e$: How many times has Messi won the World Cup? $\quad$ $y_e$: 1
 
-####  Knowledge update
+##### Knowledge update
+
 LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated knowledge. such as:
 - *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
-    - $x_e$: Who is the president of the US? $\quad$ $y_e$: Joe Biden
 
-####  Knowledge erase
+##### Knowledge erase
+
 EasyEdit can erase sensitive information. such as:
 - *The phone number of someone is XXXX* $\rightarrow$ **__**
-    - $x_e$: The phone number of someone is $\quad$ $y_e$: __
 
 Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$.
+
+<details><summary> <b> Continuous Knowledge Editing </b> </summary>
+
+On the basis of factual editing, this approach requires sequentially editing each knowledge instance, and evaluation must be performed after all knowledge updates have been applied:
+$$
+\theta' \leftarrow \mathop{\arg}\limits_{\theta} \min \sum\limits_{e=1}^{\vert \mathcal{X}_e \vert} (\Vert f_\theta(x_e) - y_e \Vert)
+$$
+Make parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$ represents the entire set to be edited.
+
+</details>
+
+<details><summary> <b> Safety Editing </b> </summary>
+
+**Detoxifying LLM** strives to build a safe and trustworthy large language model (LLM). Knowledge editing focuses on specific areas for permanent adjustment without compromising overall performance. Then, detoxifying LLM via knowledge editing leverages a small amount of data, usually an instance, to correct the toxic behaviors of the LLM. The edited LLM can defend against various malicious inputs. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)
+</details>
+
+<details><summary> <b> MultiModal Model Editing </b> </summary>
+
+Editing Task for *Image Captioning* and *Visual Question Answering*. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/MMEdit.md)
+</details>
+
+<details><summary> <b> Personality Editing </b> </summary>
+
+The proposed task takes the preliminary attempt to edit LLMs' personalities by editing their opinions on specific topics, given that an individual's opinions can reflect aspects of their personality traits. We draw upon the established [BIG FIVE theory](https://en.wikipedia.org/wiki/Big_Five_personality_traits) as a basis for constructing our dataset and assessing the LLMs' personality expressions. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/PersonalityEdit.md)
+
+**Evaluation**
+
+Logits-based
+
+- **ES**: evaluating the editing success rate based on the logits of pre-generated text.
+- **DD**: evaluating whether the model changes opinions on other topics based on the logits of pre-generated text.
+
+Generation-based
+
+- **Acc**: the accuracy of the generated text after editing the model on target personality.
+- **TPEI**: measuring whether generated opinion text from the edited model leans more towards the target personality.
+- **PAE**: utilizing GPT-4 to evaluate the personality traits in generated text.
+
+While for assessing **Acc** and **TPEI**, you can download the trained classifier from [here](https://huggingface.co/shai-msy/per-classifier).
+
+</details>
+
 
 ### Evaluation
 
@@ -191,7 +235,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   - [MALMEN](https://github.com/ChenmienTan/malmen): Chenmien Tan et al. Hypernetwork
   - [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md): Bozhong Tian et al. Hypernetwork
     > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
- are not supported. Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved upon in the first half of the year.
+     are not supported. Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved upon in the first half of the year.
   
 #### Current Implementation
 
@@ -278,7 +322,7 @@ You can choose different editing methods according to your specific needs.
 We provide **detailed scripts** for user to easily use KnowEdit, please refer to [examples](https://github.com/zjunlp/EasyEdit/blob/main/examples/KnowEdit.md).
 
 <details><summary> <b> dataset description </b> </summary>
-  
+
 - ZsRE: is a context-free question-answering task. Given a question based on the subject and relation, the model is expected to provide the correct object as the answer. 
 - Wiki<sub>recent</sub>: This dataset specifically focuses on triplets that have been recently inserted into WikiData after July 2022. 
 - WikiBio: The original dataset was created by prompting GPT-3 to generate 238 Wikipedia-style biographies using subjects from the WikiBio.
@@ -289,7 +333,7 @@ We provide **detailed scripts** for user to easily use KnowEdit, please refer to
 
 
 <details><summary> <b> dataset structure </b> </summary>
-  
+
 ```text
 knowedit
 ├── WikiBio
@@ -369,7 +413,7 @@ editing-data
     - Inverse Relation: evaluation for one-to-one relationship such as `spouse`
     - One Hop: evaluation for one-hop reasoning
     - Subject Replace: evaluation for synonym replacement
-</details>
+    </details>
 
 ---
 
