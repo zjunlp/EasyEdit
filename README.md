@@ -144,7 +144,7 @@ Without influencing the model behavior on unrelated samples, the ultimate goal i
 
 On the basis of factual editing, this approach requires sequentially editing each knowledge instance, and evaluation must be performed after all knowledge updates have been applied:
 $$
-\theta' \leftarrow \text{arg} \min \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)
+\theta' \leftarrow \text{arg} \min \sum_{e=1}^{|| X_e ||} (|| f_\theta(x_e) - y_e ||)
 $$
 Make parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$ represents the entire set to be edited.
 
