@@ -898,6 +898,8 @@ We also present editing results of KnowEdit on [LlaMA-2-7B](https://huggingface.
 |                          | Edit Succ.  | 0.00   | 72.50  | 2.50    | 0.00   | 85.00  | 48.75  | 0.00   | 60.00  |
 |                          | Locality    | 100.00 | 56.58  | 65.50   | 5.29   | 50.31  | 67.47  | 14.78  | 42.61  |
 |                          | Fluency     | 416.29 | 794.15 | 330.44  | 407.18 | 465.12 | 466.10 | 439.10 | 351.39 |
+> ❗️❗️ **Please note that if you wish to reproduce the results regarding Rome on Knowedi, ensure that `fp16: False`.**
+
 
 <details><summary> <b> TO DO </b> </summary>
 In next version, we plan to:
