@@ -218,7 +218,7 @@ class BaseEditor:
             metrics = kwargs['pre_edit']
             all_metrics = metrics
         else:
-            for i, request in tqdm(enumerate(requests)):
+            for i, request in enumerate(tqdm(requests)):
                 if self.alg_name == 'IKE':
                     assert 'train_ds' in kwargs.keys(), print('IKE need train_ds(For getting In-Context prompt)')
                     metrics = {
@@ -652,7 +652,7 @@ class BaseEditor:
             return all_metrics, edited_model, weights_copy
 
         all_metrics = []
-        for i, request in tqdm(enumerate(requests)):
+        for i, request in enumerate(tqdm(requests)):
             if self.alg_name == 'IKE':
                 assert 'train_ds' in kwargs.keys(), print('IKE need train_ds(For getting In-Context prompt)')
                 metrics = {
@@ -666,7 +666,7 @@ class BaseEditor:
                 }
             all_metrics.append(metrics)
 
-        for i, request in tqdm(enumerate(requests)):
+        for i, request in enumerate(tqdm(requests)):
             start = time()
 
             if self.alg_name == 'IKE':
