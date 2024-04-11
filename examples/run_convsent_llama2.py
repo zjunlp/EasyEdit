@@ -67,7 +67,7 @@ def format_consent_for_others(data):
       
     target_list = ["pos", "neg"]
     
-    for _idx, edit_data_ in enumerate(tqdm(data), total=len(data), desc="prepare for convsent"):
+    for _idx, edit_data_ in enumerate(tqdm(data, desc="prepare for convsent")):
         target_sent = random.choice([0, 1])
         topic = edit_data_["ent"]
         
