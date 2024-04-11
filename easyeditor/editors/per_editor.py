@@ -101,7 +101,7 @@ class PerEditor:
                 
         all_metrics = []
         collate_fn = ds.collate_gpt_fn
-        for i, request in enumerate(tqdm(ds), desc='Editing dataset', total=len(ds)):
+        for i, request in enumerate(tqdm(ds, desc='Editing dataset', total=len(ds))):
             start = time()
             
             if self.alg_name == 'IKE':
