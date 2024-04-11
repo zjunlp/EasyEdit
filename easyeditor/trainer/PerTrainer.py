@@ -190,7 +190,7 @@ class PEREditTrainer(BaseTrainer):
         averager = RunningStatAverager("val")
 
         start_time = time.time()
-        for val_step, batch in tqdm(enumerate(self.val_loader), total=len(self.val_loader)):
+        for val_step, batch in enumerate(tqdm(self.val_loader), total=len(self.val_loader)):
             if val_step >= steps:
                 break
             _, _, _, _, info_dict = self.edit_step(batch, training=False)

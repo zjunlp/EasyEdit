@@ -178,7 +178,7 @@ class ConceptEditor:
             metrics = kwargs['pre_edit']
             all_metrics = metrics
         else:
-            for i, request in tqdm(enumerate(requests)):
+            for i, request in enumerate(tqdm(requests)):
                 metrics = {
                     "pre": compute_concept_edit_quality(self.model, self.model_name, self.hparams, self.tok, request,
                                             self.hparams.device, test_concept_consistency=False)

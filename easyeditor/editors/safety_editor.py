@@ -176,7 +176,7 @@ class SafetyEditor:
             metrics = kwargs['pre_edit']
             all_metrics = metrics
         else:
-            for i, request in tqdm(enumerate(requests)):
+            for i, request in enumerate(tqdm(requests)):
                 metrics = {
                     "pre": compute_safety_edit_quality(self.model, self.tok, request,
                                             self.hparams.device, max_output_tokens=600)
