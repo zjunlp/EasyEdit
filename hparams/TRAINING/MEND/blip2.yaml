@@ -46,9 +46,9 @@ batch_size: 1
 model_save_pt: 5000
 silent: False
 #max_epochs: 1
-max_iters: 50000
-log_interval: 100
-eval_log_interval: 1000
+max_iters: 30000
+log_interval: 200
+eval_log_interval: 5000
 final_eval: True
 val_interval: 5000
 early_stop_patience: 20000
@@ -69,6 +69,7 @@ grad_clip: 100.
 results_dir: ./results
 
 # Multimodal
+exact_match: True
 qformer_checkpoint: hugging_cache/blip2_pretrained_opt2.7b.pth
 qformer_name_or_path: bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth

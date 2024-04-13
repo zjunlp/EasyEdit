@@ -40,18 +40,18 @@ act: relu
 rank: 1920
 mlp_class: IDMLP
 shared: True
-archive: results/models/MEND/blip2
+archive: results/models/MEND/blip2-caption
 
 # Train
 batch_size: 1
-model_save_pt: 5000
+model_save_pt: 1000
 silent: False
 #max_epochs: 1
 max_iters: 50000
 log_interval: 100
 eval_log_interval: 1000
 final_eval: True
-val_interval: 5000
+val_interval: 1000  
 early_stop_patience: 20000
 early_stop_key: "loss/total_edit_val"
 eval_only: True
@@ -65,6 +65,7 @@ accumulate_bs: 2
 val_steps: 500 # only for debug
 opt: Adam
 grad_clip: 100.
+exact_match: True
 
 # Output
 results_dir: ./results

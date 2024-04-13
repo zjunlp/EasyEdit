@@ -10,6 +10,7 @@ results_dir: "./results"
 k: 32
 
 # Multimodal
+exact_match: True
 task_name: "caption"
 qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
 qformer_name_or_path: bert-base-uncased

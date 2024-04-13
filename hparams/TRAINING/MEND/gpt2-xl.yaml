@@ -40,7 +40,7 @@ mlp_class: IDMLP
 shared: True
 
 # Train
-device: cuda:5
+device: cuda:0
 batch_size: 1
 model_save_pt: 5000
 silent: False

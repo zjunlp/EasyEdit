@@ -63,7 +63,7 @@ debug: False
 log_errors: False
 unlikelihood: True
 
-
+exact_match: True 
 val_batch_size: 1
 accumulate_bs: 1
 val_steps: 1000

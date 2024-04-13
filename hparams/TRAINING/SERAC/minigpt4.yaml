@@ -62,7 +62,6 @@ debug: False
 log_errors: False
 unlikelihood: True
 
-
 val_batch_size: 1
 accumulate_bs: 1
 val_steps: 1000
@@ -73,6 +72,7 @@ grad_clip: 100.
 results_dir: ./results
 
 # Multimodal
+exact_match: True
 qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
 qformer_name_or_path: bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth

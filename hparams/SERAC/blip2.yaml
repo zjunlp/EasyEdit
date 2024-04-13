@@ -10,12 +10,12 @@ tokenizer_name: hugging_cache/opt-2.7b
 cls_name: distilbert-base-cased 
 cls_class: AutoModel 
 inner_params:
-- opt_model.model.decoder.layers.9.fc1.weight
-- opt_model.model.decoder.layers.9.fc2.weight
-- opt_model.model.decoder.layers.10.fc1.weight
-- opt_model.model.decoder.layers.10.fc2.weight
-- opt_model.model.decoder.layers.11.fc1.weight
-- opt_model.model.decoder.layers.11.fc2.weight
+- opt_model.model.decoder.layers.29.fc1.weight
+- opt_model.model.decoder.layers.29.fc2.weight
+- opt_model.model.decoder.layers.30.fc1.weight
+- opt_model.model.decoder.layers.30.fc2.weight
+- opt_model.model.decoder.layers.31.fc1.weight
+- opt_model.model.decoder.layers.31.fc2.weight
 
 # Method
 alg: SERAC_MULTI
@@ -44,7 +44,7 @@ use_all_negatives: False
 freeze_cntr: False
 dist_heads: 1
 lora: null
-archive: results/models/SERAC_MULTI/blip2
+archive: results/models/SERAC_MULTI/blip2-caption
 
 batch_size: 1
 model_save_pt: 1000
@@ -74,6 +74,7 @@ grad_clip: 100.
 results_dir: ./results
 
 # Multimodal
+exact_match: True
 qformer_checkpoint: hugging_cache/blip2_pretrained_opt2.7b.pth
 qformer_name_or_path: bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth
