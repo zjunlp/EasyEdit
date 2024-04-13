@@ -82,6 +82,7 @@ class SERACMultimodalTrainingHparams(HyperParams):
     grad_clip: float
     
     qformer_checkpoint: str
+    exact_match: bool = False
     max_length: int = 32
     model_parallel: bool = False
     freeze_qformer: bool = True

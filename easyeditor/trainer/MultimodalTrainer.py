@@ -119,23 +119,23 @@ class MultimodalTrainer(BaseTrainer):
             l_loc = kl_loc_loss(base_logits.detach(), post_base_logits, mask=kl_mask)
             l_image_loc = kl_loc_loss(base_image_logits.detach(), post_image_base_logits, mask=kl_image_mask)
 
-        if l_edit.isnan():
-            print("l_edit is nan")
-            print("input: ", batch["edit_outer"]['text_input'])
-        elif l_image_edit.isnan():
-            print("l_image_edit is nan")
-            print("input: ", batch["edit_outer_image"]['text_input'])
-        elif l_loc.isnan():
-            print("l_loc is nan")
-            print("input: ", batch["loc"]['text_input'])
-        elif l_image_loc.isnan():
-            print("l_image_loc is nan")
-            print("input: ", batch["loc_image"]['text_input'])
+        # if l_edit.isnan():
+        #     print("l_edit is nan")
+        #     print("input: ", batch["edit_outer"]['text_input'])
+        # elif l_image_edit.isnan():
+        #     print("l_image_edit is nan")
+        #     print("input: ", batch["edit_outer_image"]['text_input'])
+        # elif l_loc.isnan():
+        #     print("l_loc is nan")
+        #     print("input: ", batch["loc"]['text_input'])
+        # elif l_image_loc.isnan():
+        #     print("l_image_loc is nan")
+        #     print("input: ", batch["loc_image"]['text_input'])
 
         if self.config.alg == "SERAC_MULTI":
             l_total_edit = self.config.cedit * l_edit + self.config.cloc * l_loc + self.config.iedit * l_image_edit
         else:
-            l_total_edit = self.config.cedit * l_edit + self.config.cloc * (l_loc+l_image_loc) + self.config.iedit * l_image_edit
+            l_total_edit = self.config.cedit * l_edit + self.config.cloc * (l_loc + l_image_loc) + self.config.iedit * l_image_edit
         
 
         if training and self.config.alg != 'ft':

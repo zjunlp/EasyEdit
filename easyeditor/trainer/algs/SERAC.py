@@ -453,8 +453,8 @@ class SERAC_MULTI(EditableModel):
                     add_padding(self.replacement_tok, self.replacement)
                 set_dropout(self.replacement, config.dropout)
         else:
-            assert isinstance(replacement, torch.nn.Module), "Rep is {type(replacement)}!"
-            assert isinstance(replacement_tok, transformers.PreTrainedTokenizerBase), "Rep tok is {type(replacement_tok)}!"
+            assert isinstance(replacement, torch.nn.Module), f"Rep is {type(replacement)}!"
+            assert isinstance(replacement_tok, transformers.PreTrainedTokenizerBase), f"Rep tok is {type(replacement_tok)}!"
             self.replacement, self.replacement_tok = replacement, replacement_tok
 
         if self.config.cross_attend:
@@ -464,10 +464,7 @@ class SERAC_MULTI(EditableModel):
                 self.register_buffer("scale", torch.tensor(1.0))
             else:
                 self.scale = scale
-        if config.model_name == "minigpt4":
-            self.language_projection = torch.nn.Linear(self.model.Qformer.config.hidden_size, self.replacement.config.hidden_size)
-        else:
-            self.language_projection = torch.nn.Linear(self.model.Qformer.config.hidden_size, self.replacement.config.hidden_size)
+        self.language_projection = torch.nn.Linear(self.model.Qformer.config.hidden_size, self.replacement.config.hidden_size)
         if cache_inputs is None:
             self.cache_inputs = []
             self.cache_labels = []
@@ -533,7 +530,6 @@ class SERAC_MULTI(EditableModel):
                 model_params.extend(cls.pre_classifier.parameters())
 
         if not self.config.freeze_cntr:
-            # model_params.extend(list(self.language_projection.parameters())) # alter
             if self.config.model_name == "minigpt4":
                 params_extend = []
                 # alter
@@ -629,7 +625,8 @@ class SERAC_MULTI(EditableModel):
             # The labels are include in the inputs for autoregressive models. Cut off the label for the classifier
             ctxs = [cin + sep for cin in self.cache_inputs]
         else:
-            ctxs = [cin + sep + clab + sep for cin, clab in zip(self.cache_inputs, self.cache_labels)]
+            # ctxs = [cin + sep + clab + sep for cin, clab in zip(self.cache_inputs, self.cache_labels)]
+            ctxs = [cin + sep for cin in self.cache_inputs]
         return ctxs
 
     def build_cls_cache_inputs(self):
@@ -638,7 +635,8 @@ class SERAC_MULTI(EditableModel):
             # The labels are include in the inputs for autoregressive models. Cut off the label for the classifier
             inputs = [cin.rsplit(" ", 1)[0] + sep for cin in self.cache_inputs]
         else:
-            inputs = [cin + sep + clab + sep for cin, clab in zip(self.cache_inputs, self.cache_labels)]
+            # inputs = [cin + sep + clab + sep for cin, clab in zip(self.cache_inputs, self.cache_labels)]
+            inputs = self.cache_inputs
         return inputs
 
     def build_rep_input_tokens(self, kwargs, idxs, generation=False):
@@ -651,7 +649,7 @@ class SERAC_MULTI(EditableModel):
         else:
             test_inputs = self.replacement_tok.batch_decode(kwargs["input_ids"], skip_special_tokens=True)
         rep_texts = [ctx + inp for ctx, inp in zip(selected_contexts, test_inputs)]
-        rep_input_tokens = self.replacement_tok(rep_texts, return_tensors="pt", padding=True).to(self.config.device)
+        rep_input_tokens = self.replacement_tok(rep_texts, return_tensors="pt", add_special_tokens=False).to(self.config.device)
 
         rep_kwargs = {
             "input_ids": rep_input_tokens["input_ids"],
@@ -662,10 +660,7 @@ class SERAC_MULTI(EditableModel):
             if 'labels' in kwargs.keys():
                 rep_kwargs["labels"] = kwargs["labels"]
 
-        # if self.config.task in ["fc", "fnli"]:
-        #     del rep_kwargs["labels"]
-
-        if hasattr(self.model, "name_or_path") and "gpt" in self.model.name_or_path.lower() and 'labels' in kwargs.keys():
+        if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
             # Add 'ignore' labels for the prepended cache inputs
             pre = torch.full((kwargs["labels"].shape[0], rep_kwargs["input_ids"].shape[-1] - kwargs["labels"].shape[-1]), -100,
                              device=kwargs["labels"].device)
@@ -730,16 +725,13 @@ class SERAC_MULTI(EditableModel):
                 torch.set_grad_enabled(grad_enabled)
                 return super_out
             else:
-                if self.config.model_name == "blip2":
-                    if "prompts_len" in kwargs:
-                        prompts_len = kwargs.pop("prompts_len")
-                    base_logits = super().forward(*inputs, **kwargs)
+                if self.config.model_name == "blip2" or self.config.model_name == "minigpt4":
+                    # if "prompts_len" in kwargs:
+                    #     prompts_len = kwargs.pop("prompts_len")
+                    base_logits = self.model(*inputs, **kwargs)
                     if not isinstance(base_logits, torch.Tensor):
-                        base_logits = base_logits.logits
-                    base_logits = base_logits.float()
-                elif self.config.model_name == "minigpt4":
-                    base_logits = super().forward(*inputs, **kwargs)
-                    if not isinstance(base_logits, torch.Tensor):
+                        final_labels = base_logits.labels
+                        final_att_mask = base_logits.attention_mask
                         base_logits = base_logits.logits
                     base_logits = base_logits.float()
                 else:
@@ -763,12 +755,12 @@ class SERAC_MULTI(EditableModel):
                 rep_cls_labels = rep_cls_inputs.pop("labels")
                 # add vision outputs
                 image = inputs[0]["image"]
-                if rep_cls_inputs["input_ids"][:, -1] != 13:
-                    eos = torch.ones([rep_cls_inputs["input_ids"].shape[0], 1],
-                                     dtype=torch.long).to(rep_cls_inputs["input_ids"].device).fill_(13)
-                    eos_attn = eos.fill_(1)
-                    rep_cls_inputs["input_ids"] = torch.cat([rep_cls_inputs["input_ids"], eos], dim=1)
-                    rep_cls_inputs["attention_mask"] = torch.cat([rep_cls_inputs["attention_mask"], eos_attn], dim=1)
+                # if rep_cls_inputs["input_ids"][:, -1] != 13:
+                #     eos = torch.ones([rep_cls_inputs["input_ids"].shape[0], 1],
+                #                      dtype=torch.long).to(rep_cls_inputs["input_ids"].device).fill_(13)
+                #     eos_attn = eos.fill_(1)
+                #     rep_cls_inputs["input_ids"] = torch.cat([rep_cls_inputs["input_ids"], eos], dim=1)
+                #     rep_cls_inputs["attention_mask"] = torch.cat([rep_cls_inputs["attention_mask"], eos_attn], dim=1)
                 if image is not None:
                     # vision_outputs = self.model.vision_model(
                     #     pixel_values=pixel_values
@@ -776,9 +768,7 @@ class SERAC_MULTI(EditableModel):
                     # image_embeds = vision_outputs[0]
                     with self.model.maybe_autocast():
                         image_embeds = self.model.ln_vision(self.model.visual_encoder(image))
-                    image_atts = torch.ones(image_embeds.size()[:-1], dtype=torch.long).to(
-                        image.device
-                    )
+                    image_atts = torch.ones(image_embeds.size()[:-1], dtype=torch.long).to(image.device)
                     query_tokens = self.model.query_tokens.expand(image_embeds.shape[0], -1, -1)
                     query_output = self.model.Qformer.bert(
                         query_embeds=query_tokens,
@@ -794,13 +784,7 @@ class SERAC_MULTI(EditableModel):
                     )  
                     
                     opt_tokens = rep_cls_inputs
-                    targets = opt_tokens["input_ids"].masked_fill(
-                        opt_tokens["input_ids"] == self.replacement_tok.pad_token_id, -100
-                    )
-                    if inputs[0]['prompts_len']:
-                        # targets[:, : self.prompt_length] = -100  # do not apply loss to the prompt
-                        for i, prompt_len in enumerate(inputs[0]['prompts_len']):
-                            targets[i, :prompt_len] = -100
+                    targets = rep_cls_labels
 
                     empty_targets = (
                         torch.ones(atts_opt.size(), dtype=torch.long).to(image.device).fill_(-100)
@@ -811,60 +795,61 @@ class SERAC_MULTI(EditableModel):
                     inputs_embeds = torch.cat([inputs_opt, inputs_embeds], dim=1)
                     attention_mask = torch.cat([atts_opt, opt_tokens["attention_mask"]], dim=1)                    
                     
-                    rep_cls_logits = self.replacement(
-                          inputs_embeds=inputs_embeds,
-                          attention_mask=attention_mask,
-                          return_dict=True,
-                          labels=targets
-                      ).logits[:, -base_probs.shape[1]:, :]
+                    rep_cls_outputs = self.replacement(
+                        inputs_embeds=inputs_embeds,
+                        attention_mask=attention_mask,
+                        return_dict=True,
+                        labels=targets,
+                    )
+                    rep_cls_logits = rep_cls_outputs.logits
                 else:
-                    rep_cls_logits = _logits(self.replacement(**rep_cls_inputs))
+                    rep_cls_outputs = self.replacement(**rep_cls_inputs)
+                    rep_cls_logits = rep_cls_outputs.logits
                 rep_cls_logits = rep_cls_logits[:, -base_probs.shape[1]:, :]
             elif self.config.model_name == "minigpt4":
                 rep_cls_labels = rep_cls_inputs.pop("labels")
                 image = inputs[0]["image"]
-                if rep_cls_inputs["input_ids"][:, -1] != 13:
-                    eos = torch.ones([rep_cls_inputs["input_ids"].shape[0], 1],
-                                     dtype=torch.long).to(rep_cls_inputs["input_ids"].device).fill_(13)
-                    eos_attn = eos.fill_(1)
-                    rep_cls_inputs["input_ids"] = torch.cat([rep_cls_inputs["input_ids"], eos], dim=1)
-                    rep_cls_inputs["attention_mask"] = torch.cat([rep_cls_inputs["attention_mask"], eos_attn], dim=1)
+                # if rep_cls_inputs["input_ids"][:, -1] != 13:
+                #     eos = torch.ones([rep_cls_inputs["input_ids"].shape[0], 1],
+                #                      dtype=torch.long).to(rep_cls_inputs["input_ids"].device).fill_(13)
+                #     eos_attn = eos.fill_(1)
+                #     rep_cls_inputs["input_ids"] = torch.cat([rep_cls_inputs["input_ids"], eos], dim=1)
+                #     rep_cls_inputs["attention_mask"] = torch.cat([rep_cls_inputs["attention_mask"], eos_attn], dim=1)
                 if image is not None:
                     img_embeds, atts_img = self.model.encode_img(image)
                     prompt = '###Human: <Img><ImageHere></Img> '
                     img_embeds, atts_img = self.model.prompt_wrap(img_embeds, atts_img, prompt)
                     
                     to_regress_tokens = rep_cls_inputs
-                    targets = to_regress_tokens["input_ids"].masked_fill(
-                        to_regress_tokens["input_ids"] == self.replacement_tok.pad_token_id, -100
-                    )    
-                    for i, prompt_len in enumerate(inputs[0]['prompts_len']):
-                        targets[i, :prompt_len] = -100    
-                    empty_targets = (
-                        torch.ones([atts_img.shape[0], atts_img.shape[1]+1],
-                                dtype=torch.long).to(image.device).fill_(-100)  # plus one for bos
-                    )
+                    targets = rep_cls_labels   
+                    # for i, prompt_len in enumerate(inputs[0]['prompts_len']):
+                    #     targets[i, :prompt_len] = -100    
+                    empty_targets = (torch.ones(atts_img.shape, dtype=torch.long).to(image.device).fill_(-100))
                     targets = torch.cat([empty_targets, targets], dim=1)
 
-                    batch_size = img_embeds.shape[0]
-                    bos = torch.ones([batch_size, 1],
-                                    dtype=to_regress_tokens["input_ids"].dtype,
-                                    device=to_regress_tokens["input_ids"].device) * self.replacement_tok.bos_token_id
-                    bos_embeds = self.replacement.model.embed_tokens(bos)
-                    atts_bos = atts_img[:, :1]
+                    # batch_size = img_embeds.shape[0]
+                    # bos = torch.ones([batch_size, 1],
+                    #                 dtype=to_regress_tokens["input_ids"].dtype,
+                    #                 device=to_regress_tokens["input_ids"].device) * self.replacement_tok.bos_token_id
+                    # bos_embeds = self.replacement.model.embed_tokens(bos)
+                    # atts_bos = atts_img[:, :1]
 
                     to_regress_embeds = self.replacement.model.embed_tokens(to_regress_tokens["input_ids"])
-                    inputs_embeds = torch.cat([bos_embeds, img_embeds, to_regress_embeds], dim=1)
-                    attention_mask = torch.cat([atts_bos, atts_img, to_regress_tokens["attention_mask"]], dim=1) 
+                    inputs_embeds = torch.cat([img_embeds, to_regress_embeds], dim=1)
+                    attention_mask = torch.cat([atts_img, to_regress_tokens["attention_mask"]], dim=1) 
+                    # inputs_embeds = torch.cat([bos_embeds, img_embeds, to_regress_embeds], dim=1)
+                    # attention_mask = torch.cat([atts_bos, atts_img, to_regress_tokens["attention_mask"]], dim=1) 
                     
-                    rep_cls_logits = self.replacement(
+                    rep_cls_outputs = self.replacement(
                         inputs_embeds=inputs_embeds,
                         attention_mask=attention_mask,
                         return_dict=True,
                         labels=targets,
-                    ).logits[:, -base_probs.shape[1]:, :]
+                    )
+                    rep_cls_logits = rep_cls_outputs.logits
                 else:
-                    rep_cls_logits = _logits(self.replacement(**rep_cls_inputs))[:, -base_probs.shape[1]:, :]
+                    rep_cls_logits = _logits(self.replacement(**rep_cls_inputs))
+                rep_cls_logits = rep_cls_logits[:, -base_probs.shape[1]:, :]
             else:
                 rep_cls_logits = _logits(self.replacement(**rep_cls_inputs))
 
@@ -917,7 +902,12 @@ class SERAC_MULTI(EditableModel):
 
         torch.set_grad_enabled(grad_enabled)
         if return_logits_only:
-            return mixture_logits
+            from ..blip2_models.mini_gpt4 import MiniGPTOutput
+            return MiniGPTOutput(
+                    logits=mixture_logits,
+                    labels=final_labels,
+                    attention_mask=final_att_mask,
+                )
         else:
             return mixture_logits, cls_logits, rep_gold_logits, stats
 

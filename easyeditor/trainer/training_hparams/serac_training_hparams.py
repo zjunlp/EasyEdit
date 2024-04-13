@@ -70,6 +70,7 @@ class SERACTrainingHparams(HyperParams):
     opt: str
     grad_clip: float
 
+    exact_match: bool = False
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
     max_length: int = 32

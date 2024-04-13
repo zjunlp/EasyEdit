@@ -82,6 +82,7 @@ class SERACMultimodalHparams(HyperParams):
     opt: str
     grad_clip: float
 
+    exact_match: bool = False
     max_length: int = 32
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
