@@ -57,6 +57,7 @@ class IKEMultimodalHyperParams(HyperParams):
     # Image_dir
     coco_image: str
     rephrase_image: str  
+    exact_match: bool = False
     pretrained_ckpt: Optional[str] = None  
     
     @classmethod
