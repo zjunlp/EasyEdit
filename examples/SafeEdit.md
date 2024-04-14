@@ -14,6 +14,7 @@
   <a href="#🌟-how-to-run">How to Run</a> •
     <!-- <a href="#-data-preparation">Data</a> •
     <a href="#-detoxification method">Method</a> • -->
+    <a href="#📚-track-2-of-task-10-for-nlpcc-2024">NLPCC 2024</a> •
     <a href="#📖-citation">Citation</a> •
     <a href="https://arxiv.org/abs/2403.14472">Paper</a> •
     <a href="https://zjunlp.github.io/project/SafeEdit">Website</a> 
@@ -149,8 +150,9 @@ You can download the [demo video](https://github.com/zjunlp/EasyEdit/blob/main/f
 <img src="../figs/SafeEdit_demo_gif.gif" width="70%" height="70%" />
 </div>
 
+# 📚 Track 2 of Task 10 for NLPCC 2024
 
-
+More information will be available shortly.
 
 # 📖 Citation
 
