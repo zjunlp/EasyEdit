@@ -599,7 +599,7 @@ def test_safety_gen(
         test_prompt, 
         cuda, 
         max_output_tokens=600):
-    input = tokenizer(test_prompt, return_tensors="pt", padding=True, truncation=True).to(cuda)
+    input = tokenizer(test_prompt, return_tensors="pt", padding=True, truncation=True).to(f"cuda:{cuda}")
     with torch.no_grad():
         outputs = model.generate(**input, max_new_tokens=max_output_tokens)
         texts = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
