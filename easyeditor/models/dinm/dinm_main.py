@@ -68,7 +68,7 @@ def execute_dinm(
     Invariant: model at beginning of function == model at end of function
     """
     device = torch.device(f'cuda:{hparams.device}')
-    model = model.to(device)
+    # model = model.to(device)
     # Update target and print info
     requests = deepcopy(requests)
     for request in requests:
