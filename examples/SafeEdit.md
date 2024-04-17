@@ -129,6 +129,7 @@ Before you begin running the program, ensure that the necessary files are presen
 
 Also, move the file **run_safety_editing.py** to **./** (We will later modify the code to adapt to running in the current directory).
 
+Our method supports multi-GPU editing. You can try setting the `model_parallel` to `true` in the configuration file `./hparams/DINM/mistral-7b` to enable multi-GPU editing.
 ```shell
 python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --hparams_dir=./hparams/DINM/mistral-7b --safety_classifier_dir=zjunlp/DINM-Safety-Classifier --metrics_save_dir=./safety_results
 ```
