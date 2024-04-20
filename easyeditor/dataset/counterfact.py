@@ -47,7 +47,6 @@ class CounterFactDataset(Dataset):
 
         with open(cf_loc, "r") as f:
             self.data = json.load(f)
-            self.data = self.data[:3]
         if size is not None:
             self.data = self.data[:size]
 
