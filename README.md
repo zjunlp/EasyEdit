@@ -269,6 +269,8 @@ You can choose different editing methods according to your specific needs.
 **Benchmark: KnowEdit** [[Hugging Face]](https://huggingface.co/datasets/zjunlp/KnowEdit)[[WiseModel]](https://wisemodel.cn/datasets/zjunlp/KnowEdit)[[ModelScope]](https://www.modelscope.cn/datasets/zjunlp/KnowEdit)
 > ❗️❗️ To be noted, **KnowEdit** is constructed by **re-organizing and extending** exsiting datasests including **WikiBio**, **ZsRE**, **WikiData<sub>Counterfact</sub>**,  **WikiData<sub>Recent</sub>**, **convsent**, **Sanitation** to make a comprehensive evaluation for knowledge editing. Special thanks to the builders and maintainers of the those datasets.
 
+> Please note that Counterfact and WikiData<sub>Counterfact</sub> are not the same dataset.
+
 <table class="tg">
 <thead>
   <tr>
