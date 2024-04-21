@@ -22,7 +22,7 @@ def apply_rome_to_model(
     copy=False,
     return_orig_weights=False,
     keep_original_weight=False,
-    **kwargs
+    **kwargs,
 ) -> Tuple[AutoModelForCausalLM, List[str]]:
     """
     Returns a model with the desired changes.
@@ -32,6 +32,18 @@ def apply_rome_to_model(
 
     :return: (1) the updated model, (2) an original copy of the weights that changed
     """
+    assert hparams.original_implementation or (
+        hparams.enable_prompt_keys != hparams.enable_random_prefix_keys
+    ), "Both prompt and random prefix keys are enabled"
+
+    if not hparams.original_implementation:
+        print(
+            "Using key modification method:",
+            "use_prompt_keys"
+            if hparams.enable_prompt_keys
+            else "use_random_prefix_keys",
+        )
+
     request = request[0]
     if copy:
         model = deepcopy(model)
@@ -76,11 +88,12 @@ def execute_rome(
         # Space required for correct tokenization
         request["target_new"] = " " + request["target_new"]
 
-    if '{}' not in request['prompt']:
-        assert request['subject'] in request['prompt'] or \
-               print(f"Subject:{request['subject']} do not exist in prompt: {request['prompt']}")
+    if "{}" not in request["prompt"]:
+        assert request["subject"] in request["prompt"] or print(
+            f"Subject:{request['subject']} do not exist in prompt: {request['prompt']}"
+        )
 
-        request['prompt'] = request['prompt'].replace(request['subject'], '{}')
+        request["prompt"] = request["prompt"].replace(request["subject"], "{}")
 
     print(
         f"Executing ROME algorithm for the update: "
