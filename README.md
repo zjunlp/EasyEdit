@@ -987,6 +987,6 @@ We thank all the contributors to this project, more contributors are welcome!
 - [PEAK](https://github.com/mjy1111/PEAK)
 - [Debugger](https://github.com/openai/transformer-debugger)
 - [LTE](https://github.com/YJiangcm/LTE)
-- [r-ROME][https://github.com/scalable-model-editing/rebuilding-rome]
+- [r-ROME](https://github.com/scalable-model-editing/rebuilding-rome)
 
 🙌 We would like to express our heartfelt gratitude for the contribution of [FastEdit](https://github.com/hiyouga/FastEdit), [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.
