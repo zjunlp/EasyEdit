@@ -28,20 +28,17 @@ def compute_v(
     print("Computing right vector (v)")
 
     # Tokenize target into list of int token IDs
-    target_ids = tok(request["target_new"], return_tensors="pt").to(
-        f"cuda:{hparams.device}"
-    )["input_ids"][0]
+    target_ids = tok(request["target_new"], return_tensors="pt").to(f"cuda:{hparams.device}")[
+        "input_ids"
+    ][0]
 
     if target_ids[0] == tok.bos_token_id or target_ids[0] == tok.unk_token_id:
         target_ids = target_ids[1:]
     # Compile list of rewriting and KL x/y pairs
-    rewriting_prompts, kl_prompts = (
-        [
-            context.format(request["prompt"]) + tok.decode(target_ids[:-1])
-            for context in context_templates
-        ],
-        ["{} is a"],
-    )
+    rewriting_prompts, kl_prompts = [
+        context.format(request["prompt"]) + tok.decode(target_ids[:-1])
+        for context in context_templates
+    ], ["{} is a"]
     all_prompts = rewriting_prompts + kl_prompts
 
     input_tok = tok(
@@ -60,17 +57,12 @@ def compute_v(
 
     # Compute indices of the tokens where the fact is looked up
     vanilla_input_prompts = [
-        context.format(request["prompt"]).format(request["subject"])
+        context.format(request["prompt"]).format(request['subject'])
         for context in context_templates
     ] + [f"{request['subject']} is a"]
     lookup_idxs = [
         find_fact_lookup_idx(
-            prompt,
-            request["subject"],
-            tok,
-            hparams.fact_token,
-            verbose=(i == 0),
-            input_prompt=vanilla_input_prompts[i],
+            prompt, request["subject"], tok, hparams.fact_token, verbose=(i == 0), input_prompt=vanilla_input_prompts[i]
         )
         for i, prompt in enumerate(all_prompts)
     ]
@@ -83,16 +75,10 @@ def compute_v(
     # Set up an optimization over a latent vector that, when output at the
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
-    if hasattr(model.config, "n_embd"):
-        delta = torch.zeros(
-            (model.config.n_embd,), requires_grad=True, device=f"cuda:{hparams.device}"
-        )
+    if hasattr(model.config, 'n_embd'):
+        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=f"cuda:{hparams.device}")
     else:
-        delta = torch.zeros(
-            (model.config.hidden_size,),
-            requires_grad=True,
-            device=f"cuda:{hparams.device}",
-        )
+        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=f"cuda:{hparams.device}")
     target_init, kl_distr_init = None, None
 
     # Inserts new "delta" variable at the appropriate part of the computation
@@ -104,9 +90,9 @@ def compute_v(
                 print("Recording initial value of v*")
                 # Initial value is recorded for the clean sentence
                 target_init = cur_out[0, lookup_idxs[0]].detach().clone()
-
+                
             for i, idx in enumerate(lookup_idxs):
-                if len(lookup_idxs) != len(cur_out):
+                if len(lookup_idxs)!=len(cur_out):
                     cur_out[idx, i, :] += delta
                 else:
                     cur_out[i, idx, :] += delta
@@ -190,44 +176,17 @@ def compute_v(
 
     target = target_init + delta.to(target_init.dtype)
 
-    if hparams.enable_random_prefix_keys:
-        cur_inputs, cur_outputs = [], []
-        # run hook for all random prefixes
-        for context_template in context_templates:
-            cur_input, cur_output = get_module_input_output_at_word(
-                model,
-                tok,
-                layer,
-                context_template=context_template.format(request["prompt"]),
-                word=request["subject"],
-                module_template=hparams.rewrite_module_tmp,
-                fact_token_strategy=hparams.fact_token,
-            )
-            cur_inputs.append(cur_input)
-            cur_outputs.append(cur_output)
-
-        # average the representations across prefixes
-        cur_input = torch.stack(cur_inputs).mean(0)
-        cur_output = torch.stack(cur_outputs).mean(0)
-
-        # target_init is v*, based on output from random prefix computations
-        target = target_init + delta
-    else:
-        # Original ROME code
-        # Retrieve cur_input, the current input to the 2nd MLP layer, and
-        # cur_output, the original output of the 2nd MLP layer.
-        cur_input, cur_output = get_module_input_output_at_word(
-            model,
-            tok,
-            layer,
-            context_template=request["prompt"],  # only done for the prompt being edited
-            word=request["subject"],
-            module_template=hparams.rewrite_module_tmp,
-            fact_token_strategy=hparams.fact_token,
-        )
-
-        # cur_output is v, based on output from prompt-only computations
-        target = cur_output + delta
+    # Retrieve cur_input, the current input to the 2nd MLP layer, and
+    # cur_output, the original output of the 2nd MLP layer.
+    cur_input, cur_output = get_module_input_output_at_word(
+        model,
+        tok,
+        layer,
+        context_template=request["prompt"],
+        word=request["subject"],
+        module_template=hparams.rewrite_module_tmp,
+        fact_token_strategy=hparams.fact_token,
+    )
 
     # Solving the linear system to compute the right vector
     right_vector = (target - cur_output) / torch.dot(cur_input, left_vector)
@@ -290,7 +249,7 @@ def find_fact_lookup_idx(
     tok: AutoTokenizer,
     fact_token_strategy: str,
     verbose=True,
-    input_prompt=None,
+    input_prompt=None
 ) -> int:
     """
     Computes hypothesized fact lookup index given a sentence and subject.

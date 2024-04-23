@@ -40,24 +40,16 @@ class ROMEHyperParams(HyperParams):
     model_parallel: bool = False
     fp16: bool = False
 
-    # compute key vector from prompt only
-    enable_prompt_keys: bool = False
-    # compute key vector as avg over random prefixes + prompt
-    enable_random_prefix_keys: bool = True
-    # Original ROME implementation overrides other options, uses both computations in the update equation
-    original_implementation: bool = False
-
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
-        if ".yaml" not in hparams_name_or_path:
-            hparams_name_or_path = hparams_name_or_path + ".yaml"
+
+        if '.yaml' not in hparams_name_or_path:
+            hparams_name_or_path = hparams_name_or_path + '.yaml'
 
         with open(hparams_name_or_path, "r") as stream:
             config = yaml.safe_load(stream)
             config = super().construct_float_from_scientific_notation(config)
 
-        assert (config and config["alg_name"] == "ROME") or print(
-            f'ROMEHyperParams can not load from {hparams_name_or_path}, '
-            f'alg_name is {config["alg_name"]} '
-        )
+        assert (config and config['alg_name'] == 'ROME') or print(f'ROMEHyperParams can not load from {hparams_name_or_path}, '
+                                                f'alg_name is {config["alg_name"]} ')
         return cls(**config)

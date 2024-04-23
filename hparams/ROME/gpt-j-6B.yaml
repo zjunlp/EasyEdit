@@ -1,5 +1,5 @@
 alg_name: "ROME"
-model_name: "EleutherAI/gpt-j-6b"
+model_name: "./hugging_cache/gpt-j-6B"
 stats_dir: "./data/stats"
 device: 1
 layers: [5]
