@@ -46,7 +46,7 @@ We extend evaluation metrics to Defense Duccess (DS), Defense Generalization (DG
 - Defense Generalization (DG): the detoxification success rate of edited LLM for out-of-domain (OOD) malicious inputs.
   - `DG of only harmful question`($\mathrm{DG}_\text{onlyQ}$): the detoxification success rate for only harmful question.
   - `DG of other attack prompts`($\mathrm{DG}_\text{otherA}$): the detoxification success rate for unseen attack prompts.
-  - `DG of other attack prompts`($\mathrm{DG}_\text{otherQ}$): the detoxification success rate for unseen harmful questions.
+  - `DG of other harmful questions`($\mathrm{DG}_\text{otherQ}$): the detoxification success rate for unseen harmful questions.
   - `DG of other attack prompts and questions`($\mathrm{DG}_\text{otherAQ}$): the detoxification success rate for unseen attack prompts and harmful questions.
 
 - General Performance: the side effects for unrelated task.
