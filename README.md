@@ -96,6 +96,8 @@
 - **2023-5-22 We release the paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" and provide a paper list at [PaperList](https://github.com/zjunlp/KnowledgeEditingPapers).**
 - **2023-3-25 The EasyEdit project has been launched and is under development.**
 
+
+
 This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 </details>
 
@@ -118,9 +120,7 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 ## Knowledge Editing
 
-<div align=center>
-<img src="figs/demo.gif" width="70%" height="70%" />
-</div>
+<div align=center><img src="./figs/ke.png" width="100%" height="80%" /></div>
 
 ### Task Definition
 
