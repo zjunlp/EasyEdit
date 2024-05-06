@@ -57,13 +57,19 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- **New Reports**
+
+    |     *Report*        |    Topic    | PPT Resource |
+    | :-----------------: | :---------: | :------------: |
+    | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
+    | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
 - **2024-04-24  EasyEdit currently supports the ROME method for [llama3-8b](https://huggingface.co/meta-llama/Meta-Llama-3-8B). Please update your transformers package to version 4.40.0. We will be supporting other methods in the near future.**
 - **2024-03-29  EasyEdit now supports rollback for GRACE. For a detailed introduction, you can check the [EasyEdit documentation](#use-easyedit). In the future, we will gradually add rollback support for other methods.**
 - **2024-03-22  We release a new paper:"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)" with a new dataset [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new detoxification method [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)!**
 - **2024-03-12  We release a new paper:"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" with a new dataset [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit)!**
 - **2024-03-01 The EasyEdit has added the support for a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
 - **2024-02-27 The EasyEdit has added the support for a new method called [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
-- **2024-02-20 The AAAI2024 tutorial "*Knowledge Editing for Large Language Models*" has been canceled since speakers cannot present in person, we make this ppt[[Github](https://github.com/zjunlp/KnowledgeEditingPapers/blob/main/AAAI2024%40Tutorial_Knowledge%20Editing%20for%20LLMs.pdf)] [[Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1oJYgaMnxWIBE4kIcJuMSKg?pwd=p9j5)] available to the community**. 
+<!-- - **2024-02-20 The AAAI2024 tutorial "*Knowledge Editing for Large Language Models*" has been canceled since speakers cannot present in person, we make this ppt[[Github](https://github.com/zjunlp/KnowledgeEditingPapers/blob/main/AAAI2024%40Tutorial_Knowledge%20Editing%20for%20LLMs.pdf)] [[Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1oJYgaMnxWIBE4kIcJuMSKg?pwd=p9j5)] available to the community**. -->
 - **2024-02-09 The EasyEdit has added the support for the Dynamic LoRA model editing method [MELO'AAAI24](https://arxiv.org/abs/2312.11795).**
 - **2024-02-06 We release a new paper: "[EasyInstruct: An Easy-to-use Instruction Processing Framework for Large Language Models](https://arxiv.org/abs/2402.03049)" with an HF demo [EasyInstruct](https://huggingface.co/spaces/zjunlp/EasyInstruct).**
 - **2024-02-06 We release a preliminary tool [EasyDetect](https://github.com/OpenKG-ORG/EasyDetect) for LLM hallucination detection，with a [demo](http://easydetect.openkg.cn/)**.
