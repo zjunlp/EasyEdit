@@ -63,19 +63,30 @@
     | :-----------------: | :---------: | :------------: |
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
-- **2024-04-24  EasyEdit currently supports the ROME method for [llama3-8b](https://huggingface.co/meta-llama/Meta-Llama-3-8B). Please update your transformers package to version 4.40.0. We will be supporting other methods in the near future.**
-- **2024-03-29  EasyEdit now supports rollback for GRACE. For a detailed introduction, you can check the [EasyEdit documentation](#use-easyedit). In the future, we will gradually add rollback support for other methods.**
-- **2024-03-22  We release a new paper:"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)" with a new dataset [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new detoxification method [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)!**
-- **2024-03-12  We release a new paper:"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" with a new dataset [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit)!**
-- **2024-03-01 The EasyEdit has added the support for a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
-- **2024-02-27 The EasyEdit has added the support for a new method called [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
-<!-- - **2024-02-20 The AAAI2024 tutorial "*Knowledge Editing for Large Language Models*" has been canceled since speakers cannot present in person, we make this ppt[[Github](https://github.com/zjunlp/KnowledgeEditingPapers/blob/main/AAAI2024%40Tutorial_Knowledge%20Editing%20for%20LLMs.pdf)] [[Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1oJYgaMnxWIBE4kIcJuMSKg?pwd=p9j5)] available to the community**. -->
-- **2024-02-09 The EasyEdit has added the support for the Dynamic LoRA model editing method [MELO'AAAI24](https://arxiv.org/abs/2312.11795).**
-- **2024-02-06 We release a new paper: "[EasyInstruct: An Easy-to-use Instruction Processing Framework for Large Language Models](https://arxiv.org/abs/2402.03049)" with an HF demo [EasyInstruct](https://huggingface.co/spaces/zjunlp/EasyInstruct).**
-- **2024-02-06 We release a preliminary tool [EasyDetect](https://github.com/OpenKG-ORG/EasyDetect) for LLM hallucination detection，with a [demo](http://easydetect.openkg.cn/)**.
-- **2024-01-24 The EasyEdit has added the support for editing [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) (manually update transformers==4.34.0), we have also fixed some bugs in evaluating MEND (slightly influence the performance).**
-- **2024-01-16 The EasyEdit has added the support for the precise model editing method [PMET'AAAI24](https://arxiv.org/abs/2308.08742).**
-- **2024-01-03  We release a new paper:"[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" with a new benchmark [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit)! KnowEdit is constructed by re-organizing and cleaning exsiting datasests including WikiBio, ZsRE, WikiData Counterfact, WikiData Recent, convsent, Sanitation with new train/val/test spliting. Special thanks to the builders and maintainers of the those datasets.We are looking forward to any comments or discussions on this topic :)**
+On 2024-04-24, EasyEdit announced support for the ROME method for Llama3-8B. Users are advised to update their transformers package to version 4.40.0. Additional support for other methods is planned for the near future.
+
+On 2024-03-29, EasyEdit introduced rollback support for GRACE. For a detailed introduction, refer to the EasyEdit documentation. Future updates will gradually include rollback support for other methods.
+
+A new paper titled "Detoxifying Large Language Models via Knowledge Editing" was released on 2024-03-22, along with a new dataset named SafeEdit and a new detoxification method called DINM.
+
+Another paper titled "Editing Conceptual Knowledge for Large Language Models" was released on 2024-03-12, introducing a new dataset named ConceptEdit.
+
+On 2024-03-01, EasyEdit added support for a new method called FT-M. This method involves training a specific MLP layer using cross-entropy loss on the target answer and masking the original text. It outperforms the FT-L implementation in ROME. The author of issue zjunlp#173 is thanked for their advice.
+
+On 2024-02-27, EasyEdit added support for a new method called InstructEdit, with technical details provided in the paper "InstructEdit: Instruction-based Knowledge Editing for Large Language Models".
+
+On 2024-02-09, EasyEdit added support for the Dynamic LoRA model editing method MELO'AAAI24.
+
+On 2024-02-06, a new paper titled "EasyInstruct: An Easy-to-use Instruction Processing Framework for Large Language Models" was released, along with an HF demo EasyInstruct.
+
+On 2024-02-06, a preliminary tool called EasyDetect for LLM hallucination detection was released, along with a demo.
+
+On 2024-01-24, EasyEdit added support for editing Mistral-7B (users need to manually update transformers to version 4.34.0). Some bugs in evaluating MEND were also fixed, slightly affecting performance.
+
+On 2024-01-16, EasyEdit added support for the precise model editing method PMET'AAAI24.
+
+On 2024-01-03, a new paper titled "A Comprehensive Study of Knowledge Editing for Large Language Models" was released, introducing a new benchmark named KnowEdit. KnowEdit is constructed by reorganizing and cleaning existing datasets including WikiBio, ZsRE, WikiData Counterfact, WikiData Recent, convsent, and Sanitation, with new train/val/test splits. Special thanks were extended to the builders and maintainers of those datasets. Comments and discussions on this topic are welcomed."
+
 
 <details>
 <summary><b>Previous News</b></summary>
