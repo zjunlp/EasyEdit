@@ -114,8 +114,7 @@ class CaptionDataset(BaseDataset):
         
         # edit_inner
         edit_inner = {}
-        edit_inner['image'] = None
-        # edit_inner['image'] = torch.stack(image, dim=0)
+        edit_inner['image'] = torch.stack(image, dim=0)
         edit_inner['text_input'] = [s + t for s, t in zip(src, trg)]
         edit_inner['labels'] = trg
         if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
@@ -127,8 +126,7 @@ class CaptionDataset(BaseDataset):
         
         # edit_outer
         edit_outer = {}
-        edit_outer['image'] = None
-        # edit_outer['image'] = torch.stack(image, dim=0)
+        edit_outer['image'] = torch.stack(image, dim=0)
         edit_outer['text_input'] = [r + t for r, t in zip(rephrase, trg)]
         edit_outer['labels'] = trg
         if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
@@ -140,8 +138,7 @@ class CaptionDataset(BaseDataset):
             
         # edit_outer_image
         edit_outer_image = {}
-        edit_outer_image['image'] = None
-        # edit_outer_image['image'] = torch.stack(image_rephrase, dim=0)
+        edit_outer_image['image'] = torch.stack(image_rephrase, dim=0)
         edit_outer_image['text_input'] = [s + t for s, t in zip(src, trg)]
         edit_outer_image['labels'] = trg
         if self.config.model_name == "minigpt4" or self.config.model_name == "blip2":
