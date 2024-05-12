@@ -175,7 +175,7 @@ def test_MEND_Blip2OPT_Caption():
 def test_SERAC_MiniGPT4_VQA():
     hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/minigpt4.yaml')
     # train_ds = VQADataset('data/vqa_train.json', config=hparams)
-    eval_ds = VQADataset('data/vqa_eval.json', config=hparams, size=100)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
     trainer = MultimodalTrainer(
         config=hparams,
         train_set=eval_ds,
@@ -187,7 +187,7 @@ def test_SERAC_MiniGPT4_VQA():
 def test_SERAC_Blip2OPT_VQA():
     hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/blip2.yaml')
     # train_ds = VQADataset('data/vqa_train.json', config=hparams)
-    eval_ds = VQADataset('data/vqa_eval.json', config=hparams, size=100)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
     trainer = MultimodalTrainer(
         config=hparams,
         train_set=eval_ds,
@@ -198,6 +198,18 @@ def test_SERAC_Blip2OPT_VQA():
 
 def test_SERAC_Blip2OPT_Caption():
     hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/blip2.yaml')
+    # train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
+    eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=eval_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()   
+
+def test_SERAC_MiniGPT4_Caption():
+    hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/minigpt4.yaml')
     # train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
     eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
     trainer = MultimodalTrainer(
@@ -528,7 +540,7 @@ if __name__ == "__main__":
     # train_MEND_Blip2OPT_Caption(debug=True)
     # train_MEND_Blip2OPT_VQA()
     # train_MEND_Blip2OPT_VQA_Vision()
-    # train_MEND_Blip2OPT_VQA_debug()
+    train_MEND_Blip2OPT_VQA_debug()
     # train_MEND_Blip2OPT_VQA_Vision_debug()
     # train_MEND_MiniGPT4_VQA_debug()
     
@@ -541,10 +553,12 @@ if __name__ == "__main__":
     # train_SERAC_Blip2OPT_Caption_debug()
     
     
+    # test_SERAC_Blip2OPT_VQA()
     # test_SERAC_Blip2OPT_Caption()
-    test_MEND_Blip2OPT_Caption()
+    # test_MEND_Blip2OPT_Caption()
     # test_MEND_Blip2OPT_VQA()
     # test_SERAC_MiniGPT4_Caption()
+    # test_SERAC_MiniGPT4_VQA()
     # test_MEND_MiniGPT4_VQA()
     # Generate_Embedding_for_IKE()
     # test_IKE_MiniGPT4_Caption()

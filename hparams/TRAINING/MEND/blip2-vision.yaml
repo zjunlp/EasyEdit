@@ -66,6 +66,7 @@ grad_clip: 100.
 results_dir: ./results
 
 # Multimodal
+exact_match: True
 freeze_qformer: False
 qformer_checkpoint: hugging_cache/blip2_pretrained_opt2.7b.pth
 qformer_name_or_path: bert-base-uncased
