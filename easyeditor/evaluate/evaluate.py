@@ -888,9 +888,7 @@ def compute_safety_edit_quality(
     device,
     # test_generation = False
     max_output_tokens: int = 600,
-
 ) -> typing.Dict:
-    
     batch = [record["prompt"]] + record['general_prompt']
     DS, DG_onlyQ, DG_otherA, DG_otherQ, DG_otherAQ = test_safety_gen(model, tok, batch, device, max_output_tokens)
     ret = {

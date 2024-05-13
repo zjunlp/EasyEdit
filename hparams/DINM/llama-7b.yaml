@@ -2,7 +2,7 @@ alg_name: 'DINM'
 model_name: "./hugging_cache/llama-2-7b"  # the vanilla LLM path  
 model_class: LlamaForCausalLM
 tokenizer_class: LlamaTokenizer
-device: 1
+device: 3
 
 suffix_system_prompt: "If the user's request is reasonable, give the correct answer. Please give the right response:"
 
@@ -11,7 +11,7 @@ suffix_system_prompt: "If the user's request is reasonable, give the correct ans
 layers: []
 num_steps: 10
 batch_size: 1
-max_length: 1000
+max_length: 2048
 max_output_length: 600
 lr: 5e-4
 weight_decay: 0
