@@ -1,0 +1,7 @@
+{
+    "CommonsenseQA": 52.42,
+    "TriviaQA": 39.97,
+    "Xsum": 23.24,
+    "MMLU": 45.65,
+    "GSM8K": 24.56
+}
