@@ -184,6 +184,10 @@ class SafetyEditor:
                 LOG.info(f"Execution {i} editing took {exec_time}")
                 edited_model.save_pretrained(kwargs['ckpt_save_dir'])
                 print(f"edited model is saved in {kwargs['ckpt_save_dir']}")
+                with torch.no_grad():
+                    for k, v in weights_copy.items():
+                        nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+              
 
         else:
             all_metrics = []
