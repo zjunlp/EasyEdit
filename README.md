@@ -61,6 +61,7 @@
 
     |     *Report*        |    Topic    | PPT Resource |
     | :-----------------: | :---------: | :------------: |
+    | COLING2024 tutorial| Knowledge Editing for Large Language Models| Google Drive   |
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
 - **2024-04-24  EasyEdit currently supports the ROME method for [llama3-8b](https://huggingface.co/meta-llama/Meta-Llama-3-8B). Please update your transformers package to version 4.40.0. We will be supporting other methods in the near future.**
