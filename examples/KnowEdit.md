@@ -255,6 +255,7 @@ python run_knowedit_llama2.py \
     --editing_method=IKE \
     --hparams_dir=../hparams/IKE/llama-7b \
     --data_dir=./data \
+    --train_data_path=./train_data
     --datatype='counterfact'
 ```
 For convsent dataset,we use the following command:
@@ -262,6 +263,7 @@ For convsent dataset,we use the following command:
 python run_convsent_llama2.py \
  --hparams_dir ./hparams/IKE/llama-7b.yaml \
  --editing_method IKE \
+ --train_data_path=./train_data
  --data_dir ./data  
 ```
 For Sanitation dataset ,we use the following command:
