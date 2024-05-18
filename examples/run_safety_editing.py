@@ -189,7 +189,7 @@ if __name__ == '__main__':
     safety_classifier_tokenizer = RobertaTokenizer.from_pretrained(args.safety_classifier_dir)
 
     editor = SafetyEditor.from_hparams(hparams)
-    edit_data_all = edit_data_all[0:2]
+    # edit_data_all = edit_data_all[0:2]
     if args.editing_method == "DINM":
         overall_performance = test_DINM(edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir)
     else:
