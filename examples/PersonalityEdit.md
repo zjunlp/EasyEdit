@@ -18,7 +18,7 @@ The proposed task takes the preliminary attempt to edit LLMs' personalities by e
 
 ## Datasets
 
-You can download it from [[Google Drive]](https://drive.google.com/drive/folders/1P2MrjHhKYHbcF2yj5FJjsWRF9-vFGZ2v?usp=drive_link), then put the data in folder `./data`.
+You can download it from [[Google Drive]](https://drive.google.com/drive/folders/1gF6W2ftHU7NZ2zmGXFGYqgACuWAtPpN0?usp=drive_link), then put the data in folder `./data`.
 
 The data folder `PersonalityEdit` consists of three files, `train.json`, `val.json` and `test.json`.
 
