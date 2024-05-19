@@ -21,23 +21,6 @@ This shared task includes two tracks:
 
 ## Dataset and Rules
 
-#### Track 1: Dataset for Multimodal Hallucination Detection for Multimodal Large Language Models
-
-You can download the datasets via [this link](https://huggingface.co/datasets/openkg/MHaluBench).
-
-The expected structure of files is:
-
-```
-data
-├── train.json                     # training dataset
-├── val.json                       # validation dataset
-└── test.json                      # test dataset which we will release in the future
-```
-
-> ❗️**Data Utility Rules:** 
-Due to the use of open source data, we do not provide image data. You need to download [MSCOCO-train2014](http://images.cocodataset.org/zips/train2014.zip), [MSCOCO-val2014](http://images.cocodataset.org/zips/val2014.zip), [TextVQA-train](https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip), and [TextVQA-test](https://dl.fbaipublicfiles.com/textvqa/images/test_images.zip) by yourself. For model training, **only the data provided by [this link](https://huggingface.co/datasets/openkg/MHaluBench) is allowed to be used as supervised data, which includes train.json, val.json.**    test.json will be used to evaluate the hallucination detected model or pipeline.
-
-For more information related to this dataset, please refer to our paper: [Unified Hallucination Detection for Multimodal Large Language Models](https://arxiv.org/abs/2402.03190). 
 
 #### Track 2: Dataset for Detoxifying Large Language Models
 
