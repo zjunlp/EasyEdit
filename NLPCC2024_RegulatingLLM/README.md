@@ -10,8 +10,6 @@ The rise of large language models has brought about significant advancements in 
 
 This shared task includes two tracks:
 
-● **Track 1 (Multimodal Hallucination Detection for Multimodal Large Language Models):** Develop methods to identify and flag hallucinatory outputs that do not correlate with reality or the given input context when dealing with multimodal prompts (text, images etc.). This track would involve creating detection algorithms that can discern between accurate and hallucinated responses across different modalities, thereby ensuring the reliability of the model's outputs.
-
 ● **Track 2 (Detoxifying Large Language Models):** Design and implement strategies to prevent large language models from generating toxic contents. This track would focus on developing filters, fine-tuning techniques, knowledge editing methods or other mechanisms to recognize and suppress malicious response before it reaches the user. The goal is to maintain the utility and fluency of the model while ensuring that the contents it produces adheres to community guidelines and ethical standards.
 
 
@@ -49,17 +47,6 @@ For more information related to this dataset, please refer to our paper: [Detoxi
 If there are any differences between the paper and this page, the content of this page should prevail.
 
 ## Evaluation
-
-
-
-
-#### Track 1: Multimodal Hallucination Detection for Multimodal Large Language Models
-We recommend using models with fewer hallucinations and better performance, such as [LLaVA](https://huggingface.co/liuhaotian/llava-v1.5-7b), [DeepSeek-VL](https://huggingface.co/deepseek-ai/deepseek-vl-7b-base), [Qwen-VL](https://huggingface.co/Qwen/Qwen-VL), etc. The evaluation metrics include two main categories: Rule-based metric and Rationality-based metric.
-
-- Rule-based metric: Use macro-f1 to roughly evaluate the effect of hallucination detection
-
-- Rationality-based metric: When the average values of multiple macros are similar, we use manual evaluation or evaluate the reasonability of the generated reason based on GPT.
-
 #### Track 2: Detoxifying Large Language Models
 Please select [LLaMA2-7B-Chat](https://huggingface.co/meta-llama/Llama-2-7b-chat) as the vanilla Large Language Model. Track 2 aims to enhance its security defense against malicious inputs.
 The evaluation metrics include two main categories: detoxification performance and side effects.
@@ -186,17 +173,6 @@ Note that SafeEdit_test in [this link](https://huggingface.co/datasets/zjunlp/Sa
 **Note that best result of this track will be verified using code provided by participants.** 
 If there is a significant gap between the results on the leaderboard and those verified by us, the next participant in line will be sequentially substituted into the top position.
 
-
-#### Track 1: Multimodal Hallucination Detection for Multimodal Large Language Models
-We submit using [CodaBench](https://www.codabench.org/).
-
-The submission steps are as follows:
-- Registering a CodaBench account
-- search competition: **NLPCC2024 TASK 10 - TRACK 1**
-- upload your submission. Only upload the zipped model results file, the specific format can refer to [res.zip](https://github.com/zjunlp/NLPCC2024_RegulatingLLM/blob/main/res.zip)
-
-**Note**:At present, only submit the results of the validation set for the testing phase, with 100 submission opportunities per person. Formal submissions will begin once the testing set is released
-
 #### Track 2: Detoxifying Large Language Models
 
 We submit using [CodaBench](https://www.codabench.org/competitions/2954/).
@@ -208,35 +184,17 @@ The submission steps are as follows:
 - Details can be found in [README](https://github.com/zjunlp/NLPCC2024_RegulatingLLM/blob/main/Track%202/README.md)
 
 
-
-## Participation
-
-If you're intrigued by our challenge, please fill out the Registration Form ([Word File](./NLPCC2024.SharedTask10.RegistrationForm.doc)) and send it to the following registration email.
-
-**Registration Email:** [mengruwg@zju.edu.cn](mailto:mengruwg@zju.edu.cn)
-
-we also create a **discussion group** for this task. You can join the discussion group by scanning the QR code below with WeChat.
-
-<div align=center>
-<img src="./img/NLPCC2024-task10-参赛群二维码.jpg" width="30%" height="30%" />
-</div>
-
 ## Important Dates
 
 - **2024/03/25**：announcement of shared tasks and call for participation
 - **2024/03/25**：registration open
 - **2024/04/15**：release of detailed task guidelines & training data
 - **2024/05/25**：registration deadline
-- **2024/06/11**：release of test data
 - **2024/06/20**：participants’ results submission deadline
 - **2024/06/30**：evaluation results release and call for system reports and conference paper
 
 
 ## Leaderboard
-
-#### Track 1: Multimodal Hallucination Detection for Multimodal Large Language Models
-
-More information will be available shortly.
 
 #### Track 2: Detoxifying Large Language Models
 
@@ -246,26 +204,6 @@ More information will be available shortly.
 ## 📖 Citation
 
 Please cite our paper if you use our dataset.
-
-```bibtex
-@article{wang2024SafeEdit,
-  author       = {Mengru Wang and
-                  Ningyu Zhang and
-                  Ziwen Xu and
-                  Zekun Xi and
-                  Shumin Deng and
-                  Yunzhi Yao and
-                  Qishen Zhang and
-                  Linyi Yang and
-                  Jindong Wang and
-                  Huajun Chen},
-  title        = {Detoxifying Large Language Models via Knowledge Editing},
-  journal      = {CoRR},
-  volume       = {abs/2403.14472},
-  year         = {2024},
-  url          = {https://doi.org/10.48550/arXiv.2403.14472},
-  doi          = {10.48550/ARXIV.2403.14472}
-}
 
 @article{chen24unihd,
   author       = {Xiang Chen and
