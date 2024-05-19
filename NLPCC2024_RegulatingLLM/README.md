@@ -1,4 +1,4 @@
-# NLPCC2024_RegulatingLLM
+# Track 2 of NLPCC2024_RegulatingLLM
 
 More information will be available shortly.
 
