@@ -201,29 +201,6 @@ The submission steps are as follows:
 More information will be available shortly.
 
 
-## 📖 Citation
-
-Please cite our paper if you use our dataset.
-
-@article{chen24unihd,
-  author       = {Xiang Chen and
-                  Chenxi Wang and
-                  Yida Xue and
-                  Ningyu Zhang and
-                  Xiaoyan Yang and 
-                  Qiang Li and
-                  Yue Shen and
-                  Lei Liang and
-                  Jinjie Gu and
-                  Huajun Chen},
-  title        = {Unified Hallucination Detection for Multimodal Large Language Models},
-  journal      = {CoRR},
-  volume       = {abs/2402.03190},
-  year         = {2024},
-  url          = {https://doi.org/10.48550/arXiv.2402.03190},
-  doi          = {10.48550/ARXIV.2402.03190}
-}
-```
 
 ## Supporting Organization
 
