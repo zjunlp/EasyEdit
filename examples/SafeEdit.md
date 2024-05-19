@@ -158,13 +158,13 @@ Please refer to [this link](https://github.com/eric-mitchell/direct-preference-o
 
 For DINM method, you should first complete the <a href="##📂 Data Preparation ">Data Preparation</a>.
 
-Second, move the file **[train_DINM_for_NLPCC.py](https://github.com/zjunlp/EasyEdit/blob/main/NLPCC2024_RegulatingLLM/train_DINM_for_NLPCC.py)** to **./** (We will later modify the code to adapt to running in the current directory), and run:
+Second, move the file **[train_DINM_for_NLPCC.py](https://github.com/zjunlp/EasyEdit/blob/main/examples/train_DINM_for_NLPCC.py)** to **./** (We will later modify the code to adapt to running in the current directory), and run:
 ```shell
 python train_DINM_for_NLPCC.py --hparams_dir ./hparams/DINM/llama-7b --results_save_dir ./safety_results
 ```
 
 ## Testing
-To evaluate the detoxifying performance of edited model, you should move the file **[test_detoxify_generate_for_NLPCC.py](https://github.com/zjunlp/EasyEdit/blob/main/NLPCC2024_RegulatingLLM/test_detoxify_generate_for_NLPCC.py)** to **./** (We will later modify the code to adapt to running in the current directory), and run:
+To evaluate the detoxifying performance of edited model, you should move the file **[test_detoxify_generate_for_NLPCC.py](https://github.com/zjunlp/EasyEdit/blob/main/examples/test_detoxify_generate_for_NLPCC.py)** to **./** (We will later modify the code to adapt to running in the current directory), and run:
 ```shell
 python test_detoxify_generate.py --edited_LLM_ckpt ./safety_results/dinm_llama2-chat --tok_ckpt ./hugging_cache/llama-2-7b --results_save_dir ./safety_results
 ```
