@@ -35,6 +35,7 @@
     - [Knowledge insert](#knowledge-insert)
     - [Knowledge update](#knowledge-update)
     - [Knowledge erase](#knowledge-erase)
+  - [Comparisons among ](#comparisons-among-the-different-technologies)
   - [Evaluation](#evaluation)
 - [🌟Overview](#🌟overview)
     - [Current Implementation](#current-implementation)
@@ -122,7 +123,8 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 ## Knowledge Editing
 
 <div align=center><img src="./figs/ke.png" width="100%" height="80%" /></div>
-<div align=center><img src="./figs/comparison.png" width="60%" height="48%" /></div>
+
+
 
 ### Task Definition
 
@@ -187,6 +189,10 @@ While for assessing **Acc** and **TPEI**, you can download the trained classifie
 
 </details>
 
+ 
+### Comparisons among the different technologies
+
+<div align=center><img src="./figs/comparison.png" width="60%" height="48%" /></div>
 
 ### Evaluation
 
@@ -209,6 +215,11 @@ In addition to this, the performance of knowledge editing should be measured fro
 - `Locality`: whether the model's output changes after editing for unrelated inputs
 - `Portability`: the success rate of editing for factual reasoning(one hop, synonym, one-to-one relation)
 - `Efficiency`: time and memory consumption required during the editing process
+
+
+
+
+
 
 ## 🌟Overview
 
