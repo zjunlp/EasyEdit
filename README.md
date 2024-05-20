@@ -122,6 +122,7 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 ## Knowledge Editing
 
 <div align=center><img src="./figs/ke.png" width="100%" height="80%" /></div>
+<div align=center><img src="./figs/comparison.png" width="60%" height="48%" /></div>
 
 ### Task Definition
 
