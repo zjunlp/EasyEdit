@@ -35,7 +35,7 @@
     - [Knowledge insert](#knowledge-insert)
     - [Knowledge update](#knowledge-update)
     - [Knowledge erase](#knowledge-erase)
-  - [Comparisons among ](#comparisons-among-the-different-technologies)
+  - [Comparisons among the different technologies](#comparisons-among-different-technologies)
   - [Evaluation](#evaluation)
 - [🌟Overview](#🌟overview)
     - [Current Implementation](#current-implementation)
@@ -190,7 +190,7 @@ While for assessing **Acc** and **TPEI**, you can download the trained classifie
 </details>
 
  
-### Comparisons among the different technologies
+### Comparisons among different technologies
 
 <div align=center><img src="./figs/comparison.png" width="60%" height="48%" /></div>
 
