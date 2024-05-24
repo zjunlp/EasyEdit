@@ -13,7 +13,7 @@ PyYAML==6.0
 scikit-learn==1.0.2
 scipy==1.7.3
 sentence-transformers==2.2.2
-tokenizers==0.13.3
+tokenizers
 torch==2.0.1
 tqdm==4.62.3
 transformers==4.40.0
