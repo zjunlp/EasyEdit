@@ -685,6 +685,8 @@ metrics, edited_model, _ = editor.edit(
 ## metrics: edit success, rephrase success, locality e.g.
 ## edited_model: post-edit model
 ```
+The maximum input length for EasyEdit is 512. If this length is exceeded, you will encounter the error "CUDA error: device-side assert triggered." You can modify the maximum length in the following file:[LINK](https://github.com/zjunlp/EasyEdit/blob/7d947abfa2975dcdbbd81a355b8f69d47e1b421f/easyeditor/evaluate/evaluate_utils.py#L115)
+
 **Step7: RollBack**
 In sequential editing, if you are not satisfied with the outcome of one of your edits and you do not wish to lose your previous edits, you can use the rollback feature to undo your previous edit. Currently, we only support the GRACE method. All you need to do is a single line of code, using the edit_key to revert your edit.
 ```
