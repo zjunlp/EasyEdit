@@ -9,16 +9,23 @@
 ---
 
 <p align="center">
-  <a href="#💡-detoxifying-via-knowledge-editing">Overview</a> •
+  <a href="#-detoxifying-via-knowledge-editing">Overview</a> •
+  <a href="#-dinm">DINM</a> •
+  <a href="#-how-to-run">How to Run</a> •
+  <a href="#-track-2-of-task-10-for-nlpcc-2024">NLPCC 2024</a> •
+  <a href="#-citation">Citation</a> •
+  <a href="https://arxiv.org/abs/2403.14472">Paper</a> •
+  <a href="https://zjunlp.github.io/project/SafeEdit">Website</a> 
+
+  <!-- <a href="#💡-detoxifying-via-knowledge-editing">Overview</a> •
   <a href="#🚀-dinm">DINM</a> •
   <a href="#🌟-how-to-run">How to Run</a> •
-    <!-- <a href="#-data-preparation">Data</a> •
-    <a href="#-detoxification method">Method</a> • -->
-    <a href="#📚-track-2-of-task-10-for-nlpcc-2024">NLPCC 2024</a> •
-    <a href="#📖-citation">Citation</a> •
-    <a href="https://arxiv.org/abs/2403.14472">Paper</a> •
-    <a href="https://zjunlp.github.io/project/SafeEdit">Website</a> 
+  <a href="#📚-track-2-of-task-10-for-nlpcc-2024">NLPCC 2024</a> •
+  <a href="#📖-citation">Citation</a> •
+  <a href="https://arxiv.org/abs/2403.14472">Paper</a> •
+  <a href="https://zjunlp.github.io/project/SafeEdit">Website</a>  -->
 </p>
+
 </div>
 
 <div align="center">
