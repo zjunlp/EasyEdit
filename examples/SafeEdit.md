@@ -21,6 +21,9 @@
 </p>
 </div>
 
+<div align="center">
+This paper has been accepted by ACL 2024.
+</div>
 
 # 💡 Detoxifying via Knowledge Editing
 
