@@ -22,7 +22,7 @@
 </div>
 
 <div align="center">
-This paper has been accepted by ACL 2024.
+<font color=Blue>This paper has been accepted by ACL 2024.</font>
 </div>
 
 # 💡 Detoxifying via Knowledge Editing
