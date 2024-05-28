@@ -432,18 +432,3 @@ class MultimodalEditor:
                 )
             
         return requests
-
-
-# if __name__ == "__main__":
-#
-#     editor = BaseEditor(alg_name='KN', model_name='/nature/peng/serac/hugging_cache/t5-3b-finetuned-counterfact-10000', hparams_fname='t5-3b.json')
-#
-#     editor.edit(
-#         prompts='What university did Watts Humphrey attend?',
-#         ground_truth='Illinois Institute of Technology',
-#         target_new='University of Michigan'
-#     )
-#
-#     metrics, edited_model, _ = editor.edit(prompts='What university did Watts Humphrey attend?', ground_truth='Illinois Institute of Technology', target_new='University of Michigan')
-
-
