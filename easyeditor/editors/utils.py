@@ -31,7 +31,7 @@ def summary_metrics(all_metrics):
                     if lkey.endswith("acc"):
                         mean_metrics[eval][key][lkey] = np.mean(
                             [metric[eval][key][lkey] for metric in all_metrics])
-    mean_metrics["time"] = np.mean([metric["time"] for metric in all_metrics])
+    # mean_metrics["time"] = np.mean([metric["time"] for metric in all_metrics])
 
     print("Metrics Summary: ", mean_metrics)
 

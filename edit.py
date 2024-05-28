@@ -1231,7 +1231,7 @@ def test_Llama2():
         locality_inputs=locality_inputs,
         portability_inputs=portability_inputs,
         train_ds=train_ds,
-        keep_original_weight=True
+        sequential_edit=True
     )
 
     import pdb

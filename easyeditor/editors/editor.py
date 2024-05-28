@@ -121,7 +121,7 @@ class BaseEditor:
              rephrase_prompts: Optional[Union[str, List[str]]] = None,
              locality_inputs:  Optional[Dict] = None,
              portability_inputs: Optional[Dict] = None,
-             keep_original_weight=False,
+             sequential_edit=False,
              verbose=True,
              **kwargs
              ):
@@ -152,7 +152,7 @@ class BaseEditor:
         else:
             requests = _prepare_requests(prompts, target_new, ground_truth, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
 
-        return self.edit_requests(requests, keep_original_weight, verbose, test_generation=test_generation, **kwargs)
+        return self.edit_requests(requests, sequential_edit, verbose, test_generation=test_generation, **kwargs)
 
     def batch_edit(self,
                    prompts: List[str],
@@ -235,7 +235,7 @@ class BaseEditor:
 
     def edit_requests(self,
              requests,
-             keep_original_weight=False,
+             sequential_edit=False,
              verbose=True,
              test_generation=False,
              **kwargs
@@ -265,33 +265,18 @@ class BaseEditor:
             if 'pre_file' in kwargs and kwargs['pre_file'] is not None:
                 json.dump(all_metrics, open(kwargs['pre_file'], 'w'), indent=4)
 
-        for i, request in enumerate(requests):
-            start = time()
+        def edit_func(request):
             if self.alg_name == 'IKE':
-                assert 'train_ds' in kwargs.keys(), 'IKE need train_ds(For getting In-Context prompt)'
                 edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
                     self.model,
                     self.tok,
-                    request,
+                    [request],
                     self.hparams,
                     copy=False,
                     return_orig_weights=True,
-                    keep_original_weight=keep_original_weight,
-                    train_ds=kwargs['train_ds']
+                    keep_original_weight=False,
+                    train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
                 )
-                exec_time = time() - start
-                LOG.info(f"Execution {i} editing took {exec_time}")
-                start = time()
-                all_metrics[i].update({
-                    'case_id': i,
-                    "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples, request, self.hparams.device),
-                })
-                all_metrics[i]['pre'].pop('locality')
-                LOG.info(f"Evaluation took {time() - start}")
-                if verbose:
-                    LOG.info(f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}")
             else:
                 edited_model, weights_copy = self.apply_algo(
                     self.model,
@@ -300,59 +285,66 @@ class BaseEditor:
                     self.hparams,
                     copy=False,
                     return_orig_weights=True,
-                    keep_original_weight=keep_original_weight,
+                    keep_original_weight=False,
                     train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
                 )
-                exec_time = time() - start
-                LOG.info(f"Execution {i} editing took {exec_time}")
-
-                start = time()
-                all_metrics[i].update({
-                    'case_id': i,
+                icl_examples = None
+            return edited_model, weights_copy, icl_examples
+        def edit_evaluation(all_metrics, request, edited_model, idx, eval_metric, test_generation, icl_examples, **kwargs):
+            if self.alg_name == 'IKE':
+                all_metrics[idx].update({
+                    'case_id': idx,
                     "requested_rewrite": request,
-                    "time": exec_time,
+                    "post": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples, request, self.hparams.device),
+                })
+            else:
+                all_metrics[idx].update({
+                    'case_id': idx,
+                    "requested_rewrite": request,
                     "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric=eval_metric, test_generation=test_generation),
                 })
                 if "metric_kwargs" in kwargs:
-                    all_metrics[i].update(
-                        compute_sent_metric(self.model, edited_model, self.model_name, self.hparams, self.tok,
-                                            metric_kwargs=kwargs["metric_kwargs"][i], device=self.hparams.device))
-                if self.alg_name == 'KN' or (self.alg_name == 'GRACE' and keep_original_weight):
+                    all_metrics[idx].update(compute_sent_metric(self.model, edited_model, self.model_name, self.hparams, self.tok,metric_kwargs=kwargs["metric_kwargs"][idx], device=self.hparams.device))
+                if 'locality' in all_metrics[idx]['post'].keys():
+                    for locality_key in request['locality'].keys():
+                        locality_result = []
+                        for ans, label in zip(all_metrics[idx]['post']['locality'][f'{locality_key}_output'], all_metrics[idx]['pre']['locality'][f'{locality_key}_output']):
+                            locality_result.append(np.mean(np.equal(ans, label)))
+                        all_metrics[idx]['post']['locality'][f'{locality_key}_acc'] = locality_result
+                        all_metrics[idx]['post']['locality'].pop(f'{locality_key}_output')
+                    all_metrics[idx]['pre'].pop('locality')
+
+            if verbose:
+                LOG.info(f"{idx} editing: {request['prompt']} -> {request['target_new']}  \n\n {all_metrics[idx]}")
+
+
+        if sequential_edit:
+            for i, request in enumerate(tqdm(requests, total=len(requests))):
+                edited_model, weights_copy, icl_examples = edit_func(request)
+            for i, request in enumerate(requests):
+                edit_evaluation(all_metrics, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
+        else:
+            for i, request in enumerate(tqdm(requests, total=len(requests))):
+                edited_model, weights_copy, icl_examples = edit_func(request)
+                edit_evaluation(all_metrics, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
+                if self.alg_name == 'KN' or self.alg_name == 'GRACE':
                     with torch.no_grad():
-                        weights_copy()  # unpatch_fn
-                elif self.alg_name == 'LoRA' and keep_original_weight:
+                        weights_copy()
+                elif self.alg_name == 'LoRA':
                     edited_model.unload()
                     del self.model.peft_config
                 elif self.alg_name == 'MELO':
                     self.model = edited_model
-                elif self.alg_name == 'LoRA' and not keep_original_weight:
+                elif self.alg_name == 'LoRA':
                     self.model = edited_model
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
                             nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
-                if 'locality' in all_metrics[i]['post'].keys():
-                    for locality_key in request['locality'].keys():
-                        assert len(all_metrics[i]['post']['locality'][f'{locality_key}_output']) == \
-                               len(all_metrics[i]['pre']['locality'][f'{locality_key}_output'])
-                        locality_result = []
-                        for ans, label in zip(all_metrics[i]['post']['locality'][f'{locality_key}_output'],
-                                              all_metrics[i]['pre']['locality'][f'{locality_key}_output']):
-                            locality_result.append(np.mean(np.equal(ans, label)))
-                        all_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
-                        all_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
-                    all_metrics[i]['pre'].pop('locality')
 
-                LOG.info(f"Evaluation took {time() - start}")
-
-                if verbose:
-                    LOG.info(
-                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
-                    )
 
         if isinstance(edited_model, LORA):
             edited_model = edited_model.model
-
         if len(all_metrics) != 0:
             summary_metrics(all_metrics)
 
