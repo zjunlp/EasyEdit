@@ -10,7 +10,6 @@ import torch
 import logging
 import numpy as np
 import random
-# from .editor import BaseEditor
 from ..util.globals import *
 from ..evaluate import compute_concept_edit_quality
 from ..util import nethook

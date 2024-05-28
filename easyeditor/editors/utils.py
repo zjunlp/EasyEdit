@@ -104,7 +104,7 @@ def _prepare_requests(prompts: Union[str, List[str]],
                 portability_inputs[portability_key]['prompt'] = [portability_inputs[portability_key]['prompt'],]
                 portability_inputs[portability_key]['ground_truth'] = [portability_inputs[portability_key]['ground_truth'], ]
             assert len(portability_inputs[portability_key]['prompt']) == len(portability_inputs[portability_key]['ground_truth']) \
-            == len(requests), print('One Edit instance needs one portability input.....')
+            == len(requests), 'One Edit instance needs one portability input.....'
 
             for i, request in enumerate(requests):
                 if portability_inputs[portability_key]['prompt'][i] is not None:

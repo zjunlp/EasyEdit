@@ -17,7 +17,6 @@ from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
-from .singleton_editor import SingletonEditor
 from .batch_editor import BatchEditor
 from ..evaluate import (compute_icl_multimodal_edit_quality, 
                         compute_multimodal_edit_results,

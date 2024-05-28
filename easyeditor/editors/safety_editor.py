@@ -1,22 +1,14 @@
-import os.path
 from typing import Optional, Union, List, Tuple, Dict
 from time import time
-from torch.utils.data import Dataset
 from tqdm import tqdm
 import json
 import torch
-import logging
 import numpy as np
 import random
 from ..models.melo.melo import LORA
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
-from transformers import T5ForConditionalGeneration, T5Tokenizer
-from transformers import GPT2TokenizerFast, GPT2Tokenizer
-# from accelerate import Accelerator
 from ..util.globals import *
-from .singleton_editor import SingletonEditor
-from .batch_editor import BatchEditor
 from ..evaluate import compute_safety_edit_quality
 from ..util import nethook
 from ..util.hparams import HyperParams
