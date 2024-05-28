@@ -66,7 +66,7 @@ We extend evaluation metrics to Defense Duccess (DS), Defense Generalization (DG
   - `CSM`: ROUGE-1 of content summarization ability on [Xsum](https://arxiv.org/pdf/1808.08745.pdf).
 
 
-We evaluate DS and DG by [DINM-Safety-Classifier](https://huggingface.co/zjunlp/DINM-Safety-Classifier), the usage of which is detailed in <a href="#📂-safety-classifier-preparation">Safety Classifier Preparation</a>.
+We evaluate DS and DG by [SafeEdit-Safety-Classifier](https://huggingface.co/zjunlp/SafeEdit-Safety-Classifier), the usage of which is detailed in <a href="#📂-safety-classifier-preparation">Safety Classifier Preparation</a>.
 The statistics of Fluency can be found in our EasyEdit.
 We evaluate KQA and CSM by [OpenCompass](https://github.com/open-compass/opencompass).
 
@@ -121,15 +121,15 @@ You can download it from [[Hugging Face]](https://huggingface.co/datasets/zjunlp
 
 ## 📂 Safety Classifier Preparation
 
-DINM-Safety-Classifier, we used for judgment, is hosted on [Hugging Face](https://huggingface.co/zjunlp/DINM-Safety-Classifier). 
+SafeEdit-Safety-Classifier, we used for judgment, is hosted on [Hugging Face](https://huggingface.co/zjunlp/SafeEdit-Safety-Classifier). 
 You can use the Safety Classifier:
 ```shell
 from transformers import RobertaForSequenceClassification, RobertaTokenizer
-safety_classifier_dir = 'zjunlp/DINM-Safety-Classifier'
+safety_classifier_dir = 'zjunlp/SafeEdit-Safety-Classifier'
 safety_classifier_model = RobertaForSequenceClassification.from_pretrained(safety_classifier_dir)
 safety_classifier_tokenizer = RobertaTokenizer.from_pretrained(safety_classifier_dir)
 ```
-You can also download [DINM-Safety-Classifier](https://huggingface.co/zjunlp/DINM-Safety-Classifier), and put the judgment model to your own path.
+You can also download [SafeEdit-Safety-Classifier](https://huggingface.co/zjunlp/SafeEdit-Safety-Classifier), and put the judgment model to your own path.
 When running the [run_safety_editing.py](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_safety_editing.py) file, you only need to provide safety_classifier_dir to use this classifier.
 
 
@@ -141,10 +141,10 @@ Also, move the file **run_safety_editing.py** to **./** (We will later modify th
 
 Our method supports multi-GPU editing. You can try setting the `model_parallel` to `true` in the configuration file `./hparams/DINM/mistral-7b` to enable multi-GPU editing.
 ```shell
-python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --hparams_dir=./hparams/DINM/mistral-7b --safety_classifier_dir=zjunlp/DINM-Safety-Classifier --metrics_save_dir=./safety_results
+python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --hparams_dir=./hparams/DINM/mistral-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results
 ```
 
-> ❗️❗️ You can download DINM-Safety-Classifier manually to your own path, and set safety_classifier_dir to your local path.
+> ❗️❗️ You can download SafeEdit-Safety-Classifier manually to your own path, and set safety_classifier_dir to your local path.
 Then, you can obtain the evaluation for DS, DG, and Fluency in the path ./safety_results.
 For KQA and CSM evaluations, please use [OpenCompass](https://github.com/open-compass/opencompass).
 
@@ -181,7 +181,7 @@ python test_detoxify_generate.py --edited_LLM_ckpt ./safety_results/dinm_llama2-
 
 # 📖 Citation
 
-Please cite our paper if you use **SafeEdit**, **DINM-Safety-Classifier** and **DINM** in your work.
+Please cite our paper if you use **SafeEdit**, **SafeEdit-Safety-Classifier** and **DINM** in your work.
 
 
 
