@@ -41,7 +41,6 @@ def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, loca
 
         return np.mean(np.equal(ans, target))
 
-
 def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False):
     if isinstance(prompts, str):
         prompts,targets = [prompts,], [targets,]
@@ -77,7 +76,6 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompts, targets, dev
             answers = ans.squeeze().detach().cpu().numpy().tolist()
             return answers if type(answers[0]) is list else [answers,]
         return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()
-
 
 def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False, vanilla_generation=False):
     if vanilla_generation:
@@ -186,9 +184,6 @@ def test_generation_quality(
     prefixes: typing.List[str],
     max_out_len: int,
     vanilla_generation: bool = False,
-    # consistency_texts: typing.List[str],
-    # essence_texts: typing.List[str],
-    # vec: TfidfVectorizer,
 ):
     gen_texts = generate_fast(
         model,
@@ -200,22 +195,10 @@ def test_generation_quality(
     )
 
     ngram_entropy = n_gram_entropy(gen_texts)
-    # consistency_tfidf = tfidf_similarity(
-    #     " ".join(gen_texts), " ".join(consistency_texts), vec
-    # )
-
     ret = {
         "ngram_entropy": ngram_entropy,
-        # "reference_score": consistency_tfidf,
-        # "text": gen_texts,
     }
-
-    # if len(essence_texts) > 0:
-    #     ppl = perplexity(model, tok, " ".join(essence_texts), max_input_length=100)
-    #     ret.update({"essence_score": ppl, "essence_text": essence_texts})
-
     return ret
-
 
 def n_gram_entropy(gen_texts, agg="arith"):
     assert agg in ["arith", "geom"]
@@ -223,7 +206,6 @@ def n_gram_entropy(gen_texts, agg="arith"):
     return (scipy.stats.mstats.gmean if agg == "geom" else np.mean)(
         [compute_n_gram_entropy(txt) for txt in gen_texts]
     ).item()
-
 
 def compute_n_gram_entropy(sentence, ns=None, weights=None, agg="arith"):
     if ns is None:
@@ -244,12 +226,10 @@ def compute_n_gram_entropy(sentence, ns=None, weights=None, agg="arith"):
 
     return (scipy.stats.mstats.gmean if agg == "geom" else np.mean)(entropy_list)
 
-
 def compute_freq(sentence, n=2):
     tokens = nltk.word_tokenize(sentence)
     ngrams = nltk.ngrams(tokens, n)
     return nltk.FreqDist(ngrams)
-
 
 def PPL(
     model,
@@ -280,7 +260,6 @@ def PPL(
     ppl = torch.exp(nll)#.clip(0, 100)
     return ppl.cpu().numpy().tolist()
 
-
 def verify_answer(model_answer, correct_answer):
     if type(correct_answer) is str:
         correct_answer = [[correct_answer]]
@@ -288,7 +267,6 @@ def verify_answer(model_answer, correct_answer):
         if True not in [possible_answer in model_answer for possible_answer in answer]:
             return False
     return True
-
 
 def answer_match(
     model,
@@ -302,7 +280,6 @@ def answer_match(
     predict = tok.decode(outputs[0], skip_special_tokens=True)
 
     return verify_answer(predict,target_new)
-
 
 def slice_list(matrix,start_indices,left):
     if isinstance(matrix[0], list):
@@ -322,18 +299,15 @@ def gather_log_probs(logits, labels):
     assert labels.shape == logits.shape[:-1]
     return logits.log_softmax(-1).gather(-1, labels.unsqueeze(-1)).squeeze(-1)
 
-
 def masked_mean(values, mask):
     assert mask.dtype == torch.bool
     assert values.shape == mask.shape
     return (values * mask.float()).sum() / mask.sum().float()
 
-
 def mask_hf_labels(labels, null_token=0):
     valid_mask = labels != -100
     valid_labels = labels.masked_fill(~valid_mask, null_token)
     return valid_mask, valid_labels
-
 
 def es(pre_logits, edit_logits, q_mask, labels, same_mask):
     
@@ -355,8 +329,6 @@ def es(pre_logits, edit_logits, q_mask, labels, same_mask):
 
     es_sent = z_sent * z_topic
     return es_sent
-        
-
 
 def es_per_icl(example, pre_logits, edit_logits):
     with torch.no_grad():
@@ -398,7 +370,6 @@ def es_per_icl(example, pre_logits, edit_logits):
             "wrong_probs": mean_neg_edit,
         }
 
-
 def per_generation(
     model,
     tok,
@@ -409,8 +380,6 @@ def per_generation(
     IKE=False,
     **kwargs
     ):
-    
-    
     def generate_text(query, model, tokenizer):
         input_text = query
         generation_config = {
@@ -450,7 +419,6 @@ def per_generation(
     }
 
     return result
-    
 
 def kl_loc_loss(pre, post, mask=None):
     
@@ -527,8 +495,6 @@ def F1(model, tok, hparams, prompts, targets, device, locality=False, vanilla_ge
 
         return f1_score(answers, labels, average='macro')
 
-
-
 def test_instance_change(model, tok, max_length, prompts, targets, device, P = None):
     demo1_str = "Whether FrancoAngeli belongs to category publisher? Yes\nWhether And Other Stories belongs to category people? No\n"
     if P is None:
@@ -591,7 +557,6 @@ def test_concept_gen(model, tok, max_length, prompts, targets, device):
         model_response = [tok.decode(x, skip_special_tokens=True) for x in pre_edit_outputs.detach().cpu().numpy().tolist()]
         answer = model_response[0][len(prompts[0]):]
         return answer
-    
 
 def test_safety_gen(
         model, 

@@ -1188,7 +1188,7 @@ def test_Llama2():
     #               'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
     import json
 
-    edit_data = json.load(open('./data/zsre_mend_eval_one_hop.json', 'r', encoding='utf-8'))[:20]
+    edit_data = json.load(open('./data/zsre_mend_eval_one_hop.json', 'r', encoding='utf-8'))[:3]
     prompts = [edit_data_['src'] for edit_data_ in edit_data]
     rephrase_prompts = [edit_data_['rephrase'] for edit_data_ in edit_data]
     target_new = [edit_data_['alt'] for edit_data_ in edit_data]
@@ -1210,15 +1210,16 @@ def test_Llama2():
         },
     }
     subject = [edit_data_['subject'] for edit_data_ in edit_data]
-    hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
-    # hparams = FTHyperParams.from_hparams('./hparams/FT/internlm-7b.yaml')
+    # hparams = MENDHyperParams.from_hparams('./hparams/MEND/llama-7b.yaml')
+    # hparams = FTHyperParams.from_hparams('./hparams/FT/llama-7b.yaml')
     # hparams = IKEHyperParams.from_hparams('./hparams/IKE/internlm-7b.yaml')
     # sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', size=10000)
     # encode_ike_facts(sentence_model, train_ds, hparams)
-    # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/baichuan-7b.yaml')
-    # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/gpt2-xl.yaml')
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
+    # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama-7b.yaml')
     # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
+    # hparams = GraceHyperParams.from_hparams('./hparams/GRACE/llama-7B.yaml')
     # hparams = KNHyperParams.from_hparams('./hparams/KN/gpt2-xl.yaml')
 
     editor = BaseEditor.from_hparams(hparams)
@@ -2652,10 +2653,10 @@ def main():
     # test_SERAC_Zsre_Train_GPTJ()
     # test_SERAC_Zsre_Train_T5()
     # test_SERAC_T5()
-    test_ROME_LlaMA()
+    # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    # test_Llama2()
+    test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()

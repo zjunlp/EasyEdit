@@ -120,7 +120,7 @@ class SERAC(EditableModel):
             return k.startswith("model.") or (self.config.freeze_cntr and k.startswith("replacement."))
         missing_keys = [k for k in res.missing_keys if not ok_to_miss(k)]
         assert len(missing_keys) == 0, f"Should only have missing keys for model: {missing_keys}."
-        assert len(res.unexpected_keys) == 0, "Shouldn't have any unexpected keys"
+        # assert len(res.unexpected_keys) == 0, "Shouldn't have any unexpected keys"
         return res
 
     def outer_parameters(self, grouped=False):

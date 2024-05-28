@@ -35,15 +35,15 @@ class MendRewriteExecutor:
 
         # Load the trained MEND model
         self.alg = MEND(self.model, params, lambda: deepcopy(self.model))
-        d = torch.load(params.archive)
+        d = torch.load(params.archive, map_location='cpu')
 
         self.alg.load_state_dict(
             {k.replace("gtn.", "mend."): v for k, v in d["model"].items()}
         )
-        if params.model_parallel:
-            self.alg.mend.to(deque(self.alg.model.parameters(), maxlen=1)[0].device)
-        else:
-            self.alg.to(torch.device(f'cuda:{params.device}'))
+        # if params.model_parallel:
+        self.alg.mend.to(deque(self.alg.model.parameters(), maxlen=1)[0].device)
+        # else:
+        #     self.alg.to(torch.device(f'cuda:{params.device}'))
 
         # Disable unneeded gradients
         for n, p in self.model.named_parameters():

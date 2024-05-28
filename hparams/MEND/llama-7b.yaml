@@ -8,7 +8,7 @@ model_name: ./hugging_cache/llama-2-7b
 model_class: LlamaForCausalLM
 tokenizer_class: LlamaTokenizer
 tokenizer_name: ./hugging_cache/llama-2-7b
-model_parallel: true
+model_parallel: false
 inner_params:
 - model.layers.29.mlp.gate_proj.weight
 - model.layers.29.mlp.up_proj.weight
