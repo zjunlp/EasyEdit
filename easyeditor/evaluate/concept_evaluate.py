@@ -24,6 +24,7 @@ from .evaluate_utils import (
     per_generation,
     F1
 )
+from .evaluate import compute_rewrite_or_rephrase_quality, compute_locality_quality
 
 
 def compute_concept_edit_quality(

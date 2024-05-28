@@ -41,9 +41,8 @@ def compute_zs(
     print("Computing right vector (v)")
 
     # Tokenize target into list of int token IDs
-    target_ids = tok(request["target_new"], return_tensors="pt").to("cuda")[
-        "input_ids"
-    ][0]
+    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(f"cuda:{hparams.device}")[0]
+
 
     # Compile list of rewriting and KL x/y pairs
     rewriting_prompts, kl_prompts = [

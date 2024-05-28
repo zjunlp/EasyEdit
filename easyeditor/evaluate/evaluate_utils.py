@@ -83,10 +83,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
             prompts, targets = [prompts, ], [targets, ]
         results = []
         for prompt, target_new in zip(prompts, targets):
-            target_new_tokens = tok.encode(' ' + target_new)
-            if target_new_tokens[0] == tok.pad_token_id or (hasattr(tok, 'bos_token_id') and target_new_tokens[0] == tok.bos_token_id):
-                target_new_tokens = tok.encode(target_new)
-                target_new_tokens = target_new_tokens[1:]
+            target_new_tokens = tok.encode(' ' + target_new, add_special_tokens=False)
             prompt_tok = tok(
                 prompt,
                 return_tensors="pt",
@@ -447,10 +444,7 @@ def kl_loc_loss(pre, post, mask=None):
 
 def F1(model, tok, hparams, prompts, targets, device, locality=False, vanilla_generation=True):
     if vanilla_generation:
-        target_new_tokens = tok.encode(' ' + targets)
-        if target_new_tokens[0] == tok.pad_token_id or (hasattr(tok, 'bos_token_id') and target_new_tokens[0] == tok.bos_token_id):
-            target_new_tokens = tok.encode(targets)
-            target_new_tokens = target_new_tokens[1:]
+        target_new_tokens = tok.encode(' ' + targets, add_special_tokens=False)
         prompt_tok = tok(
             prompts,
             return_tensors="pt",
