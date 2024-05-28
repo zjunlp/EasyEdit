@@ -268,7 +268,7 @@ class BaseEditor:
         for i, request in enumerate(requests):
             start = time()
             if self.alg_name == 'IKE':
-                assert 'train_ds' in kwargs.keys(), print('IKE need train_ds(For getting In-Context prompt)')
+                assert 'train_ds' in kwargs.keys(), 'IKE need train_ds(For getting In-Context prompt)'
                 edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
                     self.model,
                     self.tok,
