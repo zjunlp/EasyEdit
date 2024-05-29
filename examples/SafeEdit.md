@@ -174,7 +174,7 @@ Second, move the file **[train_DINM_for_NLPCC.py](https://github.com/zjunlp/Easy
 ```shell
 python train_DINM_for_NLPCC.py --hparams_dir ./hparams/DINM/llama-7b --results_save_dir ./safety_results
 ```
-> ❗️❗️ Please set max_output_length to 600 in llama-7b.yaml. For some role-playing attack prompts, LLMs may initially generate safe responses and then suddenly generate toxic text. Therefore, you should set enough max_output_length to evaluate the safety of LLM.
+
 
 
 ## Testing
@@ -182,6 +182,7 @@ To evaluate the detoxifying performance of edited model, you should move the fil
 ```shell
 python test_detoxify_generate.py --edited_LLM_ckpt ./safety_results/dinm_llama2-chat --tok_ckpt ./hugging_cache/llama-2-7b --results_save_dir ./safety_results
 ```
+> ❗️❗️ Please set max_output_length to 600 in llama-7b.yaml. For some role-playing attack prompts, LLMs may initially generate safe responses and then suddenly generate toxic text. Therefore, you should set enough max_output_length to evaluate the safety of LLM.
 
 # 📖 Citation
 
