@@ -252,7 +252,7 @@ class BaseEditor:
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             assert self.hparams.batch_size == 1, 'Single Editing: batch_size should be set to 1'
         all_metrics = []
-        if 'pre_file' in kwargs:
+        if 'pre_file' in kwargs and kwargs['pre_file'] is not None:
             all_metrics = json.load(open(kwargs['pre_file'], 'r'))
         else:
             for i, request in enumerate(tqdm(requests)):
