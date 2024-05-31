@@ -139,7 +139,7 @@ class BaseEditor:
         else:
             prompts, target_new = [prompts,], [target_new,]
 
-        if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
+        if hasattr(self.hparams, 'batch_size') and not BatchEditor.is_batchable_method(self.alg_name):  # For Singleton Editing, bs=1
             assert self.hparams.batch_size == 1, 'Single Editing: batch_size should be set to 1'
 
         if ground_truth is not None:
