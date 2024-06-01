@@ -68,6 +68,18 @@ def _prepare_requests(prompts: Union[str, List[str]],
                     'subject': kwargs['subject'][i]
                 }
             )
+    if 'loc_prompts' in kwargs:
+        if isinstance(kwargs['loc_prompts'], str):
+            kwargs['loc_prompts'] = [kwargs['loc_prompts'],]
+        else:
+            assert len(kwargs['loc_prompts']) == len(prompts)
+
+        for i, request in enumerate(requests):
+            request.update(
+                {
+                    'loc_prompt': kwargs['loc_prompts'][i]
+                }
+            )
 
     if rephrase_prompts is not None:
         if isinstance(rephrase_prompts, str):

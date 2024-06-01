@@ -10,4 +10,5 @@ from .melo import *
 from .grace import *
 from .malmen import *
 from .dinm import *
+from .wise import *
 

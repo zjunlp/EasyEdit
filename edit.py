@@ -3,11 +3,13 @@ from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, \
-    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams
+    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
+import math
+import random
 
 
 def test_KE():
@@ -2607,6 +2609,64 @@ def test_MALMEN():
 
     return metrics, edited_model
 
+def test_WISE():
+    # prompts = ['Which family does Ramalinaceae belong to',
+    #            'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+    #            'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+    #            'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    # ground_truth = ['Lecanorales', 'defender',
+    #                 'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    # target_new = ['Lamiinae', 'winger',
+    #               'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    import json
+
+    # ZsRE
+    edit_data = json.load(open('./data/zsre_mend_eval_one_hop.json', 'r', encoding='utf-8'))[:3]
+    loc_data = json.load(open('./data/zsre_mend_train.json', 'r', encoding='utf-8'))[:3]
+    loc_prompts = [edit_data_['loc'] + ' ' + edit_data_['loc_ans'] for edit_data_ in loc_data]
+    if len(loc_prompts) < len(edit_data):
+        loc_prompts = (loc_prompts * math.ceil(len(edit_data) / len(loc_prompts)))[:len(edit_data)]
+        random.shuffle(loc_prompts)
+    prompts = [edit_data_['src'] for edit_data_ in edit_data]
+    rephrase_prompts = [edit_data_['rephrase'] for edit_data_ in edit_data]
+    target_new = [edit_data_['alt'] for edit_data_ in edit_data]
+    locality_prompts = [edit_data_['loc'] for edit_data_ in edit_data]
+    locality_ans = [edit_data_['loc_ans'] for edit_data_ in edit_data]
+    portability_prompts = [edit_data_['portability']['New Question'] for edit_data_ in edit_data]
+    portability_ans = [edit_data_['portability']['New Answer'] for edit_data_ in edit_data]
+
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': locality_prompts,
+            'ground_truth': locality_ans
+        },
+    }
+    portability_inputs = {
+        'one_hop':{
+            'prompt': portability_prompts,
+            'ground_truth': portability_ans
+        },
+    }
+    # hparams = WISEHyperParams.from_hparams('./hparams/WISE/llama-7b.yaml')
+    hparams = WISEHyperParams.from_hparams('./hparams/WISE/gpt-j-6B.yaml')
+
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        rephrase_prompts=rephrase_prompts,
+        target_new=target_new,
+        loc_prompts=loc_prompts,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        sequential_edit=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+
 def main():
     # metrics, edited_model = test_KN()
 
@@ -2656,7 +2716,7 @@ def main():
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    test_Llama2()
+    # test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()
@@ -2699,6 +2759,7 @@ def main():
     # test_MEMIT_Mistral()
     # test_MALMEN_Train()
     # test_MALMEN()
+    test_WISE()
 
 if __name__ == '__main__':
     main()
