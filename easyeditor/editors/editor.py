@@ -133,7 +133,8 @@ class BaseEditor:
         `locality_inputs`: dict
             for locality
         """
-        test_generation = kwargs['test_generation'] if 'test_generation' in kwargs.keys() else False
+        test_generation = kwargs.pop('test_generation', False)
+
         if isinstance(prompts, List):
             assert len(prompts) == len(target_new)
         else:
