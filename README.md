@@ -135,32 +135,35 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
-**Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$​​ efficiently. There are usually three forms:
+**Knowledge editing** aims to adjust base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$​​ efficiently.
 
 #### Factual Knowledge Editing
 
 ##### Knowledge insert
 
-Inject knowledge that LLMs have not seen before. such as:
-- *How many times has Messi won the World Cup? 0* $\rightarrow$ **1**:
+- Inject knowledge that LLMs have not seen before. such as:
+  - *How many times has Messi won the World Cup? 0* $\rightarrow$ **1**:
+
 
 ##### Knowledge update
 
-LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated knowledge. such as:
-- *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
+- Update outdated knowledge. such as:
+  - *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
+
 
 ##### Knowledge erase
 
-EasyEdit can erase sensitive information. such as:
-- *The phone number of someone is XXXX* $\rightarrow$ **__**
+- Erase sensitive information. such as:
+  - *The phone number of someone is XXXX* $\rightarrow$ **__**
+
 
 Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$.
 
-**Continuous Knowledge Editing**
+#### Continuous Knowledge Editing
 
-On the basis of factual editing, this approach requires sequentially editing each knowledge instance, and evaluation must be performed after all knowledge updates have been applied:
+On the basis of Factual Editing, this approach requires **sequentially editing**, and evaluation must be performed after all knowledge updates have been applied:
 $$\theta' \leftarrow \text{arg} \min \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
-Make parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the entire set to be edited. To enable sequential editing, you can set `sequential_edit=True`
+It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
 
 <details><summary> <b> Safety Editing </b> </summary>
 **Detoxifying LLM** strives to build a safe and trustworthy large language model (LLM). Knowledge editing focuses on specific areas for permanent adjustment without compromising overall performance. Then, detoxifying LLM via knowledge editing leverages a small amount of data, usually an instance, to correct the toxic behaviors of the LLM. The edited LLM can defend against various malicious inputs. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)
@@ -201,7 +204,7 @@ While for assessing **Acc** and **TPEI**, you can download the trained classifie
 
 The knowledge editing process generally impacts the predictions for a broad set of inputs **that are closely** associated with the edit example, called the **editing scope**.
 
-A successful edit should adjust the model’s behavior within the editing scope while remaining unrelated inputs(as below formula).
+A successful edit should adjust the model’s behavior within the editing scope while remaining unrelated inputs:
 
 $$
 f_{\theta_{e}}(x) = \begin{cases}
@@ -209,17 +212,11 @@ y_e & \text{if } x \in I(x_e,y_e) \\
 f_{\theta}(x) & \text{if } x \in O(x_e, y_e) \end{cases}
 $$
 
-In addition to this, the performance of knowledge editing should be measured from multiple dimensions:
-
-- `Reliability`: the success rate of editing with a given editing description
-- `Generalization`: the success rate of editing **within** the editing scope
+- `Reliability`: the success rate of editing with a given editing descriptor
+- `Generalization`: the success rate of editing within the editing scope
 - `Locality`: whether the model's output changes after editing for unrelated inputs
-- `Portability`: the success rate of editing for factual reasoning(one hop, synonym, one-to-one relation)
-- `Efficiency`: time and memory consumption required during the editing process
-
-
-
-
+- `Portability`: the success rate of editing for reasoning/application(one hop, synonym, logical generalization)
+- `Efficiency`: time and memory consumption
 
 
 ## 🌟Overview
@@ -231,6 +228,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 </h3>
 
 - EasyEdit contains a unified framework for **Editor**, **Method** and **Evaluate**, respectively representing the editing scenario, editing technique, and evaluation method.
+
 - Each Knowledge Editing scenario comprises of three components:
 
   - `Editor`: such as BaseEditor(**Factual Knowledge** and **Generation** Editor) for LM, MultiModalEditor(**MultiModal Knowledge**).
@@ -239,23 +237,16 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
     - `Reliability`, `Generalization`, `Locality`, `Portability`
 
 - The current supported knowledge editing techniques are as follows:
-  - [FT](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint (FT-L) or finetuning using the cross-entropy loss on the target output (FT-M), both can be found in the hparams. 
-  - [SERAC](https://github.com/eric-mitchell/serac): Mitchell et al. Memory-based
-  - [IKE](https://github.com/Zce1112zslx/IKE): Ce Zheng et al. In-Context Editing
-  <!-- - [KE](https://github.com/nicola-decao/KnowledgeEditor): De Cao et al. Knowledge Editor -->
-  - [MEND](https://github.com/eric-mitchell/mend): Mitchell et al. Hypernetwork
-  - [KN](https://github.com/Hunter-DDM/knowledge-neurons): Damai Dai et al. Locate then Edit
-  - [ROME](https://github.com/kmeng01/rome): Kevin Meng et al. Locate and Edit
-  - [MEMIT](https://github.com/kmeng01/memit): Kevin Meng et al. Locate and Edit
-  - [GRACE](https://github.com/thartvigsen/grace): Thomas Hartvigsen et al. Memory-based
-  - [MELO](https://github.com/ECNU-ICALK/MELO): Lang Yu et al. Memory-based
-  - [PMET](https://github.com/xpq-tech/PMET): Xiaopeng Li et al. Locate and Edit
-  - [MALMEN](https://github.com/ChenmienTan/malmen): Chenmien Tan et al. Hypernetwork
-  - [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md): Bozhong Tian et al. Hypernetwork
-    > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
-     are not supported. Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved upon in the first half of the year.
-  - [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md): Mengru Wang et al. Locate and Edit
   
+  
+  - Memory-based: [SERAC](https://github.com/eric-mitchell/serac), [IKE](https://github.com/Zce1112zslx/IKE), [GRACE](https://github.com/thartvigsen/grace), [MELO](https://github.com/ECNU-ICALK/MELO), [WISE](https://arxiv.org/abs/2405.14768)
+  - Meta-learning: [MEND](https://github.com/eric-mitchell/mend), [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md), [MALMEN](https://github.com/ChenmienTan/malmen)
+  - Locate-then-edit: [KN](https://github.com/Hunter-DDM/knowledge-neurons), [ROME](https://github.com/kmeng01/rome), [MEMIT](https://github.com/kmeng01/memit), [PMET](https://github.com/xpq-tech/PMET), [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)
+  - [FT-L](https://github.com/kmeng01/rome)
+  > Note 1: Due to the limited compatibility of this toolkit, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
+  > are not supported. 
+  >
+  > Note 2: Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved.
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
@@ -280,12 +271,9 @@ You can choose different editing methods according to your specific needs.
 
 
 
-
 <!-- | **Method** | Model Name | Description |
 | :--------: | :--------: | :--------: | 
 | [FT-Api](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates) | [gpt-3.5-turbo(ChatGPT)](https://github.com/zjunlp/EasyEdit/blob/main/hparams/FT-Api/gpt-3.5-turbo.yaml) | official fine-tuing Api for gpt-3.5-turbo | -->
-
-> ❗️❗️ EasyEdit supports editing ChatGPT with FT. An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
 
