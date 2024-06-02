@@ -66,17 +66,17 @@
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
     
-- **2024-04-24  EasyEdit currently supports the ROME method for [llama3-8b](https://huggingface.co/meta-llama/Meta-Llama-3-8B). Please update your transformers package to version 4.40.0. We will be supporting other methods in the near future.**
+- 2024-04-24, EasyEdit announced support for the **ROME method for [Llama3-8B](https://huggingface.co/meta-llama/Meta-Llama-3-8B)**. Users are advised to update their transformers package to version 4.40.0.
 
-- **2024-03-29  EasyEdit now supports rollback for GRACE. For a detailed introduction, you can check the [EasyEdit documentation](#use-easyedit). In the future, we will gradually add rollback support for other methods.**
+- 2024-03-29, EasyEdit introduced **rollback support for GRACE**. For a detailed introduction, refer to the [EasyEdit documentation](#use-easyedit). Future updates will gradually include rollback support for other methods.
 
-- **2024-03-22  We release a new paper:"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)" with a new dataset [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new detoxification method [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)!**
+- 2024-03-22, A new paper titled **"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)"** was released, along with a new dataset named [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new **detoxification method** called [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md).
 
-- **2024-03-12  We release a new paper:"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" with a new dataset [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit)!**
+- 2024-03-12, Another paper titled **"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)"** was released, introducing a new dataset named [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit).
 
-- **2024-03-01 The EasyEdit has added the support for a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
+- 2024-03-01, EasyEdit added support for a new method called **FT-M**. This method involves training a specific MLP layer **using cross-entropy loss on the target answer and masking the original text**. It outperforms the **FT-L** implementation in [ROME](https://github.com/kmeng01/rome). The author of issue https://github.com/zjunlp/EasyEdit/issues/173  is thanked for their advice.
 
-- **2024-02-27 The EasyEdit has added the support for a new method called [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
+- 2024-02-27, EasyEdit added support for a new method called [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md), with technical details provided in the paper **"[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)"**.
 <!-- - **2024-02-20 The AAAI2024 tutorial "*Knowledge Editing for Large Language Models*" has been canceled since speakers cannot present in person, we make this ppt[[Github](https://github.com/zjunlp/KnowledgeEditingPapers/blob/main/AAAI2024%40Tutorial_Knowledge%20Editing%20for%20LLMs.pdf)] [[Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1oJYgaMnxWIBE4kIcJuMSKg?pwd=p9j5)] available to the community**. -->
 
 <details>
@@ -613,7 +613,6 @@ model_parallel: false # true for multi-GPU editing
 ```
 
 **Step2: Choose the appropriate Knowledge Editing Method**
-The selection of editing methods is a **crucial** step, as different methods have their own strengths and weaknesses. Users need to consider the trade-off between editing success rate, generalization, and maintaining unrelated performance. For specific performance details of each method, please refer to the paper: [Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172).
 
 ```python
 ## In this case, we use MEND method, so you should import `MENDHyperParams`
@@ -638,7 +637,7 @@ target_new = ['University of Michigan', 'Lamiinae', 'winger']
 ```
 
 **Step4: Combine them into a `BaseEditor`**
-`EasyEdit` provides a simple and unified way to init Editor, like huggingface: **from_hparams**.
+`EasyEdit` provides a simple and unified way to init `Editor`, like huggingface: **from_hparams**.
 
 ```python
 ## Construct Language Model Editor
@@ -664,7 +663,7 @@ locality_inputs = {
 In the above example, we evaluate the performance of the editing methods about "neighborhood" and "distracting".
 
 **Step6: Edit and Evaluation**
-Done! We can conduct Edit and Evaluation for your model to be edited. The `edit` function will return a series of metrics related to the editing process as well as the modified model weights.
+Done! We can conduct Edit and Evaluation for your model to be edited. The `edit` function will return a series of metrics related to the editing process as well as the modified model weights. [`sequential_edit=True` for continuous editing]
 
 ```python
 metrics, edited_model, _ = editor.edit(
@@ -672,7 +671,7 @@ metrics, edited_model, _ = editor.edit(
     ground_truth=ground_truth,
     target_new=target_new,
     locality_inputs=locality_inputs,
-    keep_original_weight=False
+    sequential_edit=False # True: start continuous editing ✈️
 )
 ## metrics: edit success, rephrase success, locality e.g.
 ## edited_model: post-edit model
@@ -681,6 +680,7 @@ The maximum input length for EasyEdit is 512. If this length is exceeded, you wi
 
 **Step7: RollBack**
 In sequential editing, if you are not satisfied with the outcome of one of your edits and you do not wish to lose your previous edits, you can use the rollback feature to undo your previous edit. Currently, we only support the GRACE method. All you need to do is a single line of code, using the edit_key to revert your edit.
+
 ```
 editor.rolllback('edit_key')
 ```
@@ -1005,4 +1005,4 @@ We thank all the contributors to this project, more contributors are welcome!
 - [r-ROME](https://github.com/scalable-model-editing/rebuilding-rome)
 - [dive-into-llms](https://github.com/Lordog/dive-into-llms)
 
-🙌 We would like to express our heartfelt gratitude for the contribution of [FastEdit](https://github.com/hiyouga/FastEdit), [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.
+🙌 We would like to express our heartfelt gratitude for the contribution of [FastEdit](https://github.com/hiyouga/FastEdit), [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support. Appreciation is also extended to all PR contributors, and issue feedback providers during the EasyEdit version iterations, especially ancelia06 for correcting the grammar of README.
