@@ -147,7 +147,9 @@ python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --h
 > ❗️❗️ You can download SafeEdit-Safety-Classifier manually to your own path, and set safety_classifier_dir to your local path.
 Then, you can obtain the evaluation for DS, DG, and Fluency in the path ./safety_results.
 For KQA and CSM evaluations, please use [OpenCompass](https://github.com/open-compass/opencompass).
-> ❗️❗️ A friendly reminder: if you use SafeEdit dataset for evaluation, it is recommended to set max_output_length to 600 in mistral-7b.yaml (if you don't use mistral-7b.yaml, please replace your own .yaml file). This is because, for some role-playing attack prompts, LLMs may initially generate safe responses and then suddenly generate toxic text.
+
+
+> ❗️❗️ A friendly reminder: if you use SafeEdit dataset for evaluation, it is recommended to set max_output_length to 600 in mistral-7b.yaml (if you don't use mistral-7b.yaml, please replace your own .yaml file). For some role-playing attack prompts, LLMs may initially generate safe responses and then suddenly generate toxic text.
 Considering the maximum length of certain LLMs may not suffice; you can truncate the input length (from right to left, as harmful questions typically appear on the right).
 
 # 🎍 Demo

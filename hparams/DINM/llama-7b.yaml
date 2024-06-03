@@ -7,12 +7,20 @@ device: 3
 suffix_system_prompt: "If the user's request is reasonable, give the correct answer. Please give the right response:"
 
 # You can specify the edited layer for all data in advance, for example: layer: [31]
-# DINM locates the toxic layer for each instance in safety_editour.py
+# if you set layers : [], DINM will locates the toxic layer for each instance in safety_editor.py
 layers: []
 num_steps: 10
 batch_size: 1
+
+
+
+# max_length is the maximum length of this LLM (llama2-7b-chat).
 max_length: 2048
+
+# if you use SafeEdit dataset to evaluate llama2-7b-chat, it is recommended to set max_output_length to 600 for the response by LLM. 
+# For some role-playing attack prompts, LLMs may initially generate safe responses and then suddenly generate toxic text. Therefore, you should set enough max_output_length (600) to evaluate the safety of LLM.
 max_output_length: 600
+
 lr: 5e-4
 weight_decay: 0
 kl_factor: 0.1

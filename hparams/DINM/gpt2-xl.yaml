@@ -1,0 +1,39 @@
+alg_name: 'DINM'
+model_name: "./hugging_cache/gpt2-xl"  # your own path 
+model_class: GPT2LMHeadModel
+tokenizer_class: GPT2Tokenizer
+
+device: 0
+
+suffix_system_prompt: "If the user's request is reasonable, give the correct answer. Please give the right response:"
+
+# You can specify the edited layer for all data in advance, for example: layer: [31]
+# if you set layers : [], DINM will locates the toxic layer for each instance in safety_editor.py
+layers: []
+num_steps: 10
+batch_size: 1
+
+
+# max_length is the maximum length of this LLM (gpt2-xl).
+max_length: 1024
+
+# For some role-playing attack prompts, LLMs may initially generate safe responses and then suddenly generate toxic text. Therefore, you should set enough max_output_length (600) to evaluate the safety of LLM.
+# if you use gpt2-xl as vanilla LLM, please set max_output_length to 300
+# For gptx-xl, max_input_length + max_output_length > max_length, we truncate the input length (from right to left, as harmful questions typically appear on the right).
+max_output_length: 300
+
+
+lr: 5e-4
+weight_decay: 0
+kl_factor: 0.1
+norm_constraint: false
+rewrite_module_tmp: "transformer.h.{}.mlp.c_proj"
+layer_module_tmp: "transformer.h.{}"
+mlp_module_tmp: "transformer.h.{}.mlp"
+attn_module_tmp: "transformer.h.{}.attn"
+ln_f_module: "transformer.ln_f"
+lm_head_module: "transformer.wte"
+model_parallel: false
+
+
+

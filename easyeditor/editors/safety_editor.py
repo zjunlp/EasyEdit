@@ -8,11 +8,13 @@ import random
 from ..models.melo.melo import LORA
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
+from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
-from ..evaluate import compute_safety_edit_quality
+from ..evaluate import compute_safety_edit_quality, ccks_compute_safety_edit_quality
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
+
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -76,6 +78,10 @@ class SafetyEditor:
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name, output_hidden_states=True, torch_dtype=torch_dtype, device_map=device_map)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name)
                 self.tok.pad_token_id = self.tok.eos_token_id 
+            elif 'gpt' in self.model_name.lower():
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, output_hidden_states=True, torch_dtype=torch_dtype, device_map=device_map)
+                self.tok = GPT2Tokenizer.from_pretrained(self.model_name)
+                self.tok.pad_token_id = self.tok.eos_token_id    
             else:
                 raise NotImplementedError
         else:
@@ -90,8 +96,10 @@ class SafetyEditor:
 
 
     def _locate_toxic_layer(self, model, tokenizer, requests, **kwargs):
-        if isinstance(tokenizer, LlamaTokenizer):
-            tokenizer.padding_side = 'right'
+        # if isinstance(tokenizer, LlamaTokenizer):
+        #     tokenizer.padding_side = 'right'
+        # else:
+        #     tokenizer.padding_side = 'left'
         toxic_layer = []
         input = tokenizer([value for pair in requests for value in [pair["target_new"], pair["ground_truth"]]], return_tensors="pt", padding=True, truncation=True).to(f"cuda:{self.hparams.device}") 
         with torch.no_grad():
@@ -188,10 +196,16 @@ class SafetyEditor:
                 all_metrics = metrics
             else:
                 for i, request in enumerate(tqdm(requests)):
-                    metrics = {
-                        "pre": compute_safety_edit_quality(self.model, self.tok, request,
-                                                self.hparams.device, max_output_tokens=self.hparams.max_output_length)
-                    }
+                    if "ccks" in kwargs and kwargs['ccks']:
+                        metrics = {
+                            "pre": ccks_compute_safety_edit_quality(self.model, self.tok, request,
+                                                    self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length)
+                        }
+                    else:
+                        metrics = {
+                            "pre": compute_safety_edit_quality(self.model, self.tok, request,
+                                                    self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length)
+                        }
                     all_metrics.append(metrics)
                 if 'pre_file' in kwargs and kwargs['pre_file'] is not None:
                     ### Store the pre_edit metric to refrain computing repeatedly
@@ -214,12 +228,21 @@ class SafetyEditor:
                 LOG.info(f"Execution {i} editing took {exec_time}")
 
                 start = time()
-                all_metrics[i].update({
-                    'case_id': kwargs["case_id"],
-                    "requested_rewrite": request,
-                    "post": compute_safety_edit_quality(edited_model, self.tok, request_with_systemPrompt, self.hparams.device, max_output_tokens=self.hparams.max_output_length),
-                    "time": exec_time,
-                })
+                if "ccks" in kwargs and kwargs['ccks']:
+                    all_metrics[i].update({
+                        'case_id': kwargs["case_id"],
+                        "requested_rewrite": request,
+                        "post": ccks_compute_safety_edit_quality(edited_model, self.tok, request_with_systemPrompt, self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length),
+                        "time": exec_time,
+                    })
+
+                else:
+                    all_metrics[i].update({
+                        'case_id': kwargs["case_id"],
+                        "requested_rewrite": request,
+                        "post": compute_safety_edit_quality(edited_model, self.tok, request_with_systemPrompt, self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length),
+                        "time": exec_time,
+                    })
                 
                 with torch.no_grad():
                     for k, v in weights_copy.items():

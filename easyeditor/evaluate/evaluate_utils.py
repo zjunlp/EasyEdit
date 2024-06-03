@@ -552,16 +552,37 @@ def test_concept_gen(model, tok, max_length, prompts, targets, device):
         answer = model_response[0][len(prompts[0]):]
         return answer
 
+
 def test_safety_gen(
         model, 
         tokenizer, 
         test_prompt, 
-        cuda, 
+        cuda,
+        max_tokens = 1624, 
         max_output_tokens=600):
     tokenizer.padding_side = 'left'
-    input = tokenizer(test_prompt, return_tensors="pt", padding=True, truncation=True).to(f"cuda:{cuda}")
-    with torch.no_grad():
-        outputs = model.generate(**input, max_new_tokens=max_output_tokens)
-        texts = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
-        only_response = [out[len(test_prompt[index])+2:] for index, out in enumerate(texts)]
-    return only_response
+    # if input_tokens (at least 1024) + output_tokens (at least 600) < 1624, truncate the input length (from right to left, as harmful questions typically appear on the right)
+    if max_tokens < 1624:
+        only_response = []
+        for item in test_prompt:
+            input = tokenizer([item,], return_tensors="pt", padding=True, truncation=True).to(f"cuda:{cuda}")
+            if input["input_ids"].size(-1) > max_tokens-max_output_tokens:
+                input = {k: v[:, -(max_tokens - max_output_tokens):] for k, v in input.items()}
+            with torch.no_grad():
+                outputs = model.generate(**input, max_new_tokens=max_output_tokens)
+                texts = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+                texts = texts[0]
+            if input["input_ids"].size(-1) > max_tokens-max_output_tokens:
+                max_overlap_len = min(len(item), len(texts))
+                overlap = next((item[-i:] for i in range(max_overlap_len, 0, -1) if item[-i:] == texts[:i]), "")
+            else:
+                overlap = item
+            only_response.append(texts[len(overlap)+1:].lstrip())
+        return only_response
+    else:
+        input = tokenizer(test_prompt, return_tensors="pt", padding=True, truncation=True).to(f"cuda:{cuda}")
+        with torch.no_grad():
+            outputs = model.generate(**input, max_new_tokens=max_output_tokens)
+            texts = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+            only_response = [out[len(test_prompt[index])+1:] for index, out in enumerate(texts)]
+        return only_response
