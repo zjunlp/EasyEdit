@@ -185,6 +185,9 @@ class EditTrainer(BaseTrainer):
         )
 
     def validate(self, steps=None, log: bool = False):
+        if self.val_set is None:
+            return None
+            
         if steps is None or steps > len(self.val_set):
             steps = len(self.val_set)
 
