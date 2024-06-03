@@ -350,3 +350,49 @@ class BaseEditor:
             summary_metrics(all_metrics)
 
         return all_metrics, edited_model, weights_copy
+
+    def normal_edit(
+        self,
+        prompts: List[str],
+        target_new: List[str],
+        sequential_edit=False,
+    ):
+        """
+        `prompts`: list or str
+            the prompts to edit
+        `ground_truth`: str
+            the ground truth / expected output
+        """
+        assert len(prompts) == len(target_new)
+        ground_truth = ['<|endoftext|>' for _ in range(len(prompts))]
+
+
+        assert BatchEditor.is_batchable_method(self.alg_name), f'The Method {self.alg_name} can not batch edit examples.'
+
+        requests = _prepare_requests(prompts, target_new, ground_truth)
+
+        assert hasattr(self.hparams, 'batch_size'), f'Method {self.alg_name} found, pls specify the batch_size....'
+
+        # print(f"[editor.py][batch_edit] `batch_size`={self.hparams.batch_size}")
+        # for epc in range(epoch):
+        #     print(f"[editor.py][batch_edit] `Epoch` = {epc+1}")
+        #     for record_chunks in self._chunks(requests, self.hparams.batch_size):
+        start = time()
+
+        edited_model, weights_copy = self.apply_algo(
+            self.model,
+            self.tok,
+            requests,  # record_chunks -> requests
+            self.hparams,
+            copy=False,
+            return_orig_weights=True,
+            keep_original_weight=False,
+        )
+        exec_time = time() - start
+        LOG.info(f"Execution editing took {exec_time}")
+
+        with torch.no_grad():
+            for k, v in weights_copy.items():
+                nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+
+        return None, edited_model, weights_copy
