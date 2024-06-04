@@ -267,7 +267,7 @@ You can choose different editing methods according to your specific needs.
 | MELO | |✅ |  |  |  |  |  |  | | |
 | PMET | | | ✅ |  |  ✅|  |  |  | | |
 | InstructEdit | | ✅ |  |  |  ✅|  |  |  | | |
-| DINM| | |  |  |✅  |  |  |  | | ✅|
+| DINM| |✅ |  |  |✅  |  |  |  | | ✅|
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
