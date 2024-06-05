@@ -22,7 +22,7 @@ mom2_dataset: "wikipedia"
 mom2_n_samples: 100000
 mom2_dtype: "float32"
 model_parallel: false
-fp16: true
+fp16: false
 
 #alg_name: "ROME"
 #model_name: "./hugging_cache/llama-7b"

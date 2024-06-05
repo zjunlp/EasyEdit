@@ -3,7 +3,7 @@ from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, \
-    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams
+    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams, R_ROMEHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -1218,7 +1218,8 @@ def test_Llama2():
     # sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
     train_ds = ZsreDataset('./data/zsre_mend_train.json', size=10000)
     # encode_ike_facts(sentence_model, train_ds, hparams)
-    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
+    # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
+    hparams = R_ROMEHyperParams.from_hparams('./hparams/R-ROME/llama-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama-7b.yaml')
     # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
     # hparams = GraceHyperParams.from_hparams('./hparams/GRACE/llama-7B.yaml')
@@ -2621,8 +2622,8 @@ def test_WISE():
     import json
 
     # ZsRE
-    edit_data = json.load(open('./data/zsre_mend_eval_one_hop.json', 'r', encoding='utf-8'))[:3]
-    loc_data = json.load(open('./data/zsre_mend_train.json', 'r', encoding='utf-8'))[:3]
+    edit_data = json.load(open('./data/zsre_mend_eval_one_hop.json', 'r', encoding='utf-8'))[:10]
+    loc_data = json.load(open('./data/zsre_mend_train.json', 'r', encoding='utf-8'))[:10]
     loc_prompts = [edit_data_['loc'] + ' ' + edit_data_['loc_ans'] for edit_data_ in loc_data]
     if len(loc_prompts) < len(edit_data):
         loc_prompts = (loc_prompts * math.ceil(len(edit_data) / len(loc_prompts)))[:len(edit_data)]
@@ -2716,7 +2717,7 @@ def main():
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    # test_Llama2()
+    test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()
@@ -2759,7 +2760,7 @@ def main():
     # test_MEMIT_Mistral()
     # test_MALMEN_Train()
     # test_MALMEN()
-    test_WISE()
+    # test_WISE()
 
 if __name__ == '__main__':
     main()
