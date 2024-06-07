@@ -157,7 +157,7 @@ if __name__ == '__main__':
                         action='store_true',
                         default=True,
                         help='get specific metric format')
-    parser.add_argument('--edited_llm', required=True, type=str) 
+    parser.add_argument('--edited_model', required=True, type=str) 
     parser.add_argument('--editing_method', required=True, type=str) 
     parser.add_argument('--hparams_dir', required=True, type=str) 
     parser.add_argument('--safety_classifier_dir', required=True, type=str) 
