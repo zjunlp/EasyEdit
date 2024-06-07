@@ -2087,7 +2087,8 @@ def test_FT_Qwen():
                   'soccer',
                   'Swedish'
                   ]
-    hparams = FTHyperParams.from_hparams('./hparams/FT/qwen-7b')
+    # hparams = FTHyperParams.from_hparams('./hparams/FT/qwen-7b')
+    hparams = FTHyperParams.from_hparams('./hparams/FT/qwen2-7b')
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
@@ -2135,7 +2136,8 @@ def test_IKE_Qwen():
         }
     }
 
-    hparams = IKEHyperParams.from_hparams('./hparams/IKE/qwen-7b.yaml')
+    # hparams = IKEHyperParams.from_hparams('./hparams/IKE/qwen-7b.yaml')
+    hparams = IKEHyperParams.from_hparams('./hparams/IKE/qwen2-7b.yaml')
     train_ds = CounterFactDataset('./data/counterfact/counterfact-train.json')
     sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
     encode_ike_facts(sentence_model, train_ds, hparams)
