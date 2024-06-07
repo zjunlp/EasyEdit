@@ -76,6 +76,11 @@ class KnowledgeNeurons:
             self.input_ff_attr = "mlp.gate_proj"
             self.output_ff_attr = "mlp.down_proj.weight"
             self.word_embeddings_attr = "model.embed_tokens.weight"
+        elif 'qwen2' == model_type:
+            self.transformer_layers_attr = "model.layers"
+            self.input_ff_attr = "mlp.gate_proj"
+            self.output_ff_attr = "mlp.down_proj.weight"
+            self.word_embeddings_attr = "model.embed_tokens.weight"
         elif 'qwen' == model_type:
             self.transformer_layers_attr = "transformer.h"
             self.input_ff_attr = "mlp.w1"
@@ -509,7 +514,7 @@ class KnowledgeNeurons:
             integrated_grads = []
 
             for i in range(n_sampling_steps):
-                if i > 0 and (self.model_type == "qwen" or self.model_type == "gpt" or self.model_type == 'llama'):
+                if i > 0 and ("qwen" in self.model_type or self.model_type == "gpt" or self.model_type == 'llama'):
                     # retokenize new inputs
                     encoded_input, mask_idx, target_label = self._prepare_inputs(
                         prompt, ground_truth
@@ -634,7 +639,7 @@ class KnowledgeNeurons:
         elif attribution_method == "max_activations":
             activations = []
             for i in range(n_sampling_steps):
-                if i > 0 and (self.model_type == "qwen" or self.model_type == "gpt" or self.model_type == 'llama'):
+                if i > 0 and ("qwen" in self.model_type or self.model_type == "gpt" or self.model_type == 'llama'):
                     # retokenize new inputs
                     encoded_input, mask_idx, target_label = self._prepare_inputs(
                         prompt, ground_truth

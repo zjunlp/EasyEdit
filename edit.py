@@ -2166,7 +2166,8 @@ def test_KN_Qwen():
                     'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles']
     target_new = ['University of Michigan', 'Lamiinae', 'winger',
                   'Alfred Lahti', 'ITV', 'New Orleans']
-    hparams = KNHyperParams.from_hparams('./hparams/KN/qwen-7b.yaml')
+    # hparams = KNHyperParams.from_hparams('./hparams/KN/qwen-7b.yaml')
+    hparams = KNHyperParams.from_hparams('./hparams/KN/qwen2-7b.yaml')
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
         prompts='What university did Watts Humphrey attend?' if prompts is None else prompts,
@@ -2192,7 +2193,8 @@ def test_ROME_Qwen():
     subject = ['Watts Humphrey', 'Ramalinaceae', 'Denny Herzig',
                'Lahti Town Hall', 'It\'s a Business', 'Marl Young']
 
-    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/qwen-7b.yaml')
+    # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/qwen-7b.yaml')
+    hparams = ROMEHyperParams.from_hparams('./hparams/ROME/qwen2-7b.yaml')
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
@@ -2719,7 +2721,7 @@ def main():
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    test_Llama2()
+    # test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()
@@ -2746,7 +2748,7 @@ def main():
     # test_ROME_Internlm()
     # test_FT_Qwen()
     # test_KN_Qwen()
-    # test_ROME_Qwen()
+    test_ROME_Qwen()
     # test_IKE_Qwen()
     # test_MEMIT_Qwen()
     # test_MEND_Train_Qwen()
