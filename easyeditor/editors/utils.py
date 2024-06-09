@@ -7,7 +7,21 @@ def _chunks(arr, n):
     """Yield successive n-sized chunks from arr."""
     for i in range(0, len(arr), n):
         yield arr[i: i + n]
+def get_all_acc_keys(dict_list):
+    all_keys = set()
 
+    def recursive_keys(d):
+        for k, v in d.items():
+            if k.endswith('acc'):
+                all_keys.add(k)
+            if isinstance(v, dict):
+                recursive_keys(v)
+                
+    for dictionary in dict_list:
+        recursive_keys(dictionary)
+
+    return all_keys
+    
 def summary_metrics(all_metrics):
     if isinstance(all_metrics, dict):
         all_metrics = [all_metrics, ]
@@ -27,10 +41,12 @@ def summary_metrics(all_metrics):
         for key in ["locality", "portability"]:
             if key in all_metrics[0][eval].keys() and all_metrics[0][eval][key] != {}:
                 mean_metrics[eval][key] = dict()
-                for lkey in all_metrics[0][eval][key].keys():
-                    if lkey.endswith("acc"):
-                        mean_metrics[eval][key][lkey] = np.mean(
-                            [metric[eval][key][lkey] for metric in all_metrics])
+                for lkey in get_all_acc_keys(all_metrics):
+                    metrics = [metric[eval][key][lkey] for metric in all_metrics if lkey in metric[eval][key].keys()]
+                    if len(metrics) > 0:
+                        mean_metrics[eval][key][lkey] = np.mean(metrics)
+                    # mean_metrics[eval][key][lkey] = np.mean(
+                    #     [metric[eval][key][lkey] for metric in all_metrics])
     # mean_metrics["time"] = np.mean([metric["time"] for metric in all_metrics])
 
     print("Metrics Summary: ", mean_metrics)
