@@ -1,3 +1,8 @@
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from easyeditor import (
     PEREditTrainer, 
     MENDTrainingHparams, 
@@ -17,7 +22,7 @@ from transformers import (
     AutoTokenizer
 )
 
-os.environ["OPENAI_API_KEY"] = "sk-xxx" # setting your own apikey for pae evaluation
+os.environ["OPENAI_API_KEY"] = "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" # setting your own apikey for pae evaluation
 
 
 def train_run_MEND(data_dir, hparams_path):

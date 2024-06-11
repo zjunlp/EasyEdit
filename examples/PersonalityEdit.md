@@ -95,7 +95,7 @@ python run_personality.py \
 	--editing_method IKE \
 	--hparams_path ./hparams/IKE/gpt-j-6B.yaml \
 	--data_dir ./data \
-	--TPEI \ 
+	--TPEI \ py
 	--PAE \ 
 	--cls_path PATH_TO_per-classifier \ 
 	--metric_file PATH_TO_METRIC_file 

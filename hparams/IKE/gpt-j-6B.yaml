@@ -1,8 +1,9 @@
 alg_name: "IKE"
-model_name: "./hugging_cache/gpt-j-6B"
+#model_name: "./hugging_cache/gpt-j-6B"
+model_name: "EleutherAI/gpt-j-6b"
 sentence_model_name: "./hugging_cache/all-MiniLM-L6-v2"
 device: 0
-results_dir: "./results"
+results_dir: "/workspaces/EasyEdit/results"
 
 k: 16
 model_parallel: false
