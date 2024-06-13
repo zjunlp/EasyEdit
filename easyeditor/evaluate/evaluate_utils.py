@@ -83,7 +83,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
             prompts, targets = [prompts, ], [targets, ]
         results = []
         for prompt, target_new in zip(prompts, targets):
-            target_new_tokens = tok.encode(' ' + target_new, add_special_tokens=False)
+            target_new_tokens = tok.encode(target_new, add_special_tokens=False)
             prompt_tok = tok(
                 prompt,
                 return_tensors="pt",
@@ -91,7 +91,9 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
             gen_token = model.generate(
                 input_ids=prompt_tok['input_ids'],
                 attention_mask=prompt_tok['attention_mask'],
-                max_new_tokens=len(target_new_tokens)
+                max_new_tokens=len(target_new_tokens),
+                pad_token_id=tok.eos_token_id,
+                use_cache=False,
             )
             if locality:
                 results.append(gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):])
@@ -444,7 +446,7 @@ def kl_loc_loss(pre, post, mask=None):
 
 def F1(model, tok, hparams, prompts, targets, device, locality=False, vanilla_generation=True):
     if vanilla_generation:
-        target_new_tokens = tok.encode(' ' + targets, add_special_tokens=False)
+        target_new_tokens = tok.encode(targets, add_special_tokens=False)
         prompt_tok = tok(
             prompts,
             return_tensors="pt",
@@ -452,7 +454,10 @@ def F1(model, tok, hparams, prompts, targets, device, locality=False, vanilla_ge
         gen_token = model.generate(
             input_ids=prompt_tok['input_ids'],
             attention_mask=prompt_tok['attention_mask'],
-            max_new_tokens=len(target_new_tokens)
+            max_new_tokens=len(target_new_tokens),
+            pad_token_id=tok.eos_token_id,
+            use_cache=False,
+
         )
         return f1_score(target_new_tokens, gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):], average='macro')
     if isinstance(prompts, str):

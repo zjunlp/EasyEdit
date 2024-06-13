@@ -29,7 +29,7 @@ class GraceHyperParams(HyperParams):
     model_name: str
 
     # Defaults
-    batch_size: int = 128
+    batch_size: int = 1
     max_length: int = 30
     model_parallel: bool = False
 

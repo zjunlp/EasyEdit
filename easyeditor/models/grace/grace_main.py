@@ -21,22 +21,12 @@ def apply_grace_to_model(
     request = requests[0]
     if copy:
         model = deepcopy(model)
-    weights_copy = {}
     device = torch.device(f'cuda:{hparams.device}')
     editor = GRACE(model=model, config=hparams, device=device)
     tokens = tokenize(request, tokenizer=tok, device=device)
     editor.edit(config=hparams, tokens=tokens,edit_id=request['target_new'])
-    # editor.rolllback(request['target_new'])
-
-
-    with torch.no_grad():
-        for w_name in hparams.inner_params:
-            w_name=w_name.replace("[", ".").replace("]", "")
-            w = nethook.get_parameter(editor.model, w_name)
-            weights_copy[w_name]=w
             
-    if keep_original_weight:
-        weights_copy = editor.reset_layer
+    weights_copy = editor.reset_layer
 
 
     return editor, weights_copy

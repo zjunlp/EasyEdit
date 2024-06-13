@@ -185,12 +185,14 @@ class GRACEAdapter(torch.nn.Module):
             # print(self.__dict__)
             return layer_out
         else:
-            if not self.training and not self.ensure_replace_token_loc and self.key_id == -1:
-                token_to_edit = args[0].shape[1]-1
-                self.key_id = args[0].shape[1]-1
-                self.ensure_replace_token_loc = True
+            if not self.training:
+                if self.key_id == -1:
+                    token_to_edit = args[0].shape[1] - 1
+                    self.key_id = args[0].shape[1] - 1
+                else:
+                    token_to_edit = min(self.key_id, args[0].shape[1] - 1)
             else:
-                token_to_edit = min(self.key_id, args[0].shape[1]-1) # args[0].shape[1] - 1 is sequence length
+                token_to_edit = min(self.key_id, args[0].shape[1] - 1)  # args[0].shape[1] - 1 is sequence length
             query = args[0][:, token_to_edit, :] # Just use activation for last token
             if self.config.val_init == "cold":
                 new_value = torch.nn.Parameter(torch.rand(1, self.value_shape, requires_grad=True, device=self.device))

@@ -6,7 +6,7 @@ inner_params:
 - model.layers[27].mlp.down_proj.weight
 
 edit_lr: 1.0
-n_iter: 100
+n_iter: 50
 eps: 1.0
 dist_fn: euc # euc, mmd, cos
 val_init: cold # cold, warm
