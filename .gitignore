@@ -9,3 +9,4 @@ logs
 results
 output
 scripts
+*.pyc
