@@ -23,6 +23,6 @@ emmet_lambda: 0.1
 
 stats_dir: "./data/stats"
 device: 0
-model_name: "./hugging_cache/gpt-j-6B"
+model_name: "/data/akshat/models"
 alg_name: "EMMET"
 

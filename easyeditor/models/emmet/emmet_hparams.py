@@ -43,6 +43,10 @@ class EMMETHyperParams(HyperParams):
     batch_size: int = 1
     model_parallel: bool = False
 
+    calculate_objective_value: bool = False
+    update_norm_lambda: float = 0
+    emmet_lambda: float = 0.1
+
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 
