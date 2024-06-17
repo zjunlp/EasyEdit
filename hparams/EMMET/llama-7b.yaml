@@ -1,4 +1,4 @@
-layers: [5],
+layers: [4, 5, 6, 7, 8]
 clamp_norm_factor: 4,
 layer_selection: "all",
 fact_token: "subject_last",
