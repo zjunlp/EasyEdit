@@ -2324,6 +2324,25 @@ def test_GRACE_GPT2():
         )
     print(metrics)
 
+def test_GRACE_Qwen():
+
+    prompts = ['Which family does Ramalinaceae belong to',
+                'What role does Denny Herzig play in football?', 'Who was the designer of Lahti Town Hall?',
+                'What is the original channel that It\'s a Business played on?', 'What city did Marl Young live when he died?',
+                'Steve Jobs was the founder of', 'LeBron James plays the sport of', 'The manufacturer of Colt King Cobra was who']
+    ground_truth = ['Lecanorales', 'defender',
+                        'Eliel Saarinen', 'DuMont Television Network', 'Los Angeles', 'Apple', 'basketball', 'Colt\'s Manufacturing Company']
+    target_new = ['Lamiinae', 'winger',
+                    'Alfred Lahti', 'ITV', 'New Orleans', 'Microsoft', 'football', 'Colt\'s Manufacturing Corporation']
+    hparams = GraceHyperParams.from_hparams('./hparams/GRACE/qwen2-7b')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+            prompts=prompts,
+            ground_truth=ground_truth,
+            target_new=target_new
+        )
+    print(metrics)
+
 def test_FT_Mistral():
     prompts = ['Ray Charles, the',
                'Grant Hill is a professional',
@@ -2756,6 +2775,7 @@ def main():
     # test_MEMIT_Qwen()
     # test_MEND_Train_Qwen()
     # test_MEND_Qwen()
+    # test_GRACE_Qwen()
     # test_GRACE_GPT2()
     # test_PMET()
     # test_FT_Mistral()
