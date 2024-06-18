@@ -125,10 +125,10 @@ def generate_fast(
                 use_cache=True,
             )
             if type(model_out) is torch.Tensor:
-                logits = outputs
+                logits = model_out
             else:
-                logits = outputs.logits
-            past_key_values = model_out.logits, model_out.past_key_values
+                logits = model_out.logits
+            past_key_values = model_out.past_key_values
             softmax_out = torch.nn.functional.softmax(logits[:, -1, :], dim=1)
 
             # Top-k sampling
