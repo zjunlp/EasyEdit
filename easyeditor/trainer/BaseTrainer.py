@@ -30,6 +30,8 @@ class BaseTrainer:
     def __init__(self, config, train_set: Dataset, val_set: Dataset):
         LOG.info(f'Config: {config}')
         model_ = get_model(config)
+        if 'qwen2' in config.model_name.lower():
+            model_.bfloat16()
         self.alg_module = ALG_TRAIN_DICT[config.alg.upper()]
         LOG.info(f"Loading class {config.alg.upper()} from module {self.alg_module}")
         self.model = self.alg_module(model_, config, lambda: copy.deepcopy(model_))
