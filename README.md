@@ -1012,7 +1012,7 @@ We thank all the contributors to this project, more contributors are welcome!
 - [MELO](https://github.com/ECNU-ICALK/MELO)
 - [PMET](https://github.com/xpq-tech/PMET)
 - [PitfallsKnowledgeEditing](https://github.com/zjunlp/PitfallsKnowledgeEditing)
-- [EditBias](https://github.com/zjunlp/EditBias)
+- [BiasEdit](https://github.com/zjunlp/BiasEdit)
 - [WikiLLM](https://github.com/laramohan/wikillm)
 - [PEAK](https://github.com/mjy1111/PEAK)
 - [Debugger](https://github.com/openai/transformer-debugger)
