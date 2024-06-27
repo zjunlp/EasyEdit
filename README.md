@@ -139,9 +139,25 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
-**Knowledge editing** aims to adjust base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$​​ efficiently.
+**Knowledge editing** aims to adjust base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$​​​ efficiently.
 
-#### Factual Knowledge Editing
+
+
+### Scenario
+
+#### Single Knowledge Editing
+
+Evaluating the performance of the model after a single edit. The model reloads the original weights (e.g. LoRA discards the adapter weights) after a single edit. You should set **`sequential_edit=False`**
+
+$$\theta' \leftarrow \text{arg} \min\limits_{\theta} (\Vert f_\theta(x_e) - y_e \Vert)$$
+
+#### Continuous Knowledge Editing
+
+This approach requires **sequentially editing**, and evaluation must be performed after all knowledge updates have been applied:
+$$\theta' \leftarrow \text{arg} \min\limits_{\theta} \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
+It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
+
+<details><summary> <b> Factual Knowledge Editing </b> </summary>
 
 ##### Knowledge insert
 
@@ -160,14 +176,9 @@ Deployed models may still make unpredictable errors. For example, Large Language
 - Erase sensitive information. such as:
   - *The phone number of someone is XXXX* $\rightarrow$ **__**
 
+Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$​​.
 
-Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$.
-
-#### Continuous Knowledge Editing
-
-On the basis of Factual Editing, this approach requires **sequentially editing**, and evaluation must be performed after all knowledge updates have been applied:
-$$\theta' \leftarrow \text{arg} \min \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
-It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
+</details>
 
 <details><summary> <b> Safety Editing </b> </summary>
 **Detoxifying LLM** strives to build a safe and trustworthy large language model (LLM). Knowledge editing focuses on specific areas for permanent adjustment without compromising overall performance. Then, detoxifying LLM via knowledge editing leverages a small amount of data, usually an instance, to correct the toxic behaviors of the LLM. The edited LLM can defend against various malicious inputs. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)
