@@ -1219,10 +1219,10 @@ def test_Llama2():
     train_ds = ZsreDataset('./data/zsre_mend_train.json', size=10000)
     # encode_ike_facts(sentence_model, train_ds, hparams)
     # hparams = ROMEHyperParams.from_hparams('./hparams/ROME/llama-7b.yaml')
-    # hparams = R_ROMEHyperParams.from_hparams('./hparams/R-ROME/llama-7b.yaml')
+    hparams = R_ROMEHyperParams.from_hparams('./hparams/R-ROME/llama-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/llama-7b.yaml')
     # hparams = SERACHparams.from_hparams('./hparams/SERAC/llama-7b.yaml')
-    hparams = GraceHyperParams.from_hparams('./hparams/GRACE/llama-7B.yaml')
+    # hparams = GraceHyperParams.from_hparams('./hparams/GRACE/llama-7B.yaml')
     # hparams = KNHyperParams.from_hparams('./hparams/KN/gpt2-xl.yaml')
 
     editor = BaseEditor.from_hparams(hparams)
@@ -1234,7 +1234,7 @@ def test_Llama2():
         locality_inputs=locality_inputs,
         portability_inputs=portability_inputs,
         train_ds=train_ds,
-        sequential_edit=True
+        sequential_edit=False
     )
 
     import pdb
