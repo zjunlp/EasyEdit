@@ -137,13 +137,11 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 ### Task Definition
 
-Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
+Deployed models may still make unpredictable errors. For example, LLMs notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
 **Knowledge editing** aims to adjust base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$​​​ efficiently.
 
-
-
-### Scenario
+### Multi Setting
 
 #### Single Knowledge Editing
 
@@ -153,9 +151,11 @@ $$\theta' \leftarrow \text{arg} \min\limits_{\theta} (\Vert f_\theta(x_e) - y_e 
 
 #### Continuous Knowledge Editing
 
-This approach requires **sequentially editing**, and evaluation must be performed after all knowledge updates have been applied:
+This requires **sequentially editing**, and evaluation is performed after all knowledge updates have been applied:
 $$\theta' \leftarrow \text{arg} \min\limits_{\theta} \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
-It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
+It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
+
+### Multi Scenario
 
 <details><summary> <b> Factual Knowledge Editing </b> </summary>
 
