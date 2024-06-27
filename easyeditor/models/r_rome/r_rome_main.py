@@ -65,9 +65,6 @@ def apply_r_rome_to_model(
 
         print(f"New weights successfully inserted into {list(deltas.keys())}")
 
-    if not keep_original_weight:
-        weights_copy = {}
-
     return model, weights_copy
 
 

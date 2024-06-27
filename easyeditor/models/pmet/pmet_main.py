@@ -59,8 +59,7 @@ def apply_pmet_to_model(
             w[...] += upd_matrix.float() #w[...]高级索引，表示对w中每个元素进行操作
 
     print(f"\nNew weights successfully inserted into {list(deltas.keys())}")
-    if not keep_original_weight:
-        weights_copy = {}
+
     return model, weights_copy
 
 

@@ -115,10 +115,6 @@ class MalmenRewriteExecutor:
                     if return_orig_weights and n not in weights_copy:
                         weights_copy[n] = p.detach().clone()
         self.alg.edit_model(param_shifts, False)
-        
-
-        if not keep_original_weight:
-            weights_copy = {}
 
         return self.alg.model, weights_copy
  

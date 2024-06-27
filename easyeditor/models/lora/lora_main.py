@@ -29,9 +29,6 @@ def apply_lora_to_model(
 
     edited_model = execute_lora(model, tok, requests, hparams, keep_original_weight)
 
-    if not keep_original_weight:
-        weights_copy = {}
-
     return edited_model, weights_copy
 
 
