@@ -1011,6 +1011,7 @@ We thank all the contributors to this project, more contributors are welcome!
 - [GRACE](https://github.com/Thartvigsen/GRACE)
 - [MELO](https://github.com/ECNU-ICALK/MELO)
 - [PMET](https://github.com/xpq-tech/PMET)
+- [VLKEB](https://github.com/VLKEB/VLKEB)
 - [PitfallsKnowledgeEditing](https://github.com/zjunlp/PitfallsKnowledgeEditing)
 - [BiasEdit](https://github.com/zjunlp/BiasEdit)
 - [WikiLLM](https://github.com/laramohan/wikillm)
