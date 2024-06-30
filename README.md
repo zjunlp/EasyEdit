@@ -339,7 +339,7 @@ You can choose different editing methods according to your specific needs.
   <tr>
     <td class="tg-c3ow"># Test</td>
     <td class="tg-c3ow">1,266</td>
-    <td class="tg-c3ow">1230</td>
+    <td class="tg-c3ow">1301</td>
     <td class="tg-c3ow">1,392</td>
     <td class="tg-c3ow">885</td>
     <td class="tg-c3ow">800</td>
