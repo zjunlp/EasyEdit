@@ -256,9 +256,10 @@ def test_MEMIT():
         keep_original_weight=True
     )
 
-    import pdb
-    pdb.set_trace()
-
+    print(metrics)
+    print("@"*10)
+    print(edited_model)
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     return metrics, edited_model
 
 def test_EMMET():
@@ -303,6 +304,7 @@ def test_EMMET():
 
     hparams = EMMETHyperParams.from_hparams('./hparams/EMMET/gpt2-xl')
     editor = BaseEditor.from_hparams(hparams)
+    print(editor)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         ground_truth=ground_truth,
@@ -313,9 +315,9 @@ def test_EMMET():
         keep_original_weight=True
     )
 
-    import pdb
-    pdb.set_trace()
-
+    print(metrics)
+    print(edited_model)
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     return metrics, edited_model
 
 def test_PMET():
@@ -2878,8 +2880,10 @@ def main():
     # test_KE_Meta_Counterfacat_Train()
 
     # test_ROME()
-    test_MEMIT()
-    # test_EMMET()
+    # test_MEMIT()
+    print("STARTED!!!")
+    test_EMMET()
+    print("FINISHED!!!")
     # test_MEND_Meta_Train()
     # test_MEND()
     # test_KE()

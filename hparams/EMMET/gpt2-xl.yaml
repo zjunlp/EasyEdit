@@ -20,6 +20,7 @@ mom2_n_samples: 100000
 mom2_dtype: "float32"
 update_norm_lambda: 0
 emmet_lambda: 0.1
+model_parallel: false
 
 stats_dir: "./data/stats"
 device: 0
