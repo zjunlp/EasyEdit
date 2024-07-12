@@ -558,33 +558,7 @@ conda create -n EasyEdit python=3.9.7
 pip install -r requirements.txt
 ```
 
-#### 🐳Docker Installation
 
-We packaged the environment, you can download Docker from [this link](https://docs.docker.com/get-docker/).
-
-Pull the Docker image from Docker Hub or Aliyun:
-
-```bash
-docker pull zjunlp/easyedit
-```
-
-```bash
-docker pull registry.cn-hangzhou.aliyuncs.com/zjunlp/easyedit:v1
-```
-
-If you want to build the Docker image locally, you can clone the project to your local machine and build the Docker image:
-
-```bash
-git clone https://github.com/zjunlp/EasyEdit.git
-cd EasyEdit
-docker build -t your-image-name .
-```
-
-Then run the Docker image as a container:
-
-```bash
-docker run -p 8080:80 your-image-name
-```
 #### Editing GPU memory usage
 Our results are all based on the default configuration
 
