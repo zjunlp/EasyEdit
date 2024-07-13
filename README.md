@@ -42,7 +42,6 @@
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#🔧pip-installation)
-    - [🐳Docker Installation](#🐳docker-installation)
     - [Editing GPU memory usage](#editing-gpu-memory-usage)
 - [📌Use EasyEdit](#📌use-easyedit)
   - [BaseEditor](#baseeditor)
