@@ -24,7 +24,7 @@ def compute_zs(
     """
 
     # Get model parameters
-    if "neo" or "gpt2" in model.config._name_or_path:
+    if "neo" in model.config._name_or_path or "gpt2" in model.config._name_or_path:
         ln_f = nethook.get_module(model, hparams.ln_f_module)
         lm_head_module = nethook.get_module(model, hparams.lm_head_module)
         lm_w = nethook.get_parameter(lm_head_module, "weight").T
@@ -82,7 +82,7 @@ def compute_zs(
     # Set up an optimization over a latent vector that, when output at the
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
-    if "neo" or "llama" in model.config._name_or_path:
+    if "neo" in model.config._name_or_path or "llama" in model.config._name_or_path:
         delta_attn = torch.zeros((model.config.hidden_size,), requires_grad=True, device="cuda")
         delta_mlp = torch.zeros((model.config.hidden_size,), requires_grad=True, device="cuda")
     else:
