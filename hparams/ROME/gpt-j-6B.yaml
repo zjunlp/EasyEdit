@@ -1,5 +1,5 @@
 alg_name: "ROME"
-model_name: "./hugging_cache/gpt-j-6B"
+model_name: "/data/akshat/models/gpt-j-6b"
 stats_dir: "./data/stats"
 device: 1
 layers: [5]

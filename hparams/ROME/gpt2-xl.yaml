@@ -1,7 +1,7 @@
 alg_name: "ROME"
 model_name: "./hugging_cache/gpt2-xl"
 stats_dir: "./data/stats"
-device: 0
+device: 1
 layers: [17]
 fact_token: "subject_last"
 v_num_grad_steps: 20

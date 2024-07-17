@@ -1,4 +1,4 @@
-layers: [13, 14, 15, 16, 17]
+layers: [17]
 clamp_norm_factor: 0.75
 layer_selection: "all"
 fact_token: "subject_last"

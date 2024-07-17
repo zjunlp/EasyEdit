@@ -2880,8 +2880,8 @@ def main():
     # test_KE_Meta_Counterfacat_Train()
 
     # test_ROME()
-    # test_MEMIT()
     print("STARTED!!!")
+    # test_MEMIT()
     test_EMMET()
     print("FINISHED!!!")
     # test_MEND_Meta_Train()
