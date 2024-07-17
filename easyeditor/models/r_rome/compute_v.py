@@ -188,8 +188,6 @@ def compute_v(
             with torch.no_grad():
                 delta[...] = delta * max_norm / delta.norm()
 
-    target = target_init + delta.to(target_init.dtype)
-
     if hparams.enable_random_prefix_keys:
         cur_inputs, cur_outputs = [], []
         # run hook for all random prefixes
@@ -211,7 +209,7 @@ def compute_v(
         cur_output = torch.stack(cur_outputs).mean(0)
 
         # target_init is v*, based on output from random prefix computations
-        target = target_init + delta
+        target = target_init + delta.to(target_init.dtype)
     else:
         # Original ROME code
         # Retrieve cur_input, the current input to the 2nd MLP layer, and
@@ -227,7 +225,7 @@ def compute_v(
         )
 
         # cur_output is v, based on output from prompt-only computations
-        target = cur_output + delta
+        target = cur_output + delta.to(target_init.dtype)
 
     # Solving the linear system to compute the right vector
     right_vector = (target - cur_output) / torch.dot(cur_input, left_vector)

@@ -42,7 +42,6 @@
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#🔧pip-installation)
-    - [🐳Docker Installation](#🐳docker-installation)
     - [Editing GPU memory usage](#editing-gpu-memory-usage)
 - [📌Use EasyEdit](#📌use-easyedit)
   - [BaseEditor](#baseeditor)
@@ -85,13 +84,13 @@
 
 <details>
 <summary><b>Previous News</b></summary>
+  
 - **2024-02-09 The EasyEdit has added the support for the Dynamic LoRA model editing method [MELO'AAAI24](https://arxiv.org/abs/2312.11795).**
 - **2024-02-06 We release a new paper: "[EasyInstruct: An Easy-to-use Instruction Processing Framework for Large Language Models](https://arxiv.org/abs/2402.03049)" with an HF demo [EasyInstruct](https://huggingface.co/spaces/zjunlp/EasyInstruct).**
 - **2024-02-06 We release a preliminary tool [EasyDetect](https://github.com/OpenKG-ORG/EasyDetect) for LLM hallucination detection，with a [demo](http://easydetect.openkg.cn/)**.
 - **2024-01-24 The EasyEdit has added the support for editing [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) (manually update transformers==4.34.0), we have also fixed some bugs in evaluating MEND (slightly influence the performance).**
 - **2024-01-16 The EasyEdit has added the support for the precise model editing method [PMET'AAAI24](https://arxiv.org/abs/2308.08742).**
 - **2024-01-03  We release a new paper:"[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" with a new benchmark [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit)! KnowEdit is constructed by re-organizing and cleaning exsiting datasests including WikiBio, ZsRE, WikiData Counterfact, WikiData Recent, convsent, Sanitation with new train/val/test spliting. Special thanks to the builders and maintainers of the those datasets.We are looking forward to any comments or discussions on this topic :)**
-
 - **2023-12-06 The EasyEdit has added the support for the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).**
 - **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
 - **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
@@ -137,11 +136,27 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 ### Task Definition
 
-Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
+Deployed models may still make unpredictable errors. For example, LLMs notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
-**Knowledge editing** aims to adjust base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$​​ efficiently.
+**Knowledge editing** aims to adjust base model's $(f_\theta)$ behavior on the particular edit descriptor $[x_e, y_e]$​​​ efficiently.
 
-#### Factual Knowledge Editing
+### Multi Setting
+
+#### Single Knowledge Editing
+
+Evaluating the performance of the model after a single edit. The model reloads the original weights (e.g. LoRA discards the adapter weights) after a single edit. You should set **`sequential_edit=False`**
+
+$$\theta' \leftarrow \text{arg} \min\limits_{\theta} (\Vert f_\theta(x_e) - y_e \Vert)$$
+
+#### Continuous Knowledge Editing
+
+This requires **sequentially editing**, and evaluation is performed after all knowledge updates have been applied:
+$$\theta' \leftarrow \text{arg} \min\limits_{\theta} \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
+It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
+
+### Multi Scenario
+
+<details><summary> <b> Factual Knowledge Editing </b> </summary>
 
 ##### Knowledge insert
 
@@ -160,14 +175,9 @@ Deployed models may still make unpredictable errors. For example, Large Language
 - Erase sensitive information. such as:
   - *The phone number of someone is XXXX* $\rightarrow$ **__**
 
+Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$​​.
 
-Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$.
-
-#### Continuous Knowledge Editing
-
-On the basis of Factual Editing, this approach requires **sequentially editing**, and evaluation must be performed after all knowledge updates have been applied:
-$$\theta' \leftarrow \text{arg} \min \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
-It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
+</details>
 
 <details><summary> <b> Safety Editing </b> </summary>
 **Detoxifying LLM** strives to build a safe and trustworthy large language model (LLM). Knowledge editing focuses on specific areas for permanent adjustment without compromising overall performance. Then, detoxifying LLM via knowledge editing leverages a small amount of data, usually an instance, to correct the toxic behaviors of the LLM. The edited LLM can defend against various malicious inputs. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)
@@ -328,7 +338,7 @@ You can choose different editing methods according to your specific needs.
   <tr>
     <td class="tg-c3ow"># Test</td>
     <td class="tg-c3ow">1,266</td>
-    <td class="tg-c3ow">1230</td>
+    <td class="tg-c3ow">1301</td>
     <td class="tg-c3ow">1,392</td>
     <td class="tg-c3ow">885</td>
     <td class="tg-c3ow">800</td>
@@ -547,33 +557,7 @@ conda create -n EasyEdit python=3.9.7
 pip install -r requirements.txt
 ```
 
-#### 🐳Docker Installation
 
-We packaged the environment, you can download Docker from [this link](https://docs.docker.com/get-docker/).
-
-Pull the Docker image from Docker Hub or Aliyun:
-
-```bash
-docker pull zjunlp/easyedit
-```
-
-```bash
-docker pull registry.cn-hangzhou.aliyuncs.com/zjunlp/easyedit:v1
-```
-
-If you want to build the Docker image locally, you can clone the project to your local machine and build the Docker image:
-
-```bash
-git clone https://github.com/zjunlp/EasyEdit.git
-cd EasyEdit
-docker build -t your-image-name .
-```
-
-Then run the Docker image as a container:
-
-```bash
-docker run -p 8080:80 your-image-name
-```
 #### Editing GPU memory usage
 Our results are all based on the default configuration
 
@@ -1000,8 +984,9 @@ We thank all the contributors to this project, more contributors are welcome!
 - [GRACE](https://github.com/Thartvigsen/GRACE)
 - [MELO](https://github.com/ECNU-ICALK/MELO)
 - [PMET](https://github.com/xpq-tech/PMET)
+- [VLKEB](https://github.com/VLKEB/VLKEB)
 - [PitfallsKnowledgeEditing](https://github.com/zjunlp/PitfallsKnowledgeEditing)
-- [EditBias](https://github.com/zjunlp/EditBias)
+- [BiasEdit](https://github.com/zjunlp/BiasEdit)
 - [WikiLLM](https://github.com/laramohan/wikillm)
 - [PEAK](https://github.com/mjy1111/PEAK)
 - [Debugger](https://github.com/openai/transformer-debugger)

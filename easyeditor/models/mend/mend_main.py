@@ -164,9 +164,6 @@ class MendRewriteExecutor:
                     # p.add_((delta * edit_lrs[eli] * hparams.lr_scale).to(p.device))
                     eli += 1
 
-        if not keep_original_weight:
-            weights_copy = {}
-
         return edited_model, weights_copy
     
     

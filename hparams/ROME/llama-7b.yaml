@@ -1,7 +1,7 @@
 alg_name: "ROME"
 model_name: "/data/akshat/models/Llama-2-7b-hf"
 stats_dir: "./data/stats"
-device: 1
+device: 0
 layers: [5]
 fact_token: "subject_last"
 v_num_grad_steps: 25
@@ -22,7 +22,7 @@ mom2_dataset: "wikipedia"
 mom2_n_samples: 100000
 mom2_dtype: "float32"
 model_parallel: false
-fp16: false
+fp16: true
 
 #alg_name: "ROME"
 #model_name: "./hugging_cache/llama-7b"

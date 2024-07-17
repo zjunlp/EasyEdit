@@ -174,7 +174,7 @@ def compute_portability_quality(
     if 't5' in model_name.lower():
         portability_correct = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, ground_truth, device)
     else:
-        portability_correct = test_prediction_acc(model, tok, hparams, prompt, ground_truth, device)
+        portability_correct = test_prediction_acc(model, tok, hparams, prompt, ground_truth, device, vanilla_generation=hparams.alg_name=='GRACE')
 
     ret = {
         f"{portability_key}_acc": portability_correct
