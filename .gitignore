@@ -9,9 +9,4 @@ logs
 results
 output
 scripts
-*.pyc
-*.json
-*.log
-MEMIT_VS_EMMET.py 
-RROME_VS_ROME.py 
-saved_results/
+

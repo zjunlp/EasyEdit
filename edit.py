@@ -256,10 +256,9 @@ def test_MEMIT():
         keep_original_weight=True
     )
 
-    print(metrics)
-    print("@"*10)
-    print(edited_model)
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    import pdb
+    pdb.set_trace()
+
     return metrics, edited_model
 
 def test_EMMET():
@@ -315,9 +314,9 @@ def test_EMMET():
         keep_original_weight=True
     )
 
-    print(metrics)
-    print(edited_model)
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    import pdb
+    pdb.set_trace()
+
     return metrics, edited_model
 
 def test_PMET():
@@ -2880,10 +2879,8 @@ def main():
     # test_KE_Meta_Counterfacat_Train()
 
     # test_ROME()
-    print("STARTED!!!")
-    # test_MEMIT()
-    test_EMMET()
-    print("FINISHED!!!")
+    test_MEMIT()
+    # test_EMMET()
     # test_MEND_Meta_Train()
     # test_MEND()
     # test_KE()

@@ -1,5 +1,5 @@
 alg_name: "ROME"
-model_name: "/data/akshat/models/Llama-2-7b-hf"
+model_name: "./hugging_cache/llama-2-7b"
 stats_dir: "./data/stats"
 device: 0
 layers: [5]

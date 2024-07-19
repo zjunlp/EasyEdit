@@ -1,5 +1,5 @@
 alg_name: "R-ROME"
-model_name: "/data/akshat/models/gpt2-xl"
+model_name: "./hugging_cache/gpt2-xl"
 stats_dir: "./data/stats"
 device: 0
 layers: [17]

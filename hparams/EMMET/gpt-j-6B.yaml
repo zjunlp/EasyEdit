@@ -24,6 +24,6 @@ model_parallel: false
 
 stats_dir: "./data/stats"
 device: 3
-model_name: "/data/akshat/models/gpt-j-6b"
+model_name: "./hugging_cache/gpt-j-6B"
 alg_name: "EMMET"
 
