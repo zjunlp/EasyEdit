@@ -1,4 +1,4 @@
-layers: [3, 4, 5, 6, 7, 8]
+layers: [5]
 clamp_norm_factor: 0.75
 layer_selection: "all"
 fact_token: "subject_last"
@@ -8,7 +8,7 @@ v_loss_layer: 27
 v_weight_decay: 0.5
 kl_factor: 0.0625
 mom2_adjustment: true
-mom2_update_weight: 1000
+mom2_update_weight: 100000
 rewrite_module_tmp: "transformer.h.{}.mlp.fc_out"
 layer_module_tmp: "transformer.h.{}"
 mlp_module_tmp: "transformer.h.{}.mlp"
@@ -23,7 +23,7 @@ emmet_lambda: 0.1
 model_parallel: false
 
 stats_dir: "./data/stats"
-device: 0
+device: 3
 model_name: "/data/akshat/models/gpt-j-6b"
 alg_name: "EMMET"
 

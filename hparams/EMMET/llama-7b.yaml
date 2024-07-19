@@ -1,4 +1,4 @@
-layers: [4, 5, 6, 7, 8]
+layers: [5]
 clamp_norm_factor: 4
 layer_selection: "all"
 fact_token: "subject_last"
@@ -8,7 +8,7 @@ v_loss_layer: 31
 v_weight_decay: 1e-3
 kl_factor: 0.0625
 mom2_adjustment: true
-mom2_update_weight: 10000
+mom2_update_weight: 100000
 rewrite_module_tmp: "model.layers.{}.mlp.down_proj"
 layer_module_tmp: "model.layers.{}"
 mlp_module_tmp: "model.layers.{}.mlp"
@@ -23,6 +23,6 @@ emmet_lambda: 0.1
 model_parallel: false
 
 stats_dir: "./data/stats"
-device: 0
+device: 4
 model_name: "/data/akshat/models/Llama-2-7b-hf"
 alg_name: "EMMET"
