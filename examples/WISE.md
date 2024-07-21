@@ -113,3 +113,16 @@ metrics, edited_model, _ = editor.edit(
 ## 📖 Citation
 
 If finding this work useful for your research, you can cite it as follows:
+
+```bibtex
+@misc{wang2024wiserethinkingknowledgememory,
+      title={WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models}, 
+      author={Peng Wang and Zexi Li and Ningyu Zhang and Ziwen Xu and Yunzhi Yao and Yong Jiang and Pengjun Xie and Fei Huang and Huajun Chen},
+      year={2024},
+      eprint={2405.14768},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2405.14768}, 
+}
+```
+
