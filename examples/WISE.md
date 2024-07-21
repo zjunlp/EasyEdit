@@ -1,4 +1,6 @@
-WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models
+<div align="center">
+
+**WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models**
 
 ![](https://img.shields.io/badge/version-v0.0.1-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
