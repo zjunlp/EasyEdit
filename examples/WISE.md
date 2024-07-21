@@ -53,6 +53,8 @@ Each dataset contains both an **edit set** and a train set.
 
 ### 🌟 Running experiments
 
+plz refer to https://github.com/zjunlp/EasyEdit/blob/main/examples/run_wise_editing.py
+
 **Setup**
 
 This codebase uses Python 3.9, you can create a conda env:
