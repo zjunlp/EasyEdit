@@ -296,7 +296,8 @@ class BaseEditor:
                 )
                 icl_examples = None
             return edited_model, weights_copy, icl_examples
-        def edit_evaluation(all_metrics, request, edited_model, idx, eval_metric, test_generation, icl_examples, **kwargs):
+        def edit_evaluation(all_metrics, request, edited_model, idx, test_generation, icl_examples, **kwargs):
+            eval_metric= kwargs['eval_metric'] if 'eval_metric' in kwargs.keys() else 'exact match'
             if self.alg_name == 'IKE':
                 all_metrics[idx].update({
                     'case_id': idx,
@@ -328,11 +329,11 @@ class BaseEditor:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
             for i, request in enumerate(requests):
-                edit_evaluation(all_metrics, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
+                edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
         else:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
-                edit_evaluation(all_metrics, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
+                edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
                 if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
                     with torch.no_grad():
                         weights_copy()

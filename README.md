@@ -151,7 +151,9 @@ $$\theta' \leftarrow \text{arg} \min\limits_{\theta} (\Vert f_\theta(x_e) - y_e 
 #### Continuous Knowledge Editing
 
 This requires **sequentially editing**, and evaluation is performed after all knowledge updates have been applied:
+
 $$\theta' \leftarrow \text{arg} \min\limits_{\theta} \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
+
 It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
 
 ### Multi Scenario
