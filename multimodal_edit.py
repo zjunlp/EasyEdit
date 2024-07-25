@@ -8,7 +8,7 @@ from easyeditor import MENDMultimodalTrainingHparams, SERACMultimodalTrainingHpa
     , SERACMultimodalHparams
 from easyeditor import encode_ike_facts_multimodal
 from sentence_transformers import SentenceTransformer
-
+import ramdon
 
 def print_result(metrics):
     rewrite_acc = mean([m['post']['rewrite_acc'].item() for m in metrics])
