@@ -1,9 +1,8 @@
-import hydra
 from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, \
-    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams, R_ROMEHyperParams
+    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams, R_ROMEHyperParams, EMMETHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -247,6 +246,64 @@ def test_MEMIT():
 
     hparams = MEMITHyperParams.from_hparams('./hparams/MEMIT/gpt2-xl')
     editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_EMMET():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    subject = ['Ray Charles',
+               'Grant Hill',
+               'Ikaalinen'
+               ]
+
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = EMMETHyperParams.from_hparams('./hparams/EMMET/gpt2-xl')
+    editor = BaseEditor.from_hparams(hparams)
+    print(editor)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         ground_truth=ground_truth,
@@ -900,6 +957,120 @@ def test_MEMIT_GPTJ():
 
     return metrics, edited_model
 
+
+def test_EMMET_GPTJ():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    subject = ['Ray Charles',
+               'Grant Hill',
+               'Ikaalinen'
+               ]
+
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = EMMETHyperParams.from_hparams('./hparams/EMMET/gpt-j-6B')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
+def test_MEMIT_GPTJ():
+
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    subject = ['Ray Charles',
+               'Grant Hill',
+               'Ikaalinen'
+               ]
+
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    hparams = EMMETHyperParams.from_hparams('./hparams/EMMET/gpt-j-6B')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=ground_truth,
+        target_new=target_new,
+        subject=subject,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
 
 def test_KE_GPTJ():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
@@ -2708,7 +2879,8 @@ def main():
     # test_KE_Meta_Counterfacat_Train()
 
     # test_ROME()
-    # test_MEMIT()
+    test_MEMIT()
+    # test_EMMET()
     # test_MEND_Meta_Train()
     # test_MEND()
     # test_KE()
@@ -2743,7 +2915,7 @@ def main():
     # test_ROME_LlaMA()
     # test_ROME_DEMO()
     # ROME_DEMO_2()
-    test_Llama2()
+    # test_Llama2()
     # test_ROME_Baichuan()
     # test_MEND_Baichuan()
     # test_MEMIT_Baichuan()

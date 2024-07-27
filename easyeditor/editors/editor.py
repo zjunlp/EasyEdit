@@ -102,16 +102,16 @@ class BaseEditor:
             else:
                 raise NotImplementedError
 
-            if self.tok is not None and (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer)) and (hparams.alg_name not in ['ROME', 'MEMIT']):
+            if self.tok is not None and (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer)) and (hparams.alg_name not in ['ROME', 'MEMIT', 'EMMET', 'R-ROME']):
                 LOG.info('AutoRegressive Model detected, set the padding side of Tokenizer to left...')
                 self.tok.padding_side = 'left'
-            if self.tok is not None and ('mistral' in self.model_name.lower() or 'llama' in self.model_name.lower() or 'qwen' in self.model_name.lower()) and (hparams.alg_name in ['ROME', 'MEMIT']):
+            if self.tok is not None and ('mistral' in self.model_name.lower() or 'llama' in self.model_name.lower() or 'qwen' in self.model_name.lower()) and (hparams.alg_name in ['ROME', 'MEMIT', 'EMMET', 'R-ROME']):
                 LOG.info('AutoRegressive Model detected, set the padding side of Tokenizer to right...')
                 self.tok.padding_side = 'right'
         else:
             self.model, self.tok = self.model_name
 
-        if hparams.model_parallel:
+        if hparams.model_parallel: 
             hparams.device = str(self.model.device).split(":")[1]
         if not hparams.model_parallel and hasattr(hparams, 'device'):
             self.model.to(f'cuda:{hparams.device}')

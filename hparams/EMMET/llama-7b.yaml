@@ -1,8 +1,4 @@
-alg_name: "MEMIT"
-model_name: "./hugging_cache/llama-2-7b"
-stats_dir: "./data/stats"
-device: 0
-layers: [4, 5, 6, 7, 8]
+layers: [5]
 clamp_norm_factor: 4
 layer_selection: "all"
 fact_token: "subject_last"
@@ -12,7 +8,7 @@ v_loss_layer: 31
 v_weight_decay: 1e-3
 kl_factor: 0.0625
 mom2_adjustment: true
-mom2_update_weight: 15000
+mom2_update_weight: 100000
 rewrite_module_tmp: "model.layers.{}.mlp.down_proj"
 layer_module_tmp: "model.layers.{}"
 mlp_module_tmp: "model.layers.{}.mlp"
@@ -22,4 +18,11 @@ lm_head_module: "lm_head"
 mom2_dataset: "wikipedia"
 mom2_n_samples: 100000
 mom2_dtype: "float32"
+update_norm_lambda: 0
+emmet_lambda: 0.1
 model_parallel: false
+
+stats_dir: "./data/stats"
+device: 4
+model_name: "./hugging_cache/llama-2-7b"
+alg_name: "EMMET"
