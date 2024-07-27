@@ -7,6 +7,7 @@ def _chunks(arr, n):
     """Yield successive n-sized chunks from arr."""
     for i in range(0, len(arr), n):
         yield arr[i: i + n]
+        
 def get_all_acc_keys(dict_list):
     all_keys = set()
 
