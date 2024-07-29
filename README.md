@@ -282,6 +282,7 @@ You can choose different editing methods according to your specific needs.
 | r-ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
 | EMMET | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
 | MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
+| EMMET | | ✅ | ✅ |    | ✅ |    |   |    |    |    |
 | GRACE | | ✅| ✅ |  |  ✅|  |  |  | | |
 | MELO | |✅ |  |  |  |  |  |  | | |
 | PMET | | | ✅ |  |  ✅|  |  |  | | |
