@@ -43,7 +43,7 @@ The files `test_cf.json`, `recent_test.json`, and `zsre_mend_eval_portability_gp
 
 + ## Training *InstructEdit*
 
-    - Training **InstructEdit** with `GPT-XL`:.
+    - Training **InstructEdit** with `GPT-XL`:
 
     ```python
     from easyeditor import BaseEditor
