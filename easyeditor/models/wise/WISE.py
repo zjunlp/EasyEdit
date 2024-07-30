@@ -296,6 +296,10 @@ class WISEAdapter(torch.nn.Module):
         self.original_layer = copy.deepcopy(self.layer)
         self.memory_weight = []
         self.memory_mean_act = []
+        if 'gpt2' in self.config.model_name:
+            self.bias = self.layer.bias # For Conv1D
+        else:
+            self.bias = None
         self.merge_cnt = 0  # only for retrieve
         assert not self.weight.requires_grad, print('Original Layer can not be tunable....')
 
@@ -383,7 +387,7 @@ class WISEAdapter(torch.nn.Module):
         self.weight_mask = torch.from_numpy(mask_array).to(p_grad.device)
 
     def new_weight_forward(self, input: Tensor) -> Tensor:
-        return F.linear(input, self.new_weight)
+        return F.linear(input, self.new_weight) if self.bias is None else torch.addmm(self.bias, input.view(-1, input.size(-1)), self.new_weight).view(input.size()[:-1] + (self.layer.nf,))
 
     def mask_new_weight_gradient(self):
         assert self.new_weight.grad is not None, print('Gradient Collection for New Weight error, gradient not found')
