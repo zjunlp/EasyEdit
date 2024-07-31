@@ -112,7 +112,10 @@ def execute_ft(
             )
             if hparams.objective_optimization == 'prompt_last':
                 last_token_inds = inputs["attention_mask"].sum(dim=1) - 1
-                loss_mask = target_ids != tok.unk_token_id
+                if tok.unk_token_id is not None:
+                    loss_mask = torch.ne(target_ids, tok.unk_token_id)
+                else:
+                    loss_mask = torch.ones_like(target_ids, dtype=torch.bool)
             elif hparams.objective_optimization == 'target_new':
                 inputs_targets = [txt_ + tgt_ for txt_, tgt_ in zip(txt, tgt)]
                 inputs_targets = tok(inputs_targets, return_tensors="pt", padding=True).to(device)
