@@ -315,7 +315,7 @@ trainer = EditTrainer(
 )
 trainer.run()
 ```
-
+Please note that the training set we use for zsRE is `zsre_mend_train_10000`. You can obtain the data [here](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view).
 ## Running Examples of Using KnowEdit
 
 After loading the dataset with:
