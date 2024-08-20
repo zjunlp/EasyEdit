@@ -142,29 +142,10 @@ class MendRewriteExecutor:
                 if uname in torch_factors:
                     if return_orig_weights and n not in weights_copy:
                         weights_copy[n] = p.detach().clone()
+                    with torch.no_grad():
+                        p.copy_(edited_model.model.state_dict()[n])
 
-                    # if "gpt2" in hparams.model_name.lower():
-                    #     delta = torch_factors[uname].t() @ torch_factors[vname]
-                    # elif "gpt-j" in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # elif "llama" in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # elif 'baichuan' in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # elif 't5' in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # elif 'chatglm2' in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # elif 'internlm' in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # elif 'qwen' in hparams.model_name.lower():
-                    #     delta = torch_factors[vname].t() @ torch_factors[uname]
-                    # else:
-                    #     raise ValueError("Unknown model")
-                    # p.add_((delta * edit_lrs[eli] * hparams.lr_scale).to(p.device))
-                    eli += 1
-
-        return edited_model, weights_copy
+        return model, weights_copy
     
     
 class MendMultimodalRewriteExecutor(MendRewriteExecutor):
@@ -276,11 +257,13 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
                 if uname in torch_factors:
                     if return_orig_weights and n not in weights_copy:
                         weights_copy[n] = p.detach().clone()
+                    with torch.no_grad():
+                        p.copy_(edited_model.model.state_dict()[n])
 
         if not keep_original_weight:
             weights_copy = {}
 
-        return edited_model, weights_copy
+        return model, weights_copy
 
 
 class MendPerRewriteExecutor(MendRewriteExecutor):

@@ -296,6 +296,7 @@ class BaseEditor:
                 )
                 icl_examples = None
             return edited_model, weights_copy, icl_examples
+
         def edit_evaluation(all_metrics, request, edited_model, idx, test_generation, icl_examples, **kwargs):
             eval_metric= kwargs['eval_metric'] if 'eval_metric' in kwargs.keys() else 'exact match'
             if self.alg_name == 'IKE':
