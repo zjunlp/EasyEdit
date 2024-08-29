@@ -913,6 +913,7 @@ We also present editing results of KnowEdit on [LlaMA-2-7B](https://huggingface.
 |                          | Locality    | 100.00 | 56.58  | 65.50   | 5.29   | 50.31  | 67.47  | 14.78  | 42.61  |
 |                          | Fluency     | 416.29 | 794.15 | 330.44  | 407.18 | 465.12 | 466.10 | 439.10 | 351.39 |
 > ❗️❗️ **Please note that if you wish to reproduce the results regarding Rome on Knowedi, ensure that `fp16: False`.**
+
 > For the locality metric, we calculate the score based on the proportion of tokens that remain unchanged before and after editing. For example, if the output tokens before editing are [29, 234, 334] and after editing are [29, 234, 333], the locality score for this data would be 66.67. For the portability metric, we calculate it by taking the average of all sub-scores under the portability category.
 
 <details><summary> <b> TO DO </b> </summary>
