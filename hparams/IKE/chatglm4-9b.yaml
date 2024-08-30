@@ -1,0 +1,8 @@
+alg_name: "IKE"
+model_name: "./hugging_cache/chatglm4-9b" # THUDM/glm-4-9b-chat
+sentence_model_name: "/mnt/16t/share/all-MiniLM-L6-v2"
+device: 0
+results_dir: "./results"
+
+k: 16
+model_parallel: false

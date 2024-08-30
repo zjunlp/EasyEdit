@@ -83,8 +83,10 @@ class BaseEditor:
             elif 'chatglm' in self.model_name.lower():
                 self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch_dtype, device_map=device_map)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
-                self.tok.unk_token_id = 64787
-                # self.tok.pad_token_id = self.tok.eos_token_id
+                if 'chatglm2'in self.model_name.lower(): 
+                    self.tok.unk_token_id = 64787
+                else: 
+                    self.tok.pad_token_id = self.tok.eos_token_id
             elif 'internlm' in self.model_name.lower():
                 self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch_dtype, device_map=device_map)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
