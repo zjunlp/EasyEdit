@@ -1,5 +1,5 @@
 alg_name: "ROME"
-model_name: "/mnt/xzk/Llama-3-8B"
+model_name: "./hugging_cache/Llama-3-8B"
 stats_dir: "./data/stats"
 device: 0
 layers: [5]

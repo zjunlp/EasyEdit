@@ -30,7 +30,7 @@ def summary_metrics(all_metrics):
     if not os.path.exists(logs_dir):
         os.makedirs(logs_dir)
     output_file = os.path.join(logs_dir, 'results.json')
-    with open(output_file, 'w') as f:
+    with open(output_file, 'w', encoding="utf-8") as f:
         json.dump(all_metrics, f, ensure_ascii=False, indent=4)
 
     mean_metrics = dict()
