@@ -273,7 +273,7 @@ You can choose different editing methods according to your specific needs.
 | **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
 | FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| AdaLoRA |  |  |  |  | ✅ |  |  | | | |
+| AdaLoRA |  |  |  |  | ✅ |  | ✅ | | | |
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | | |
 | IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
 | MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
