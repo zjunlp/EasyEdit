@@ -65,7 +65,7 @@
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
 
-- 2024-07-29, The EasyEdit has added a new model editing algorithm [EMMET](https://arxiv.org/abs/2403.14236).which generalizes ROME to the batch setting. This essentially allows making batched edits using the ROME loss function.
+- 2024-07-29, The EasyEdit has added a new model editing algorithm [EMMET](https://arxiv.org/abs/2403.14236), which generalizes ROME to the batch setting. This essentially allows making batched edits using the ROME loss function.
 
 - 2024-07-23, We release a new paper: "[Knowledge Mechanisms in Large Language Models: A Survey and Perspective](https://arxiv.org/abs/2407.15017)", which reviews how knowledge is acquired, utilized, and evolves in large language models. This survey may provide the fundamental mechanisms for precisely and efficiently manipulating (editing) knowledge in LLMs.
 
@@ -270,10 +270,10 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | InternLM | Qwen | Mistral
+| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
 | FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| AdaLoRA |  |  |  |  | ✅ |  |  | | | |
+| AdaLoRA |  |  |  |  | ✅ |  | ✅ | | | |
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | | |
 | IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
 | MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
