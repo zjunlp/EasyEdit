@@ -1,5 +1,5 @@
 alg_name: "LoRA"
-model_name: "./hugging_cache/chatglm4-9b"
+model_name: "./hugging_cache/chatglm4-9b" # THUDM/glm-4-9b-chat
 device: 0
 
 lora_type: "adalora"
