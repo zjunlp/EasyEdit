@@ -6,7 +6,7 @@ import torch
 import numpy as np
 import random
 from ..models.melo.melo import LORA
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel, BitsAndBytesConfig
 from transformers import LlamaTokenizer
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
@@ -63,42 +63,62 @@ class BaseEditor:
         if type(self.model_name) is str:
             device_map = 'auto' if hparams.model_parallel else None
             torch_dtype = torch.float16 if hasattr(hparams, 'fp16') and hparams.fp16 else torch.float32
+            
+            # QLoRA configuration
+            if hparams.alg_name == 'QLoRA':
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=(hparams.quantization_bit == 4),
+                    bnb_4bit_use_double_quant=hparams.double_quant,
+                    bnb_4bit_quant_type=hparams.quant_type,
+                    bnb_4bit_compute_dtype=torch.bfloat16
+                )
+                model_kwargs = {
+                    "quantization_config": bnb_config,
+                    "torch_dtype": torch_dtype,
+                    "device_map": {'': hparams.device}
+                }
+            else:
+                model_kwargs = {
+                    "torch_dtype": torch_dtype,
+                    "device_map": device_map
+                }
+
             if 't5' in self.model_name.lower():
-                self.model = T5ForConditionalGeneration.from_pretrained(self.model_name, torch_dtype=torch_dtype, device_map=device_map)
+                self.model = T5ForConditionalGeneration.from_pretrained(self.model_name, **model_kwargs)
                 self.tok = T5Tokenizer.from_pretrained(self.model_name)
             elif 'gpt-3.5' in self.model_name.lower():
                 self.model, self.tok = None, None
             elif 'gpt' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch_dtype, device_map=device_map)
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, **model_kwargs)
                 self.tok = GPT2Tokenizer.from_pretrained(self.model_name)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'llama' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch_dtype, device_map=device_map)
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, **model_kwargs)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name, use_fast=False)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'baichuan' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch_dtype, trust_remote_code=True, device_map=device_map)
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, **model_kwargs, trust_remote_code=True)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'chatglm' in self.model_name.lower():
-                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch_dtype, device_map=device_map)
+                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, **model_kwargs)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 if 'chatglm2'in self.model_name.lower(): 
                     self.tok.unk_token_id = 64787
                 else: 
                     self.tok.pad_token_id = self.tok.eos_token_id
             elif 'internlm' in self.model_name.lower():
-                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch_dtype, device_map=device_map)
+                self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, **model_kwargs)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'qwen2' in self.model_name.lower():
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch_dtype if hparams.alg_name not in ['MEND'] else torch.bfloat16, device_map=device_map)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name, eos_token='<|endoftext|>', pad_token='<|endoftext|>',unk_token='<|endoftext|>', trust_remote_code=True)
             elif 'qwen' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name,fp32=False,trust_remote_code=True, device_map=device_map)
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name,fp32=False,trust_remote_code=True, **model_kwargs)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name, eos_token='<|endoftext|>', pad_token='<|endoftext|>',unk_token='<|endoftext|>', trust_remote_code=True)
             elif 'mistral' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch_dtype, device_map=device_map)
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, **model_kwargs)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name)
                 self.tok.pad_token_id = self.tok.eos_token_id
             else:
@@ -115,7 +135,7 @@ class BaseEditor:
 
         if hparams.model_parallel: 
             hparams.device = str(self.model.device).split(":")[1]
-        if not hparams.model_parallel and hasattr(hparams, 'device'):
+        if not hparams.model_parallel and hasattr(hparams, 'device') and hparams.alg_name != 'QLoRA':
             self.model.to(f'cuda:{hparams.device}')
 
         self.hparams = hparams
@@ -340,12 +360,12 @@ class BaseEditor:
                 if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
                     with torch.no_grad():
                         weights_copy()
-                elif self.alg_name == 'LoRA':
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA':
                     edited_model.unload()
                     del self.model.peft_config
                 elif self.alg_name == 'MELO':
                     self.model = edited_model
-                elif self.alg_name == 'LoRA':
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA':
                     self.model = edited_model
                 else:
                     with torch.no_grad():

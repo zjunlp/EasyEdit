@@ -8,6 +8,7 @@ from ..models.serac import SERACHparams, SeracRewriteExecutor, SeracMultimodalRe
 from ..dataset import ZsreDataset, CounterFactDataset, CaptionDataset, VQADataset, PersonalityDataset, SafetyDataset
 from ..models.ike import IKEHyperParams, apply_ike_to_model, apply_ike_to_multimodal_model, apply_ike_to_per_model
 from ..models.ft_api import FTApiHyperParams, apply_ft_api_to_model
+from ..models.qlora import QLoRAHyperParams, apply_qlora_to_model
 from ..models.lora import LoRAHyperParams, apply_lora_to_model
 from ..models.grace import GraceHyperParams, apply_grace_to_model
 from ..models.pmet import PMETHyperParams, apply_pmet_to_model
@@ -26,6 +27,7 @@ ALG_DICT = {
     'SERAC': SeracRewriteExecutor().apply_to_model,
     'IKE': apply_ike_to_model,
     'FT-Api': apply_ft_api_to_model,
+    'QLoRA': apply_qlora_to_model,
     'LoRA': apply_lora_to_model,
     'GRACE': apply_grace_to_model,
     'PMET': apply_pmet_to_model,

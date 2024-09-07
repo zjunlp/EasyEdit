@@ -1,0 +1,25 @@
+alg_name: "QLoRA"
+model_name: "./results/models/Llama-3-8B"
+device: 1
+
+# QLoRA specific settings
+quantization_bit: 4
+double_quant: true
+quant_type: "nf4" # nf4, fp4， int4, int8
+
+# LoRA settings
+lora_type: "lora"  # QLoRA typically uses standard LoRA, not AdaLoRA
+lora_r: 8
+lora_alpha: 32
+lora_dropout: 0.1
+target_modules: ["q_proj", "v_proj"]
+
+# Training settings
+num_steps: 1
+batch_size: 1
+max_length: 30
+lr: 5e-3
+weight_decay: 0.0
+
+# Additional settings
+model_parallel: false
