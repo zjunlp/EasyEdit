@@ -25,3 +25,5 @@ weights: 1.0
 # for retrieve (if retrieve, pls set to True)
 retrieve: True
 replay: False # True --> will replay the past editing instances: see https://arxiv.org/abs/2405.14768 Appendix B.3
+
+model_parallel: False
