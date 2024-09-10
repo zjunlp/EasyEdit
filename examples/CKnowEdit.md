@@ -47,7 +47,7 @@ The various data types of **CKnowEdit** and their distribution are shown in the 
 The dataset can be downloaded from .
 | **dataset** | HuggingFace| WiseModel | ModelScope |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-| KnowEdit | [[HuggingFace]]() | [[WiseModel]]() | [[ModelScope]]() |
+| CKnowEdit | [[HuggingFace]](https://huggingface.co/datasets/zjunlp/CKnowEdit) | [[WiseModel]](https://wisemodel.cn/datasets/zjunlp/CKnowEdit) | [[ModelScope]](https://modelscope.cn/datasets/ZJUNLP/CKnowEdit) |
 
 Unzip the file and put it to `./data`
 
