@@ -2,6 +2,8 @@ from typing import Optional, Union, List, Tuple, Dict
 import os
 import json
 import numpy as np
+import random
+import math
 
 def _chunks(arr, n):
     """Yield successive n-sized chunks from arr."""
@@ -88,8 +90,10 @@ def _prepare_requests(prompts: Union[str, List[str]],
     if 'loc_prompts' in kwargs:
         if isinstance(kwargs['loc_prompts'], str):
             kwargs['loc_prompts'] = [kwargs['loc_prompts'],]
-        else:
-            assert len(kwargs['loc_prompts']) == len(prompts)
+        if len(kwargs['loc_prompts']) < len(requests):
+            kwargs['loc_prompts'] = (kwargs['loc_prompts'] * math.ceil(len(requests) / len(kwargs['loc_prompts'])))[:len(requests)]
+            random.shuffle(kwargs['loc_prompts'])
+        assert len(kwargs['loc_prompts']) == len(prompts)
 
         for i, request in enumerate(requests):
             request.update(
