@@ -87,7 +87,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
             prompt_tok = tok(
                 prompt,
                 return_tensors="pt",
-            ).to(device)
+            ).to(f"cuda:{device}")
             gen_token = model.generate(
                 input_ids=prompt_tok['input_ids'],
                 attention_mask=prompt_tok['attention_mask'],
