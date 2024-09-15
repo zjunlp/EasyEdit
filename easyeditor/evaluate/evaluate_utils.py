@@ -103,7 +103,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
 
     if isinstance(prompts, str):
         prompts,targets = [prompts,], [targets,]
-    if not locality and hparams.use_chat_template:
+    if not locality and hasattr(hparams, 'use_chat_template') and hparams.use_chat_template:
         prompts = [[{"role":"user", "content":m}] for m in prompts]
         prompts=tok.apply_chat_template(prompts,
                                         add_generation_prompt=True,
