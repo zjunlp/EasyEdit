@@ -1,11 +1,19 @@
 python run_wise_editing.py \
   --editing_method=WISE \
-  --hparams_dir=../hparams/WISE/llama-7b \
+  --hparams_dir=../hparams/WISE/llama-3-8b.yaml \
   --data_dir=../data/wise \
-  --ds_size=600 \
-  --data_type=hallucination \
+  --ds_size=10 \
+  --data_type=ZsRE \
   --sequential_edit
 
+
+# python run_wise_editing.py \
+#   --editing_method=WISE \
+#   --hparams_dir=../hparams/WISE/llama-7b \
+#   --data_dir=../data/wise \
+#   --ds_size=600 \
+#   --data_type=hallucination \
+#   --sequential_edit
 
 
 #python run_wise_editing.py \
