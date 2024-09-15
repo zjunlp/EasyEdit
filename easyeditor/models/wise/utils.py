@@ -81,7 +81,7 @@ def tokenize(batch, tokenizer, device, context_templates=None, hparams=None):
     mask_token = -100 # ignore_index of CrossEntropyLoss
 
     # input
-    if hparams.use_chat_template:
+    if hasattr(hparams, 'use_chat_template') and hparams.use_chat_template:
         full_prompt = [tokenizer.apply_chat_template([{"role":"user", "content":templ.format(p)}],
                                         add_generation_prompt=True,
                                         tokenize=False) + ' ' + l
