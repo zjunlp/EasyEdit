@@ -70,6 +70,7 @@ pip install -r requirements.txt #https://github.com/zjunlp/EasyEdit/blob/main/re
 **Config**
 
 - For reproducing experimental results, please refer to [config.yaml](https://github.com/zjunlp/EasyEdit/blob/main/hparams/WISE/llama-7b.yaml), which contains the configuration parameters used for the run. Each parameter is explained in the configuration file, and we recommend using the default parameters. If you need to reproduce WISE-Retrieve, set `retrieve=True`; to reproduce WISE-Merge, set `retrieve=False`.
+- We now provide preliminary support for chat templates. You can enable this feature by adding `use_chat_template: True` in the configuration and we provide an example [here](https://github.com/zjunlp/EasyEdit/blob/main/hparams/WISE/llama-3-8b.yaml#L31). For more details, please refer to the related [issues](https://github.com/zjunlp/EasyEdit/issues/374).
 
 #### Editing LlaMA-2 on ZsRE with WISE
 
