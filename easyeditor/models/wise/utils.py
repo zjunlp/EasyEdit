@@ -73,58 +73,69 @@ def get_logits(x):
     return x.logits if hasattr(x, "logits") else x
 
 def tokenize(batch, tokenizer, device, context_templates=None, hparams=None):
-    prompt, label = batch["prompt"], batch["target_new"]
-    if not isinstance(prompt, list):
-        prompt=[prompt]
-    if not isinstance(label, list):
-        label=[label]
-    mask_token = -100 # ignore_index of CrossEntropyLoss
+    # Initialize lists to store the processed data from each batch entry
+    len_temp = len(context_templates)
+    prompts = [item['prompt'] for item in batch]
+    labels = [item['target_new'] for item in batch]
+    loc_prompts = [item['loc_prompt'] for item in batch]
 
-    # input
+    mask_token = -100  # ignore_index of CrossEntropyLoss
     if hasattr(hparams, 'use_chat_template') and hparams.use_chat_template:
         full_prompt = [tokenizer.apply_chat_template([{"role":"user", "content":templ.format(p)}],
                                         add_generation_prompt=True,
                                         tokenize=False) + ' ' + l
-                        for p, l in zip(prompt, label) for templ in context_templates]
+                        for templ in context_templates for p, l in zip(prompts, labels)]
         prompt_ids = tokenizer([tokenizer.apply_chat_template([{"role":"user", "content":templ.format(p)}],
                                     add_generation_prompt=True,
-                                    tokenize=False) for p in prompt for templ in context_templates], return_tensors="pt", padding=True, truncation=True)["input_ids"]
+                                    tokenize=False) for templ in context_templates for p in prompts], return_tensors="pt", padding=True, truncation=True)["input_ids"]
     else:
-        full_prompt = [f"{templ.format(p + ' ' + l)}" for p, l in zip(prompt, label) for templ in context_templates]
-        prompt_ids = tokenizer([f"{templ.format(p)}" for p in prompt for templ in context_templates], return_tensors="pt", padding=True, truncation=True)["input_ids"]
-    full_prompt += [batch['loc_prompt']] # add for subject activation
+        full_prompt = [f"{templ.format(p + ' ' + l)}" for templ in context_templates for p, l in zip(prompts, labels)]
+        prompt_ids = tokenizer([f"{templ.format(p)}" for templ in context_templates for p in prompts], return_tensors="pt", padding=True, truncation=True)["input_ids"]
+    full_prompt += loc_prompts  # add for subject activation
 
     num_prompt_toks = [len(i) for i in prompt_ids]
     tokens = tokenizer(full_prompt, return_tensors="pt", padding=True, truncation=True)
     tokens["labels"] = tokens["input_ids"].clone()
+
+    # Mask the tokens based on hparams.objective_optimization
     if hparams.objective_optimization == 'only_label':
         for i in range(len(num_prompt_toks)):
             tokens["labels"][i][:num_prompt_toks[i]] = mask_token
 
     tokens["labels"][tokens["input_ids"] == tokenizer.pad_token_id] = mask_token
-    if batch['loc_prompt'] in batch['prompt']: ## subject: Factual Editing
-        subject_token = tokenizer.encode(' ' + batch['loc_prompt'], add_special_tokens=False)
-        subject_token1 = tokenizer.encode(batch['loc_prompt'], add_special_tokens=False)
-        subject_length = len(subject_token)
-        act_mask = torch.zeros_like(tokens['input_ids'][:-1])
-        deact_mask = torch.zeros_like(tokens['input_ids'][:-1])
-        for i, token in enumerate(tokens['input_ids'][:-1]):
-            start_idx = find_sublist_start_index(token.detach().cpu().numpy().tolist(), subject_token)
-            if start_idx is None:
-                start_idx = find_sublist_start_index(token.detach().cpu().numpy().tolist(), subject_token1)
-                subject_length = len(subject_token1)
-            act_mask[i][start_idx: start_idx + subject_length] = 1
-            deact_mask[i][:start_idx] = 1
-            deact_mask[i][start_idx + subject_length:] = 1
+    act_masks = []
+    deact_masks = []
+    # Iterate through each batch entry and compute act_mask, deact_mask
+    for i, loc_prompt in enumerate(loc_prompts):
+        if loc_prompt in prompts[i]:  # subject: Factual Editing
+            subject_token = tokenizer.encode(' ' + loc_prompt, add_special_tokens=False)
+            subject_token1 = tokenizer.encode(loc_prompt, add_special_tokens=False)
+            subject_length = len(subject_token)
+            act_mask = torch.zeros_like(tokens['input_ids'][int(i*len_temp):int((i+1)*len_temp)])
+            deact_mask = torch.zeros_like(tokens['input_ids'][int(i*len_temp):int((i+1)*len_temp)])
+            for j, token in enumerate(tokens['input_ids'][int(i*len_temp):int((i+1)*len_temp)]):
+                start_idx = find_sublist_start_index(token.detach().cpu().numpy().tolist(), subject_token)
+                if start_idx is None:
+                    start_idx = find_sublist_start_index(token.detach().cpu().numpy().tolist(), subject_token1)
+                    subject_length = len(subject_token1)
+                act_mask[j][start_idx: start_idx + subject_length] = 1
+                deact_mask[j][:start_idx] = 1
+                deact_mask[j][start_idx + subject_length:] = 1
+        else:  # General Editing
+            act_mask = None
+            deact_mask = None
 
-        act_mask = act_mask.to(device)
-        deact_mask = deact_mask.to(device)
-    else: # General Editing
-        act_mask = None
-        deact_mask = None
+        # Append the masks to the lists
+        act_masks.append(act_mask)
+        deact_masks.append(deact_mask)
 
-    tokens = {f"{k1}" : v1.to(device) for k1, v1 in tokens.items()}
-    return tokens, act_mask, deact_mask
+    # Convert to tensors and move to the specified device
+    act_masks = [mask.to(device) if mask is not None else None for mask in act_masks]
+    deact_masks = [mask.to(device) if mask is not None else None for mask in deact_masks]
+
+    tokens = {key: val.to(device) for key, val in tokens.items()}
+    # tokens:[(bs*(len_temp+1))*sequence_length],actmasks:bs*[len_temp*sequence_length],deact_masks:bs*[len_temp*sequence_length]
+    return tokens, act_masks, deact_masks
 
 class EarlyStopMeter:
     """Computes and stores the average and current value"""
