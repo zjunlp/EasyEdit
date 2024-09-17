@@ -244,9 +244,20 @@ class BaseEditor:
 
                 chunk_metrics.append(metrics)
 
-            with torch.no_grad():
-                for k, v in weights_copy.items():
-                    nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+            if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
+                with torch.no_grad():
+                    weights_copy()
+            elif self.alg_name == 'LoRA':
+                edited_model.unload()
+                del self.model.peft_config
+            elif self.alg_name == 'MELO':
+                self.model = edited_model
+            elif self.alg_name == 'LoRA':
+                self.model = edited_model
+            else:
+                with torch.no_grad():
+                    for k, v in weights_copy.items():
+                        nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
 
             for i, request in enumerate(record_chunks):
                 chunk_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
