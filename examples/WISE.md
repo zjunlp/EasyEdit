@@ -112,6 +112,25 @@ metrics, edited_model, _ = editor.edit(
 - `loc_data`: used to provide $x_i$ in Equation 5, sampled from the train set.
 - `sequential_edit`: whether to enable sequential editing (should be set to `True` except when T=1).
 
+#### Batch_editing LlaMa-2 on ZsRE with WISE
+
+- Please first locate the `.YAML` file containing the definitions of the hyperparameters. Then, add a new hyperparameter named `batch_size` and set its value to a integer of your choice.
+
+- Find the [script](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_wise_editing.py) and change the function being called from **edit** to **batch_edit**, as shown below:
+
+  ```
+      metrics, edited_model, _ = editor.batch_edit(
+        prompts=prompts,
+        rephrase_prompts=rephrase_prompts,
+        target_new=target_new,
+        loc_prompts=loc_prompts,
+        subject=subject,
+        locality_inputs=locality_inputs,
+        sequential_edit=args.sequential_edit,
+        eval_metric='ppl' if args.data_type == 'hallucination' else 'token em'
+    )
+  ```
+
 ## 📖 Citation
 
 If finding this work useful for your research, you can cite it as follows:
