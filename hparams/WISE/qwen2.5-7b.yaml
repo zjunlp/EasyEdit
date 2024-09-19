@@ -1,5 +1,5 @@
 alg_name: "WISE"
-model_name: "./hugging_cache/qwen2.5-7b"
+model_name: "./hugging_cache/qwen2.5-7b-Instruct"
 device: 0
 
 mask_ratio: 0.2
@@ -25,3 +25,6 @@ weights: 1.0
 # for retrieve (if retrieve, pls set to True)
 retrieve: True
 replay: False # True --> will replay the past editing instances: see https://arxiv.org/abs/2405.14768 Appendix B.3
+
+model_parallel: False
+use_chat_template: True
