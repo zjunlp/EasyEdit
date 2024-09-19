@@ -1,5 +1,5 @@
 alg_name: "WISE"
-model_name: "./hugging_cache/qwen2.5-7b-Instruct"
+model_name: "./hugging_cache/Qwen2.5-7b-Instruct"
 device: 0
 
 mask_ratio: 0.2
