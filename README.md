@@ -289,7 +289,7 @@ You can choose different editing methods according to your specific needs.
 | PMET | | | ✅ |  |  ✅|  |  |  | | |
 | InstructEdit | | ✅ |  |  |  ✅|  |  |  | | |
 | DINM| |✅ |  |  |✅  |  |  |  | | ✅|
-
+| WISE | |✅ | ✅ |  |✅  | ✅ |  |  |✅ | |
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 
