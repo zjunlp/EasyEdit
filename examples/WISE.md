@@ -133,6 +133,76 @@ metrics, edited_model, _ = editor.edit(
     )
   ```
 
+- **Example**:
+
+  Here is an example of batch_editing `LlaMa-3.1-8B-Instruct` on ZsRE with WISE
+  
+  Add a new hyperparameter `batch_size` to  the `EasyEdit/hparams/WISE/llama-7b.yaml` as follows:
+  ```
+  batch_size: 4
+  ```
+
+  The result of the first sample is shown as follows:
+  ```
+      {
+        "pre": {
+            "rewrite_acc": [
+                0.3333333333333333
+            ],
+            "locality": {
+                "neighborhood_output": [
+                    [
+                        30,
+                        1226,
+                        2370
+                    ]
+                ]
+            },
+            "portability": {},
+            "rephrase_acc": [
+                0.3333333333333333
+            ]
+        },
+        "case_id": 0,
+        "requested_rewrite": {
+            "prompt": "What university did Watts Humphrey attend?",
+            "target_new": "University of Michigan",
+            "ground_truth": "<|endoftext|>",
+            "portability": {},
+            "locality": {
+                "neighborhood": {
+                    "prompt": "nq question: who played desmond doss father in hacksaw ridge",
+                    "ground_truth": "Hugo Weaving"
+                }
+            },
+            "subject": "Watts Humphrey",
+            "loc_prompt": "nq question: ek veer ki ardaas veera meaning in english A Brother's Prayer... Veera",
+            "rephrase_prompt": "What university did Watts Humphrey take part in?"
+        },
+        "time": 52.90575933456421,
+        "post": {
+            "rewrite_acc": [
+                1.0
+            ],
+            "locality": {
+                "neighborhood_output": [
+                    [
+                        30,
+                        1226,
+                        2370
+                    ]
+                ]
+            },
+            "portability": {},
+            "rephrase_acc": [
+                1.0
+            ]
+        }
+    }
+  ``` 
+
+- ❗️❗️**Note**: The larger the value set for the batch-size field, the poorer the output results.
+
 ## 📖 Citation
 
 If finding this work useful for your research, you can cite it as follows:

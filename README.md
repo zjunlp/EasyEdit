@@ -279,17 +279,17 @@ You can choose different editing methods according to your specific needs.
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | | |
 | IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
 | MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| KN   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| KN  | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
 | r-ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
 | MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
 | EMMET | | ✅ | ✅ |    | ✅ |    |   |    |    |    |
-| GRACE | | ✅| ✅ |  |  ✅|  |  |  | | |
+| GRACE| | ✅| ✅ |  |  ✅|  |  |  | | |
 | MELO | |✅ |  |  |  |  |  |  | | |
 | PMET | | | ✅ |  |  ✅|  |  |  | | |
-| InstructEdit | | ✅ |  |  |  ✅|  |  |  | | |
-| DINM| |✅ |  |  |✅  |  |  |  | | ✅|
-
+| [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) | | ✅ |  |  |  ✅|  |  |  | | |
+| [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)| |✅ |  |  |✅  |  |  |  | | ✅|
+| [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ | ✅ |  |✅  | ✅ |  |  |✅ | |
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 
@@ -624,6 +624,7 @@ Our results are all based on the default configuration
 |  MEMIT  |    33GB    |   31GB   |   31GB   |  11GB  |
 | AdaLoRA |    29GB    |   24GB   |   25GB   |  8GB   |
 |  GRACE  |    27GB    |          |   23GB   |  6GB   |
+|  WISE  |    34GB    |          |   27GB   |  7GB   |
 <!-- editing multimodal -->
 ## 📌Use EasyEdit
 
