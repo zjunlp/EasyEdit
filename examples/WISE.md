@@ -134,6 +134,8 @@ metrics, edited_model, _ = editor.edit(
   ```
 
 - **Example**:
+
+  Here is an example of batch_editing `LlaMa-3.1-8B-Instruct` on ZsRE with WISE
   
   Add a new hyperparameter `batch_size` to  the `EasyEdit/hparams/WISE/llama-7b.yaml` as follows:
   ```
