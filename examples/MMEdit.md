@@ -7,12 +7,12 @@
 - [Overview](#overview)
     + [Pip Installation](#pip-installation)
     + [Checkpoints Preparation](#checkpoints-preparation)
-- [📕 MMEdit Datasets](#📕-mmedit-datasets)
-- [📌 Use EasyEdit](#📌-use-easyedit)
+- [📕 MMEdit Datasets](#-mmedit-datasets)
+- [📌 Use EasyEdit](#-use-easyedit)
     + [MultimodalTrainer](#multimodaltrainer)
     + [MultimodalEditor](#multimodaleditor)
-- [🎉 Acknowledgement](#🎉-acknowledgement)
-- [📖 Citation](#📖-citation)
+- [🎉 Acknowledgement](#-acknowledgement)
+- [📖 Citation](#-citation)
 
 # Overview
 <div align="center">
@@ -26,7 +26,7 @@
 | E-IC | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Image Captioning_ |
 | E-VQA | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Visual Question Answering_ |
 
-- All **images** used in **E-IC** and **E-VQA** are available for download at [Google Drive](https://drive.google.com/file/d/1fQzJBFkok5kFZT6QUuT-HCuYKk2Vb93O/view)
+- All **images** used in **E-IC** and **E-VQA** are available for download at [Google Drive](https://drive.google.com/file/d/1fQzJBFkok5kFZT6QUuT-HCuYKk2Vb93O/view) or [BaiduNetDisk](https://pan.baidu.com/s/15WJuPOvxRyF6GDZ-B6_NiA?pwd=wqlg ).
 - For **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
 - For **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
 
@@ -70,7 +70,7 @@ pip install -r requirements.txt
 You should configure the `qformer_checkpoint` and `pretrained_ckpt` settings, deviating from the original repository's guidelines. Please refer to the *Multimodal* section in this [file](https://github.com/zjunlp/EasyEdit/blob/5efc6e4f7757613def2b514b60f24d7c38497095/hparams/MEND/minigpt4.yaml) for the correct settings.
 `pretrained_ckpt` can be downloaded from [here](https://drive.google.com/file/d/1RY9jV0dyqLX-o38LrumkKRh6Jtaop58R/view), and for the `qformer_checkpoint`, you can find it [here](https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained_flant5xxl.pth).
 
-# 📌Use EasyEdit
+# 📌 Use EasyEdit
 
 ### MultimodalTrainer
 
