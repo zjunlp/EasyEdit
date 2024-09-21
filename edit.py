@@ -1,15 +1,16 @@
 from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
-    SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, \
+    SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, QLoRAHyperParams, \
     GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams, R_ROMEHyperParams, EMMETHyperParams
-from easyeditor import ZsreDataset, CounterFactDataset
+from easyeditor import ZsreDataset, CounterFactDataset, KnowEditDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
 import math
 import random
-
+import os
+import json
 
 def test_KE():
     prompts = ['Who is the architect for Toodyay Fire Station?', 'Who is Claire Clairmont\'s sister?',
@@ -1695,6 +1696,77 @@ def test_LoRA_llama():
     import pdb
     pdb.set_trace()
 
+    return metrics, edited_model
+
+def test_qlora_Qwen():
+    from easyeditor import BaseEditor, QLoRAHyperParams, KnowEditDataset
+    datas = KnowEditDataset('EasyEdit/knowedit_benchmark/WikiBio/wikibio-train-all.json',size=10)
+    prompts=[data['prompt'] for data in datas]
+    subjects=[data['subject'] for data in datas]
+    target_new = [data['target_new'] for data in datas]
+
+    locality_rs = [data['locality_rs'] for data in datas]
+    locality_f = [data['locality_f'] for data in datas]
+    locality_Relation_Specificity_prompts=[]
+    locality_Relation_Specificity_ans=[]
+
+    locality_data = [locality_rs]
+    locality_prompts = [locality_Relation_Specificity_prompts]
+    locality_answers = [locality_Relation_Specificity_ans]
+    for data, local_prompts, local_answers in zip(locality_data,locality_prompts,locality_answers):
+        for item in data:
+            if item is None:
+                local_prompts.append(None)
+                local_answers.append(None)
+            else:
+                temp_prompts = []
+                temp_answers = []
+                for pr in item:
+                    prompt=pr["prompt"]
+                    an=pr["ground_truth"]
+                    while isinstance(an,list):
+                        an = an[0]
+                    if an.strip() =="":
+                        continue
+                    temp_prompts.append(prompt)
+                    temp_answers.append(an)
+                local_prompts.append(temp_prompts)
+                local_answers.append(temp_answers)
+    assert len(prompts) == len(locality_Relation_Specificity_prompts)
+    portability_inputs = None
+    locality_inputs = {}
+    locality_inputs = {
+        'Relation_Specificity':{
+            'prompt': locality_Relation_Specificity_prompts,
+            'ground_truth': locality_Relation_Specificity_ans
+        }
+    }
+
+    hparams = QLoRAHyperParams.from_hparams('./hparams/QLoRA/qwen2.5-7b.yaml')
+    pre_file = f"./qlora_wikibio_pre_edit.json"
+    metrics_save_dir = f"./qlora_wikibio_metrics"
+    print(pre_file)
+    if pre_file is not None and os.path.exists(pre_file):
+        pre_edit = json.load(open(pre_file,'r'))
+        assert len(pre_edit) == len(prompts)
+    else:
+        pre_edit = None
+
+    train_ds = None
+    editor = BaseEditor.from_hparams(hparams)
+
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        target_new=target_new,
+        subject=subjects,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        train_ds=train_ds,
+        keep_original_weight=True,
+        pre_file=pre_file,
+        pre_edit = pre_edit,
+        test_generation=True,
+    )
     return metrics, edited_model
 
 

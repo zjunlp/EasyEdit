@@ -1,0 +1,20 @@
+alg_name: "LoRA"
+model_name: "./Models/Qwen2.5-7B"
+device: 0
+
+# LoRA settings
+lora_type: "lora"  # QLoRA typically uses standard LoRA, not AdaLoRA
+lora_r: 8
+lora_alpha: 32
+lora_dropout: 0.1
+target_modules: ["q_proj", "v_proj"]
+
+# Training settings
+num_steps: 1
+batch_size: 1
+max_length: 30
+lr: 5e-3
+weight_decay: 0.0
+
+# Additional settings
+model_parallel: True
