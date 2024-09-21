@@ -274,22 +274,22 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 You can choose different editing methods according to your specific needs.
 | **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| [FT](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_knowedit_llama2.py) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [AdaLoRA](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_knowedit_llama2.py) |  |  |  |  | ✅ |  | ✅ | | | |
-| [SERAC](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_knowedit_llama2.py) | ✅ | ✅ | ✅ | | ✅ |  | |  | | |
-| [IKE](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_knowedit_llama2.py) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
-| [MEND](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_knowedit_llama2.py) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [KN](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_knowedit_llama2.py)   | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [ROME](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_knowedit_llama2.py) | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
-| [r-ROME](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/r_rome) | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
-| [MEMIT](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_knowedit_llama2.py) | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
-| [EMMET](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/emmet) | | ✅ | ✅ |    | ✅ |    |   |    |    |    |
-| [GRACE](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_CKnowEdit_qwen-1.8B.py)| | ✅| ✅ |  |  ✅|  |  |  | | |
-| [MELO](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/melo) | |✅ |  |  |  |  |  |  | | |
-| [PMET](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/pmet) | | | ✅ |  |  ✅|  |  |  | | |
-| [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/test_InstructEdit.py) | | ✅ |  |  |  ✅|  |  |  | | |
-| [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_safety_editing.py)| |✅ |  |  |✅  |  |  |  | | ✅|
-| [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_wise_editing.py) | |✅ | ✅ |  |✅  | ✅ |  |  |✅ | |
+| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| AdaLoRA |  |  |  |  | ✅ |  | ✅ | | | |
+| SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | | |
+| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| KN  | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
+| r-ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
+| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
+| EMMET | | ✅ | ✅ |    | ✅ |    |   |    |    |    |
+| GRACE| | ✅| ✅ |  |  ✅|  |  |  | | |
+| MELO | |✅ |  |  |  |  |  |  | | |
+| PMET | | | ✅ |  |  ✅|  |  |  | | |
+| [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) | | ✅ |  |  |  ✅|  |  |  | | |
+| [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)| |✅ |  |  |✅  |  |  |  | | ✅|
+| [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ | ✅ |  |✅  | ✅ |  |  |✅ | |
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 
