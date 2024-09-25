@@ -303,6 +303,60 @@ class WISE(torch.nn.Module):
 
         return torch.mean(loss4[loss4 > 0]) if min(loss4[loss4 > 0].size()) > 0 else torch.tensor(0.)
 
+    def save(self, save_path):
+        import os
+        directory = os.path.dirname(save_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)  # Create the directory if it doesn't exist
+
+        # Save additional information, such as memory_weight, memory_mean_act, etc.
+        additional_info = {
+            'memory_weight': self.get_adapter_layer().memory_weight,
+            'memory_mean_act': self.get_adapter_layer().memory_mean_act,
+            'merge_cnt': self.get_adapter_layer().merge_cnt,
+            'editing_mean_act': self.get_adapter_layer().editing_mean_act,
+            'editing_total_cnt': self.get_adapter_layer().editing_total_cnt,
+            'weight_mask': self.get_adapter_layer().weight_mask,
+            # Add other variables that need to be saved
+        }
+        if hasattr(self.get_adapter_layer(), 'key_id') and self.get_adapter_layer().key_id is not None:
+            additional_info['key_id'] = self.get_adapter_layer().key_id
+        # Save all information to the file
+        torch.save({
+            'adapter_state_dict': self.get_adapter_layer().state_dict(),
+            'config': self.config,
+            'additional_info': additional_info,
+            'edit_history': edit_history,
+            'merge_group_edit_history': merge_group_edit_history
+        }, save_path)
+
+    def load(self, load_path):
+        import os
+        if not os.path.exists(load_path):
+            raise FileNotFoundError(f"Checkpoint file not found: {load_path}")
+
+        # Load all previously saved information
+        saved_data = torch.load(load_path)
+        if hasattr(self.model.config, 'hidden_act'):
+            saved_data['config'].hidden_act = self.model.config.hidden_act
+        elif hasattr(self.model.config, 'activation_function'):
+            saved_data['config'].hidden_act = self.model.config.activation_function
+        if saved_data['config'] != self.config:
+            print("Warning: The loaded WISE config is different from the original config")
+
+        # Restore the state dictionary of the WISE Adapter instance
+        self.get_adapter_layer().load_state_dict(saved_data['adapter_state_dict'])
+        # Restore additional information
+        adapter_layer = self.get_adapter_layer()
+        for key, value in saved_data['additional_info'].items():
+            setattr(adapter_layer, key, value)
+        
+        # Restore editing history
+        global edit_history, merge_group_edit_history
+        edit_history = saved_data['edit_history']
+        merge_group_edit_history = saved_data['merge_group_edit_history']
+        print(f"Model configuration and WISE state loaded from {load_path}")
+
 class WISEAdapter(torch.nn.Module):
     def __init__(self, config, layer, transpose):
         super(WISEAdapter, self).__init__()

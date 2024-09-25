@@ -362,6 +362,9 @@ class BaseEditor:
         if sequential_edit:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
+            if self.alg_name == 'WISE' and hasattr(self.hparams, 'save_path') and self.hparams.save_path:
+                print("Start saving the WISE model!")
+                edited_model.save(self.hparams.save_path)
             for i, request in enumerate(requests):
                 edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
         else:

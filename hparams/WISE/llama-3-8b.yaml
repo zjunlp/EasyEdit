@@ -29,3 +29,7 @@ replay: False # True --> will replay the past editing instances: see https://arx
 
 model_parallel: False
 use_chat_template: True
+
+# for save and load
+# save_path: "./wise_checkpoint/wise.pt"
+# load_path: "./wise_checkpoint/wise.pt"

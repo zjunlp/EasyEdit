@@ -38,6 +38,10 @@ class WISEHyperParams(HyperParams):
     model_parallel: bool = False
     use_chat_template: bool = False
 
+    # Save and Load
+    save_path: str = None
+    load_path: str = None
+
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
         if '.yaml' not in hparams_name_or_path:

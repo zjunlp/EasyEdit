@@ -1,4 +1,4 @@
-python run_wise_editing.py \
+CUDA_VISIBLE_DEVICES=0 python run_wise_editing.py \
   --editing_method=WISE \
   --hparams_dir=../hparams/WISE/llama-3-8b.yaml \
   --data_dir=../data/wise \
