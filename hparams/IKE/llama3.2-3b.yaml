@@ -1,0 +1,8 @@
+alg_name: "IKE"
+model_name: "./hugging_cache/llama-3.2-3b"
+sentence_model_name: "./hugging_cache/all-MiniLM-L6-v2"
+device: 0
+results_dir: "./results"
+
+k: 16
+model_parallel: false
