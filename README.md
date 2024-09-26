@@ -65,6 +65,7 @@
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
 
+- 2024-09-26, 🎉🎉 Our paper "[WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models](https://arxiv.org/abs/2405.14768)" has been accepted by **NeurIPS 2024**.
 - 2024-09-20, 🎉🎉 Our papers: "[Knowledge Mechanisms in Large Language Models: A Survey and Perspective](https://arxiv.org/abs/2407.15017)" and "[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" have been accepted by **EMNLP 2024** Findings.
   
 - 2024-07-29, The EasyEdit has added a new model editing algorithm [EMMET](https://arxiv.org/abs/2403.14236), which generalizes ROME to the batch setting. This essentially allows making batched edits using the ROME loss function.
