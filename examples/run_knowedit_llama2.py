@@ -20,6 +20,41 @@ from sentence_transformers import SentenceTransformer
 from easyeditor import KnowEditDataset
 
 import argparse
+import numpy as np
+
+def eval(result_path):
+    if path.exists(result_path):
+        
+        with open(result_path,'r') as file:
+            datas=json.load(file)
+        #data_rome_counterfact['post'].keys()  dict_keys(['rewrite_acc', 'locality', 'portability'])
+        Edit_Succ_list=[data_rome_counterfact['post']['rewrite_acc'][0] for data_rome_counterfact in datas]
+        Edit_Succ=sum(Edit_Succ_list)/len(Edit_Succ_list)*100
+        print('Edit_Succ:',Edit_Succ)
+        
+        Portability_list=[]
+        for data_rome_counterfact in datas:
+            case_list=[]
+            for key in data_rome_counterfact['post']['portability'].keys():
+                case_list.append(sum(data_rome_counterfact['post']['portability'][key])/len(data_rome_counterfact['post']['portability'][key])*100)
+            Portability_list.append(np.mean(case_list))
+        Overall_portability = np.mean(Portability_list)
+        print('Overall_portability:',Overall_portability)
+
+        Locality_list=[]
+        for data_rome_counterfact in datas:
+            case_list=[]
+            for key in data_rome_counterfact['post']['locality'].keys():
+                case_list.append(sum(data_rome_counterfact['post']['locality'][key])/len(data_rome_counterfact['post']['locality'][key])*100)
+            Locality_list.append(np.mean(case_list))
+        Overall_locality = np.mean(Locality_list)
+        print('Overall_locality:',Overall_locality)
+        
+        Fluency_list=[x['post']['fluency']['ngram_entropy'] for x in datas]
+        Fluency=sum(Fluency_list)/len(Fluency_list)*100
+        print('Fluency:',Fluency)
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -189,7 +224,7 @@ if __name__ == "__main__":
                 'ground_truth': locality_Relation_Specificity_ans
             }
         }
-    
+    # print(locality_inputs)
     hparams = editing_hparams.from_hparams(args.hparams_dir)
     args.pre_file = f"./{hparams.model_name.split('/')[-1]}_{args.datatype}_pre_edit.json"
     print(args.pre_file)
@@ -219,4 +254,6 @@ if __name__ == "__main__":
     )
     if not os.path.exists(args.metrics_save_dir):
         os.makedirs(args.metrics_save_dir)
-    json.dump(metrics, open(os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datatype}_{hparams.model_name.split("/")[-1]}_results.json'), 'w'), indent=4)
+    result_path = os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datatype}_{hparams.model_name.split("/")[-1]}_results.json')
+    json.dump(metrics, open(result_path, 'w'), indent=4)
+    eval(result_path)
