@@ -93,6 +93,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
                 attention_mask=prompt_tok['attention_mask'],
                 max_new_tokens=len(target_new_tokens),
                 pad_token_id=tok.eos_token_id,
+                do_sample=False,
                 use_cache=False,
             )
             if locality:
