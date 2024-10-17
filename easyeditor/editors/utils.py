@@ -45,7 +45,7 @@ def summary_metrics(all_metrics):
             if key in all_metrics[0][eval].keys() and all_metrics[0][eval][key] != {}:
                 mean_metrics[eval][key] = dict()
                 for lkey in get_all_acc_keys(all_metrics):
-                    metrics = [metric[eval][key][lkey] for metric in all_metrics if lkey in metric[eval][key].keys()]
+                    metrics = [np.mean(metric[eval][key][lkey]) for metric in all_metrics if lkey in metric[eval][key].keys()]
                     if len(metrics) > 0:
                         mean_metrics[eval][key][lkey] = np.mean(metrics)
                     # mean_metrics[eval][key][lkey] = np.mean(
