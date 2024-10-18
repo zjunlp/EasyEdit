@@ -37,7 +37,8 @@ def eval(result_path):
             case_list=[]
             for key in data_rome_counterfact['post']['portability'].keys():
                 case_list.append(sum(data_rome_counterfact['post']['portability'][key])/len(data_rome_counterfact['post']['portability'][key])*100)
-            Portability_list.append(np.mean(case_list))
+            if len(case_list) != 0:
+                Portability_list.append(np.mean(case_list))
         Overall_portability = np.mean(Portability_list)
         print('Overall_portability:',Overall_portability)
 
@@ -46,7 +47,8 @@ def eval(result_path):
             case_list=[]
             for key in data_rome_counterfact['post']['locality'].keys():
                 case_list.append(sum(data_rome_counterfact['post']['locality'][key])/len(data_rome_counterfact['post']['locality'][key])*100)
-            Locality_list.append(np.mean(case_list))
+            if len(case_list) != 0:
+                Locality_list.append(np.mean(case_list))
         Overall_locality = np.mean(Locality_list)
         print('Overall_locality:',Overall_locality)
         
