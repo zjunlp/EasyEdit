@@ -186,9 +186,9 @@ class BaseEditor:
                    target_new: List[str],
                    ground_truth: Optional[List[str]] = None,
                    rephrase_prompts: Optional[List[str]] = None,
-                   locality_prompts: Optional[List[str]] = None,
-                   locality_ground_truth: Optional[List[str]] = None,
-                   keep_original_weight=False,
+                   locality_inputs: Optional[Dict] = None,
+                   portability_inputs: Optional[Dict] = None,
+                   sequential_edit=False,
                    verbose=True,
                    **kwargs
                    ):
@@ -211,8 +211,7 @@ class BaseEditor:
 
         assert BatchEditor.is_batchable_method(self.alg_name), f'The Method {self.alg_name} can not batch edit examples.'
 
-        requests = _prepare_requests(prompts, target_new, ground_truth, rephrase_prompts,
-                                          locality_prompts, locality_ground_truth, **kwargs)
+        requests = _prepare_requests(prompts, target_new, ground_truth, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
 
         assert hasattr(self.hparams, 'batch_size'), f'Method {self.alg_name} found, pls specify the batch_size....'
         all_metrics = []
@@ -225,8 +224,7 @@ class BaseEditor:
                 record_chunks,
                 self.hparams,
                 copy=False,
-                return_orig_weights=True,
-                keep_original_weight=keep_original_weight,
+                return_orig_weights=True
             )
             exec_time = time() - start
             LOG.info(f"Execution editing took {exec_time}")
