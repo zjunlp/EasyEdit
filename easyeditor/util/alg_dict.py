@@ -16,6 +16,7 @@ from ..models.melo import MELOHyperParams, apply_melo_to_model
 from ..models.wise import WISEHyperParams, apply_wise_to_model
 from ..models.r_rome import R_ROMEHyperParams, apply_r_rome_to_model
 from ..models.emmet import EMMETHyperParams, apply_emmet_to_model
+from ..models.deepedit_api import DeepEditApiHyperParams, apply_deepedit_api_to_model
 
 ALG_DICT = {
     'ROME': apply_rome_to_model,
@@ -34,7 +35,8 @@ ALG_DICT = {
     'MELO': apply_melo_to_model,
     'WISE': apply_wise_to_model,
     'R-ROME': apply_r_rome_to_model,
-    "EMMET": apply_emmet_to_model
+    "EMMET": apply_emmet_to_model,
+    'DeepEdit-Api': apply_deepedit_api_to_model
 }
 
 ALG_MULTIMODAL_DICT = {

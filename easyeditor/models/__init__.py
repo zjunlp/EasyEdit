@@ -14,3 +14,4 @@ from .wise import *
 from .r_rome import *
 from .qlora import *
 from .lora import *
+from .deepedit_api import *

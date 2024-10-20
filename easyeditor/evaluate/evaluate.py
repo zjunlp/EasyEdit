@@ -342,3 +342,4 @@ def icl_lm_eval(
         if neighborhood:
             return ans.squeeze().detach().cpu().numpy().tolist()
         return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
+    
