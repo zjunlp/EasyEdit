@@ -39,6 +39,7 @@
   - [Evaluation](#evaluation)
 - [🌟Overview](#🌟overview)
     - [Current Implementation](#current-implementation)
+    - [Quick Start on Some Works Designed by Our Team](#quick-start-on-some-works-designed-by-our-team)
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#🔧pip-installation)
@@ -300,6 +301,18 @@ You can choose different editing methods according to your specific needs.
 | [FT-Api](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates) | [gpt-3.5-turbo(ChatGPT)](https://github.com/zjunlp/EasyEdit/blob/main/hparams/FT-Api/gpt-3.5-turbo.yaml) | official fine-tuing Api for gpt-3.5-turbo | -->
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
+
+#### Quick Start on Some Works Designed by Our Team
+
+| **Project** | Description |    Path   |
+| :--------: | :---------: | :-------: |
+|InstructEdit|InstructEdit: Instruction-based Knowledge Editing for Large Language Models| [Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md)|
+|DINM|Detoxifying Large Language Models via Knowledge Editing|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)|
+|WISE|WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md)|
+|ConceptEdit|Editing Conceptual Knowledge for Large Language Models|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/ConceptEdit.md)|
+|MMEdit|Can We Edit Multimodal Large Language Models?|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/MMEdit.md)|
+|PersonalityEdit|Editing Personality For Large Language Models|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/PersonalityEdit.md)|
+
 
 ### Dataset
 
