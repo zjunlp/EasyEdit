@@ -39,7 +39,7 @@
   - [Evaluation](#evaluation)
 - [🌟Overview](#🌟overview)
     - [Current Implementation](#current-implementation)
-    - [Quick Start on Some Works Designed by Our Team](#quick-start-on-some-works-designed-by-our-team)
+    - [Quick Start on Some Works Designed by Our Team](#quick-start-on-some-work-designed-by-our-team)
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#🔧pip-installation)
@@ -302,9 +302,9 @@ You can choose different editing methods according to your specific needs.
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
 
-#### Quick Start on Some Works Designed by Our Team
+#### Quick Start on Some Work Designed by Our Team
 
-| **Project** | Description |    Path   |
+| **Work** | Description |    Path   |
 | :--------: | :---------: | :-------: |
 |InstructEdit|InstructEdit: Instruction-based Knowledge Editing for Large Language Models| [Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md)|
 |DINM|Detoxifying Large Language Models via Knowledge Editing|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)|
