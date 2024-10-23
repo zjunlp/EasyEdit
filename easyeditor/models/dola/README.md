@@ -1,4 +1,4 @@
-# AlphaEdit
+# DoLa
 - Code for [``DoLa: Decoding by Contrasting Layers Improves Factuality in Large Language Models``]
 
 - DoLa is achieved by contrasting the differences in logits obtained from final layers versus earlier layers, thus amplify the factual knowledge localized to particular part of transformer layers.

@@ -1,4 +1,4 @@
-# AlphaEdit
+# DeCo
 - Code for [``MLLM Can See? Dynamic Correction Decoding For Hallucination Mitigation``]
 
 - DoLa adaptively selects the appropriate preceding layers and proportionally integrates knowledge into the final layer to adjust the output logits. Note that DeCo is model agnostic and can be seamlessly incorporated with various classic decoding strategies and applied to different MLLMs.
