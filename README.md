@@ -39,6 +39,7 @@
   - [Evaluation](#evaluation)
 - [🌟Overview](#🌟overview)
     - [Current Implementation](#current-implementation)
+    - [Quick Start on Some Works Designed by Our Team](#quick-start-on-some-work-designed-by-our-team)
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#🔧pip-installation)
@@ -65,6 +66,7 @@
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
 
+- 2024-10-23, The EasyEdit integrates constrained decoding methods from steering editing to mitigate hallucination in LLM and MLLM, with detailed information available in [DoLa](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/dola) and [DeCo](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/deco).
 - 2024-09-26, 🎉🎉 Our paper "[WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models](https://arxiv.org/abs/2405.14768)" has been accepted by **NeurIPS 2024**.
 - 2024-09-20, 🎉🎉 Our papers: "[Knowledge Mechanisms in Large Language Models: A Survey and Perspective](https://arxiv.org/abs/2407.15017)" and "[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" have been accepted by **EMNLP 2024** Findings.
   
@@ -300,6 +302,18 @@ You can choose different editing methods according to your specific needs.
 | [FT-Api](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates) | [gpt-3.5-turbo(ChatGPT)](https://github.com/zjunlp/EasyEdit/blob/main/hparams/FT-Api/gpt-3.5-turbo.yaml) | official fine-tuing Api for gpt-3.5-turbo | -->
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
+
+#### Quick Start on Some Work Designed by Our Team
+
+| **Work** | Description |    Path   |
+| :--------: | :---------: | :-------: |
+|InstructEdit|InstructEdit: Instruction-based Knowledge Editing for Large Language Models| [Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md)|
+|DINM|Detoxifying Large Language Models via Knowledge Editing|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)|
+|WISE|WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md)|
+|ConceptEdit|Editing Conceptual Knowledge for Large Language Models|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/ConceptEdit.md)|
+|MMEdit|Can We Edit Multimodal Large Language Models?|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/MMEdit.md)|
+|PersonalityEdit|Editing Personality For Large Language Models|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/PersonalityEdit.md)|
+
 
 ### Dataset
 
