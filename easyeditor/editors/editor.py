@@ -86,6 +86,10 @@ class BaseEditor:
             if 't5' in self.model_name.lower():
                 self.model = T5ForConditionalGeneration.from_pretrained(self.model_name, **model_kwargs)
                 self.tok = T5Tokenizer.from_pretrained(self.model_name)
+            elif 'chatglm-api' in self.model_name.lower():
+                self.model, self.tok = None, None
+                self.hparams = hparams
+                return
             elif 'gpt-3.5' in self.model_name.lower():
                 self.model, self.tok = None, None
             elif 'gpt' in self.model_name.lower():
@@ -604,5 +608,12 @@ class BaseEditor:
             summary_metrics(all_results)
 
         return all_results, edited_model, weights_copy
+
+    def deep_edit(
+        self,
+        datasets
+    ):
+        metrics = self.apply_algo(datasets, self.hparams)
+        return metrics
 
 
