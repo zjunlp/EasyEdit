@@ -1,7 +1,6 @@
 # DeCo
 - Code for [``MLLM Can See? Dynamic Correction Decoding For Hallucination Mitigation``]
-
-- DoLa adaptively selects the appropriate preceding layers and proportionally integrates knowledge into the final layer to adjust the output logits. Note that DeCo is model agnostic and can be seamlessly incorporated with various classic decoding strategies and applied to different MLLMs.
+- DeCo adaptively selects the appropriate preceding layers and proportionally integrates knowledge into the final layer to adjust the output logits. Note that DeCo is model agnostic and can be seamlessly incorporated with various classic decoding strategies and applied to different MLLMs.
 - DeCo is integrated with three classic decoding methods: greedy decoding, nucleus sampling, and beam search.
 - We simultaneously support both LLM (e.g., llama-7b) and MLLM (e.g., llava-7b).
 
