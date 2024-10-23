@@ -1,0 +1,6 @@
+alg_name: "dola"
+model_name: "./huggyllama-7b" or "./llava-7b-hf"
+device: 1
+dola_layers: "low"
+final_layer: 32
+model_parallel: false

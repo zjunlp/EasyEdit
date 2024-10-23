@@ -15,3 +15,5 @@ from .r_rome import *
 from .qlora import *
 from .lora import *
 from .alphaedit import *
+from .deco import *
+from .dola import *

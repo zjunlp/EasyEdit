@@ -1,0 +1,8 @@
+alg_name: "deco"
+model_name: "./huggyllama-7b" or "./llava-7b-hf"
+device: 1
+alpha: 0.6
+threshold_top_p: 0.9
+threshold_top_k: 20
+early_exit_layers: [20,21,22,23,24,25,26,27,28]
+model_parallel: false
