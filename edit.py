@@ -57,7 +57,7 @@ def test_KN_GPTJ():
         target_new='University of Michigan' if target_new is None else target_new,
         keep_original_weight=True,
     )
-
+    import random
     import pdb
     pdb.set_trace()
 
