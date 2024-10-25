@@ -2938,8 +2938,8 @@ def test_WISE():
     return metrics, edited_model
     
 def test_deepedit_api():
-    datasets = json.load(open('/disk/disk_4T_2/jiangziyan1/EasyEdit/data/MQuAKE-CF-3k.json','r'))
-    hparams = DeepEditApiHyperParams.from_hparams('/disk/disk_4T_2/jiangziyan1/EasyEdit/hparams/DeepEdit_Api/chatglm_api.yaml')
+    datasets = json.load(open('.data/MQuAKE-CF-3k.json','r'))
+    hparams = DeepEditApiHyperParams.from_hparams('.hparams/DeepEdit_Api/chatglm_api.yaml')
     editor = BaseEditor.from_hparams(hparams)
     metrics = editor.deep_edit(
         datasets = datasets
