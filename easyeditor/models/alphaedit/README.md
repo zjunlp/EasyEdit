@@ -9,7 +9,7 @@
 
 ## Quick Start
 ### An example for editing Llama3 (8B) on ZsRE dataset using AlphaEdit
-#### 1. Make sure that the projection matrix P has been downloaded from the [google_drive]() into this address (EasyEdit/null_space_project.pt) beforehand to avoid double computation. 
+#### 1. Make sure that the projection matrix P has been downloaded from the [baidu_netdisk]( https://pan.baidu.com/s/1Unk3X6jl3LZw_OF5eLoEeA?pwd=mcaf ) into this address (EasyEdit/null_space_project.pt) beforehand to avoid double computation. 
 
 #### 2. Find the [script](EasyEdit/examples/run_AlphaEdit_editing.sh)
  
