@@ -2,7 +2,8 @@ from easyeditor import BaseEditor
 from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, QLoRAHyperParams, \
-    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams, R_ROMEHyperParams, EMMETHyperParams
+    GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams, R_ROMEHyperParams, EMMETHyperParams, \
+    DPOHyperParams
 from easyeditor import ZsreDataset, CounterFactDataset, KnowEditDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -2936,6 +2937,75 @@ def test_WISE():
 
     return metrics, edited_model
 
+def test_DPO_llama():
+    # 自定义更多的数据样本
+    prompts = ['Ray Charles, the',
+               'Grant Hill is a professional',
+               'The law in Ikaalinen declares the language'
+               ]
+    ground_truth = ['piano',
+                    'basketball',
+                    'Finnish'
+                    ]
+    target_new = ['violin',
+                  'soccer',
+                  'Swedish'
+                  ]
+    target_neg = ['guitar',
+                  'football',
+                  'English'
+                  ]
+    subject = ['Ray Charles',
+               'Grant Hill',
+               'Ikaalinen'
+               ]
+    rephrase_prompts = ['Ray Charles is',
+                        'Grant Hill, a professional',
+                        'Ikaalinen\'s law declares the language'
+                        ]
+
+    locality_inputs = {
+        'neighborhood':{
+            'prompt': ['Joseph Fischhof, the', 'Larry Bird is a professional', 'In Forssa, they understand'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        },
+        'distracting': {
+            'prompt': ['Ray Charles, the violin Hauschka plays the instrument', 'Grant Hill is a professional soccer Magic Johnson is a professional', 'The law in Ikaalinen declares the language Swedish In Loviisa, the language spoken is'],
+            'ground_truth': ['piano', 'basketball', 'Finnish']
+        }
+    }
+    portability_inputs = {
+        'synonym':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        },
+        'one_hop':{
+            'prompt': ['Ray Charles, the', 'Grant Hill is a professional', 'The law in Ikalis declares the language'],
+            'ground_truth': ['violin', 'soccer', 'Swedish']
+        }
+    }
+
+    # 加载超参数，选择适当的编辑器
+    hparams = DPOHyperParams.from_hparams('./hparams/DPO/llama3-8b.yaml')  # 示例为 ROME 参数
+    editor = BaseEditor.from_hparams(hparams)
+
+    # 执行编辑，传递 locality 和 portability 输入
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        rephrase_prompts=rephrase_prompts,
+        target_new=target_new,
+        target_neg=target_neg,
+        subject=subject,
+        locality_inputs=locality_inputs,
+        portability_inputs=portability_inputs,
+        keep_original_weight=True
+    )
+
+    import pdb
+    pdb.set_trace()
+
+    return metrics, edited_model
+
 
 def main():
     # metrics, edited_model = test_KN()
@@ -2954,7 +3024,7 @@ def main():
     # test_MEMIT()
     # test_EMMET()
     # test_MEND_Meta_Train()
-    test_MEND()
+    # test_MEND()
     # test_KE()
     # test_SERAC_Counterfacat_Train()
     # test_SERAC_Zsre_Train()
@@ -3005,6 +3075,7 @@ def main():
     # test_MEND_ChatGLM()
     # test_ROME_ChatGLM()
     # test_LoRA_llama()
+    test_DPO_llama()
     # test_FT_Internlm()
     # test_IKE_Internlm()
     # test_KN_Internlm()
