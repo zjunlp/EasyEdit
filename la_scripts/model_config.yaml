@@ -1,0 +1,5 @@
+model_name: gpt2-xl
+model_class: GPT2LMHeadModel
+tokenizer_class: GPT2Tokenizer
+tokenizer_name: gpt2-xl
+model_parallel: false # true for multi-GPU editing
