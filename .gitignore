@@ -6,6 +6,7 @@ pyvenv.cfg
 hugging_cache
 data
 **/__pycache__
+**/__pycache__/**
 examples/WikiBio
 examples/wiki_recent
 .vscode

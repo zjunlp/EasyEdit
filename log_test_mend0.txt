@@ -1,0 +1,20 @@
+no change     /home/smg/v-lauraom/miniconda3/condabin/conda
+no change     /home/smg/v-lauraom/miniconda3/bin/conda
+no change     /home/smg/v-lauraom/miniconda3/bin/conda-env
+no change     /home/smg/v-lauraom/miniconda3/bin/activate
+no change     /home/smg/v-lauraom/miniconda3/bin/deactivate
+no change     /home/smg/v-lauraom/miniconda3/etc/profile.d/conda.sh
+no change     /home/smg/v-lauraom/miniconda3/etc/fish/conf.d/conda.fish
+no change     /home/smg/v-lauraom/miniconda3/shell/condabin/Conda.psm1
+no change     /home/smg/v-lauraom/miniconda3/shell/condabin/conda-hook.ps1
+no change     /home/smg/v-lauraom/miniconda3/lib/python3.12/site-packages/xontrib/conda.xsh
+no change     /home/smg/v-lauraom/miniconda3/etc/profile.d/conda.csh
+no change     /home/smg/v-lauraom/.bashrc
+No action taken.
+
+CondaError: Run 'conda init' before 'conda activate'
+
+Traceback (most recent call last):
+  File "/home/smg/v-lauraom/EasyEdit/la_scripts/run_mend.py", line 4, in <module>
+    import easyeditor
+ModuleNotFoundError: No module named 'easyeditor'

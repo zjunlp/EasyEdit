@@ -1,8 +1,8 @@
 # Model
-model_name: /data/qiaoshuofei/PLMs/llama-2-converted/7b-chat
+model_name: meta-llama/Llama-2-7b-hf
 model_class: LlamaForCausalLM
 tokenizer_class: LlamaTokenizer
-tokenizer_name: /data/qiaoshuofei/PLMs/llama-2-converted/7b-chat
+tokenizer_name: meta-llama/Llama-2-7b-hf
 model_parallel: true
 inner_params:
 - model.layers.29.mlp.gate_proj.weight
