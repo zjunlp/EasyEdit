@@ -17,6 +17,7 @@ from ..models.wise import WISEHyperParams, apply_wise_to_model
 from ..models.r_rome import R_ROMEHyperParams, apply_r_rome_to_model
 from ..models.emmet import EMMETHyperParams, apply_emmet_to_model
 from ..models.alphaedit import AlphaEditHyperParams, apply_AlphaEdit_to_model
+from ..models.dpo import DPOHyperParams, apply_dpo_to_model
 
 ALG_DICT = {
     'ROME': apply_rome_to_model,
@@ -30,6 +31,7 @@ ALG_DICT = {
     'FT-Api': apply_ft_api_to_model,
     'QLoRA': apply_qlora_to_model,
     'LoRA': apply_lora_to_model,
+    'DPO': apply_dpo_to_model,
     'GRACE': apply_grace_to_model,
     'PMET': apply_pmet_to_model,
     'MELO': apply_melo_to_model,

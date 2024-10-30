@@ -144,6 +144,7 @@ class BaseEditor:
              prompts: Union[str, List[str]],
              target_new: Union[str, List[str]],
              ground_truth: Optional[Union[str, List[str]]] = None,
+             target_neg: Optional[Union[str, List[str]]] = None,
              rephrase_prompts: Optional[Union[str, List[str]]] = None,
              locality_inputs:  Optional[Dict] = None,
              portability_inputs: Optional[Dict] = None,
@@ -177,7 +178,7 @@ class BaseEditor:
         if "requests" in kwargs.keys():
             requests = kwargs["requests"]
         else:
-            requests = _prepare_requests(prompts, target_new, ground_truth, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
+            requests = _prepare_requests(prompts, target_new, ground_truth, target_neg, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
 
         return self.edit_requests(requests, sequential_edit, verbose, test_generation=test_generation, **kwargs)
 
@@ -185,6 +186,7 @@ class BaseEditor:
                    prompts: List[str],
                    target_new: List[str],
                    ground_truth: Optional[List[str]] = None,
+                   target_neg: Optional[List[str]] = None,
                    rephrase_prompts: Optional[List[str]] = None,
                    locality_inputs: Optional[Dict] = None,
                    portability_inputs: Optional[Dict] = None,
@@ -211,7 +213,7 @@ class BaseEditor:
 
         assert BatchEditor.is_batchable_method(self.alg_name), f'The Method {self.alg_name} can not batch edit examples.'
 
-        requests = _prepare_requests(prompts, target_new, ground_truth, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
+        requests = _prepare_requests(prompts, target_new, ground_truth, target_neg, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
 
         assert hasattr(self.hparams, 'batch_size'), f'Method {self.alg_name} found, pls specify the batch_size....'
         all_metrics = []
@@ -245,12 +247,12 @@ class BaseEditor:
             if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
                 with torch.no_grad():
                     weights_copy()
-            elif self.alg_name == 'LoRA':
+            elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
                 edited_model.unload()
                 del self.model.peft_config
             elif self.alg_name == 'MELO':
                 self.model = edited_model
-            elif self.alg_name == 'LoRA':
+            elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
                 self.model = edited_model
             else:
                 with torch.no_grad():
@@ -372,12 +374,12 @@ class BaseEditor:
                 if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
                     with torch.no_grad():
                         weights_copy()
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA':
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
                     edited_model.unload()
                     del self.model.peft_config
                 elif self.alg_name == 'MELO':
                     self.model = edited_model
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA':
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
                     self.model = edited_model
                 else:
                     with torch.no_grad():
@@ -443,6 +445,7 @@ class BaseEditor:
         prompts: Union[str, List[str]],
         target_new: Union[str, List[str]],
         ground_truth: Optional[Union[str, List[str]]] = None,
+        target_neg: Optional[Union[str, List[str]]] = None,
         rephrase_prompts: Optional[Union[str, List[str]]] = None,
         locality_inputs:  Optional[Dict] = None,
         portability_inputs: Optional[Dict] = None,
@@ -461,7 +464,7 @@ class BaseEditor:
         if "requests" in kwargs.keys():
             requests = kwargs["requests"]
         else:
-            requests = _prepare_requests(prompts, target_new, ground_truth, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
+            requests = _prepare_requests(prompts, target_new, ground_truth, target_neg, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
         
         def text_generate(
             model,
@@ -586,12 +589,12 @@ class BaseEditor:
                 if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
                     with torch.no_grad():
                         weights_copy()
-                elif self.alg_name == 'LoRA':
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
                     edited_model.unload()
                     del self.model.peft_config
                 elif self.alg_name == 'MELO':
                     self.model = edited_model
-                elif self.alg_name == 'LoRA':
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
                     self.model = edited_model
                 else:
                     with torch.no_grad():
