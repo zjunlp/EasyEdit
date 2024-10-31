@@ -3,7 +3,8 @@ from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, QLoRAHyperParams, \
     GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams, R_ROMEHyperParams, EMMETHyperParams, \
-    DPOHyperParams
+    DeepEditApiHyperParams， DPOHyperParams
+
 from easyeditor import ZsreDataset, CounterFactDataset, KnowEditDataset
 from easyeditor import EditTrainer
 from easyeditor.models.ike import encode_ike_facts
@@ -2936,6 +2937,15 @@ def test_WISE():
     pdb.set_trace()
 
     return metrics, edited_model
+    
+def test_deepedit_api():
+    datasets = json.load(open('.data/MQuAKE-CF-3k.json','r'))
+    hparams = DeepEditApiHyperParams.from_hparams('.hparams/DeepEdit_Api/chatglm_api.yaml')
+    editor = BaseEditor.from_hparams(hparams)
+    metrics = editor.deep_edit(
+        datasets = datasets
+    )
+    return metrics
 
 def test_DPO_llama():
     # 自定义更多的数据样本
@@ -3103,6 +3113,7 @@ def main():
     # test_MALMEN_Train()
     # test_MALMEN()
     # test_WISE()
+      test_deepedit_api()
 
 if __name__ == '__main__':
     main()
