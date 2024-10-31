@@ -93,7 +93,7 @@ def execute_rome(
     }
     # Save old weights for future restoration
     weights_copy = {k: v.detach().clone() for k, v in weights.items()}
-
+    
     # Update loop: sequentially intervene at each specified layer
     deltas = {}
     for layer in sorted(hparams.layers):

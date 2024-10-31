@@ -1,7 +1,7 @@
 alg_name: "IKE"
-model_name: "/mnt/16t/xzwnlp/EasyEditest/hugging_cache/internlm-7b"
+model_name: "./hugging_cache/internlm-7b"
 sentence_model_name: "./hugging_cache/all-MiniLM-L6-v2"
-device: 0
+device: 1
 results_dir: "./results"
 
 k: 16

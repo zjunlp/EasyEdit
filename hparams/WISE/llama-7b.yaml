@@ -1,6 +1,6 @@
 alg_name: "WISE"
 model_name: "./hugging_cache/llama-2-7b"
-device: 0
+device: 1
 
 mask_ratio: 0.2
 edit_lr: 1.0

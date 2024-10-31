@@ -7,7 +7,7 @@ import numpy as np
 import random
 from ..models.melo.melo import LORA
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel, BitsAndBytesConfig
-from transformers import LlamaTokenizer
+from transformers import LlamaTokenizer,PreTrainedTokenizerFast
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
@@ -128,7 +128,7 @@ class BaseEditor:
             else:
                 raise NotImplementedError
 
-            if self.tok is not None and (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer)) and (hparams.alg_name not in ['ROME', 'MEMIT', 'EMMET', 'R-ROME']):
+            if self.tok is not None and (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer) or isinstance(self.tok, PreTrainedTokenizerFast)) and (hparams.alg_name not in ['ROME', 'MEMIT', 'EMMET', 'R-ROME']):
                 LOG.info('AutoRegressive Model detected, set the padding side of Tokenizer to left...')
                 self.tok.padding_side = 'left'
             if self.tok is not None and ('mistral' in self.model_name.lower() or 'llama' in self.model_name.lower() or 'qwen' in self.model_name.lower()) and (hparams.alg_name in ['ROME', 'MEMIT', 'EMMET', 'R-ROME']):
