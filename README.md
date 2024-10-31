@@ -66,6 +66,7 @@
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
 
+- 2024-10-24, EasyEdit has added two new knowledge editing methods, [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) and [DeepEdit](https://arxiv.org/abs/2401.10471). In addition, we have fixed several bugs.
 - 2024-10-23, The EasyEdit integrates constrained decoding methods from steering editing to mitigate hallucination in LLM and MLLM, with detailed information available in [DoLa](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/dola) and [DeCo](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/deco).
 - 2024-09-26, 🎉🎉 Our paper "[WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models](https://arxiv.org/abs/2405.14768)" has been accepted by **NeurIPS 2024**.
 - 2024-09-20, 🎉🎉 Our papers: "[Knowledge Mechanisms in Large Language Models: A Survey and Perspective](https://arxiv.org/abs/2407.15017)" and "[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" have been accepted by **EMNLP 2024** Findings.
@@ -293,6 +294,7 @@ You can choose different editing methods according to your specific needs.
 | [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) | | ✅ |  |  |  ✅|  |  |  | | |
 | [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)| |✅ |  |  |✅  |  |  |  | | ✅|
 | [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ | ✅ |  |✅  | ✅ |  |  |✅ | |
+| [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ | ✅ |  |✅  |  |  |  | | |
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
 

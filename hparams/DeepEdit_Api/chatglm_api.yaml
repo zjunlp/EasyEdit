@@ -1,0 +1,7 @@
+alg_name: "DeepEdit-Api"
+model_name: "chatglm-api"
+api_key: "your_api_key"
+results_dir: "./results"
+device: 0
+# For Chinese users to set proxy, if you can connect to openai directly, delete the following line...
+proxy: "http://127.0.0.1:7890"

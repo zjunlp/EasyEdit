@@ -57,6 +57,7 @@ def summary_metrics(all_metrics):
 def _prepare_requests(prompts: Union[str, List[str]],
                       target_new: Union[str, List[str]],
                       ground_truth: Union[str, List[str]],
+                      target_neg: Optional[Union[str, List[str]]] = None,
                       rephrase_prompts: Optional[Union[str, List[str]]] = None,
                       locality_inputs: Optional[Dict] = None,
                       portability_inputs: Optional[Dict] = None,
@@ -72,6 +73,17 @@ def _prepare_requests(prompts: Union[str, List[str]],
     }
     for prompt, ground_truth_, target_new_ in zip(prompts, ground_truth, target_new)
     ]
+
+    if target_neg is not None:
+        if isinstance(target_neg, str):
+            target_neg = [target_neg,]
+        assert len(target_neg) == len(prompts)
+        for i, request in enumerate(requests):
+            request.update(
+                {
+                    'target_neg': target_neg[i]
+                }
+            )
 
     if 'subject' in kwargs:
         if isinstance(kwargs['subject'], str):
