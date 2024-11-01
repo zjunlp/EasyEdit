@@ -8,6 +8,9 @@ class DeepEditApiHyperParams(HyperParams):
     api_key: str
     results_dir: str
 
+    prompts_dir: str
+    contriver_dir: str
+    tokenizer_dir: str
     alg_name: str
     model_name: str 
     device: int
