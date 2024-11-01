@@ -8,7 +8,7 @@ import logging
 import httpx
 
     
-with open('./hparams/DeepEdit_Api/chatglm_api.yaml', 'r') as file:
+with open('EasyEdit/hparams/DeepEdit_Api/chatglm_api.yaml', 'r') as file:
     config = yaml.safe_load(file)
 # read api key
 api = config.get('api_key', None)
