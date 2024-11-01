@@ -7,34 +7,32 @@ import yaml
 import logging
 import httpx
 
-# read prompts
-with open('/disk/disk_4T_2/jiangziyan1/EasyEdit/data/prompts/multihop-cot-prompts.txt', 'r') as f:
-    task_prompt = f.read()
-
-with open('/disk/disk_4T_2/jiangziyan1/EasyEdit/data/prompts/delete-prompt.txt', 'r') as f:
-    delete_prompt = f.read()
-    
-with open('/disk/disk_4T_2/jiangziyan1/EasyEdit/data/prompts/conflict-prompt.txt', 'r') as f:
-    conflict_prompt = f.read()
-
-with open('/disk/disk_4T_2/jiangziyan1/EasyEdit/data/prompts/conflict-prompt-1.txt', 'r') as f:
-    conflict_prompt_1 = f.read()
-    
-with open('/disk/disk_4T_2/jiangziyan1/EasyEdit/data/prompts/conflict-prompt-2.txt', 'r') as f:
-    conflict_prompt_2 = f.read()
-    
-with open('/disk/disk_4T_2/jiangziyan1/EasyEdit/data/prompts/entity-prompt.txt', 'r') as f:
-    entity_prompt = f.read()
-    
-with open('/disk/disk_4T_2/jiangziyan1/EasyEdit/data/prompts/exist-prompt.txt', 'r') as f:
-    exist_prompt = f.read()
     
 with open('/disk/disk_4T_2/jiangziyan1/EasyEdit/hparams/DeepEdit_Api/chatglm_api.yaml', 'r') as file:
     config = yaml.safe_load(file)
-    
+# read api key
 api = config.get('api_key', None)
-contriever = AutoModel.from_pretrained("/disk/disk_4T_2/jiangziyan1/EasyEdit/data/facebook/contriever-msmarco").cuda()
-tokenizer = AutoTokenizer.from_pretrained("/disk/disk_4T_2/jiangziyan1/EasyEdit/data/facebook/contriever-msmarco")
+# read prompts
+prompts_dir = config.get('prompts_dir', None)
+with open(prompts_dir + '/multihop-cot-prompts.txt', 'r') as f:
+    task_prompt = f.read()
+with open(prompts_dir + '/delete-prompt.txt', 'r') as f:
+    delete_prompt = f.read()
+with open(prompts_dir + '/conflict-prompt.txt', 'r') as f:
+    conflict_prompt = f.read()
+with open(prompts_dir + '/conflict-prompt-1.txt', 'r') as f:
+    conflict_prompt_1 = f.read()
+with open(prompts_dir + '/conflict-prompt-2.txt', 'r') as f:
+    conflict_prompt_2 = f.read()
+with open(prompts_dir + '/entity-prompt.txt', 'r') as f:
+    entity_prompt = f.read()
+with open(prompts_dir + '/exist-prompt.txt', 'r') as f:
+    exist_prompt = f.read()
+
+contriver_dir = config.get('contriver_dir', None)
+contriever = AutoModel.from_pretrained(contriver_dir).cuda()
+tokenizer_dir = config.get('tokenizer_dir', None)
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
 def call_glm(cur_prompt, stop, temperature=0):

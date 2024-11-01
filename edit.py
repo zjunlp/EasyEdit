@@ -3,7 +3,7 @@ from easyeditor import KNHyperParams, FTHyperParams, KETrainingHparams,\
     ROMEHyperParams, MEMITHyperParams, MENDTrainingHparams, MENDHyperParams, \
     SERACTrainingHparams, SERACHparams, IKEHyperParams, FTApiHyperParams, LoRAHyperParams, QLoRAHyperParams, \
     GraceHyperParams, PMETHyperParams,MELOHyperParams, MALMENTrainingHparams, MALMENHyperParams, WISEHyperParams, R_ROMEHyperParams, EMMETHyperParams, \
-    DeepEditApiHyperParams， DPOHyperParams
+    DeepEditApiHyperParams, DPOHyperParams
 
 from easyeditor import ZsreDataset, CounterFactDataset, KnowEditDataset
 from easyeditor import EditTrainer
@@ -3085,7 +3085,7 @@ def main():
     # test_MEND_ChatGLM()
     # test_ROME_ChatGLM()
     # test_LoRA_llama()
-    test_DPO_llama()
+    # test_DPO_llama()
     # test_FT_Internlm()
     # test_IKE_Internlm()
     # test_KN_Internlm()
