@@ -69,7 +69,8 @@ def execute_lora(
 
     peft_model.is_parallelizable = True
     peft_model.model_parallel = True
-    peft_model.print_trainable_parameters()
+    if hasattr(peft_model, 'print_trainable_parameters'):
+        peft_model.print_trainable_parameters()
     requests = deepcopy(requests)
     for request in requests:
         print(

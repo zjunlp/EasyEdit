@@ -1,5 +1,5 @@
 alg_name: "QLoRA"
-model_name: "/disk1/xuhaoming/Models/Llama-3.2-3B"
+model_name: "./hugging_cache/llama-3.2-3b-instruct"
 device: 1
 
 # QLoRA specific settings
