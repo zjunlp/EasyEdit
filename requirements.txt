@@ -24,3 +24,4 @@ iopath==0.1.10
 opencv-python==4.8.0.76
 fairscale==0.4.13
 zhipuai
+sentencepiece
