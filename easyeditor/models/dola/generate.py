@@ -1,8 +1,5 @@
 import numpy as np
-# import torch
-# from torch import nn
 from torch.nn import functional as F
-# from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 from transformers.generation.utils import (
     LogitsProcessorList, 
     StoppingCriteriaList, 
@@ -11,78 +8,25 @@ from transformers.generation.utils import (
     GenerateDecoderOnlyOutput,
     GenerateOutput
 )
-# from transformers.generation.streamers import BaseStreamer
-# from transformers.modeling_utils import PreTrainedModel
-# from transformers.utils import logging
-
 
 import copy
 import inspect
 import warnings
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Union
 
 import torch
 import torch.distributed as dist
 from torch import nn
 
-from transformers.cache_utils import Cache, DynamicCache, StaticCache
+from transformers.cache_utils import StaticCache
 from transformers.integrations.deepspeed import is_deepspeed_zero3_enabled
-from transformers.modeling_outputs import CausalLMOutputWithPast, Seq2SeqLMOutput
-from transformers.models.auto import (
-    MODEL_FOR_CAUSAL_IMAGE_MODELING_MAPPING,
-    MODEL_FOR_CAUSAL_LM_MAPPING,
-    MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING,
-    MODEL_FOR_SPEECH_SEQ_2_SEQ_MAPPING,
-    MODEL_FOR_VISION_2_SEQ_MAPPING,
-)
-from transformers.utils import ModelOutput, is_accelerate_available, is_torchdynamo_compiling, logging
-from transformers.generation.beam_constraints import DisjunctiveConstraint, PhrasalConstraint
-from transformers.generation.beam_search import BeamScorer, BeamSearchScorer, ConstrainedBeamSearchScorer
-from transformers.generation.candidate_generator import (
-    AssistedCandidateGenerator,
-    CandidateGenerator,
-    PromptLookupCandidateGenerator,
-    _crop_past_key_values,
-    _prepare_attention_mask,
-    _prepare_token_type_ids,
-)
-from transformers.generation.configuration_utils import GenerationConfig, GenerationMode
+from transformers.utils import logging
+from transformers.generation.configuration_utils import GenerationConfig
 from transformers.generation.logits_process import (
-    EncoderNoRepeatNGramLogitsProcessor,
-    EncoderRepetitionPenaltyLogitsProcessor,
-    EpsilonLogitsWarper,
-    EtaLogitsWarper,
-    ExponentialDecayLengthPenalty,
-    ForcedBOSTokenLogitsProcessor,
-    ForcedEOSTokenLogitsProcessor,
-    ForceTokensLogitsProcessor,
-    HammingDiversityLogitsProcessor,
-    InfNanRemoveLogitsProcessor,
-    LogitNormalization,
     LogitsProcessorList,
-    MinLengthLogitsProcessor,
-    MinNewTokensLengthLogitsProcessor,
-    NoBadWordsLogitsProcessor,
-    NoRepeatNGramLogitsProcessor,
-    PrefixConstrainedLogitsProcessor,
-    RepetitionPenaltyLogitsProcessor,
-    SequenceBiasLogitsProcessor,
-    SuppressTokensAtBeginLogitsProcessor,
-    SuppressTokensLogitsProcessor,
-    TemperatureLogitsWarper,
-    TopKLogitsWarper,
-    TopPLogitsWarper,
-    TypicalLogitsWarper,
-    UnbatchedClassifierFreeGuidanceLogitsProcessor,
 )
 from transformers.generation.stopping_criteria import (
-    EosTokenCriteria,
-    MaxLengthCriteria,
-    MaxTimeCriteria,
-    StoppingCriteria,
     StoppingCriteriaList,
-    validate_stopping_criteria,
 )
 
 
