@@ -1,5 +1,5 @@
 import os
-import os.path
+import os.path as path
 import sys
 import json
 import random

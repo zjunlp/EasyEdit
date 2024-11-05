@@ -498,6 +498,8 @@ class WISEAdapter(torch.nn.Module):
                 dist1 = euc(original_layer_output, new_weight_layer_output, self.config, infer=True)
                 threshold = self.editing_mean_act.min_act() * self.config.act_ratio
                 min_dist = dist1
+                if min_dist.dim() > 0:  
+                    min_dist = min_dist.mean()
                 if min_dist.item() < threshold:
                     layer_out = original_layer_output
                 else:

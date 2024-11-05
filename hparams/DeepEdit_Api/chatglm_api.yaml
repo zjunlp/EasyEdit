@@ -1,0 +1,10 @@
+alg_name: "DeepEdit-Api"
+model_name: "chatglm-api"
+api_key: "your-api-key"
+results_dir: "./results"
+device: 0
+prompts_dir: "EasyEdit/data/prompts"
+contriver_dir: "EasyEdit/data/facebook/contriever-msmarco"
+tokenizer_dir: "EasyEdit/data/facebook/contriever-msmarco"
+# For Chinese users to set proxy, if you can connect to openai directly, delete the following line...
+proxy: "http://127.0.0.1:7890"
