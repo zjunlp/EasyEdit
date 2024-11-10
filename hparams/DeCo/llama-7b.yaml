@@ -1,5 +1,6 @@
 alg_name: "deco"
-model_name: "./huggyllama-7b" or "./llava-7b-hf"
+# model_name: "./huggyllama-7b" or "./llava-7b-hf"
+model_name: "./hugging_cache/llama-2-7b" 
 device: 1
 alpha: 0.6
 threshold_top_p: 0.9

@@ -4,17 +4,17 @@ model_name: "./hugging_cache/llama-3.1-8b-instruct"
 device: 0
 
 mask_ratio: 0.2
-edit_lr: 1.0
-n_iter: 70
+edit_lr: 0.9
+n_iter: 30
 norm_constraint: 1.0
-act_margin: [5.0, 20.0, 10.0] # alpha, beta, gamma
+act_margin: [5.0, 10.0, 10.0] # alpha, beta, gamma
 act_ratio: 0.88
 save_freq: 500
 merge_freq: 1000
 merge_alg: 'ties'
 objective_optimization: 'only_label'
 inner_params:
-- model.layers[27].mlp.down_proj.weight
+- model.layers[29].mlp.down_proj.weight
 
 
 ## alternative: WISE-Merge, WISE-Retrieve
