@@ -1,6 +1,11 @@
 import os
 import os.path
 import sys
+
+from pathlib import Path
+path_root = Path(__file__).parents[1]
+sys.path.append(str(path_root))
+
 # sys.path.append('..')
 import numpy as np
 import hydra
@@ -161,6 +166,8 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', default='./data', type=str)
     parser.add_argument('--metrics_save_dir', default='./safety_results', type=str)
 
+    parser.add_argument('--data_path', type=str) # lom 
+
     args = parser.parse_args()
 
     if args.editing_method == 'MEND':
@@ -181,7 +188,8 @@ if __name__ == '__main__':
     
     detoxify_metric = ["DS", "DG_onlyQ", "DG_otherA", "DG_otherQ", "DG_otherAQ"]
 
-    edit_data_all = SafetyDataset(f'{args.data_dir}/SafeEdit_test.json')
+    # edit_data_all = SafetyDataset(f'{args.data_dir}/SafeEdit_test.json')
+    edit_data_all = SafetyDataset(f'{args.data_path}')
     hparams = editing_hparams.from_hparams(args.hparams_dir)
 
     # classifier
@@ -221,10 +229,6 @@ if __name__ == '__main__':
 # DINM edits gpt2-xl
 # python run_safety_editing.py --editing_method=DINM --edited_model=gpt2-xl --hparams_dir=./hparams/DINM/gpt2-xl --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results
 
-
-
-
-
-
-
-    
+# LOM 
+# python run_safety_editing.py --editing_method=DINM --edited_model=llama-2-7b-chat --hparams_dir=./hparams/DINM/llama-7b --data_path=data/SafeEdit_test_wo_bias.json --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results
+ 

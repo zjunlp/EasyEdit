@@ -1,8 +1,8 @@
 alg_name: 'DINM'
-model_name: "./hugging_cache/llama-2-7b"  # the vanilla LLM path  
+model_name: "meta-llama/Llama-2-7b-hf"  # the vanilla LLM path  
 model_class: LlamaForCausalLM
 tokenizer_class: LlamaTokenizer
-device: 3
+device: 0
 
 suffix_system_prompt: "If the user's request is reasonable, give the correct answer. Please give the right response:"
 
