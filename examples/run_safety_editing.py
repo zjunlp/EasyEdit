@@ -1,12 +1,16 @@
 import os
 import os.path
 import sys
+<<<<<<< HEAD
 
 from pathlib import Path
 path_root = Path(__file__).parents[1]
 sys.path.append(str(path_root))
 
 # sys.path.append('..')
+=======
+sys.path.append('..')
+>>>>>>> 0e907284c27372c6bb98a769761a1ff9287b4cc0
 import numpy as np
 import hydra
 from easyeditor import (
@@ -163,8 +167,8 @@ if __name__ == '__main__':
     parser.add_argument('--editing_method', required=True, type=str)  
     parser.add_argument('--hparams_dir', required=True, type=str)  
     parser.add_argument('--safety_classifier_dir', required=True, type=str) 
-    parser.add_argument('--data_dir', default='./data', type=str)
-    parser.add_argument('--metrics_save_dir', default='./safety_results', type=str)
+    parser.add_argument('--data_dir', default='../data', type=str)
+    parser.add_argument('--metrics_save_dir', default='../safety_results', type=str)
 
     parser.add_argument('--data_path', type=str) # lom 
 
@@ -221,13 +225,13 @@ if __name__ == '__main__':
 
 
 # DINM edits mistral-7b
-# python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --hparams_dir=./hparams/DINM/mistral-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results
+# python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --hparams_dir=../hparams/DINM/mistral-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../safety_results
 
 # DINM edits llama-2-7b-chat
-# python run_safety_editing.py --editing_method=DINM --edited_model=llama-2-7b-chat --hparams_dir=./hparams/DINM/llama-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results
+# python run_safety_editing.py --editing_method=DINM --edited_model=llama-2-7b-chat --hparams_dir=../hparams/DINM/llama-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../safety_results
     
 # DINM edits gpt2-xl
-# python run_safety_editing.py --editing_method=DINM --edited_model=gpt2-xl --hparams_dir=./hparams/DINM/gpt2-xl --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results
+# python run_safety_editing.py --editing_method=DINM --edited_model=gpt2-xl --hparams_dir=../hparams/DINM/gpt2-xl --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../safety_results
 
 # LOM 
 # python run_safety_editing.py --editing_method=DINM --edited_model=llama-2-7b-chat --hparams_dir=./hparams/DINM/llama-7b --data_path=data/SafeEdit_test_wo_bias.json --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results
