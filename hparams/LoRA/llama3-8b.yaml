@@ -1,12 +1,12 @@
 alg_name: "LoRA"
-model_name: "./hugging_cache/llama-3.1-8b-instruct"
+model_name: "./hugging_cache/llama-3-8b-instruct"
 device: 1
 
 lora_type: "adalora"
 layers: []
-num_steps: 50
+num_steps: 70
 batch_size: 1
-max_length: 30
+max_length: 50
 lr: 5e-3
 weight_decay: 0
 kl_factor: 0
