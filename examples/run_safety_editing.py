@@ -1,16 +1,13 @@
 import os
 import os.path
 import sys
-<<<<<<< HEAD
 
 from pathlib import Path
 path_root = Path(__file__).parents[1]
 sys.path.append(str(path_root))
 
 # sys.path.append('..')
-=======
-sys.path.append('..')
->>>>>>> 0e907284c27372c6bb98a769761a1ff9287b4cc0
+
 import numpy as np
 import hydra
 from easyeditor import (
