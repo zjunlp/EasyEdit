@@ -946,7 +946,7 @@ We present editing results of the four metrics on [LlaMA-2-7B](https://huggingfa
 
 We also present editing results of KnowEdit on [LlaMA-2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) using EasyEdit. 
 
-| DataSet                  | Metric        | SERAC  | ICE    | AdaLoRA | MEND   | ROME   | MEMIT  | FT-L   | FT     |
+| DataSet                  | Metric        | SERAC  | ICE    | AdaLoRA | MEND   | ROME   | MEMIT  | FT-L   | FT-M   |
 |--------------------------|---------------|--------|--------|---------|--------|--------|--------|--------|--------|
 | **WikiData_recent**      |               |        |        |         |        |        |        |        |        |
 |                          | Edit Succ.  | 98.68  | 60.74  | 100.00  | 95.75  | 97.18  | 97.05  | 55.75  | 100.00 |
