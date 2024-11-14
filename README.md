@@ -65,6 +65,8 @@
     | **COLING2024 tutorial**| Knowledge Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/1vFzRYjnzkuZaNdjdIxQwWbEybCY7YqY9/view?usp=sharing)   |
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
+
+- The paper on model editing for LLMs4Code, "[Model Editing for LLMs4Code: How Far are We?](https://arxiv.org/abs/2411.06638)", has been accepted by ICSE 2025! This work proposes a benchmark for LLMs4Code editing, [CLMEEval](https://github.com/xpq-tech/code-llmedit), which is built upon EasyEdit!
 - 2024-11-09, we fix the bug about the [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit) results in the https://github.com/zjunlp/EasyEdit/issues/390. Thanks for the help of [@StarLooo](https://github.com/StarLooo) to help us with it.
 - 2024-10-24, EasyEdit has added two new knowledge editing methods, [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) and [DeepEdit](https://arxiv.org/abs/2401.10471). In addition, we have fixed several bugs.
 - 2024-10-23, The EasyEdit integrates constrained decoding methods from steering editing to mitigate hallucination in LLM and MLLM, with detailed information available in [DoLa](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/dola) and [DeCo](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/deco).
