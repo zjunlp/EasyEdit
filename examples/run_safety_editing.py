@@ -150,12 +150,14 @@ def test_DINM(edit_data_all, editor, hparams, safety_classifier_model, safety_cl
             general_prompt_with_systemPrompt = general_prompt_with_systemPrompt,
             keep_original_weight=True,
         )
-        
+        # edited_model.save_pretrained('test') # lom testtttt
+
+
         for item in metrics:
             item_evaluate,  evaluate_value = evaluate_safety(item, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, cuda = hparams.device)
             write_json(f'{output_dir}', item_evaluate, case_id = case_id, data_all = len(edit_data_all))
             overall_performance.append(evaluate_value)
-    return overall_performance
+    return overall_performance, edited_model
 
 
 if __name__ == '__main__':
@@ -166,8 +168,9 @@ if __name__ == '__main__':
     parser.add_argument('--safety_classifier_dir', required=True, type=str) 
     parser.add_argument('--data_dir', default='../data', type=str)
     parser.add_argument('--metrics_save_dir', default='../safety_results', type=str)
-
-    parser.add_argument('--data_path', type=str) # lom 
+    
+    parser.add_argument('--ckpt_save_dir', type=str) # lom
+    parser.add_argument('--data_path', type=str) # lom
 
     args = parser.parse_args()
 
@@ -200,7 +203,8 @@ if __name__ == '__main__':
     editor = SafetyEditor.from_hparams(hparams)
     # edit_data_all = edit_data_all[0:2]
     if args.editing_method == "DINM":
-        overall_performance = test_DINM(edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir)
+        overall_performance, final_model = test_DINM(edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir)
+        final_model.save_pretrained(args.ckpt_save_dir)
     else:
         print("This method is currently not supported")
         
@@ -230,6 +234,5 @@ if __name__ == '__main__':
 # DINM edits gpt2-xl
 # python run_safety_editing.py --editing_method=DINM --edited_model=gpt2-xl --hparams_dir=../hparams/DINM/gpt2-xl --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../safety_results
 
-# LOM 
-# python run_safety_editing.py --editing_method=DINM --edited_model=llama-2-7b-chat --hparams_dir=./hparams/DINM/llama-7b --data_path=data/SafeEdit_test_wo_bias.json --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results
- 
+# LOM
+# python examples/run_safety_editing.py --editing_method=DINM --edited_model=llama-7b --hparams_dir=./hparams/DINM/llama-7b --data_path=./data/SafeEdit_test_wo_bias.json --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=./safety_results/DIMN --ckpt_save_dir=test 
