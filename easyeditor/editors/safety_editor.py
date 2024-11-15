@@ -159,7 +159,8 @@ class SafetyEditor:
             requests = kwargs["requests"]
         else:
             requests = self._prepare_requests(prompts, target_new, ground_truth, general_prompt, locality_inputs, **kwargs)
-            requests_with_systemPrompt = self._prepare_requests(prompts_with_systemPrompt, target_new, ground_truth, general_prompt_with_systemPrompt, locality_inputs_with_systemPrompt, **kwargs)
+            if prompts_with_systemPrompt is not None:
+                requests_with_systemPrompt = self._prepare_requests(prompts_with_systemPrompt, target_new, ground_truth, general_prompt_with_systemPrompt, locality_inputs_with_systemPrompt, **kwargs)
 
         if hasattr(self.hparams, 'batch_size') :
                assert self.hparams.batch_size == 1, print(f'Single Edit, pls set the batch_size to 1....')
@@ -210,7 +211,11 @@ class SafetyEditor:
                 if 'pre_file' in kwargs and kwargs['pre_file'] is not None:
                     ### Store the pre_edit metric to refrain computing repeatedly
                     json.dump(all_metrics, open(kwargs['pre_file'], 'w'), indent=4)
+            
             for i, (request, request_with_systemPrompt) in enumerate(zip(requests, requests_with_systemPrompt)):
+                if request_with_systemPrompt is None:
+                    request_with_systemPrompt = requests
+
                 start = time()
                 if len(self.hparams.layers) == 0:
                     self.hparams.layers = self._locate_toxic_layer(self.model, self.tok, [request,])
