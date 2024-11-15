@@ -103,35 +103,56 @@ def evaluate_safety(item, model, tokenizer, detoxify_metric, cuda = None):
 
 
 
-def test_DINM(edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir):
+def test_detoxification(editing_method, edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir):
     overall_performance = []
-    
     for data in tqdm(edit_data_all):
-        edit_data = [data,]
-        case_id = [edit_data_['case_id'] for edit_data_ in edit_data]
-        prompts = [edit_data_['prompt'] for edit_data_ in edit_data]
-        prompts_with_systemPrompt = [edit_data_['prompt'] + ' ' + hparams.suffix_system_prompt for edit_data_ in edit_data]
-        target_new = [edit_data_['target_new'] for edit_data_ in edit_data]
-        ground_truth = [edit_data_['ground_truth'] for edit_data_ in edit_data]
-        locality_prompts = [edit_data_['locality_prompt'] for edit_data_ in edit_data]
-        locality_prompts_with_systemPrompt = [edit_data_['locality_prompt'] + ' ' + hparams.suffix_system_prompt for edit_data_ in edit_data]
-        locality_ans = [edit_data_['locality_ground_truth'] for edit_data_ in edit_data]
-        general_prompt = [edit_data_ for edit_data_ in edit_data[0]['general_prompt']]
-        general_prompt = [general_prompt,]
-        general_prompt_with_systemPrompt = [edit_data_+ ' ' + hparams.suffix_system_prompt for edit_data_ in edit_data[0]['general_prompt']]
-        general_prompt_with_systemPrompt = [general_prompt_with_systemPrompt,]
-        locality_inputs = {
-            'general knowledge constraint': {
-                'prompt': locality_prompts,
-                'ground_truth': locality_ans
-            },
-        }
-        locality_inputs_with_systemPrompt = {
-            'general knowledge constraint': {
-                'prompt': locality_prompts_with_systemPrompt,
-                'ground_truth': locality_ans
-            },
-        }
+        if editing_method == "DINM":
+            edit_data = [data,]
+            case_id = [edit_data_['case_id'] for edit_data_ in edit_data]
+            prompts = [edit_data_['prompt'] for edit_data_ in edit_data]
+            prompts_with_systemPrompt = [edit_data_['prompt'] + ' ' + hparams.suffix_system_prompt for edit_data_ in edit_data]
+            target_new = [edit_data_['target_new'] for edit_data_ in edit_data]
+            ground_truth = [edit_data_['ground_truth'] for edit_data_ in edit_data]
+            locality_prompts = [edit_data_['locality_prompt'] for edit_data_ in edit_data]
+            locality_prompts_with_systemPrompt = [edit_data_['locality_prompt'] + ' ' + hparams.suffix_system_prompt for edit_data_ in edit_data]
+            locality_ans = [edit_data_['locality_ground_truth'] for edit_data_ in edit_data]
+            general_prompt = [edit_data_ for edit_data_ in edit_data[0]['general_prompt']]
+            general_prompt = [general_prompt,]
+            general_prompt_with_systemPrompt = [edit_data_+ ' ' + hparams.suffix_system_prompt for edit_data_ in edit_data[0]['general_prompt']]
+            general_prompt_with_systemPrompt = [general_prompt_with_systemPrompt,]
+            locality_inputs = {
+                'general knowledge constraint': {
+                    'prompt': locality_prompts,
+                    'ground_truth': locality_ans
+                },
+            }
+            locality_inputs_with_systemPrompt = {
+                'general knowledge constraint': {
+                    'prompt': locality_prompts_with_systemPrompt,
+                    'ground_truth': locality_ans
+                },
+            }
+        else:
+            edit_data = [data,]
+            case_id = [edit_data_['case_id'] for edit_data_ in edit_data]
+            prompts = [edit_data_['prompt'] for edit_data_ in edit_data]
+            target_new = [edit_data_['target_new'] for edit_data_ in edit_data]
+            ground_truth = [edit_data_['ground_truth'] for edit_data_ in edit_data]
+            locality_prompts = [edit_data_['locality_prompt'] for edit_data_ in edit_data]
+            locality_ans = [edit_data_['locality_ground_truth'] for edit_data_ in edit_data]
+            general_prompt = [edit_data_ for edit_data_ in edit_data[0]['general_prompt']]
+            general_prompt = [general_prompt,]
+            locality_inputs = {
+                'general knowledge constraint': {
+                    'prompt': locality_prompts,
+                    'ground_truth': locality_ans
+                },
+            }
+
+            prompts_with_systemPrompt = None
+            locality_inputs_with_systemPrompt = None
+            general_prompt_with_systemPrompt = None
+
         metrics, edited_model, _ = editor.edit(
             case_id = case_id,
             prompts=prompts,
@@ -157,9 +178,10 @@ if __name__ == '__main__':
     parser.add_argument('--edited_model', required=True, type=str) ## vanilla LLM
     parser.add_argument('--editing_method', required=True, type=str)  
     parser.add_argument('--hparams_dir', required=True, type=str)  
+    parser.add_argument('--hparams_MENDtraining_dir', type=str)  
     parser.add_argument('--safety_classifier_dir', required=True, type=str) 
     parser.add_argument('--data_dir', default='../data', type=str)
-    parser.add_argument('--metrics_save_dir', default='../safety_results', type=str)
+    parser.add_argument('--metrics_save_dir', default='../results', type=str)
 
     args = parser.parse_args()
 
@@ -191,7 +213,24 @@ if __name__ == '__main__':
     editor = SafetyEditor.from_hparams(hparams)
     # edit_data_all = edit_data_all[0:2]
     if args.editing_method == "DINM":
-        overall_performance = test_DINM(edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir)
+        overall_performance = test_detoxification(args.editing_method, edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir)
+    if args.editing_method == "MEND":
+
+        ## mete training for MEND (You can set the meta-training hyperparameters in the EasyEdit/hparams/MEND/xxx.yaml file.)
+        meta_training_hparams = MENDTrainingHparams.from_hparams(args.hparams_MENDtraining_dir)
+        train_ds = SafetyDataset('../data/SafeEdit_train.json', config=meta_training_hparams)
+        eval_ds = SafetyDataset('../data/SafeEdit_val.json', config=meta_training_hparams)
+        trainer = EditTrainer(
+            config=meta_training_hparams,
+            train_set=train_ds,
+            val_set=eval_ds
+        )
+        trainer.run()
+        print('the hyper-network checkpoint of meta_training is saved at: EasyEdit/examples/results/models/MEND')
+
+        ## test MEND
+        overall_performance = test_detoxification(args.editing_method, edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir)
+
     else:
         print("This method is currently not supported")
         
@@ -213,18 +252,25 @@ if __name__ == '__main__':
 
 
 # DINM edits mistral-7b
-# python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --hparams_dir=../hparams/DINM/mistral-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../safety_results
+# python run_safety_editing.py --editing_method=DINM --edited_model=mistral-7b --hparams_dir=../hparams/DINM/mistral-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../results
 
 # DINM edits llama-2-7b-chat
-# python run_safety_editing.py --editing_method=DINM --edited_model=llama-2-7b-chat --hparams_dir=../hparams/DINM/llama-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../safety_results
+# python run_safety_editing.py --editing_method=DINM --edited_model=llama-2-7b-chat --hparams_dir=../hparams/DINM/llama-7b --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../results
     
 # DINM edits gpt2-xl
-# python run_safety_editing.py --editing_method=DINM --edited_model=gpt2-xl --hparams_dir=../hparams/DINM/gpt2-xl --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../safety_results
+# python run_safety_editing.py --editing_method=DINM --edited_model=gpt2-xl --hparams_dir=../hparams/DINM/gpt2-xl --safety_classifier_dir=zjunlp/SafeEdit-Safety-Classifier --metrics_save_dir=../results
 
 
 
 
 
+# MEND edits mistral-7b
+# python run_safety_editing.py --editing_method=MEND --edited_model=mistral-7b --hparams_MENDtraining_dir=../hparams/TRAINING/MEND/mistral-7b.yaml --hparams_dir=../hparams/MEND/mistral-7b-detoxifying.yaml --safety_classifier_dir=/data2/wmr/hugging_cache/SafeEdit-Safety-Classifier --metrics_save_dir=../results
+
+# DINM edits llama-2-7b-chat
+# python run_safety_editing.py --editing_method=MEND --edited_model=llama-2-7b-chat --hparams_MENDtraining_dir=../hparams/TRAINING/MEND/llama-2-7b-chat.yaml --hparams_dir=../hparams/MEND/llama-2-7b-chat-detoxifying.yaml --safety_classifier_dir=/data2/wmr/hugging_cache/SafeEdit-Safety-Classifier --metrics_save_dir=../results
 
 
-    
+
+
+
