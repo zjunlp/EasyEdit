@@ -71,6 +71,7 @@ class MENDHyperParams(HyperParams):
 
     batch_size: int = 1
     max_length: int = 40
+    max_output_length: Optional[int] = None
     max_epochs: Optional[int] = None
     max_iters: Optional[int] = None
 
