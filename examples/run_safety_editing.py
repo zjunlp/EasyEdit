@@ -154,6 +154,7 @@ def test_detoxification(editing_method, edit_data_all, editor, hparams, safety_c
             general_prompt_with_systemPrompt = None
 
         metrics, edited_model, _ = editor.edit(
+            editing_method = args.editing_method,
             case_id = case_id,
             prompts=prompts,
             prompts_with_systemPrompt = prompts_with_systemPrompt,
@@ -214,7 +215,7 @@ if __name__ == '__main__':
     # edit_data_all = edit_data_all[0:2]
     if args.editing_method == "DINM":
         overall_performance = test_detoxification(args.editing_method, edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir)
-    if args.editing_method == "MEND":
+    elif args.editing_method == "MEND":
 
         ## mete training for MEND (You can set the meta-training hyperparameters in the EasyEdit/hparams/MEND/xxx.yaml file.)
         meta_training_hparams = MENDTrainingHparams.from_hparams(args.hparams_MENDtraining_dir)
@@ -228,7 +229,7 @@ if __name__ == '__main__':
         trainer.run()
         print('the hyper-network checkpoint of meta_training is saved at: EasyEdit/examples/results/models/MEND')
 
-        ## test MEND
+        # test MEND
         overall_performance = test_detoxification(args.editing_method, edit_data_all, editor, hparams, safety_classifier_model, safety_classifier_tokenizer, detoxify_metric, output_dir)
 
     else:
