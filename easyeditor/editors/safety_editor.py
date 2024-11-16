@@ -10,7 +10,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
-from ..evaluate import compute_safety_edit_quality, ccks_compute_safety_edit_quality
+from ..evaluate import compute_safety_edit_quality
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
@@ -119,6 +119,7 @@ class SafetyEditor:
         return toxic_layer
 
     def edit(self,
+             editing_method: Union[str],
              prompts: Union[str, List[str]],
              prompts_with_systemPrompt: Union[str, List[str]],
              target_new: Union[str, List[str]],
@@ -166,7 +167,22 @@ class SafetyEditor:
                assert self.hparams.batch_size == 1, print(f'Single Edit, pls set the batch_size to 1....')
 
 
-        if "NLPCC" in kwargs and kwargs['NLPCC']:
+        all_metrics = []
+        if 'pre_edit' in kwargs and kwargs['pre_edit'] is not None:
+            metrics = kwargs['pre_edit']
+            all_metrics = metrics
+        else:
+            for i, request in enumerate(tqdm(requests)):
+                metrics = {
+                    "pre": compute_safety_edit_quality(self.model, self.tok, request,
+                                            self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length)
+                }
+                all_metrics.append(metrics)
+            if 'pre_file' in kwargs and kwargs['pre_file'] is not None:
+                ### Store the pre_edit metric to refrain computing repeatedly
+                json.dump(all_metrics, open(kwargs['pre_file'], 'w'), indent=4)
+        
+        if editing_method == "DINM":
             for i, (request, request_with_systemPrompt) in enumerate(zip(requests, requests_with_systemPrompt)):
                 start = time()
                 if len(self.hparams.layers) == 0:
@@ -183,46 +199,33 @@ class SafetyEditor:
                 )
                 exec_time = time() - start
                 LOG.info(f"Execution {i} editing took {exec_time}")
-                edited_model.save_pretrained(kwargs['ckpt_save_dir'])
-                print(f"edited model is saved in {kwargs['ckpt_save_dir']}")
+
+                start = time()
+                all_metrics[i].update({
+                    'case_id': kwargs["case_id"],
+                    "requested_rewrite": request,
+                    "post": compute_safety_edit_quality(edited_model, self.tok, request_with_systemPrompt, self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length),
+                    "time": exec_time,
+                })
+                
                 with torch.no_grad():
                     for k, v in weights_copy.items():
                         nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
-              
+                
 
+                LOG.info(f"Evaluation took {time() - start}")
+
+                if verbose:
+                    LOG.info(
+                        f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
+                    )
         else:
-            all_metrics = []
-            if 'pre_edit' in kwargs and kwargs['pre_edit'] is not None:
-                metrics = kwargs['pre_edit']
-                all_metrics = metrics
-            else:
-                for i, request in enumerate(tqdm(requests)):
-                    if "ccks" in kwargs and kwargs['ccks']:
-                        metrics = {
-                            "pre": ccks_compute_safety_edit_quality(self.model, self.tok, request,
-                                                    self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length)
-                        }
-                    else:
-                        metrics = {
-                            "pre": compute_safety_edit_quality(self.model, self.tok, request,
-                                                    self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length)
-                        }
-                    all_metrics.append(metrics)
-                if 'pre_file' in kwargs and kwargs['pre_file'] is not None:
-                    ### Store the pre_edit metric to refrain computing repeatedly
-                    json.dump(all_metrics, open(kwargs['pre_file'], 'w'), indent=4)
-            
-            for i, (request, request_with_systemPrompt) in enumerate(zip(requests, requests_with_systemPrompt)):
-                if request_with_systemPrompt is None:
-                    request_with_systemPrompt = requests
-
+            for i, request in enumerate(requests):
                 start = time()
-                if len(self.hparams.layers) == 0:
-                    self.hparams.layers = self._locate_toxic_layer(self.model, self.tok, [request,])
                 edited_model, weights_copy = self.apply_algo(
                     self.model,
                     self.tok,
-                    [request_with_systemPrompt],
+                    [request],
                     self.hparams,
                     copy=False,
                     return_orig_weights=True,
@@ -233,21 +236,12 @@ class SafetyEditor:
                 LOG.info(f"Execution {i} editing took {exec_time}")
 
                 start = time()
-                if "ccks" in kwargs and kwargs['ccks']:
-                    all_metrics[i].update({
-                        'case_id': kwargs["case_id"],
-                        "requested_rewrite": request,
-                        "post": ccks_compute_safety_edit_quality(edited_model, self.tok, request_with_systemPrompt, self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length),
-                        "time": exec_time,
-                    })
-
-                else:
-                    all_metrics[i].update({
-                        'case_id': kwargs["case_id"],
-                        "requested_rewrite": request,
-                        "post": compute_safety_edit_quality(edited_model, self.tok, request_with_systemPrompt, self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length),
-                        "time": exec_time,
-                    })
+                all_metrics[i].update({
+                    'case_id': kwargs["case_id"],
+                    "requested_rewrite": request,
+                    "post": compute_safety_edit_quality(edited_model, self.tok, request, self.hparams.device, max_tokens=self.hparams.max_length, max_output_tokens=self.hparams.max_output_length),
+                    "time": exec_time,
+                })
                 
                 with torch.no_grad():
                     for k, v in weights_copy.items():
@@ -261,10 +255,10 @@ class SafetyEditor:
                         f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {all_metrics[i]}"
                     )
 
-            if isinstance(edited_model, LORA):
-                edited_model=edited_model.model
-            #for melo
-            return all_metrics, edited_model, weights_copy
+        if isinstance(edited_model, LORA):
+            edited_model=edited_model.model
+        #for melo
+        return all_metrics, edited_model, weights_copy
 
     def _prepare_requests(self,
                           prompts: Union[str, List[str]],
