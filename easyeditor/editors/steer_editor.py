@@ -16,7 +16,7 @@ from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from transformers import AutoProcessor, LlavaForConditionalGeneration
 from transformers import InstructBlipProcessor, InstructBlipForConditionalGeneration
 from ..util.globals import *
-from ..evaluate import compute_safety_edit_quality, ccks_compute_safety_edit_quality
+from ..evaluate import compute_safety_edit_quality
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *

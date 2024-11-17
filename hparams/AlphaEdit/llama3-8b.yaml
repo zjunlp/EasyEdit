@@ -1,11 +1,10 @@
 alg_name: "AlphaEdit"
 model_name: "./hugging_cache/llama-3-8b-instruct"
-# model_name: "./Meta-Llama-3-8B-Instruct"
 stats_dir: "./data/stats"
 # Make sure that the projection matrix P has been downloaded from the baidu netdisk (For details, please refer to the EasyEdit/easyeditor/models/alphaedit/README.md) beforehand to avoid double computation.
 # But if the projection matrix P which we provided is not needed, then nothing needs to be done to the P_loc field; 
 # just run the program, and the program will compute P and save it locally automatically.
-P_loc: "./null_space_project_fjz.pt"
+P_loc: "./null_space_project.pt"
 device: 0
 layers: [4, 5, 6, 7, 8]
 clamp_norm_factor: 0.75
