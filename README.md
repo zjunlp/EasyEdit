@@ -1,6 +1,6 @@
 <div align="center">
-
 <img src="figs/logo.png" width="180px">
+
 
 **An Easy-to-use Knowledge Editing Framework for Large Language Models.**
 
@@ -1049,6 +1049,7 @@ We thank all the contributors to this project, more contributors are welcome!
 
 #### Other Related Projects
 
+- [AlphaEdit](https://github.com/jianghoucheng/AlphaEdit)
 - [ROME](https://github.com/kmeng01/rome)
 - [FastEdit](https://github.com/hiyouga/FastEdit)
 - [GRACE](https://github.com/Thartvigsen/GRACE)
