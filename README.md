@@ -58,17 +58,10 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
-- **New Reports**
-
-    |     *Report*        |    Topic    | PPT Resource |
-    | :-----------------: | :---------: | :------------: |
-    | COLING2024 tutorial| Knowledge Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/1vFzRYjnzkuZaNdjdIxQwWbEybCY7YqY9/view?usp=sharing)   |
-    | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
-    | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
 
 - 2024-11-19, we will update the Table 4 results in the paper "[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" after optimizing certain methods (related to AdaLoRA) and fixing computational bugs (related to ROME and MEMIT) in the EasyEdit. These improvements have led to better results than before. We will continue updating this paper and welcome everyone to discuss and exchange ideas.
 - 2024-11-11, 🎉🎉the paper on model editing for LLMs4Code, "[Model Editing for LLMs4Code: How Far are We?](https://arxiv.org/abs/2411.06638)", has been accepted by ICSE 2025! This work proposes a benchmark for LLMs4Code editing, [CLMEEval](https://github.com/xpq-tech/code-llmedit), which is built upon EasyEdit!
-- 2024-11-09, we fixed the bug regarding the [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit) results in the https://github.com/zjunlp/EasyEdit/issues/390. Thanks for the help of [@StarLooo](https://github.com/StarLooo) to help us with it. 
+- 2024-11-09, we fixed a bug regarding the [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit) results in the https://github.com/zjunlp/EasyEdit/issues/390. Thanks for the help of [@StarLooo](https://github.com/StarLooo) to help us with it. 
 - 2024-10-24, EasyEdit has added two new knowledge editing methods, [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) and [DeepEdit](https://arxiv.org/abs/2401.10471). In addition, we have fixed several bugs.
 
 <details>
@@ -108,8 +101,8 @@
 - 2023-12-06, the EasyEdit has added the support for the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).
 - 2023-11-18, our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.
 - 2023-10-25, our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.
-- 2023-10-24, the EasyEdit has added the support for efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.
-- 2023-10-14, we release the [MultimodalEditor](#multimodaleditor) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".
+- 2023-10-24, the EasyEdit has added the support for efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [QWen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.
+- 2023-10-14, we release the [MultimodalEditor](https://github.com/zjunlp/EasyEdit/blob/main/examples/MMEdit.md) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".
 - 2023-10-13, we release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.
 - 2023-10-08, our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.
 - 2023-10-07, the EasyEdit has added the support for editing models with multiple GPUs, using huggingface [`Accelerate`](https://github.com/zjunlp/EasyEdit/blob/main/hparams/ROME/llama-7b.yaml#L24).
@@ -120,9 +113,6 @@
 - 2023-5-22, we release the paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" and provide a paper list at [PaperList](https://github.com/zjunlp/KnowledgeEditingPapers).
 - 2023-3-25, the EasyEdit project has been launched and is under development.
 
-
-
-This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 </details>
 
 <!-- **EasyEdit** is now publicly open-sourced, with a [demo video](https://www.youtube.com/watch?v=NaQRvSYuQMo) and long-term maintenance. -->
@@ -131,7 +121,11 @@ This repository is a subproject of [KnowLM](https://github.com/zjunlp/KnowLM).
 
 > A Comprehensive Study of Knowledge Editing for Large Language Models [[paper](https://arxiv.org/abs/2401.01286)][[benchmark](https://huggingface.co/datasets/zjunlp/KnowEdit)][[code](https://github.com/zjunlp/EasyEdit)] 
 
-> AAAI 2024 Tutorial [[Google Drive]()] [[Baidu Pan]()]
+> IJCAI 2024 Tutorial [Google Drive](https://drive.google.com/file/d/1sg3Dy3gQo2bwOoLwWMFh57NfHROf3Ahg/view?usp=sharing)
+
+> COLING 2024 Tutorial [Google Drive](https://drive.google.com/file/d/1vFzRYjnzkuZaNdjdIxQwWbEybCY7YqY9/view?usp=sharing)  
+
+> AAAI 2024 Tutorial [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing) 
 
 > AACL 2023 Tutorial [[Google Drive](https://drive.google.com/file/d/1EW-cusC_llCM0wEshkIdYuYrvfBPCDRz/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1NupastGJUzcUIAjI64J1tw?pwd=i5an)]
 
