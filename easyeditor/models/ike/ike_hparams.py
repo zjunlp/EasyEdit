@@ -7,15 +7,17 @@ from ...util.hparams import HyperParams
 
 @dataclass
 class IKEHyperParams(HyperParams):
-    # Method
-    k: int # K icl examples
-    results_dir: str
 
     # Module templates
     device: int
     alg_name: str
     model_name: str
-    sentence_model_name: str
+    sentence_model_name: str = "./hugging_cache/all-MiniLM-L6-v2"
+
+    # Method
+    k: int = 16 # K icl examples
+    results_dir: str = "./results"
+    use_icl_examples: bool = True
 
     model_parallel: bool = False
 
