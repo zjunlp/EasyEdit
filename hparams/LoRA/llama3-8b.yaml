@@ -1,6 +1,6 @@
 alg_name: "LoRA"
 model_name: "./hugging_cache/llama-3-8b-instruct"
-device: 1
+device: 0
 
 lora_type: "adalora"
 layers: []
