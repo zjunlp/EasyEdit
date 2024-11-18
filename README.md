@@ -59,7 +59,7 @@
 
 ## 🔔News
 
-- 2024-11-19, we will update the Table 4 results in the paper "[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" after optimizing certain methods (related to AdaLoRA) and fixing computational bugs (related to ROME and MEMIT) in the EasyEdit. These improvements have led to better results than before. We will continue updating this paper and welcome everyone to discuss and exchange ideas.
+- 2024-11-19, we will update the Table 4 results in the paper "[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" after optimizing certain methods (related to AdaLoRA) and fixing computational bugs (related to ROME and MEMIT) in the EasyEdit (More details in https://github.com/zjunlp/EasyEdit/issues/427). These improvements have led to better results than before. We will continue updating this paper and welcome everyone to discuss and exchange ideas.
 - 2024-11-11, 🎉🎉the paper on model editing for LLMs4Code, "[Model Editing for LLMs4Code: How Far are We?](https://arxiv.org/abs/2411.06638)", has been accepted by ICSE 2025! This work proposes a benchmark for LLMs4Code editing, [CLMEEval](https://github.com/xpq-tech/code-llmedit), which is built upon EasyEdit!
 - 2024-11-09, we fixed a bug regarding the [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit) results in the https://github.com/zjunlp/EasyEdit/issues/390. Thanks for the help of [@StarLooo](https://github.com/StarLooo) to help us with it. 
 - 2024-10-24, EasyEdit has added two new knowledge editing methods, [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md). In addition, we have fixed several bugs.
