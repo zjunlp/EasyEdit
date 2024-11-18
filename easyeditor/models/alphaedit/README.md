@@ -8,10 +8,15 @@
 
 
 ## Quick Start
-### An example for editing Llama3 (8B) on ZsRE dataset using AlphaEdit
-#### 1. Make sure that the projection matrix P has been downloaded from the [baidu_netdisk]( https://pan.baidu.com/s/1Unk3X6jl3LZw_OF5eLoEeA?pwd=mcaf ) into this address (EasyEdit/null_space_project.pt) beforehand to avoid double computation. 
+### An example for editing Llama3-8B or Llama3-8B-Instruct on ZsRE dataset using AlphaEdit
+#### 1. Make sure that the projection matrix P has been downloaded into this address (EasyEdit/null_space_project.pt) beforehand to avoid double computation. 
 
-Due to limitations in computational power and time, we currently only provide the projection matrix P for LLAMA3-8B, specifically for layers [4, 5, 6, 7, 8]. For other models or different layers, the corresponding projection matrix P needs to be calculated independently. We will strive to update our resources in this regard.
+You can get the P from the Baidu Netdisk or Goole Drive.
+| **Model** | Google Drive| BaiduNetDisk |
+| :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
+| Llama3-8B |  | [baidu_netdisk]( https://pan.baidu.com/s/1Unk3X6jl3LZw_OF5eLoEeA?pwd=mcaf ) |
+| Llama3-8B-Instruct | [[Google Drive]](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing) | [baidu_netdisk]( https://pan.baidu.com/s/1Sgfz2bqRiBZdkG3meTtWwA?pwd=dj9i ) |
+Due to limitations in computational power and time, we currently only provide the projection matrix P for LLAMA3-8B and Llama3-8B-Instruct, specifically for layers [4, 5, 6, 7, 8]. For other models or different layers, the corresponding projection matrix P needs to be calculated independently. We will strive to update our resources in this regard.
 
 #### 2. Find the [script](EasyEdit/examples/run_AlphaEdit_editing.sh)
  
