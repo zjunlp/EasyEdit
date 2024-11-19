@@ -1,5 +1,5 @@
 # AlphaEdit
-- Code for [``AlphaEdit: Null-Space Constrained Knowledge Editing for Language Models``]
+- Code for the paper ``AlphaEdit: Null-Space Constrained Knowledge Editing for Language Models``.
 
 - AlphaEdit minimizes disruption to the preserved knowledge by projecting parameter perturbations onto the null space of its key matrices. It then removes the output error related to it from the current objective, allowing the model to focus solely on knowledge update without trade-off.  By leveraging the mathematical properties of matrix projection and null space, AlphaEdit ensures that the distribution of hidden representations within LLMs remains invariant after edits. This invariance allows post-edited LLMs to effectively handle both knowledge update and preservation simultaneously.
 - AlphaEdit focuses on optimizing sequential editing from an objective standpoint. 
@@ -20,7 +20,7 @@ You can get the P from the Baidu Netdisk or Goole Drive.
 
 Due to limitations in computational power and time, we currently only provide the projection matrix P for LLAMA3-8B and Llama3-8B-Instruct, specifically for layers [4, 5, 6, 7, 8]. For other models or different layers, the corresponding projection matrix P needs to be calculated independently. We will strive to update our resources in this regard.
 
-#### 2. Find the [script](EasyEdit/examples/run_AlphaEdit_editing.sh)
+#### 2. Run the script [run_AlphaEdit_editing.py](EasyEdit/examples/run_AlphaEdit_editing.py) using the following line of code:
  
     bash examples/run_AlphaEdit_editing.sh
 
