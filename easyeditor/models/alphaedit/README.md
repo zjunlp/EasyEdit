@@ -15,8 +15,8 @@ You can get the P from the Baidu Netdisk or Goole Drive.
 
 | **Model** | Google Drive| BaiduNetDisk |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
-| Llama3-8B | [Google Drive](https://drive.google.com/file/d/1dTAGLgvNj8TWcR3o87Rb0XNV-VlsAsop/view?usp=sharing) | [baidu_netdisk]( https://pan.baidu.com/s/1Unk3X6jl3LZw_OF5eLoEeA?pwd=mcaf ) |
-| Llama3-8B-Instruct | [Google Drive](https://drive.google.com/file/d/1vr0Pcohb7pW3SWvGhFy7xrB8DdA9BVex/view?usp=sharing) | [baidu_netdisk]( https://pan.baidu.com/s/1Sgfz2bqRiBZdkG3meTtWwA?pwd=dj9i ) |
+| Llama3-8B | [[Google Drive]](https://drive.google.com/file/d/1dTAGLgvNj8TWcR3o87Rb0XNV-VlsAsop/view?usp=sharing) | [[BaiduNetdisk]]( https://pan.baidu.com/s/1Unk3X6jl3LZw_OF5eLoEeA?pwd=mcaf ) |
+| Llama3-8B-Instruct | [[Google Drive]]( https://drive.google.com/file/d/1vr0Pcohb7pW3SWvGhFy7xrB8DdA9BVex/view?usp=sharing ) | [[BaiduNetdisk]]( https://pan.baidu.com/s/1Sgfz2bqRiBZdkG3meTtWwA?pwd=dj9i ) |
 
 Due to limitations in computational power and time, we currently only provide the projection matrix P for LLAMA3-8B and Llama3-8B-Instruct, specifically for layers [4, 5, 6, 7, 8]. For other models or different layers, the corresponding projection matrix P needs to be calculated independently. We will strive to update our resources in this regard.
 
