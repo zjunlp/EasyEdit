@@ -1,5 +1,5 @@
 alg_name: "AlphaEdit"
-model_name: "./hugging_cache/llama-3-8b-instruct"
+model_name: "./hugging_cache/llama-3.1-8b-instruct"
 stats_dir: "./data/stats"
 # Make sure that the projection matrix P has been downloaded from the baidu netdisk (For details, please refer to the EasyEdit/easyeditor/models/alphaedit/README.md) beforehand to avoid double computation.
 # But if the projection matrix P which we provided is not needed, then nothing needs to be done to the P_loc field; 
@@ -27,4 +27,4 @@ mom2_dataset: "wikipedia"
 mom2_n_samples: 100000
 mom2_dtype: "float32"
 nullspace_threshold: 2e-2
-L2: 1
+L2: 10
