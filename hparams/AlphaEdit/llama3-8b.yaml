@@ -27,4 +27,4 @@ mom2_dataset: "wikipedia"
 mom2_n_samples: 100000
 mom2_dtype: "float32"
 nullspace_threshold: 2e-2
-L2: 10
+L2: 1
