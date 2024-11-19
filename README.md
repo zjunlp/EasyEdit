@@ -134,7 +134,7 @@
 
 There is a demonstration of editing. The GIF file is created by [Terminalizer](https://github.com/faressoft/terminalizer). <br>
 
-We provide a handy [Jupyter Notebook](https://github.com/zjunlp/EasyEdit/blob/main/tutorial-notebooks/EasyEdit_Example_US_President.ipynb)! It allows you to edit a LLM's knowledge of the US president, switching from Biden to Trump and even back to Biden. This includes methods like WISE, AlphaEdit, AdaLoRA, and Prompt-based editing.
+We provide a handy [Jupyter Notebook](https://github.com/zjunlp/EasyEdit/blob/main/tutorial-notebooks/EasyEdit_Example_US_President.ipynb)! It allows you to edit a LLM's knowledge of the US president, switching from Biden to Trump and even back to Biden. This includes methods like [WISE](https://arxiv.org/abs/2405.14768), [AlphaEdit](https://arxiv.org/abs/2410.02355), AdaLoRA, and Prompt-based editing.
 
 
 <img src="figs/demo_usage_new.gif" width="550" height="470" align=center>
