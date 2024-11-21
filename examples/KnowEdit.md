@@ -250,7 +250,7 @@ python3 run_Sanitation_llama2.py
  --data_dir "./data \
  --specify_answer cheese \
 ```
-### LoRA
+### AdaLoRA
 
 ```shell
 python run_knowedit_llama2.py \
