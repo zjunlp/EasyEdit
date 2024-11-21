@@ -223,6 +223,30 @@ python3 run_Sanitation_llama2.py
  --specify_answer cheese \
 ```
 
+### SERAC
+
+```shell
+python run_knowedit_llama2.py \
+    --editing_method=SERAC \
+    --hparams_dir=../hparams/SERAC/llama-7b \
+    --data_dir=./data \
+    --datatype='counterfact'
+```
+For convsent dataset,we use the following command:
+```
+python run_convsent_llama2.py \
+ --hparams_dir ./hparams/SERAC/llama-7b.yaml \
+ --editing_method SERAC \
+ --data_dir ./data  
+```
+For Sanitation dataset ,we use the following command:
+```
+python3 run_Sanitation_llama2.py
+ --editing_method  SERAC\
+ --hparams_dir ./hparams/SERAC/llama-7b.yaml \
+ --data_dir "./data \
+ --specify_answer cheese \
+```
 
 ### IKE
 
