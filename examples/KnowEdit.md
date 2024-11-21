@@ -126,7 +126,7 @@ Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a featur
 ---
 
 ### ROME
-For WikiBio,ZsRE,wiki_counterfact,wiki_recent dataset,we use the following command:
+For WikiBio, ZsRE, wiki_counterfact,wiki_recent dataset, we use the following command:
 ```shell
 python run_knowedit_llama2.py \
     --editing_method=ROME \
@@ -134,14 +134,14 @@ python run_knowedit_llama2.py \
     --data_dir=./data \
     --datatype='counterfact'
 ```
-For convsent dataset,we use the following command:
+For convsent dataset, we use the following command:
 ```
 python run_convsent_llama2.py \
  --hparams_dir ./hparams/ROME/llama-7b.yaml \
  --editing_method ROME \
  --data_dir ./data  
 ```
-For Sanitation dataset ,we use the following command:
+For Sanitation dataset, we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  ROME\
@@ -157,14 +157,14 @@ python run_knowedit_llama2.py \
     --data_dir=./data \
     --datatype='counterfact'
 ```
-For convsent dataset,we use the following command:
+For convsent dataset, we use the following command:
 ```
 python run_convsent_llama2.py \
  --hparams_dir ./hparams/MEMIT/llama-7b.yaml \
  --editing_method MEMIT \
  --data_dir ./data  
 ```
-For Sanitation dataset ,we use the following command:
+For Sanitation dataset, we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  MEMIT\
@@ -182,14 +182,14 @@ python run_knowedit_llama2.py \
     --data_dir=./data \
     --datatype='counterfact'
 ```
-For convsent dataset,we use the following command:
+For convsent dataset, we use the following command:
 ```
 python run_convsent_llama2.py \
  --hparams_dir ./hparams/FT/llama-7b.yaml \
  --editing_method FT \
  --data_dir ./data  
 ```
-For Sanitation dataset ,we use the following command:
+For Sanitation dataset, we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  FT\
@@ -207,14 +207,14 @@ python run_knowedit_llama2.py \
     --data_dir=./data \
     --datatype='counterfact'
 ```
-For convsent dataset,we use the following command:
+For convsent dataset, we use the following command:
 ```
 python run_convsent_llama2.py \
  --hparams_dir ./hparams/MEND/llama-7b.yaml \
  --editing_method MEND \
  --data_dir ./data  
 ```
-For Sanitation dataset ,we use the following command:
+For Sanitation dataset, we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  MEND\
@@ -232,14 +232,14 @@ python run_knowedit_llama2.py \
     --data_dir=./data \
     --datatype='counterfact'
 ```
-For convsent dataset,we use the following command:
+For convsent dataset, we use the following command:
 ```
 python run_convsent_llama2.py \
  --hparams_dir ./hparams/SERAC/llama-7b.yaml \
  --editing_method SERAC \
  --data_dir ./data  
 ```
-For Sanitation dataset ,we use the following command:
+For Sanitation dataset, we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  SERAC\
@@ -258,7 +258,7 @@ python run_knowedit_llama2.py \
     --train_data_path=./train_data
     --datatype='counterfact'
 ```
-For convsent dataset,we use the following command:
+For convsent dataset, we use the following command:
 ```
 python run_convsent_llama2.py \
  --hparams_dir ./hparams/IKE/llama-7b.yaml \
@@ -266,7 +266,7 @@ python run_convsent_llama2.py \
  --train_data_path=./train_data
  --data_dir ./data  
 ```
-For Sanitation dataset ,we use the following command:
+For Sanitation dataset, we use the following command:
 ```
 python3 run_Sanitation_llama2.py
  --editing_method  IKE\
