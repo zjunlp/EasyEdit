@@ -306,7 +306,7 @@ You can choose different editing methods according to your specific needs.
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
 
-#### Quick Start on Some Work Designed by Our Team
+#### Quick Start on Some Works
 
 | **Work** | Description |    Path   |
 | :--------: | :---------: | :-------: |
