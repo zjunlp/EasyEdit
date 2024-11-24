@@ -8,7 +8,7 @@ When humans encounter new information, we do not always master it immediately. I
 `IKE` (In-context Knowledge Editing), is a way of editing factual knowledge in large language models **without modifying their parameters**, it exemplifies this approach by constructing three types of demonstrations – **copy**, **update**, and **retain** – to aid the model in producing reliable fact editing. It utilizes a demonstration store, formed from training sets, to guide the model towards generating the appropriate answer by retrieving the most pertinent demonstrations.
 
 <div align="center">
-<img src="../figs/IKE.png" width="100%" height="100%" />
+<img src="../figs/IKE.png" width="70%" height="70%" />
 </div>
 
 `PROMPT` approach is much simpler compared to the IKE method. It does not require specifying a training dataset, constructing three types of demonstrations, or involving a retrieval process. Instead, the fact to be edited in the data is directly treated as the **new fact**, and the model is prompted to response based on this **new fact**.
