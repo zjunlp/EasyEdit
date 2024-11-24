@@ -75,6 +75,8 @@ if __name__ == "__main__":
         editing_hparams = FTHyperParams
     elif args.editing_method == 'IKE':
         editing_hparams = IKEHyperParams
+    elif args.editing_method == 'ICE':
+        editing_hparams = IKEHyperParams
     elif args.editing_method == 'KN':
         editing_hparams = KNHyperParams
     elif args.editing_method == 'MEMIT':
@@ -83,6 +85,10 @@ if __name__ == "__main__":
         editing_hparams = ROMEHyperParams
     elif args.editing_method == 'LoRA':
         editing_hparams = LoRAHyperParams
+    elif args.editing_method == 'SERAC':
+        editing_hparams = SERACHparams
+    elif args.editing_method == 'MEND':
+        editing_hparams = MENDHyperParams
     else:
         raise NotImplementedError
     
@@ -239,6 +245,9 @@ if __name__ == "__main__":
         train_ds = KnowEditDataset(args.train_data_path)
         sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
         encode_ike_facts(sentence_model, train_ds, hparams)
+    elif args.editing_method == 'ICE':
+        hparams.use_icl_examples = False
+        train_ds = None
     else:
         train_ds = None
     editor = BaseEditor.from_hparams(hparams)

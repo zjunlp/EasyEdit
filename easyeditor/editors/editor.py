@@ -307,7 +307,7 @@ class BaseEditor:
                 json.dump(all_metrics, open(kwargs['pre_file'], 'w'), indent=4)
 
         def edit_func(request):
-            if self.alg_name == 'IKE':
+            if self.alg_name == 'IKE' or self.alg_name == 'ICE':
                 edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
                     self.model,
                     self.tok,
