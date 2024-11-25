@@ -173,7 +173,7 @@ python3 run_Sanitation_llama2.py
  --specify_answer cheese \
 ```
 
-### FT
+### FT (including FT-L and FT-M, more details can be found in <sub>yaml</sub> and the paper)
 
 ```shell
 python run_knowedit_llama2.py \
