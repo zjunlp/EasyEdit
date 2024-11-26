@@ -316,7 +316,7 @@ You can choose different editing methods according to your specific needs.
 |ConceptEdit|Editing Conceptual Knowledge for Large Language Models|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/ConceptEdit.md)|
 |MMEdit|Can We Edit Multimodal Large Language Models?|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/MMEdit.md)|
 |PersonalityEdit|Editing Personality For Large Language Models|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/PersonalityEdit.md)|
-
+|PROMPT|PROMPT-based knowledge editing methods|[Quick Start](https://github.com/zjunlp/EasyEdit/blob/main/examples/PROMPT.md)|
 
 ### Dataset
 
