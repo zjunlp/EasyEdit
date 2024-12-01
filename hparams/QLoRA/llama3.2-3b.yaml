@@ -15,7 +15,7 @@ lora_dropout: 0.1
 target_modules: ["q_proj", "v_proj"]
 
 # Training settings
-num_steps: 1
+num_steps: 2
 batch_size: 1
 max_length: 30
 lr: 5e-3
