@@ -39,7 +39,7 @@
   - [Evaluation](#evaluation)
 - [🌟Overview](#🌟overview)
     - [Current Implementation](#current-implementation)
-    - [Quick Start on Some Works Designed by Our Team](#quick-start-on-some-work-designed-by-our-team)
+    - [Quick Start on Some Works](#quick-start-on-some-work)
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#🔧pip-installation)
