@@ -338,7 +338,7 @@ class BaseEditor:
                 all_metrics[idx].update({
                     'case_id': idx,
                     "requested_rewrite": request,
-                    "post": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples, request, self.hparams.device),
+                    "post": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples, request, self.hparams.device ,test_generation=test_generation),
                 })
             else:
                 all_metrics[idx].update({

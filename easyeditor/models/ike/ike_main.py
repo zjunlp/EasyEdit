@@ -54,8 +54,8 @@ def apply_ike_to_model(
     else:
         icl_examples = []
 
-    icl_examples.append(f'New Fact: {new_fact}\nPrompt: {new_fact}\n\n')
-    print(icl_examples)
+    # icl_examples.append(f'New Fact: {new_fact}\nPrompt: {new_fact}\n\n')
+    # print(icl_examples)
 
     return icl_examples
 
