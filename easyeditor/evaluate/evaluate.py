@@ -23,6 +23,7 @@ from .evaluate_utils import (
     test_safety_gen,
     test_instance_change,
     PPL,
+    OOD_PPL,
     kl_loc_loss,
     es,
     es_per_icl,
@@ -113,6 +114,11 @@ def compute_rewrite_or_rephrase_quality(
         ppl = PPL(model, tok, prompt, target_new, device)
         ret = {
             f"{key}_ppl": ppl
+        }
+    elif eval_metric == 'ood_ppl':
+        ans = OOD_PPL(model, tok, prompt, target_new, device)
+        ret = {
+            f"ood_acc": ans
         }
     elif hparams.alg_name=="GRACE":
         # ppl = PPL(model, tok, prompt, target_new, device)

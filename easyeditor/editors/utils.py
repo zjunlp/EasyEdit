@@ -38,7 +38,7 @@ def summary_metrics(all_metrics):
     mean_metrics = dict()
     for eval in ["pre", "post"]:
         mean_metrics[eval] = dict()
-        for key in ["rewrite_acc", "rephrase_acc", 'rewrite_ppl']:
+        for key in ["rewrite_acc", "rephrase_acc", 'rewrite_ppl', 'ood_acc']:
             if key in all_metrics[0][eval].keys():
                 mean_metrics[eval][key] = np.mean([metric[eval][key] for metric in all_metrics])
         for key in ["locality", "portability"]:

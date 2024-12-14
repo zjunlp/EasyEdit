@@ -268,6 +268,49 @@ def PPL(
     ppl = torch.exp(nll)#.clip(0, 100)
     return ppl.cpu().numpy().tolist()
 
+
+def OOD_PPL(
+        model,
+        tok,
+        prompt: typing.Union[str, typing.List[str]],
+        target_new: typing.Union[str, typing.List[str]],
+        device,
+        threshold=0.8
+):
+    if isinstance(prompt, str):
+        prompt, target_new = [prompt, ], [target_new, ]
+
+    full_prompt = [f"{p}" for p, l in zip(prompt, target_new)]
+    tokens = tok(full_prompt, return_tensors="pt", padding=True, truncation=True)
+
+    tokens["labels"] = tokens['input_ids'].clone()
+    tokens["labels"][tokens["input_ids"] == tok.pad_token_id] = -100
+    batch = {f"{k1}": v1 for k1, v1 in tokens.items()}
+    input_ids = batch["input_ids"][:, :1024]  # .to(device)
+    target_ids = batch["labels"][:, :1024]
+
+    with torch.no_grad():
+        logits = model(input_ids=input_ids.to(device), labels=target_ids.to(device)).logits
+        shift_logits = logits[:, :-1, :].contiguous()
+        shift_labels = target_ids.to(device)[:, 1:].contiguous()
+
+        log_probs = -nn.functional.log_softmax(shift_logits, dim=-1)
+        if shift_labels.dim() == log_probs.dim() - 1:
+            shift_labels = shift_labels.unsqueeze(-1)
+
+        padding_mask = shift_labels.eq(-100)
+
+        # In case the ignore_index is -100, the gather will fail, so we replace labels by 0. The padding_mask
+        # will ignore them in any case.
+        shift_labels = torch.clamp(shift_labels, min=0)
+
+        nll_loss = log_probs.gather(dim=-1, index=shift_labels)
+        nll_loss.masked_fill_(padding_mask, 0.0)
+
+        threshold = -np.log(threshold)
+
+        return len(nll_loss[nll_loss < threshold]) / len(nll_loss.view(-1))
+
 def verify_answer(model_answer, correct_answer):
     if type(correct_answer) is str:
         correct_answer = [[correct_answer]]

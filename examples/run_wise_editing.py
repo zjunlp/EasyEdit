@@ -79,6 +79,23 @@ if __name__ == "__main__":
                 'ground_truth': locality_ans
             },
         }
+    elif args.data_type == 'temporal':
+        edit_data = json.load(open(f'{args.data_dir}/{args.data_type}/temporal-edit.json', 'r', encoding='utf-8'))[:K]
+        loc_data = json.load(open(f'{args.data_dir}/{args.data_type}/temporal-train.json', 'r', encoding='utf-8'))[:K]
+        loc_prompts = [edit_data_['locality_prompt'] + ' ' + edit_data_['locality_ground_truth'] for edit_data_ in loc_data]
+
+        prompts = [edit_data_['prompt'] for edit_data_ in edit_data]
+        subject = [edit_data_['subject'] for edit_data_ in edit_data]
+        rephrase_prompts = [edit_data_['ood_rephrase'] for edit_data_ in edit_data]
+        target_new = [edit_data_['target_new'] for edit_data_ in edit_data]
+        locality_prompts = [edit_data_['locality_prompt'] for edit_data_ in edit_data]
+        locality_ans = [edit_data_['locality_ground_truth'] for edit_data_ in edit_data]
+        locality_inputs = {
+            'neighborhood': {
+                'prompt': locality_prompts,
+                'ground_truth': locality_ans
+            },
+        }
 
     hparams = editing_hparams.from_hparams(f'{args.hparams_dir}')
 
@@ -90,6 +107,12 @@ if __name__ == "__main__":
 
     print("See results at: ", output_file)
 
+    eval_metric = {
+        'ZsRE': 'token em',
+        'hallucination': 'ppl',
+        'temporal': 'ood_ppl'
+    }
+
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
@@ -99,7 +122,7 @@ if __name__ == "__main__":
         subject=subject,
         locality_inputs=locality_inputs,
         sequential_edit=args.sequential_edit,
-        eval_metric='ppl' if args.data_type == 'hallucination' else 'token em'
+        eval_metric=eval_metric[args.data_type]
     )
 
     with open(output_file, 'w') as f:

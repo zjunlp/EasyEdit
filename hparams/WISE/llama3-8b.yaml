@@ -8,7 +8,7 @@ edit_lr: 0.9
 n_iter: 30
 norm_constraint: 1.0
 act_margin: [2.0, 20.0, 10.0] # alpha, beta, gamma
-act_ratio: 0.88
+act_ratio: 0.5
 save_freq: 500
 merge_freq: 1000
 merge_alg: 'ties'
