@@ -75,10 +75,9 @@ pip install -r requirements.txt #https://github.com/zjunlp/EasyEdit/blob/main/re
 
 #### Editing LlaMA-2 on ZsRE with WISE
 
-- Editing Hallucination is no different from ZsRE; you only need to change the data source. Additionally, since Hallucination uses the PPL metric, please add `eval_metric = 'ppl'` in `editor.edit`.
-
-- **If you need to reproduce the baseline experimental results, simply modify the corresponding `HyperParams`** according to the [EasyEdit usage instructions](https://github.com/zjunlp/EasyEdit?tab=readme-ov-file#baseeditor).
-
+Tips:
+- Since Hallucination uses the PPL metric, please add `eval_metric = 'ppl'` in `editor.edit`.
+- For Temporal dataset, please add `eval_metric = ood_ppl`
 ```python
 import json
 K = 1000
@@ -114,6 +113,10 @@ metrics, edited_model, _ = editor.edit(
 - `loc_data`: used to provide $x_i$ in Equation 5, sampled from the train set.
 - `sequential_edit`: whether to enable sequential editing (should be set to `True` except when T=1).
 
+
+If you need to reproduce the baseline experimental results, simply modify the corresponding `HyperParams`** according to the [EasyEdit usage instructions](https://github.com/zjunlp/EasyEdit?tab=readme-ov-file#baseeditor).
+
+
 #### Batch_editing LlaMa-2 on ZsRE with WISE
 
 - Please first locate the `.YAML` file containing the definitions of the hyperparameters. Then, add a new hyperparameter named `batch_size` and set its value to a integer of your choice.
@@ -129,7 +132,6 @@ metrics, edited_model, _ = editor.edit(
         subject=subject,
         locality_inputs=locality_inputs,
         sequential_edit=args.sequential_edit,
-        eval_metric='ppl' if args.data_type == 'hallucination' else 'token em'
     )
   ```
 
