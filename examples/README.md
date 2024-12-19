@@ -66,6 +66,8 @@ editing-data
 ## Edit llama2 on ZsRE
 
 In the paper [EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models](https://arxiv.org/abs/2308.07269), the data set we used is `zsre_mend_eval_portability_gpt4.json`, so you should place it in the `./data` directory.
+> You can find it in this [Link](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view?usp=sharing): data/portability/One Hop/zsre_mend_eval_portability_gpt4.json
+
 
 - `editing_method`: Knowledge Editing Method (e.g., `ROME`, `MEMIT`, `IKE`)
 - `hparams_dir`: HyperParams Path.
