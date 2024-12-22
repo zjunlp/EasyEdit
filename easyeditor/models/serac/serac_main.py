@@ -229,7 +229,7 @@ class SeracMultimodalRewriteExecutor(SeracRewriteExecutor):
         self,
         model: AutoModelForCausalLM,
         tok: AutoTokenizer,
-        requests: List[Dict],
+        request: List[Dict],
         hparams: SERACHparams,
         copy=False,
         return_orig_weights=False,
@@ -254,22 +254,16 @@ class SeracMultimodalRewriteExecutor(SeracRewriteExecutor):
         model = deepcopy(self.model) if copy else self.model
 
         # Define i/o
-        src = [request["prompt"] for request in requests]
-        trg = [
-            (" " if request["target"][0] != " " else "")
-            + request["target"]
-            for request in requests
-        ]
-        image = [request["image"] for request in requests]
+        src = [request["prompt"]]
+        trg = [(" " if request["target"][0] != " " else "") + request["target"]]
+        image = [request["image"]]
         image = torch.stack(image, dim=0)
         text_input = [s + t for s, t in zip(src, trg)]
-        labels = trg
-        if hparams.model_name == "minigpt4":
-            prompts_len = [len(tok.encode(s, add_special_tokens=False)) for s in src]
-        else:
-            prompts_len = [len(tok.encode(s)) for s in src]
 
-        # Run MEND
+        labels = trg
+        prompts_len = [len(tok.encode(s, add_special_tokens=False)) for s in src]
+
+        # Run SERAC
         edit_inner = dict(
             image=image,
             text_input=text_input,

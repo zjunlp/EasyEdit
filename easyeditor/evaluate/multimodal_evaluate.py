@@ -125,6 +125,7 @@ def icl_multimodal_lm_eval(
 
     samples = prepare_multimodal_edit(hparams, tokenizer, target, [''.join(icl_examples) + f'{x}'], image)
 
+    # return compute_multimodal_edit_quality(model, samples, hparams.exact_match)
     return compute_multimodal_edit_quality(model, samples,
                                            hparams.exact_match) if not is_loc else compute_multimodal_edit_quality_demo(
         model, samples)
@@ -141,15 +142,15 @@ def prepare_multimodal_edit(hparams,
         prompts = [prompts, ]
     if image is not None and len(image.shape) == 3:
         image = image.unsqueeze(0)
-    text_input = [prompt_ + ' ' + target_ for prompt_, target_ in zip(prompts, target)]
+    target = [' ' + target_ if target_[0] != ' ' else target_ for target_ in target]
+    text_input = [prompt_ + target_ for prompt_, target_ in zip(prompts, target)]
 
     if hparams.model_name == 'minigpt4':
         prompts_len = [len(tok.encode(prompt, add_special_tokens=False)) for prompt in prompts]
         target = tok(target, add_special_tokens=False, return_tensors="pt", )["input_ids"]
     else:
         prompts_len = [len(tok.encode(prompt, add_special_tokens=False)) for prompt in prompts]
-        target = tok([' ' + target_ if target_[0] != ' ' else target_ for target_ in target], add_special_tokens=False,
-                     return_tensors="pt", )["input_ids"]
+        target = tok(target, add_special_tokens=False, return_tensors="pt", )["input_ids"]
 
     ret = {
         'text_input': text_input,
@@ -160,7 +161,7 @@ def prepare_multimodal_edit(hparams,
     return ret
 
 
-def compute_multimodal_edit_quality(model, batch, exach_match=False):
+def compute_multimodal_edit_quality(model, batch, exact_match=False):
     with torch.no_grad():
         outputs = model(batch)
         if isinstance(outputs, torch.Tensor):
@@ -176,8 +177,8 @@ def compute_multimodal_edit_quality(model, batch, exach_match=False):
         # logits = logits[:, -targ.shape[1]:]
     mask = targ != -100
     targ[~mask] = 0
-    if exach_match:
-        pred_ids = logits.argmax(-1).masked_fill(~mask, 0)
+    if exact_match:
+        pred_ids = logits.argmax(-1).masked_fill(~mask, 0).detach().cpu()
         correct = pred_ids == targ
         if logits.dim() == 3:
             correct = (pred_ids == targ).all(-1)  # We aim for an exact match across the entire sequence
@@ -192,27 +193,34 @@ def compute_multimodal_edit_quality(model, batch, exach_match=False):
     return acc, pred_ids.numpy()
 
 
-def compute_multimodal_edit_quality_demo(model, batch):
+def compute_multimodal_edit_quality_demo(model, batch, exact_match=False):
     with torch.no_grad():
         outputs = model(batch)
         if isinstance(outputs, torch.Tensor):
             logits = outputs.detach().cpu()
+            targ = batch["labels"].cpu()
         else:
             logits = outputs.logits.detach().cpu()
-            # targ = outputs.labels.detach().cpu()
-        targ = batch["labels"].cpu()
+            targ = outputs.labels.detach().cpu()
     logits_ = logits.clone()
     if logits.dim() == 3:
         logits = logits[:, :-1]
-        # targ = targ[:, 1:]
-        logits = logits[:, -targ.shape[1]:]
+        targ = targ[:, 1:]
+        # logits = logits[:, -targ.shape[1]:]
     mask = targ != -100
     targ[~mask] = 0
-    pred_ids = logits.argmax(-1).masked_fill(~mask, 0).detach().cpu()
-    correct = pred_ids == targ
-    correct = correct & mask
-    num_non_padding = mask.sum().float().item()
-    acc = correct.sum() / num_non_padding
+    if exact_match:
+        pred_ids = logits.argmax(-1).masked_fill(~mask, 0).detach().cpu()
+        correct = pred_ids == targ
+        if logits.dim() == 3:
+            correct = (pred_ids == targ).all(-1)  # We aim for an exact match across the entire sequence
+        acc = correct.float().mean()
+    else:
+        pred_ids = logits.argmax(-1).masked_fill(~mask, 0).detach().cpu()
+        correct = pred_ids == targ
+        correct = correct & mask
+        num_non_padding = mask.sum().float().item()
+        acc = correct.sum() / num_non_padding
 
     return acc, pred_ids.numpy(), logits_
 
@@ -238,7 +246,6 @@ def compute_multimodal_edit_results(
     :return: Dictionary containing rewriting metrics
     """
     ret = {}
-    # First, unpack rewrite evaluation record.
 
     target = record["target"]
     rewrite_prompts = record["prompt"]
@@ -262,7 +269,7 @@ def compute_multimodal_edit_results(
         locality_prompt = record["locality_prompt"]
         locality_ground_truth = record["locality_ground_truth"]
         locality = prepare_multimodal_edit(hparams, tok, locality_ground_truth, locality_prompt, None)
-        _, ret['locality_output'] = compute_multimodal_edit_quality(model, locality)
+        _, _, ret['locality_output'] = compute_multimodal_edit_quality_demo(model, locality)
 
     if 'multimodal_locality_prompt' in record.keys():
         m_loc_prompt = record["multimodal_locality_prompt"]
@@ -270,7 +277,7 @@ def compute_multimodal_edit_results(
         m_loc_image = record["multimodal_locality_image"]
         m_loc_image = m_loc_image if m_loc_image.is_cuda else m_loc_image.to(hparams.device)
         m_locality = prepare_multimodal_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image)
-        _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality(model, m_locality)
+        _, _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality_demo(model, m_locality)
     # Form a list of lists of prefixes to test.
 
     return ret
@@ -297,7 +304,6 @@ def compute_multimodal_edit_results_demo(
     :return: Dictionary containing rewriting metrics
     """
     ret = {}
-    # First, unpack rewrite evaluation record.
 
     target = record["target"]
     rewrite_prompts = record["prompt"]
@@ -321,7 +327,7 @@ def compute_multimodal_edit_results_demo(
         locality_prompt = record["locality_prompt"]
         locality_ground_truth = record["locality_ground_truth"]
         locality = prepare_multimodal_edit(hparams, tok, locality_ground_truth, locality_prompt, None)
-        _, ret['locality_output'] = compute_multimodal_edit_quality(model, locality)
+        _, _, ret['locality_output'] = compute_multimodal_edit_quality_demo(model, locality)
 
     if 'multimodal_locality_prompt' in record.keys():
         m_loc_prompt = record["multimodal_locality_prompt"]
@@ -329,41 +335,7 @@ def compute_multimodal_edit_results_demo(
         m_loc_image = record["multimodal_locality_image"]
         m_loc_image = m_loc_image if m_loc_image.is_cuda else m_loc_image.to(hparams.device)
         m_locality = prepare_multimodal_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image)
-        _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality(model, m_locality)
+        _, _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality_demo(model, m_locality)
     # Form a list of lists of prefixes to test.
 
     return ret, logits
-
-    prompt_tok = tok(
-        prompt,
-        padding=True,
-        truncation=True,
-        max_length=hparams.max_length,
-        return_tensors="pt",
-    ).to(f"cuda:{device}")
-
-    trg_tok = tok(
-        target,
-        padding=True,
-        truncation=True,
-        max_length=hparams.max_length,
-        return_tensors="pt",
-    ).to(f"cuda:{device}")
-
-    prompt_tok['labels'] = trg_tok['input_ids']
-    # prompt_tok['decoder_attention_mask'] = trg_tok['attention_mask']
-
-    with torch.no_grad():
-        outputs = model(**prompt_tok)
-        if type(outputs) is torch.Tensor:
-            logits = outputs
-        else:
-            logits = outputs.logits
-
-        assert logits.size(1) == trg_tok['input_ids'].size(1)
-        ans = torch.argmax(logits, dim=-1)
-        if locality:
-            return ans.squeeze().detach().cpu().numpy().tolist()
-
-        return \
-        torch.mean((trg_tok['input_ids'][:, :-1] == ans[:, :-1]).float(), dim=-1).detach().cpu().numpy().tolist()[0]

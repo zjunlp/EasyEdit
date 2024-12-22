@@ -19,8 +19,7 @@ from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
 from .batch_editor import BatchEditor
 from ..evaluate import (compute_icl_multimodal_edit_quality, 
-                        compute_multimodal_edit_results,
-                        compute_multimodal_edit_results_demo)
+                        compute_multimodal_edit_results)
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
@@ -90,7 +89,7 @@ class MultimodalEditor:
                     state_dict_file=hparams.state_dict_file,
                     qformer_name_or_path=hparams.qformer_name_or_path,
                     pretrained_ckpt=hparams.pretrained_ckpt,
-                )                
+                )    
             self.model = model
             # Get tokenizer and vis_processor
             vis_processor = BlipImageEvalProcessor(image_size=364, mean=None, std=None)
@@ -136,7 +135,7 @@ class MultimodalEditor:
         `image`: dict
             for multimodal
         """
-        assert self.alg_name == 'IKE' or print('Only IKE supported for MultimodalEditor')
+        # assert self.alg_name == 'IKE' or print('Only IKE supported for MultimodalEditor')
         if isinstance(prompts, List):
             assert len(prompts) == len(targets) == len(image)
         else:
@@ -149,36 +148,57 @@ class MultimodalEditor:
                                           **kwargs)
 
         if hasattr(self.hparams, 'batch_size') :
-               assert self.hparams.batch_size == 1 or \
-                      print(f'Single Edit, pls set the batch_size to 1....')
+               assert self.hparams.batch_size == 1, f'Single Edit, pls set the batch_size to 1....'
 
         all_metrics = []
         for i, request in enumerate(requests):
             start = time()
 
-            assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
-            edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
-                self.model,
-                self.tok,
-                request,
-                self.hparams,
-                copy=False,
-                return_orig_weights=True,
-                keep_original_weight=keep_original_weight,
-                train_ds=kwargs['train_ds']
-            )
+            if self.alg_name == 'IKE':
+                assert 'train_ds' in kwargs.keys(), 'IKE need train_ds (For getting In-Context prompt)'
+                edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
+                    self.model,
+                    self.tok,
+                    request,
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight,
+                    train_ds=kwargs['train_ds']
+                )
+            else:
+                edited_model, weights_copy = self.apply_algo(
+                    self.model,
+                    self.tok,
+                    request,
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight
+                )
             exec_time = time() - start
             LOG.info(f"Execution {i} editing took {exec_time}")
             start = time()
-            metrics = {
-                'case_id': i,
-                # "requested_rewrite": request,
-                "time": exec_time,
-                "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
-                                                    request, self.hparams.device),
-                "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
-                                                    request, self.hparams.device, pre_edit=True)
-            }
+            if self.alg_name == 'IKE':
+                metrics = {
+                    'case_id': i,
+                    # "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
+                                                        request, self.hparams.device),
+                    "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+                                                        request, self.hparams.device, pre_edit=True)
+                }
+            else:
+                metrics = {
+                    'case_id': i,
+                    # "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": compute_multimodal_edit_results(edited_model, self.model_name, self.hparams, self.tok,
+                                                        request, self.hparams.device),
+                    "pre": compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
+                                                        request, self.hparams.device)
+                }
             if 'locality_output' in metrics['post'].keys():
                 assert len(metrics['post']['locality_output']) == \
                         len(metrics['pre']['locality_output'])
@@ -229,10 +249,10 @@ class MultimodalEditor:
                      **kwargs
                      ):
         # Make Sure dataset supported
-        assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in MULTIMODAL_DS_DICT.values()]) > 0 \
-        or print(f'DataSet {ds} not supported yet.')
+        assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in MULTIMODAL_DS_DICT.values()]) > 0, \
+        f'DataSet {ds} not supported yet.'
 
-        assert self.alg_name == 'IKE' or print('Only IKE supported for MultimodalEditor')
+    #    assert self.alg_name == 'IKE', 'Only IKE supported for MultimodalEditor'
         num_edits = 1
         # num_edits = self.hparams.batch_size
         
@@ -242,28 +262,51 @@ class MultimodalEditor:
 
             start = time()
 
-            assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
-            edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
-                self.model,
-                self.tok,
-                request,
-                self.hparams,
-                copy=False,
-                return_orig_weights=True,
-                keep_original_weight=keep_original_weight,
-                train_ds=kwargs['train_ds']
-            )
+            if self.alg_name == 'IKE':
+                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
+                edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
+                    self.model,
+                    self.tok,
+                    request,
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight,
+                    train_ds=kwargs['train_ds']
+                )
+            else:
+                edited_model, weights_copy = self.apply_algo(
+                    self.model,
+                    self.tok,
+                    request,
+                    self.hparams,
+                    copy=False,
+                    return_orig_weights=True,
+                    keep_original_weight=keep_original_weight
+                )
             exec_time = time() - start
             LOG.info(f"Execution {i} editing took {exec_time}")
             start = time()
-            metrics = {
-                'case_id': i,
-                "time": exec_time,
-                "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
-                                                    request, self.hparams.device),
-                "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
-                                                    request, self.hparams.device, pre_edit=True)
-            }
+            if self.alg_name == 'IKE':
+                metrics = {
+                    'case_id': i,
+                    # "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, icl_examples,
+                                                        request, self.hparams.device),
+                    "pre": compute_icl_multimodal_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''],
+                                                        request, self.hparams.device, pre_edit=True)
+                }
+            else:
+                metrics = {
+                    'case_id': i,
+                    # "requested_rewrite": request,
+                    "time": exec_time,
+                    "post": compute_multimodal_edit_results(edited_model, self.model_name, self.hparams, self.tok,
+                                                        request, self.hparams.device),
+                    "pre": compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
+                                                        request, self.hparams.device)
+                }
             if 'locality_output' in metrics['post'].keys():
                 assert len(metrics['post']['locality_output']) == \
                         len(metrics['pre']['locality_output'])
@@ -354,7 +397,7 @@ class MultimodalEditor:
         
         requests = [{
             'prompt': prompt,
-            'target': target,
+            'target': (" " if target[0] != ' ' else "") + target,
             'image': image_,
         }        
         for prompt, target, image_ in zip(prompts, targets, image)

@@ -8,7 +8,7 @@ from easyeditor import MENDMultimodalTrainingHparams, SERACMultimodalTrainingHpa
     , SERACMultimodalHparams
 from easyeditor import encode_ike_facts_multimodal
 from sentence_transformers import SentenceTransformer
-import ramdon
+import random
 
 def print_result(metrics):
     rewrite_acc = mean([m['post']['rewrite_acc'].item() for m in metrics])
@@ -436,7 +436,130 @@ def edit_IKE_Blip2OPT_VQA():
         train_ds=train_ds,
         keep_original_weight=True        
     )
+
+
+def edit_MEND_Blip2OPT_VQA_debug():
+    prompts = [
+        "Question: How many tennis balls are in the picture? Short answer:",
+        "Question: What is the red food? Short answer:"
+    ]
+    targets = [
+        "2",
+        "tomatoes",
+    ]
+    image = [
+        "val2014/COCO_val2014_000000451435.jpg",
+        "val2014/COCO_val2014_000000189446.jpg"
+    ]
+    rephrase_prompts = [
+        "What is the number of tennis balls depicted in the image?",
+        "What is the name of the food that is red in color?"
+    ]
+    rephrase_image = [
+        "val2014_image_rephrase/451435003_COCO_val2014_000000451435.png",
+        "val2014_image_rephrase/189446003_COCO_val2014_000000189446.png"
+    ]
+    locality_inputs = {
+        'text': {
+            'prompt': ["nq question: what purpose did seasonal monsoon winds have on trade", "nq question: what purpose did seasonal monsoon winds have on trade",],
+            'ground_truth': ["enabled European empire expansion into the Americas and trade routes to become established across the Atlantic and Pacific oceans", "enabled European empire expansion into the Americas and trade routes to become established across the Atlantic and Pacific oceans"]
+        },
+        'vision': {
+            'prompt': ["What sport can you use this for?", "What sport can you use this for?"],
+            'ground_truth': ["riding", "riding",],
+            'image': ["val2014/COCO_val2014_000000297147.jpg", "val2014/COCO_val2014_000000297147.jpg"],
+        }
+    }
     
+    hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/blip2.yaml')
+    editor = MultimodalEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        targets=targets,
+        image=image,
+        rephrase_prompts=rephrase_prompts,
+        rephrase_image=rephrase_image,
+        locality_inputs=locality_inputs,
+        keep_original_weight=True        
+    )
+
+    print(metrics)
+
+
+def edit_SERAC_Blip2OPT_VQA_debug():
+    prompts = [
+        "Question: How many tennis balls are in the picture? Short answer:",
+        "Question: What is the red food? Short answer:"
+    ]
+    targets = [
+        "2",
+        "tomatoes",
+    ]
+    image = [
+        "val2014/COCO_val2014_000000451435.jpg",
+        "val2014/COCO_val2014_000000189446.jpg"
+    ]
+    rephrase_prompts = [
+        "What is the number of tennis balls depicted in the image?",
+        "What is the name of the food that is red in color?"
+    ]
+    rephrase_image = [
+        "val2014_image_rephrase/451435003_COCO_val2014_000000451435.png",
+        "val2014_image_rephrase/189446003_COCO_val2014_000000189446.png"
+    ]
+    locality_inputs = {
+        'text': {
+            'prompt': ["nq question: what purpose did seasonal monsoon winds have on trade", "nq question: what purpose did seasonal monsoon winds have on trade",],
+            'ground_truth': ["enabled European empire expansion into the Americas and trade routes to become established across the Atlantic and Pacific oceans", "enabled European empire expansion into the Americas and trade routes to become established across the Atlantic and Pacific oceans"]
+        },
+        'vision': {
+            'prompt': ["What sport can you use this for?", "What sport can you use this for?"],
+            'ground_truth': ["riding", "riding",],
+            'image': ["val2014/COCO_val2014_000000297147.jpg", "val2014/COCO_val2014_000000297147.jpg"],
+        }
+    }
+    
+    hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/blip2.yaml')
+    editor = MultimodalEditor.from_hparams(hparams)
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        targets=targets,
+        image=image,
+        rephrase_prompts=rephrase_prompts,
+        rephrase_image=rephrase_image,
+        locality_inputs=locality_inputs,
+        keep_original_weight=True        
+    )
+
+    print(metrics)
+
+
+def edit_SERAC_Blip2OPT_VQA():
+    
+    hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/blip2.yaml')
+    editor = MultimodalEditor.from_hparams(hparams)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    metrics, edited_model, _ = editor.edit_dataset(
+        ds=eval_ds,
+        keep_original_weight=True        
+    )
+
+    print(metrics)
+
+
+def edit_MEND_Blip2OPT_VQA():
+    
+    hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/blip2.yaml')
+    editor = MultimodalEditor.from_hparams(hparams)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams, size=100)
+    metrics, edited_model, _ = editor.edit_dataset(
+        ds=eval_ds,
+        keep_original_weight=True        
+    )
+
+    print(metrics)
+
+
 def test_IKE_Blip2OPT_Caption():
     
     hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/blip2.yaml')
@@ -540,7 +663,7 @@ if __name__ == "__main__":
     # train_MEND_Blip2OPT_Caption(debug=True)
     # train_MEND_Blip2OPT_VQA()
     # train_MEND_Blip2OPT_VQA_Vision()
-    train_MEND_Blip2OPT_VQA_debug()
+    # train_MEND_Blip2OPT_VQA_debug()
     # train_MEND_Blip2OPT_VQA_Vision_debug()
     # train_MEND_MiniGPT4_VQA_debug()
     
@@ -572,3 +695,7 @@ if __name__ == "__main__":
     # edit_IKE_MiniGPT4_Caption()
     # edit_IKE_MiniGPT4_VQA()
     # edit_IKE_Blip2OPT_VQA()
+    # edit_MEND_Blip2OPT_VQA_debug()
+    # edit_SERAC_Blip2OPT_VQA_debug()
+    edit_MEND_Blip2OPT_VQA()
+    # edit_SERAC_Blip2OPT_VQA()

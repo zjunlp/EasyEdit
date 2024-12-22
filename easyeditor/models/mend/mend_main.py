@@ -1,5 +1,6 @@
 import os
 from copy import deepcopy
+import pdb
 from typing import Dict, List
 
 import hydra
@@ -8,7 +9,6 @@ from collections import deque
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
-
 from ...trainer import MEND
 from .mend_hparams import MENDHyperParams
 from .mend_multimodal_hparams import MENDMultimodalHparams
@@ -186,7 +186,7 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
         self,
         model,
         tok: AutoTokenizer,
-        requests: List[Dict],
+        request: List[Dict],
         hparams: MENDMultimodalHparams,
         copy=False,
         return_orig_weights=False,
@@ -211,22 +211,14 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
         model = deepcopy(self.model) if copy else self.model
 
         # Define i/o
-        src = [request["prompt"] for request in requests]
-        trg = [
-            (" " if request["target"][0] != " " else "")
-            + request["target"]
-            for request in requests
-        ]
-        image = [request["image"] for request in requests]
+        src = [request["prompt"]]
+        trg = [(" " if request["target"][0] != " " else "") + request["target"]]
+        image = [request["image"]]
         image = torch.stack(image, dim=0).to(model.device)
         text_input = [s + t for s, t in zip(src, trg)]
-        
-        if hparams.model_name == "minigpt4":
-            prompts_len = [len(tok.encode(s, add_special_tokens=False)) for s in src]
-            labels = tok(trg, add_special_tokens=False, return_tensors="pt",)["input_ids"].to(model.device)
-        else:
-            prompts_len = [len(tok.encode(s)) for s in src]
-            labels = tok(trg, return_tensors="pt",)["input_ids"].to(model.device)
+
+        prompts_len = [len(tok.encode(s, add_special_tokens=False)) for s in src]
+        labels = tok(trg, add_special_tokens=False, return_tensors="pt",)["input_ids"]
 
         # Run MEND
         edit_inner = dict(
