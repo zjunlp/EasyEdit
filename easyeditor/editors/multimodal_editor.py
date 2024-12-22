@@ -261,6 +261,9 @@ class MultimodalEditor:
         for i, request in enumerate(tqdm(ds, desc='Editing dataset', total=len(ds))):
 
             start = time()
+            
+            if 'template' in kwargs:
+                request['prompt'] = kwargs['template'].format(request['prompt'])
 
             if self.alg_name == 'IKE':
                 assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')

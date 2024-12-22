@@ -483,7 +483,7 @@ def edit_MEND_Blip2OPT_VQA_debug():
         keep_original_weight=True        
     )
 
-    print(metrics)
+    print_result(metrics)
 
 
 def edit_SERAC_Blip2OPT_VQA_debug():
@@ -531,7 +531,7 @@ def edit_SERAC_Blip2OPT_VQA_debug():
         keep_original_weight=True        
     )
 
-    print(metrics)
+    print_result(metrics)
 
 
 def edit_SERAC_Blip2OPT_VQA():
@@ -539,12 +539,14 @@ def edit_SERAC_Blip2OPT_VQA():
     hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/blip2.yaml')
     editor = MultimodalEditor.from_hparams(hparams)
     eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    template = "Question: {} Short answer:"
     metrics, edited_model, _ = editor.edit_dataset(
         ds=eval_ds,
-        keep_original_weight=True        
+        keep_original_weight=True,
+        template=template       
     )
 
-    print(metrics)
+    print_result(metrics)
 
 
 def edit_MEND_Blip2OPT_VQA():
@@ -552,12 +554,14 @@ def edit_MEND_Blip2OPT_VQA():
     hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/blip2.yaml')
     editor = MultimodalEditor.from_hparams(hparams)
     eval_ds = VQADataset('data/vqa_eval.json', config=hparams, size=100)
+    template = "Question: {} Short answer:"
     metrics, edited_model, _ = editor.edit_dataset(
         ds=eval_ds,
-        keep_original_weight=True        
+        keep_original_weight=True,
+        template=template       
     )
 
-    print(metrics)
+    print_result(metrics)
 
 
 def test_IKE_Blip2OPT_Caption():
@@ -582,10 +586,12 @@ def test_IKE_Blip2OPT_VQA():
     editor = MultimodalEditor.from_hparams(hparams)
     train_ds = VQADataset('data/vqa_train.json', config=hparams)
     eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    template = "Question: {} Short answer:"
     metrics, edited_model, _ = editor.edit_dataset(
         ds=eval_ds,
         train_ds=train_ds,
-        keep_original_weight=True        
+        keep_original_weight=True,
+        template=template        
     )
     
     print_result(metrics)
