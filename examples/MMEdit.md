@@ -180,7 +180,9 @@ sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hpa
 encode_ike_facts_multimodal(sentence_model, train_ds, hparams)
 ```
 
-**Step2: Run and Edit!** Select specific model and dataset, then use `test_IKE_MiniGPT4_Caption()` in `multimodal_edit.py` to run.
+**Step 2: Run and Edit!** Select a specific model and dataset, then use `test_IKE_MiniGPT4_Caption()` in `multimodal_edit.py` to run the experiments.
+
++ For the Caption dataset, use the following code:
 
 ```python
 hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/minigpt4.yaml')
@@ -191,7 +193,44 @@ metrics, edited_model, _ = editor.edit_dataset(
     train_ds=eval_ds,
     keep_original_weight=True        
 )
+
+print_result(metrics)
 ```
+
++ For the VQA dataset, you should set the `template` as follows:
+
+```python
+hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/minigpt4.yaml')
+editor = MultimodalEditor.from_hparams(hparams)
+eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+template = "Question: {} Short answer:"
+metrics, edited_model, _ = editor.edit_dataset(
+    ds=eval_ds,
+    train_ds=eval_ds,
+    keep_original_weight=True,
+    template=template       
+)
+
+print_result(metrics)
+```
+
+> For `MEND` and `SERAC`, the **CHECKPOINT** mentioned in [MultimodalTrainer](###-MultimodalTrainer) Step 5 is needed.
+Then you can edit models for any dataset using `MultimodalEditor`.
+
+For example, to run experiments with `MEND` on the Caption dataset, use the following code:
+
+```python
+hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/minigpt4.yaml')
+editor = MultimodalEditor.from_hparams(hparams)
+eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
+metrics, edited_model, _ = editor.edit_dataset(
+    ds=eval_ds,
+    keep_original_weight=True  
+)
+
+print_result(metrics)
+```
+
 
 ## 🎉 Acknowledgement
 
