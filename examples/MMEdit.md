@@ -214,7 +214,7 @@ metrics, edited_model, _ = editor.edit_dataset(
 print_result(metrics)
 ```
 
-> For `MEND` and `SERAC`, the **CHECKPOINT** mentioned in [MultimodalTrainer](#-MultimodalTrainer) Step 5 is needed.
+> For `MEND` and `SERAC`, the **CHECKPOINT** mentioned in [MultimodalTrainer](#multimodaltrainer) Step 5 is needed.
 Then you can edit models for any dataset using `MultimodalEditor`.
 
 For example, to run experiments with `MEND` on the Caption dataset, use the following code:
