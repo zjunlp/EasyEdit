@@ -73,6 +73,8 @@ def execute_lora(
         peft_model.print_trainable_parameters()
     requests = deepcopy(requests)
     for request in requests:
+        if '{}' in request['prompt']:
+            request['prompt'] = request['prompt'].format(request['subject'])
         print(
             f"Executing LoRA algo for: "
             f"[{request['prompt']}] -> [{request['target_new']}]"
