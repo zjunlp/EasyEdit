@@ -1,5 +1,5 @@
 alg_name: "DEFER"
-model_name: "/home/xydu/LLMs/mistralai/Mistral-7B-v0.1"
+model_name: "mistralai/Mistral-7B-v0.1"
 device: 0
 
 inner_params:

@@ -1,5 +1,5 @@
 alg_name: "DEFER"
-model_name: "/home/xydu/LLMs/EleutherAI/gpt-j-6b"
+model_name: "EleutherAI/gpt-j-6b"
 device: 0
 
 inner_params:

@@ -1,5 +1,5 @@
 alg_name: "DEFER"
-model_name: "/home/xydu/LLMs/meta-llama/Llama-2-7b-hf"
+model_name: "meta-llama/Llama-2-7b-hf"
 device: 0
 
 inner_params:
