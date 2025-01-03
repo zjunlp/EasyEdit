@@ -1,0 +1,10 @@
+alg_name: "DEFER"
+model_name: "EleutherAI/gpt-j-6b"
+device: 0
+
+inner_params:
+- transformer.h[25].mlp.fc_out.weight
+
+edit_lr: 7e-5
+n_iter: 100
+threshold: 0.5

@@ -19,3 +19,4 @@ from .alphaedit import *
 from .deco import *
 from .dola import *
 from .deepedit_api import *
+from .defer import *
