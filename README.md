@@ -295,9 +295,8 @@ You can choose different editing methods according to your specific needs.
 | [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) | | ✅ |  |  |  ✅|  |  |  | | |
 | [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)| |✅ |  |  |✅  |  |  |  | | ✅|
 | [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ | ✅ |  |✅  | ✅ |  |  |✅ | |
+| Defer | | | ✅ |  |✅  |  |  |  | | ✅ |
 | [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ | ✅ |  |✅  |  |  |  | | |
-<!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
-
 
 
 <!-- | **Method** | Model Name | Description |
