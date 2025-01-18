@@ -118,6 +118,7 @@ python run_zsre_llama2.py \
         │   │           └── model.layers.8.mlp.down_proj_float32_mom2_100000.npz
         └── └── zsre_mend_eval_portability_gpt4.json
         ```
+    - `npz` files for `llama3`: https://drive.google.com/drive/folders/1f_3vLJ4yVmBWVJiE_nbTigPAulXLdKDr?usp=sharing
 
 ### FT
 
