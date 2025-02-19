@@ -1,14 +1,14 @@
-# Use the official Ubuntu 20.04 image as your parent image.
+# Use the official Ubuntu 22.04 image
 FROM ubuntu:22.04
 
-# Set the working directory within your container to /app.
+# Set working directory
 WORKDIR /app
 
-# Let the python output directly show in the terminal without buffering it first.
-ENV PYTHONUNBUFFERED=1
+# Set non-interactive mode to avoid issues during package installation
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Update the list of packages, then install some necessary dependencies.
-RUN apt-get update && apt-get install -y \
+# Update and install necessary dependencies in a single RUN command
+RUN apt-get update && apt-get install -y --no-install-recommends \
   wget \
   git \
   bzip2 \
@@ -16,38 +16,42 @@ RUN apt-get update && apt-get install -y \
   libxext6 \
   libsm6 \
   libxrender1 \
-  make\
-  g++ 
+  make \
+  g++ \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN rm -rf /var/lib/apt/lists/*
-
-# Download and install the latest version of Miniconda to /opt/conda.
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+# Install Miniconda
+RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
   && bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda \
   && rm Miniconda3-latest-Linux-x86_64.sh 
 
-# Add Miniconda's binary directory to PATH.
-ENV PATH /opt/conda/bin:$PATH
+# Set PATH to include Miniconda
+ENV PATH="/opt/conda/bin:$PATH"
 
-# Use conda to create a new environment named EasyEdit and install Python 3.9.7.
-RUN conda create -n EasyEdit python=3.9.7
+# Clone the EasyEdit project
+RUN git clone https://github.com/zjunlp/EasyEdit.git && \
+    cd EasyEdit
 
-# Initialize bash shell so that 'conda activate' can be used immediately.
-RUN conda init bash
+# Copy environment file and create the Conda environment
+COPY environment.yml /app/EasyEdit/
+RUN conda env create -f /app/EasyEdit/environment.yml
 
-# Activate the conda environment.
-RUN echo "conda activate EasyEdit" >> ~/.bashrc
-ENV PATH /opt/conda/envs/EasyEdit/bin:$PATH
+# Use conda shell for all subsequent commands
+SHELL ["conda", "run", "-n", "EasyEdit", "/bin/bash", "-c"]
 
-# Clone the EasyEdit project from GitHub.
-RUN git clone https://github.com/zjunlp/EasyEdit.git
+# Set Conda default environment
+RUN echo "source activate EasyEdit" > ~/.bashrc
+ENV PATH="/opt/conda/envs/EasyEdit/bin:$PATH"
 
-# Change the working directory to the newly cloned EasyEdit project directory.
+# Install additional dependencies
+COPY requirements.txt /app/EasyEdit/
+RUN pip install --no-cache-dir -r /app/EasyEdit/requirements.txt
+
+# Set working directory
 WORKDIR /app/EasyEdit
 
-# Copy the requirements.txt file from your local system to the container.
-COPY requirements.txt /app/EasyEdit/
+# Expose any required ports (e.g., Jupyter Notebook)
+EXPOSE 8888
 
-# Activate the EasyEdit conda environment and install the Python dependencies listed in requirements.txt.
-RUN /bin/bash -c "source ~/.bashrc && pip install notebook==5.7.8"
-RUN /bin/bash -c "source ~/.bashrc && pip install --no-cache-dir -r requirements.txt"
+# Default command
+CMD ["bash"]
