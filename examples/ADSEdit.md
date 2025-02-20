@@ -5,11 +5,8 @@ This README is about reproducing the paper [ADS-Edit: A Multimodal Knowledge Edi
 ## Table of Contents
 
 - [Dataset Description](#Dataset-Description)
-- [Running Examples of Using CKnowEdit](#Running-Examples-of-Using-CKnowEdit)
+- [Running Examples of Using ADSEdit](#Running-Examples-of-Using-ADSEdit)
 - [Get Started Quickly](#Get-started-quickly)
-- [Evaluation](#Evaluation)
-- [Baseline](#Baseline)
-
 ---
 
 ## Dataset Description
@@ -148,5 +145,5 @@ dataset = ADSDataset('the_data_path')
 Quickly run several editing methods, such as WISE, GRACE, LoRA and Prompt:
 
 ```shell
-python run_ads.py
+python run_adsedit.py
 ```
