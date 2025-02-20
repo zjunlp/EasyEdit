@@ -41,7 +41,6 @@ def euc(query, key, config, act_mask=None, infer=False):
     else:
         return torch.mean(l2_norm, dim=-1)
 
-
 class WISE(torch.nn.Module):
     def __init__(self, config, model, device):
         super(WISE, self).__init__()
@@ -104,7 +103,7 @@ class WISE(torch.nn.Module):
     def get_adapter_layer(self):
         adapter_layer = getattr(self.edit_module, self.layer_name)
         assert type(adapter_layer) is WISEAdapter, print('Adapter Layer is not added correctly....')
-        return adapter_layer
+        return adapter_layer.to(self.model.device)
 
     # TODO: generation
     def generate(self, *args, **kwargs):
@@ -133,9 +132,9 @@ class WISE(torch.nn.Module):
                 # --- we only need to create an optimizer for the first iteration (but forward pass instantiates the key, so optimzer is passed after first inference) ---
                 optimizer = torch.optim.SGD([self.get_adapter_layer().new_weight], config.edit_lr, weight_decay=1e-5)
 
-            ft_loss = self.__cal_ft_loss(tokens, last_prompt_token_loc)
+            ft_loss = self._cal_ft_loss(tokens, last_prompt_token_loc)
 
-            act_loss = self.__cal_activation_loss(self.get_adapter_layer().original_layer_output, self.get_adapter_layer().new_weight_layer_output,
+            act_loss = self._cal_activation_loss(self.get_adapter_layer().original_layer_output, self.get_adapter_layer().new_weight_layer_output,
                                                   config=config, act_mask=act_mask, deact_mask=deact_mask)
             loss = ft_loss + act_loss.to(ft_loss.device)
 
@@ -163,7 +162,7 @@ class WISE(torch.nn.Module):
                     memo_input = {f"{k1}" : v1.to(self.config.device) for k1, v1 in memo_input.items()}
                     self.model(**memo_input)
 
-                    memory_act_loss = self.__cal_memory_neg_activation_loss(self.get_adapter_layer().original_layer_output,
+                    memory_act_loss = self._cal_memory_neg_activation_loss(self.get_adapter_layer().original_layer_output,
                                                     self.get_adapter_layer().new_weight_layer_output, config=config,
                                                     act_mask=act_mask, deact_mask=deact_mask)
                     memory_loss.append(memory_act_loss.to(ft_loss.device))
@@ -175,7 +174,7 @@ class WISE(torch.nn.Module):
                     memo_input = {f"{k1}" : v1.to(self.config.device) for k1, v1 in memo_input.items()}
                     self.model(**memo_input)
 
-                    pos_memo_loss = self.__cal_memory_pos_activation_loss(self.get_adapter_layer().original_layer_output,
+                    pos_memo_loss = self._cal_memory_pos_activation_loss(self.get_adapter_layer().original_layer_output,
                                                     self.get_adapter_layer().new_weight_layer_output, config=config,
                                                     act_mask=act_mask, deact_mask=deact_mask)
                     del memo_input
@@ -200,7 +199,7 @@ class WISE(torch.nn.Module):
             loss_meter.update(loss.item())
 
             if type(self.config.norm_constraint) is float:
-                self.__norm_constraint(self.config.norm_constraint)
+                self._norm_constraint(self.config.norm_constraint)
 
         # --- pull out info we want to log from the Wise layer ---
         setattr(eval(f"self.model.{self.layer}"), "editing", False)
@@ -221,7 +220,7 @@ class WISE(torch.nn.Module):
             self.get_adapter_layer().merge_weight()
             print(f'Merge Weight of (New, Original) Matrix... with {self.config.merge_alg}')
 
-    def __norm_constraint(self, norm_constraint):
+    def _norm_constraint(self, norm_constraint):
         new_weight = self.get_adapter_layer().new_weight
         original_weight = self.get_adapter_layer().weight
         with torch.no_grad():
@@ -229,7 +228,7 @@ class WISE(torch.nn.Module):
                 new_weight, min=original_weight - norm_constraint, max=original_weight + norm_constraint
             )
 
-    def __cal_ft_loss(self, tokens, last_prompt_token_loc):
+    def _cal_ft_loss(self, tokens, last_prompt_token_loc):
         if hasattr(self.model.config, 'batch_size'):
             k = self.config.batch_size
         else:
@@ -251,7 +250,7 @@ class WISE(torch.nn.Module):
         ft_loss = ((loss * label_mask).sum(1) / label_mask.sum(1)).mean()
         return ft_loss
 
-    def __cal_activation_loss(self, original_layer_output, new_weight_layer_output, config=None, act_mask=None,
+    def _cal_activation_loss(self, original_layer_output, new_weight_layer_output, config=None, act_mask=None,
                               deact_mask=None):
         if hasattr(self.model.config, 'batch_size'):
             k = self.config.batch_size
@@ -281,7 +280,7 @@ class WISE(torch.nn.Module):
             total_loss.append(loss + loss2 + loss3)
         return sum(total_loss) / len(total_loss)
 
-    def __cal_memory_pos_activation_loss(self, original_layer_output, new_weight_layer_output, config=None, act_mask=None,
+    def _cal_memory_pos_activation_loss(self, original_layer_output, new_weight_layer_output, config=None, act_mask=None,
                               deact_mask=None):
         if hasattr(self.model.config, 'batch_size'):
             k = self.config.batch_size
@@ -292,7 +291,7 @@ class WISE(torch.nn.Module):
 
         return torch.mean(loss4[loss4 > 0]) if min(loss4[loss4 > 0].size()) > 0 else torch.tensor(0.)
 
-    def __cal_memory_neg_activation_loss(self, original_layer_output, new_weight_layer_output, config=None, act_mask=None,
+    def _cal_memory_neg_activation_loss(self, original_layer_output, new_weight_layer_output, config=None, act_mask=None,
                               deact_mask=None):
         if hasattr(self.model.config, 'batch_size'):
             k = self.config.batch_size
@@ -356,6 +355,8 @@ class WISE(torch.nn.Module):
         edit_history = saved_data['edit_history']
         merge_group_edit_history = saved_data['merge_group_edit_history']
         print(f"Model configuration and WISE state loaded from {load_path}")
+
+
 
 class WISEAdapter(torch.nn.Module):
     def __init__(self, config, layer, transpose):

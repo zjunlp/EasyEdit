@@ -191,7 +191,7 @@ class MultimodalEditor:
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
 
-        requests = self._prepare_requests(prompts, targets, image, rephrase_prompts, rephrase_image, locality_inputs,
+        requests = self._prepare_requests(prompts, targets, image, rephrase_prompts, rephrase_image, locality_inputs, file_type,
                                           **kwargs)
 
         if hasattr(self.hparams, 'batch_size') :
