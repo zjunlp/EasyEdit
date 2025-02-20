@@ -7,7 +7,7 @@ from typing import List, Optional
 import numpy as np
 import torch
 # from sklearn.feature_extraction.text import TfidfVectorizer
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoProcessor
 from ..util import HyperParams
 from .evaluate_utils import (
     test_seq2seq_batch_prediction_acc,
@@ -161,6 +161,117 @@ def prepare_multimodal_edit(hparams,
     return ret
 
 
+def prepare_multimodal_hf_edit(hparams,
+                            processor,
+                            target,
+                            prompts,
+                            image,
+                            file_type):
+    if isinstance(target, str):
+        targets = [target, ]
+    if isinstance(prompts, str):
+        prompts = [prompts, ]
+
+    if file_type == "text":       
+        text_input = [processor.apply_chat_template([
+                                {
+
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": p},
+                                        ],
+                                },
+                            ],
+                                            add_generation_prompt=True,
+                                            tokenize=False) + '' + l
+                        for p, l in zip(prompts, targets)]
+    elif file_type == "video":
+        text_input = [processor.apply_chat_template([
+                                {
+
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "video"},
+                                        {"type": "text", "text": p},
+                                        ],
+                                },
+                            ],
+                                            add_generation_prompt=True,
+                                            tokenize=False) + l
+                        for p, l in zip(prompts, targets)]
+    elif file_type in ["image", "single-image", "multi-image"]:
+        if isinstance(image, List):
+            num_images = len(image)
+        else:
+            num_images = 1
+            
+        text_input = [processor.apply_chat_template([
+                                {
+
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "image"}
+                                    ] * num_images + [{"type": "text", "text": p}],
+                                },
+                            ],
+                                            add_generation_prompt=True,
+                                            tokenize=False) + l
+                        for p, l in zip(prompts, targets)]
+    else:
+        raise AssertionError("Not support file type: {}".format(file_type))
+    
+    if file_type in ["image", "single-image", "multi-image"]:
+        multimodal_inputs = processor(images=image, text=text_input, return_tensors="pt").to(hparams.device, dtype=torch.float32)
+    elif file_type == "video":
+        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt").to(hparams.device, dtype=torch.float32)
+    elif file_type == "text":
+        multimodal_inputs = processor(text=text_input, return_tensors="pt").to(hparams.device, dtype=torch.float32)
+    
+    targets = processor.tokenizer(targets, add_special_tokens=False,
+                     return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
+
+    labels = torch.full_like(multimodal_inputs["input_ids"], -100)
+    labels[:, -targets.size(1):] = targets
+    
+    ret = {
+        'multimodal_inputs': multimodal_inputs,
+        'labels': labels
+    }
+    return ret
+
+def compute_multimodal_hf_edit_quality(model, batch, tok,exach_match=False):
+    with torch.no_grad():
+        outputs = model(**batch["multimodal_inputs"])            
+        if isinstance(outputs, torch.Tensor):
+            logits = outputs.detach().cpu()
+            targ = batch["labels"].cpu()
+        else:
+            logits = outputs.logits.detach().cpu()
+            targ = batch["labels"].cpu()
+    
+    if logits.dim() == 3:
+        logits = logits[:, :-1, :]
+        targ = targ[:, 1:]
+        
+    mask = targ != -100
+    targ[~mask] = 0    
+    if exach_match:
+        pred_ids = logits.argmax(-1).masked_fill(~mask, 0)
+        correct = pred_ids == targ
+        if logits.dim() == 3:
+            correct = (pred_ids == targ).all(-1)  # We aim for an exact match across the entire sequence
+        acc = correct.float().mean()
+    else:
+        pred_ids = logits.argmax(-1).masked_fill(~mask, 0).detach().cpu()
+        correct = pred_ids == targ
+        correct = correct & mask
+        num_non_padding = mask.sum().float().item()
+        acc = correct.sum() / num_non_padding
+
+    pred_ids = pred_ids.masked_select(pred_ids != 0).view(1, -1)
+    return acc, pred_ids.numpy()
+
+
 def compute_multimodal_edit_quality(model, batch, exact_match=False):
     with torch.no_grad():
         outputs = model(batch)
@@ -282,6 +393,62 @@ def compute_multimodal_edit_results(
 
     return ret
 
+
+def compute_multimodal_hf_edit_results(
+        model,
+        model_name,
+        hparams: HyperParams,
+        tok: AutoProcessor,
+        record: typing.Dict,
+        device
+) -> typing.Dict:
+    """
+    Given a rewritten model, computes generalization and specificity metrics for
+    the desired rewrite (passed in via the CounterFact dataset record). Returns a
+    dictionary containing those metrics.
+
+    :param model: Rewritten model
+    :param tok: Tokenizer
+    :param record: CounterFact dataset record
+    :paran snips: ???
+    :param vec: ???
+    :return: Dictionary containing rewriting metrics
+    """
+    ret = {}
+    # First, unpack rewrite evaluation record.
+
+    target = record["target"]
+    rewrite_prompts = record["prompt"]
+    image = record["image"]
+    file_type = record["file_type"]
+    
+    edit_inner = prepare_multimodal_hf_edit(hparams, tok, target, rewrite_prompts, image, file_type)
+    ret['rewrite_acc'], _ = compute_multimodal_hf_edit_quality(model, edit_inner, tok)
+
+    if "rephrase_prompt" in record.keys():
+        rephrase_prompts = record["rephrase_prompt"]
+        edit_outer = prepare_multimodal_hf_edit(hparams, tok, target, rephrase_prompts, image, file_type)
+        ret['rephrase_acc'], _ = compute_multimodal_hf_edit_quality(model, edit_outer, tok)
+
+    if "image_rephrase" in record.keys():
+        rephrase_image = record["image_rephrase"]
+        edit_image_outer = prepare_multimodal_hf_edit(hparams, tok, target, rewrite_prompts, rephrase_image, file_type)
+        ret['image_rephrase_acc'], _ = compute_multimodal_hf_edit_quality(model, edit_image_outer, tok)
+
+    if 'locality_prompt' in record.keys():
+        locality_prompt = record["locality_prompt"]
+        locality_ground_truth = record["locality_ground_truth"]
+        locality = prepare_multimodal_hf_edit(hparams, tok, locality_ground_truth, locality_prompt, None, file_type="text")
+        _, ret['locality_output'] = compute_multimodal_hf_edit_quality(model, locality, tok)
+
+    if 'multimodal_locality_prompt' in record.keys():
+        m_loc_prompt = record["multimodal_locality_prompt"]
+        m_loc_ground_truth = record["multimodal_locality_ground_truth"]
+        m_loc_image = record["multimodal_locality_image"]
+        m_locality = prepare_multimodal_hf_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image, file_type="image")
+        _, ret['multimodal_locality_output'] = compute_multimodal_hf_edit_quality(model, m_locality, tok)
+
+    return ret
 
 def compute_multimodal_edit_results_demo(
         model,

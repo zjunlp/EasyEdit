@@ -5,7 +5,7 @@ from statistics import mean
 from easyeditor import BaseEditor, MultimodalTrainer, MultimodalEditor
 from easyeditor import CaptionDataset, VQADataset
 from easyeditor import MENDMultimodalTrainingHparams, SERACMultimodalTrainingHparams, IKEMultimodalHyperParams, MENDMultimodalHparams \
-    , SERACMultimodalHparams
+    , SERACMultimodalHparams, WISEMultimodalHyperParams, GraceHyperParams, LoRAMultimodalHyperParams
 from easyeditor import encode_ike_facts_multimodal
 from sentence_transformers import SentenceTransformer
 import random
@@ -660,6 +660,7 @@ def test_IKE_Blip2OPT_VQA_debug():
     )
     
     print_result(metrics)
+    
     
 if __name__ == "__main__":
     

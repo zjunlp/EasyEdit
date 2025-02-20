@@ -1,0 +1,27 @@
+alg_name: "LoRA"
+model_name: "./hugging_cache/llava-onevision-qwen2-7b-ov-hf"
+device: 0
+
+# LoRA settings
+lora_type: "adalora"
+layers: []
+kl_factor: 0
+norm_constraint: false
+rank: 8
+lora_alpha: 32
+lora_dropout: 0.1
+target_modules: ["language_model.model.layers.*q_proj.*","language_model.model.layers.*v_proj.*"]
+
+# Training settings
+num_steps: 5
+batch_size: 1
+max_length: 30
+lr: 1e-1
+sh_lr: 0.9
+# lr: 1e-8
+weight_decay: 0.0
+
+# Additional settings
+model_parallel: True
+
+use_chat_template: True

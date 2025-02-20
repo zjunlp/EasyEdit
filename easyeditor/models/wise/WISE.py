@@ -513,3 +513,136 @@ class WISEAdapter(torch.nn.Module):
                         layer_out = memory_weight_layer_output
                         min_dist = dist
         return layer_out
+
+
+class WISEMultimodal(WISE):
+    def edit(self, config, multimodal_inputs, text_tokens, ans_token_len, act_mask=None, deact_mask=None):
+        global edit_history
+        global merge_group_edit_history
+        edit_history.append([{f"{k1}" : v1.to('cpu') for k1, v1 in text_tokens.items()}, False])
+        last_prompt_token_loc = (text_tokens["labels"] == -100).sum(dim=-1) - 1
+        
+        setattr(eval(f"self.model.{self.layer}"), "training", True)
+        setattr(eval(f"self.model.{self.layer}"), "editing", True)
+        self.get_adapter_layer().set_parameter_tunable()
+        if getattr(eval(f"self.model.{self.layer}"), "editing_total_cnt") % self.config.save_freq == 0:
+            self.get_adapter_layer().generate_activation_mask(self.config.mask_ratio)        
+        
+        # --- train Wise value ---
+        loss_meter = EarlyStopMeter()
+        for i in range(config.n_iter):
+            if i == 0:
+                # --- we only need to create an optimizer for the first iteration (but forward pass instantiates the key, so optimzer is passed after first inference) ---
+                optimizer = torch.optim.SGD([super().get_adapter_layer().new_weight], config.edit_lr, weight_decay=1e-5)
+
+            ft_loss = self._cal_ft_loss(multimodal_inputs, text_tokens, last_prompt_token_loc, ans_token_len)
+
+            act_loss = super()._cal_activation_loss(super().get_adapter_layer().original_layer_output, super().get_adapter_layer().new_weight_layer_output,
+                                                  config=config, act_mask=act_mask, deact_mask=deact_mask)
+            loss = ft_loss + act_loss.to(ft_loss.device)
+
+            if loss_meter.stop():
+                super().get_adapter_layer().save_editing_activation()  # add last gradient
+                break
+            if i == config.n_iter - 1:
+                super().get_adapter_layer().save_editing_activation()  # add last gradient
+
+            if self.config.retrieve and super().get_adapter_layer().merge_cnt > 0 and self.config.replay:
+                memory_loss = []
+                for _ in merge_group_edit_history:
+                    idx = 0
+                    while True:
+                        memo_input, is_used = _[idx]
+                        if not is_used:
+                            _[idx][1] = True
+                            break
+                        idx += 1
+                        if idx == len(_): ## re Assign
+                            for m in range(len(_)):
+                                _[m][1] = False
+                            idx = 0
+
+                    memo_input = {f"{k1}" : v1.to(self.config.device) for k1, v1 in memo_input.items()}
+                    self.model(**memo_input)
+
+                    memory_act_loss = super()._cal_memory_neg_activation_loss(super().get_adapter_layer().original_layer_output,
+                                                    super().get_adapter_layer().new_weight_layer_output, config=config,
+                                                    act_mask=act_mask, deact_mask=deact_mask)
+                    memory_loss.append(memory_act_loss.to(ft_loss.device))
+                    del memo_input
+                neg_memo_loss = torch.stack(memory_loss).mean()
+                loss += neg_memo_loss
+                if len(edit_history) > 0:
+                    memo_input = random.choice(edit_history)[0]
+                    memo_input = {f"{k1}" : v1.to(self.config.device) for k1, v1 in memo_input.items()}
+                    self.model(**memo_input)
+
+                    pos_memo_loss = super()._cal_memory_pos_activation_loss(super().get_adapter_layer().original_layer_output,
+                                                    super().get_adapter_layer().new_weight_layer_output, config=config,
+                                                    act_mask=act_mask, deact_mask=deact_mask)
+                    del memo_input
+                    loss += pos_memo_loss.to(ft_loss.device)
+            # for replay Appendix B.3
+
+            optimizer.zero_grad()
+
+            loss.backward()
+            super().get_adapter_layer().mask_new_weight_gradient()
+
+            if self.config.retrieve and super().get_adapter_layer().merge_cnt > 0 and self.config.replay:
+                print(
+                    f"loss {np.round(loss.item(), 3)} = {np.round(ft_loss.item(), 3)} + {np.round(act_loss.item(), 3)} + {np.round(neg_memo_loss.item(), 3)} + {np.round(pos_memo_loss.item(), 3)}"
+                )
+            else:
+                print(
+                    f"loss {np.round(loss.item(), 3)} = {np.round(ft_loss.item(), 3)} + {np.round(act_loss.item(), 3)}"
+                )
+
+            optimizer.step()
+            loss_meter.update(loss.item())
+
+            if type(self.config.norm_constraint) is float:
+                super()._norm_constraint(self.config.norm_constraint)
+
+        # --- pull out info we want to log from the Wise layer ---
+        setattr(eval(f"self.model.{self.layer}"), "editing", False)
+        setattr(eval(f"self.model.{self.layer}"), "training", False)
+
+        editing_total_cnt = getattr(eval(f"self.model.{self.layer}"), "editing_total_cnt") + 1
+        setattr(eval(f"self.model.{self.layer}"), "editing_total_cnt", editing_total_cnt)
+        if self.config.save_freq is not None and editing_total_cnt % self.config.save_freq == 0:
+            super().get_adapter_layer().save_weight()
+            print(f'Add New Weight to Memory...')
+        if editing_total_cnt % self.config.merge_freq == 0:
+            # for retrieve ##
+            merge_group_edit_history.append(edit_history)
+            edit_history = []
+            # for retrieve ##
+
+            super().get_adapter_layer().merge_weight()
+            print(f'Merge Weight of (New, Original) Matrix... with {self.config.merge_alg}')
+
+    def _cal_ft_loss(self, multimodal_inputs, text_tokens, last_prompt_token_loc, ans_token_len):
+        if hasattr(self.model.config, 'batch_size'):
+            k = self.config.batch_size
+        else:
+            k = 1
+        
+        if k != 1:
+            raise AssertionError("Not support Batch Edit")
+        
+        bs = text_tokens["input_ids"].shape[0] - k
+        logits = self.model(**multimodal_inputs).logits
+        shift_logits = logits[:-k, :-1, :].contiguous()
+        shift_labels = multimodal_inputs['input_ids'][:-k, 1:].contiguous()
+        # only cal loss of target text tokens
+        loss_fct = CrossEntropyLoss(reduction='none')
+        a = shift_logits.view(-1, shift_logits.size(-1))
+        b = shift_labels.view(-1)[-ans_token_len:]
+        a = a[-b.size(0):,:]
+        loss = loss_fct(a, b)
+        loss = loss.view(bs, -1)
+        label_mask = torch.ones_like(loss, dtype=torch.bool)        
+        ft_loss = ((loss * label_mask).sum(1) / label_mask.sum(1)).mean()
+        return ft_loss
+    

@@ -253,3 +253,41 @@ class GRACEAdapter(torch.nn.Module):
         else:
             print("token replacement choice not found")
         return layer_out
+
+
+class GRACEMultimodal(GRACE):
+    def edit(self, config, multimodal_tokens, edit_id):
+        key_id = (multimodal_tokens["labels"] == -100).sum() - 1
+        setattr(eval(f"self.model.{self.layer}"), "key_id", key_id)
+        
+        # --- pass edit label, training mode, and key_id into GRACE ---
+        setattr(eval(f"self.model.{self.layer}"), "training", True)
+        setattr(eval(f"self.model.{self.layer}"), "edit_label", multimodal_tokens["labels"])
+        setattr(eval(f"self.model.{self.layer}"), "edit_id", edit_id)
+                
+        self.losses = []
+        # --- train GRACE value ---
+        for i in range(config.n_iter):
+            # --- insert iteration into each layer (only initiate keys on iteration 1) ---
+            setattr(eval(f"self.model.{self.layer}"), "iter", i)
+            
+            # --- pass tokens through model (including through the GRACE layer) ---
+            outputs = self.model(**multimodal_tokens)
+            if i == 0:
+                # --- we only need to create an optimizer for the first iteration (but forward pass instantiates the key, so optimzer is passed after first inference) ---
+                optimizer = torch.optim.Adam(self.model.parameters(), config.edit_lr)
+            loss = outputs.loss
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            self.losses.append(loss.detach().cpu().numpy())
+        
+        self.loss = loss # Log final loss
+
+        # --- pull out info we want to log from the GRACE layer ---
+        setattr(eval(f"self.model.{self.layer}"), "training", False)
+        chosen_key = getattr(eval(f"self.model.{self.layer}"), "chosen_key")
+        nkeys = len(getattr(eval(f"self.model.{self.layer}"), "keys"))
+            
+        self.log_dict["chosen_key"] =  chosen_key
+        self.log_dict["nkeys"] = nkeys
