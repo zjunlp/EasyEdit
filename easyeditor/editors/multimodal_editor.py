@@ -71,7 +71,7 @@ class MultimodalEditor:
             if hparams.model_name == "blip2":
                 from ..trainer.blip2_models import Blip2OPT
                 
-                model = Blip2OPT(
+                self.model = Blip2OPT(
                     vit_model="eva_clip_g",
                     img_size=364,
                     use_grad_checkpoint=True,
@@ -104,7 +104,7 @@ class MultimodalEditor:
             elif hparams.model_name == "minigpt4":
                 from ..trainer.blip2_models import MiniGPT4
                 
-                model = MiniGPT4(
+                self.model = MiniGPT4(
                     vit_model="eva_clip_g",
                     qformer_checkpoint=hparams.qformer_checkpoint,
                     img_size=364,
@@ -154,8 +154,7 @@ class MultimodalEditor:
                 self.vis_tok = Qwen2VLProcessor()
                 self.tok = AutoProcessor.from_pretrained(hparams.model_name)
                 self.model_name = "qwen2-vl"
-
-            self.model = model                
+                
         else:
             self.model, self.tok = self.model_name
             
@@ -204,8 +203,6 @@ class MultimodalEditor:
                 if self.alg_name == 'IKE' and self.hparams.k == 0:
                     edited_model = self.model
                     weights_copy = None
-                    
-                    # ike_seq_prompt += "{q}: {a}\n".format(q=request[0]["prompt"], a=request[0]["target"])
                 else:
                     edited_model, weights_copy = self.apply_algo(
                         self.model,
@@ -240,7 +237,7 @@ class MultimodalEditor:
                         # ANSWER = request["target"]
                         from copy import deepcopy
                         prompt_new_request = deepcopy(request)
-                        prefix_template = self.hparams.template.format(prompt=request["target"],prompt=request["target"])
+                        prefix_template = self.hparams.template.format(prompt=request["prompt"],target=request["target"])
                         prompt_new_request["prompt"] = prefix_template + request["prompt"]
                         prompt_new_request["rephrase_prompt"] = prefix_template + request["rephrase_prompt"]
                         prompt_new_request["locality_prompt"] = prefix_template + request["locality_prompt"]
@@ -341,7 +338,7 @@ class MultimodalEditor:
                     else:
                         from copy import deepcopy
                         prompt_new_request = deepcopy(request)
-                        prefix_template = self.hparams.template.format(prompt=request["target"],prompt=request["target"])
+                        prefix_template = self.hparams.template.format(prompt=request["prompt"],target=request["target"])
                         prompt_new_request["prompt"] = prefix_template + request["prompt"]
                         prompt_new_request["rephrase_prompt"] = prefix_template + request["rephrase_prompt"]
                         prompt_new_request["locality_prompt"] = prefix_template + request["locality_prompt"]
