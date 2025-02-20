@@ -137,6 +137,153 @@ def tokenize(batch, tokenizer, device, context_templates=None, hparams=None):
     # tokens:[(bs*(len_temp+1))*sequence_length],actmasks:bs*[len_temp*sequence_length],deact_masks:bs*[len_temp*sequence_length]
     return tokens, act_masks, deact_masks
 
+def multimodal_tokenize(batch, processor, device, context_templates=None, hparams=None):
+    # Initialize lists to store the processed data from each batch entry
+    len_temp = 1
+    prompts = [item['prompt'] for item in batch]
+    input_images = [item['image'] for item in batch]
+    labels = [item['target'] for item in batch]
+    file_type = batch[0]['file_type']
+    loc_prompts = [item['locality_prompt'] for item in batch]
+    loc_prompts_labels = [item['locality_ground_truth'] for item in batch]
+
+    print(input_images)
+
+    mask_token = -100  # ignore_index of CrossEntropyLoss
+    if hasattr(hparams, 'use_chat_template') and hparams.use_chat_template:
+        if file_type == "video":
+            temp_prompt = [processor.apply_chat_template([
+                                    {
+
+                                        "role": "user",
+                                        "content": [
+                                            {"type": "video"},
+                                            {"type": "text", "text": p},
+                                            ],
+                                    },
+                                ],
+                                                add_generation_prompt=True,
+                                                tokenize=False) + l
+                            for p, l in zip(prompts, labels)]
+            prompt_ids = processor.tokenizer(
+            text=[processor.apply_chat_template([
+                            {
+
+                                "role": "user",
+                                "content": [
+                                    {"type": "video"},
+                                    {"type": "text", "text": p},
+                                    ],
+                            },
+                        ],
+                                    add_generation_prompt=True,
+                                    tokenize=False) for p in prompts], return_tensors="pt", padding=True, truncation=True)["input_ids"]
+
+            
+        elif file_type in ["image", "single-image", "multi-image"]:
+            if file_type == "multi-image":
+                num_images = len(input_images[0])
+            else:
+                num_images = 1
+            
+            temp_prompt = [processor.apply_chat_template([
+                                    {
+
+                                        "role": "user",
+                                        "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
+                                    },
+                                ],
+                                                add_generation_prompt=True,
+                                                tokenize=False)  + l
+                            for p, l in zip(prompts, labels)]
+            
+            prompt_ids = processor.tokenizer(
+            [processor.apply_chat_template([
+                            {
+
+                                "role": "user",
+                                "content": [
+                                    [{"type": "image"}] * num_images + [{"type": "text", "text": p}]
+                                    ],
+                            },
+                        ],
+                                    add_generation_prompt=True,
+                                    tokenize=False) for p in prompts], return_tensors="pt", padding=True, truncation=True)["input_ids"]
+            
+            print(temp_prompt)            
+        else:
+            raise AssertionError("Not support file type: {}".format(file_type))
+        
+        chat_loc_prompts = [processor.apply_chat_template([
+                            {
+
+                                "role": "user",
+                                "content": [
+                                    {"type": "text", "text": p},
+                                    ],
+                            },
+                        ],
+                                        add_generation_prompt=True,
+                                        tokenize=False) + ' ' + l
+                    for p, l in zip(loc_prompts, loc_prompts_labels)]
+                
+    else:
+        prompt_ids = processor.tokenizer([f"{templ.format(p)}" for templ in context_templates for p in prompts], return_tensors="pt", padding=True, truncation=True)["input_ids"]
+    
+    full_prompt = temp_prompt + chat_loc_prompts
+    num_prompt_toks = [len(i) for i in prompt_ids]
+    tokens = processor(text=full_prompt, return_tensors="pt", padding=True, truncation=True)
+    tokens["labels"] = tokens["input_ids"].clone()
+
+    # Mask the tokens based on hparams.objective_optimization
+    if hparams.objective_optimization == 'only_label':
+        for i in range(len(num_prompt_toks)):
+            tokens["labels"][i][:num_prompt_toks[i]] = mask_token
+
+    act_masks = []
+    deact_masks = []
+    # Iterate through each batch entry and compute act_mask, deact_mask
+    for i, loc_prompt in enumerate(loc_prompts):
+        if loc_prompt in prompts[i]:  # subject: Factual Editing
+            subject_token = processor.tokenizer.encode(' ' + loc_prompt, add_special_tokens=False)
+            subject_token1 = processor.tokenizer.encode(loc_prompt, add_special_tokens=False)
+            subject_length = len(subject_token)
+            act_mask = torch.zeros_like(tokens['input_ids'][int(i*len_temp):int((i+1)*len_temp)])
+            deact_mask = torch.zeros_like(tokens['input_ids'][int(i*len_temp):int((i+1)*len_temp)])
+            for j, token in enumerate(tokens['input_ids'][int(i*len_temp):int((i+1)*len_temp)]):
+                start_idx = find_sublist_start_index(token.detach().cpu().numpy().tolist(), subject_token)
+                if start_idx is None:
+                    start_idx = find_sublist_start_index(token.detach().cpu().numpy().tolist(), subject_token1)
+                    subject_length = len(subject_token1)
+                act_mask[j][start_idx: start_idx + subject_length] = 1
+                deact_mask[j][:start_idx] = 1
+                deact_mask[j][start_idx + subject_length:] = 1
+        else:  # General Editing
+            act_mask = None
+            deact_mask = None
+
+        # Append the masks to the lists
+        act_masks.append(act_mask)
+        deact_masks.append(deact_mask)
+
+    # Convert to tensors and move to the specified device
+    act_masks = [mask.to(device) if mask is not None else None for mask in act_masks]
+    deact_masks = [mask.to(device) if mask is not None else None for mask in deact_masks]
+
+    tokens = {key: val.to(device) for key, val in tokens.items()}
+
+    if file_type in ["image", "single-image", "multi-image"]:
+        multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+    elif file_type == "video":
+        multimodal_inputs = processor(videos=input_images[0], text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+        
+    last_prompt_token_loc = (tokens["labels"] == -100).sum(dim=-1)[0]
+    last_ans_token_loc = (tokens["labels"] == processor.tokenizer.pad_token_id).sum(dim=-1)[0]
+    ans_token_len = len(tokens["labels"][0]) - last_prompt_token_loc - last_ans_token_loc
+    
+    return multimodal_inputs, tokens, ans_token_len, act_masks, deact_masks
+
+
 class EarlyStopMeter:
     """Computes and stores the average and current value"""
 

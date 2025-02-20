@@ -84,3 +84,60 @@ def tokenize(batch, tokenizer, device, test=False):
     tokens = {f"{k1}" : v1.to(device) for k1, v1 in tokens.items()}
     return tokens
 
+
+def multimodal_tokenize(batch, processor, device, hparams):
+    prompts = [item['prompt'] for item in batch]
+    input_images = [item['image'] for item in batch]
+    labels = [item['target'] for item in batch]
+    file_type = batch[0]['file_type']
+    mask_token = -100 # ignore_index of CrossEntropyLoss
+    if file_type == "video":
+        temp_prompt = [processor.apply_chat_template([
+                                {
+
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "video"},
+                                        {"type": "text", "text": p},
+                                        ],
+                                },
+                            ],
+                                            add_generation_prompt=True,
+                                            tokenize=False) + l
+                        for p, l in zip(prompts, labels)] 
+    elif file_type in ["image", "single-image", "multi-image"]:
+        if file_type == "multi-image":
+            num_images = len(input_images[0])
+        else:
+            num_images = 1
+        
+        temp_prompt = [processor.apply_chat_template([
+                                {
+
+                                    "role": "user",
+                                    "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
+                                },
+                            ],
+                                            add_generation_prompt=True,
+                                            tokenize=False)  + l
+                        for p, l in zip(prompts, labels)]
+    else:
+        raise AssertionError("Not support file type: {}".format(file_type))
+    
+    full_prompt = temp_prompt
+    if file_type in ["image", "single-image", "multi-image"]:
+        multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+    elif file_type == "video":
+        multimodal_inputs = processor(videos=input_images[0], text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+        
+    
+    tokens = multimodal_inputs
+    
+    targets = processor.tokenizer(labels[0], add_special_tokens=False,
+                    return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
+
+    labels_ids = torch.full_like(multimodal_inputs["input_ids"], -100)
+    labels_ids[:, -targets.size(1):] = targets
+    tokens["labels"] = labels_ids
+    tokens = tokens.to(device)
+    return tokens
