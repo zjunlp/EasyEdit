@@ -1,4 +1,4 @@
-# CKnowEdit: A Chinese Knowledge Editing Dataset for Large Language Models
+# CKnowEdit: A New Chinese Knowledge Editing Dataset for Linguistics, Facts, and Logic Error Correction in LLMs
 
 This README is about reproducing the paper [CKnowEdit: A New Chinese Knowledge Editing Dataset for Linguistics, Facts, and Logic Error Correction in LLMs](https://arxiv.org/abs/2409.05806).
 
