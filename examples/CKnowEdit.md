@@ -328,13 +328,11 @@ After the editing process, the ouput example is as follows:
 ```
 
 ## Evaluation
-Our evaluation metrics consist of the following four categories: `Edit_acc`, `portability`, `locality` and `fluency`. However, unlike the traditional approach of using EasyEdit for assessment, **CKnowEdit** employs a new evaluation method when assessing editing effectiveness. This method is more closely aligned with real-world application scenarios and actual needs.
+Our evaluation metrics consist of the following four categories: `Edit Success`, `Generalization`, `Portability` and `locality`. However, unlike the traditional approach of using  token/logit-level metrics with teacher-forcing automatio for assessment, **CKnowEdit** employs a new evaluation method.
 
-When compute the metrics `Edit_acc`, `portability` and `locality`, we consider both `word-level overlap metric` and `Semantic similarity` at the same time:
+We adopt **open-ended text generation** to assess edited models in more practical and challenging scenarios. We customize prompts and evaluation processes for each knowledge category’s unique characteristics, enabling GPT-4o to serve as evaluator. For each evaluation metric, we provide GPT-4o (gpt-4o-2024-08-06) with the corresponding question, editedmodel’s response, and the reference answer. GPT-4o then assigns a score from 1 to 10 based on the relevance between the model’s response and the reference answer.
 
-**(1)`word-level overlap metric`: We choose rouge-l to compute the word-level or the character-level overlap by Comparing the contents of fields 'rewrite_ans' and 'target_new', fields 'portability_ans' and 'portability''por_hop''ground_truth', and fields 'locality_ans' and 'locality''loc_hop''ground_truth' respectively.**
 
-**(2)`Semantic similarity`: We evaluate semantic similarity by computing the cosine similarity of embeddings obtained using an embedding encoder (specifically, [paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2)), which quantifies the depth of understanding by the text model, thus ensuring validity beyond mere lexical matching.**
 
 ## Baseline
 We list the results of 4 knowledge editing methods on Qwen-7b-chat/Baichuan2-7b-chat.
