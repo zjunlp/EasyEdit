@@ -1,6 +1,6 @@
 # CKnowEdit: A Chinese Knowledge Editing Dataset for Large Language Models
 
-This README is about reproducing the paper [Benchmarking Chinese Knowledge Rectification in Large Language Models]().
+This README is about reproducing the paper [CKnowEdit: A New Chinese Knowledge Editing Dataset for Linguistics, Facts, and Logic Error Correction in LLMs](https://arxiv.org/abs/2409.05806).
 
 ## Table of Contents
 
@@ -15,21 +15,25 @@ This README is about reproducing the paper [Benchmarking Chinese Knowledge Recti
 
 ## Dataset Structure
 
-**CKnowEdit** is tailored for Chinese-language knowledge editing tasks. It can broadly be categorized into 4 classes: Chinese literary knowledge, Chinese linguistic knowledge, Chinese geographical knowledge and Chinese Ruozhiba. 
+**CKnowEdit** is tailored for Chinese-language knowledge editing tasks. It can broadly be categorized into 3 major categories and 10 subcategories, with the 3 major categories being: `Chinese Linguistics`, `Chinese Factual Knowledge` and `Chinese language-specific logic trap`. Moreover, these data have been gathered from seven distinct categories of knowledge sources.
 
-The classes of Chinese literary knowledge and Chinese linguistic knowledge can be further divided. The file structure for **CKnowEdit** is as follows:
+The file structure for **CKnowEdit** is as follows:
 
 ```
 CknowEdit
-├── Chinese Literary Knowledge
+├── Chinese Linguistics
+│   ├── Pinyin Notation
 │   ├── Ancient Poetry
-│   ├── Proverbs
-│   └── Idioms
-├── Chinese Linguistic Knowledge
-│   ├── Phonetic Notation
-│   └── Classical Chinese
-├── Chinese Geographical Knowledge
-└── Ruozhiba
+│   ├── Classical Chinese
+│   ├── Idiom
+│   └── Proverb
+├── Chinese Factual Knowledge
+│   ├── Geographical Knowledge
+│   └── History Knowledge
+└── Chinese language-specific logic trap
+    ├── Phonetic Misunderstand
+    ├── Reasoning Error
+    └── Wordplay
 ```
 
 The various data types of **CKnowEdit** and their distribution are shown in the following table:
