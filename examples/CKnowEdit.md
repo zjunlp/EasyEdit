@@ -367,3 +367,20 @@ We list the results of 5 knowledge editing methods on Qwen-7B-chat/Qwen2-7B-Inst
 |                     | Ancient Poetry     | 1.78/1.52/0.22/-  | 3.39/2.95/0.51/-  | 7.51/7.00/0.45/-  | 1.51/1.34/0.30/-  | 1.61/1.40/0.19/-  | 2.75/1.07/0.00/-  |
 |                     | Fact               | 2.25/2.86/3.28/-  | 6.90/7.13/4.31/-  | 8.19/7.57/5.66/-  | 3.77/3.10/3.27/-  | 2.21/2.75/3.22/-  | 4.77/4.74/4.04/-  |
 |                     | Logic              | 4.62/4.93/5.17/7.00| 5.36/5.39/6.14/6.76| 6.42/5.94/6.39/6.97| 5.63/5.31/4.09/6.98| 4.65/4.71/5.96/6.80| 5.93/5.03/5.96/7.07|
+
+
+## 📖 Citation
+
+If finding this work useful for your research, you can cite it as follows:
+
+```bibtex
+@misc{fang2025cknoweditnewchineseknowledge,
+      title={CKnowEdit: A New Chinese Knowledge Editing Dataset for Linguistics, Facts, and Logic Error Correction in LLMs}, 
+      author={Jizhan Fang and Tianhe Lu and Yunzhi Yao and Ziyan Jiang and Xin Xu and Ningyu Zhang and Huajun Chen},
+      year={2025},
+      eprint={2409.05806},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2409.05806}, 
+}
+```
