@@ -330,9 +330,9 @@ After the editing process, the ouput example is as follows:
 ## Evaluation
 Our evaluation metrics consist of the following four categories: `Edit Success`, `Generalization`, `Portability` and `locality`. However, unlike the traditional approach of using  token/logit-level metrics with teacher-forcing automatio for assessment, **CKnowEdit** employs a new evaluation method.
 
-We adopt **open-ended text generation** to assess edited models in more practical and challenging scenarios. We customize prompts and evaluation processes for each knowledge category’s unique characteristics, enabling GPT-4o to serve as evaluator. For each evaluation metric, we provide GPT-4o (gpt-4o-2024-08-06) with the corresponding question, editedmodel’s response, and the reference answer. GPT-4o then assigns a score from 1 to 10 based on the relevance between the model’s response and the reference answer.
+We adopt **open-ended text generation** to assess edited models in more practical and challenging scenarios. We customize prompts and evaluation processes for each knowledge category’s unique characteristics, enabling GPT-4o to serve as evaluator. For each evaluation metric, we provide GPT-4o (gpt-4o-2024-08-06) with the corresponding question, editedmodel’s response, and the reference answer. GPT-4o then assigns a score from 1 to 10 based on the relevance between the model’s response and the reference answer. Below is the evaluation process along with an example.
 
-
+<div align=center><img src="../figs/eval_case.png" width="70%" height="70%" /></div>
 
 ## Baseline
 We list the results of 4 knowledge editing methods on Qwen-7b-chat/Baichuan2-7b-chat.
