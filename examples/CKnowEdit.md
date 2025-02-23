@@ -335,7 +335,7 @@ We adopt **open-ended text generation** to assess edited models in more practica
 <div align=center><img src="../figs/eval_case.png" width="70%" height="70%" /></div>
 
 ## Baseline
-We list the results of 4 knowledge editing methods on Qwen-7b-chat/Baichuan2-7b-chat.
+We list the results of 5 knowledge editing methods on Qwen-7B-chat/Qwen2-7B-Instruct/DeepSeek-LLM-7B-Chat/Baichuan2-7B-Chat.
 
 | Knowledge Type          | Method   | Edit Success     | Portability    | Locality       | Fluency          |
 |-------------------------|----------|-------------------|-----------------|-----------------|-------------------|
@@ -351,7 +351,7 @@ We list the results of 4 knowledge editing methods on Qwen-7b-chat/Baichuan2-7b-
 |                         | AdaLoRA  | **66.29** / **74.90**     | **55.26** / **56.63**   | -               | 430.25 / 432.79   |
 |                         | ROME     | 64.79 / 60.81     | 52.47 / 56.30   | -               | **457.38** / **441.57**   |
 |                         | GRACE    | 47.58 / 52.26     | 52.50 / 53.06   | -               | 408.56 / 381.15   |
-| Phonetic Notation       | FT-M     | 78.04 / 68.34     | 72.28 / 64.46   | **82.17** / 61.29   | 475.13 / 387.05   |
+| Pinyin Notation         | FT-M     | 78.04 / 68.34     | 72.28 / 64.46   | **82.17** / 61.29   | 475.13 / 387.05   |
 |                         | AdaLoRA  | **88.21** / **80.87**     | **76.37** / **67.36**   | 74.94 / 62.62   | 404.06 / **469.75**   |
 |                         | ROME     | 77.15 / 65.58     | 73.14 / 61.88   | 80.52 / 62.19   | **486.19** / 462.08   |
 |                         | GRACE    | 76.63 / 67.04     | 72.71 / 66.36   | 81.96 / **65.41**   | 479.89 / 458.02   |
@@ -359,11 +359,11 @@ We list the results of 4 knowledge editing methods on Qwen-7b-chat/Baichuan2-7b-
 |                         | AdaLoRA  | **65.17** / 55.89     | **52.32** / 45.94   | 44.57 / 44.13   | 286.61 / 330.09   |
 |                         | ROME     | 39.28 / 28.06     | 50.00 / 35.37   | 50.20 / 35.37   | **431.48** / **422.80**   |
 |                         | GRACE    | 37.92 / 32.97     | 50.63 / 35.67   | 56.55 / **52.90**   | 418.28 / 408.85   |
-| Geographical Knowledge  | FT-M     | 47.30 / **73.02**     | 45.75 / 47.15   | -               | **448.90** / 260.36   |
+| Fact                    | FT-M     | 47.30 / **73.02**     | 45.75 / 47.15   | -               | **448.90** / 260.36   |
 |                         | AdaLoRA  | **70.31** / 72.44     | **52.60** / **55.14**   | -               | 313.19 / 377.91   |
 |                         | ROME     | 52.81 / 49.64     | 43.89 / 42.85   | -               | 402.51 / **408.85**   |
 |                         | GRACE    | 46.53 / 53.38     | 43.59 / 42.85   | -               | 408.97 / 311.22   |
-| Ruozhiba                | FT-M     | 45.25 / 43.22     | 57.79 / 57.39   | 63.92 / 64.09   | 333.98 / 414.30   |
+| Logic                   | FT-M     | 45.25 / 43.22     | 57.79 / 57.39   | 63.92 / 64.09   | 333.98 / 414.30   |
 |                         | AdaLoRA  | **71.07** / 51.54     | **62.25** / 55.65   | 66.57 / 66.13   | 428.94 / 441.41   |
 |                         | ROME     | 68.42 / **62.88**     | 60.35 / **61.23**   | **68.91** / **70.19**   | 413.37 / 428.03   |
 |                         | GRACE    | 45.16 / 39.83     | 56.47 / 56.86   | 63.41 / 63.97   | **452.39** / **442.60**   |
