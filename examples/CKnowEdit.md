@@ -38,17 +38,20 @@ CknowEdit
     └── Wordplay
 ```
 
-The various data types of **CKnowEdit** and their distribution are shown in the following table:
+**CKnowEdit** is comprised of a total of 1854 data samples, the 10 subcategories of **CKnowEdit** and their distribution are shown in the following table:
 
 | type | quantity |
 | ---- | ---- |
+| Pinyin Notation | 153 |
 | Ancient Poetry | 134 |
-| Proverbs | 230 |
-| Idioms | 101 |
-| Phonetic Notation | 153 |
 | Classical Chinese | 234 |
-| Chinese Geographical Knowledge | 105 |
-| Ruozhiba | 803 |
+| Idiom | 101 |
+| Proverb | 230 |
+| Geographical Knowledge | 105 |
+| History Knowledge | 94 |
+| Phonetic Misunderstand | 11 |
+| Reasoning Error | 673 |
+| Wordplay | 119 |
 
 The dataset can be downloaded from .
 | **dataset** | HuggingFace| WiseModel | ModelScope |
@@ -74,7 +77,7 @@ The field descriptions for the data in **CKnowEdit** are as follows:
 "rephrase": alternative ways to phrase the original prompt (list)
 ```
 
-### Chinese Literary Knowledge
+### Ancient Poetry
 
 An example of this type is as follows:
 
@@ -97,7 +100,7 @@ An example of this type is as follows:
 }
 ```
 
-### Chinese Linguistic Knowledge
+### Pinyin Notation
 
 An example of this type is as follows:
 
@@ -127,7 +130,7 @@ An example of this type is as follows:
 }
 ```
 
-### Chinese Geographical Knowledge
+### Geographical Knowledge
 
 An example of this type is as follows:
 
@@ -157,7 +160,7 @@ An example of this type is as follows:
 }
 ```
 
-### Ruozhiba
+### Wordplay
 
 An example of this type is as follows:
 
@@ -224,36 +227,45 @@ Please discuss in an [issue](https://github.com/zjunlp/EasyEdit/issues) a featur
 
 ### FT
 ```shell
-python run_CKnowEdit_qwen-1.8B.py \
+python run_CKnowEdit.py \
     --editing_method=FT \
-    --hparams_dir=./EasyEdit/hparams/FT/qwen-1.8b-chat.yaml \
+    --hparams_dir=./EasyEdit/hparams/FT/qwen2-7b.yaml \
     --data_dir=./data/…… \
     --chinese_ds_type='the_data_type_name'
 ```
 
 ### ROME
 ```shell
-python run_CKnowEdit_qwen-1.8B.py \
+python run_CKnowEdit.py \
     --editing_method=ROME \
-    --hparams_dir=./EasyEdit/hparams/ROME/qwen-1.8b-chat.yaml \
+    --hparams_dir=./EasyEdit/hparams/ROME/qwen2-7b.yaml \
     --data_dir=./data/…… \
     --chinese_ds_type='the_data_type_name'
 ```
 
 ### GRACE
 ```shell
-python run_CKnowEdit_qwen-1.8B.py \
+python run_CKnowEdit.py \
     --editing_method=GRACE \
-    --hparams_dir=./EasyEdit/hparams/GRACE/qwen-1.8b-chat.yaml \
+    --hparams_dir=./EasyEdit/hparams/GRACE/qwen2-7b.yaml \
     --data_dir=./data/…… \
     --chinese_ds_type='the_data_type_name'
 ```
 
 ### LoRA
 ```shell
-python run_CKnowEdit_qwen-1.8B.py \
+python run_CKnowEdit.py \
     --editing_method=LoRA \
-    --hparams_dir=./EasyEdit/hparams/LoRA/qwen-1.8b-chat.yaml \
+    --hparams_dir=./EasyEdit/hparams/LoRA/qwen2-7b.yaml \
+    --data_dir=./data/…… \
+    --chinese_ds_type='the_data_type_name'
+```
+
+### AlphaEdit
+```shell
+python run_CKnowEdit.py \
+    --editing_method=AlphaEdit \
+    --hparams_dir=./EasyEdit/hparams/AlphaEdit/qwen2-7b.yaml \
     --data_dir=./data/…… \
     --chinese_ds_type='the_data_type_name'
 ```
