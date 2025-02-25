@@ -8,6 +8,135 @@ import torch.nn.functional as F
 from ..trainer import *
 from sklearn.metrics import f1_score
 import openai
+from openai import OpenAI
+from transformers import T5ForConditionalGeneration
+import time
+import regex
+import string
+
+
+def normalize_answer(s):
+	def remove_articles(text):
+		return regex.sub(r'\b(a|an|the)\b', ' ', text)
+
+	def white_space_fix(text):
+		return ' '.join(text.split())
+
+	def remove_punc(text):
+		exclude = set(string.punctuation)
+		return ''.join(ch for ch in text if ch not in exclude)
+
+	def lower(text):
+		return text.lower()
+
+	return white_space_fix(remove_articles(remove_punc(lower(s))))
+
+def exact_match_score(prediction, ground_truth):
+	return normalize_answer(prediction) == normalize_answer(ground_truth)
+
+def llm_judge(question, ground_truth, prediction, api_key):
+    content_template = """
+Your job is to look at a question, a gold target, and a predicted answer, and then assign a grade of either ["CORRECT", "INCORRECT"].
+
+The following are examples of CORRECT predicted answers.
+```
+Question: What are the names of Barack Obama's children?
+Gold target: Malia Obama and Sasha Obama
+Predicted answer 1: sasha and malia obama
+Predicted answer 2: Malia and Sasha Obama are the names of Barack Obama's children.
+```
+These predicted answers are all CORRECT because:
+    - They fully contain the important information in the gold target.
+    - They do not contain any information that contradicts the gold target.
+
+The following are examples of INCORRECT predicted answers.
+```
+Question: What are the names of Barack Obama's children?
+Gold target: Malia and Sasha
+Predicted answer 1: Malia.
+Predicted answer 2: Malia, Sasha, and Susan.
+Predicted answer 3: Malia and Sasha, Malia and Sasha, Malia and Sasha, Malia and Sasha (repeated answer)
+```
+These predicted answers are all INCORRECT because:
+    - A factual statement in the answer contradicts the gold target or contain repeated answer.
+
+
+Here is a sample. Simply reply with either CORRECT or INCORRECT.
+
+```
+Question: {question}
+Gold target: {target}
+Predicted answer: {predicted_answer}
+```
+
+According to the gold target, please grade the predicted answer of this question as one of:
+A: CORRECT
+B: INCORRECT
+
+Just return the letters "A" or "B", with no text around it.
+    """.strip()
+
+    content = content_template.format(
+        question=question,
+        target=ground_truth,
+        predicted_answer=prediction,
+    )
+
+    client = OpenAI(
+        api_key=api_key,
+    )
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": ""},
+            {"role": "user", "content": content}
+        ],
+        temperature=0.0
+    )
+    llm_ans = completion.choices[0].message.content
+    llm_score = 1.0 if llm_ans == "A" else 0.0
+    time.sleep(1) # avoid high rate of request
+    return llm_score
+
+def test_prediction_acc_real(model, tok, hparams, prompt, target, device, locality=False):
+    # generation & truncation
+    prompt_tok = tok(
+        prompt,
+        return_tensors="pt",
+    ).to(f"cuda:{device}")
+    gen_tokens = model.generate(
+        input_ids=prompt_tok['input_ids'],
+        attention_mask=prompt_tok['attention_mask'],
+        max_new_tokens=50,
+        stop_strings=[".", "\n", "</s>", "<|endoftext|>"],
+        tokenizer=tok,
+        pad_token_id=tok.eos_token_id,
+        do_sample=False,
+        use_cache=False,
+    )
+    # decode and process
+    if isinstance(model, T5ForConditionalGeneration):
+        trunc_gen_tokens = gen_tokens[0]  # encoder-decoder model only provied generated content after prompt
+    else:
+        trunc_gen_tokens = gen_tokens[0][prompt_tok['input_ids'].shape[1]:]  # decoder-only model provied generated content containing prompt
+    if locality:
+        ans = trunc_gen_tokens.detach().cpu().numpy().tolist()
+        return ans
+    else:
+        gen_content = tok.decode(trunc_gen_tokens)
+        suffixes_to_remove = [".", "\n", "</s>", "<|endoftext|>"]
+        for suffix in suffixes_to_remove:
+            if gen_content.endswith(suffix):
+                gen_content = gen_content.rstrip(suffix)
+        # LLM-as-a-Judge
+        if hasattr(hparams, 'api_key') and hparams.api_key:
+            LLM_Score = llm_judge(prompt, target, gen_content, hparams.api_key)
+            return LLM_Score, gen_content
+        else:
+            # the user do not provide api key, using exact match as an alternative
+            EM_Score = float(exact_match_score(gen_content, target))
+            return EM_Score, gen_content
 
 
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
