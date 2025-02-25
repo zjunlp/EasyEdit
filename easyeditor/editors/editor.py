@@ -354,8 +354,11 @@ class BaseEditor:
                 if 'locality' in all_metrics[idx]['post'].keys():
                     for locality_key in request['locality'].keys():
                         locality_result = []
-                        for ans, label in zip(all_metrics[idx]['post']['locality'][f'{locality_key}_output'], all_metrics[idx]['pre']['locality'][f'{locality_key}_output']):
-                            locality_result.append(np.mean(np.equal(ans, label)))
+                        if hasattr(self.hparams, 'evaluation_type') and self.hparams.evaluation_type == "real-world":
+                            locality_result.append(float(all_metrics[idx]['post']['locality'][f'{locality_key}_output']==all_metrics[idx]['pre']['locality'][f'{locality_key}_output']))
+                        else:
+                            for ans, label in zip(all_metrics[idx]['post']['locality'][f'{locality_key}_output'], all_metrics[idx]['pre']['locality'][f'{locality_key}_output']):
+                                locality_result.append(np.mean(np.equal(ans, label)))
                         all_metrics[idx]['post']['locality'][f'{locality_key}_acc'] = locality_result
                         all_metrics[idx]['post']['locality'].pop(f'{locality_key}_output')
                     all_metrics[idx]['pre'].pop('locality')
