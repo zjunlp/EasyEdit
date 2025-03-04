@@ -58,7 +58,7 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
-
+- 2025-01-03, We have updated the evaluation method in paper "[CKnowEdit: A New Chinese Knowledge Editing Dataset for Linguistics, Facts, and Logic Error Correction in LLMs](https://arxiv.org/abs/2409.05806)", adopting an LLM-as-a-judge approach that is more aligned with real-world scenarios and practical applications. Both the experimental results and the running scripts have been updated accordingly in [readme](https://github.com/zjunlp/EasyEdit/blob/main/examples/CKnowEdit.md).
 - 2024-11-19, we update the Table 4 results in the paper "[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" after optimizing certain methods (related to AdaLoRA) and fixing computational bugs (related to ROME and MEMIT) in the EasyEdit (More details in https://github.com/zjunlp/EasyEdit/issues/427). These improvements have led to better results than before. We will continue updating this paper and welcome everyone to discuss and exchange ideas.
 - 2024-11-11, 🎉🎉the paper on model editing for LLMs4Code, "[Model Editing for LLMs4Code: How Far are We?](https://arxiv.org/abs/2411.06638)", has been accepted by ICSE 2025! This work proposes a benchmark for LLMs4Code editing, [CLMEEval](https://github.com/xpq-tech/code-llmedit), which is built upon EasyEdit!
 - 2024-11-09, we fixed a bug regarding the [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit) results in the https://github.com/zjunlp/EasyEdit/issues/390. Thanks for the help of [@StarLooo](https://github.com/StarLooo) to help us with it. 
