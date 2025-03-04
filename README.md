@@ -58,15 +58,16 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- 2025-03-04, 🌟🌟In addition to the original token-level teacher-forcing paradigm for evaluation, EasyEdit has integrated a new evaluation method, following the paper titled "[The Mirage of Model Editing: Revisiting Evaluation in the Wild](https://arxiv.org/abs/2502.11177)". You can use this [script](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_LLM_evaluation.py) to quickly launch this evaluation approach, which better aligns with real-world requirements. Special thanks to [@WanliYoung](https://github.com/WanliYoung) for contribution!
 - 2025-01-03, We have updated the evaluation method in paper "[CKnowEdit: A New Chinese Knowledge Editing Dataset for Linguistics, Facts, and Logic Error Correction in LLMs](https://arxiv.org/abs/2409.05806)", adopting an LLM-as-a-judge approach that is more aligned with real-world scenarios and practical applications. Both the experimental results and the running scripts have been updated accordingly in [readme](https://github.com/zjunlp/EasyEdit/blob/main/examples/CKnowEdit.md).
 - 2024-11-19, we update the Table 4 results in the paper "[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" after optimizing certain methods (related to AdaLoRA) and fixing computational bugs (related to ROME and MEMIT) in the EasyEdit (More details in https://github.com/zjunlp/EasyEdit/issues/427). These improvements have led to better results than before. We will continue updating this paper and welcome everyone to discuss and exchange ideas.
 - 2024-11-11, 🎉🎉the paper on model editing for LLMs4Code, "[Model Editing for LLMs4Code: How Far are We?](https://arxiv.org/abs/2411.06638)", has been accepted by ICSE 2025! This work proposes a benchmark for LLMs4Code editing, [CLMEEval](https://github.com/xpq-tech/code-llmedit), which is built upon EasyEdit!
 - 2024-11-09, we fixed a bug regarding the [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit) results in the https://github.com/zjunlp/EasyEdit/issues/390. Thanks for the help of [@StarLooo](https://github.com/StarLooo) to help us with it. 
-- 2024-10-24, EasyEdit has added two new knowledge editing methods, [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md). In addition, we have fixed several bugs.
 
 <details>
 <summary><b>Previous News</b></summary>
-  
+
+- 2024-10-24, EasyEdit has added two new knowledge editing methods, [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md). In addition, we have fixed several bugs.
 - 2024-10-23, the EasyEdit integrates constrained decoding methods from steering editing to mitigate hallucination in LLM and MLLM, with detailed information available in [DoLa](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/dola) and [DeCo](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/deco).
 - 2024-09-26, 🎉🎉 our paper "[WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models](https://arxiv.org/abs/2405.14768)" has been accepted by **NeurIPS 2024**.
 - 2024-09-20, 🎉🎉 our papers: "[Knowledge Mechanisms in Large Language Models: A Survey and Perspective](https://arxiv.org/abs/2407.15017)" and "[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" have been accepted by **EMNLP 2024 Findings**.
