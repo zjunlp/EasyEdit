@@ -18,6 +18,7 @@ from .evaluate_utils import (
     test_seq2seq_batch_prediction_acc, 
     test_batch_prediction_acc, 
     test_prediction_acc,
+    test_prediction_acc_LLM_judge,
     test_generation_quality, 
     test_concept_gen,
     test_safety_gen,
@@ -110,36 +111,44 @@ def compute_rewrite_or_rephrase_quality(
         key = 'rewrite'
     else:
         key = 'rephrase'
-    if eval_metric == 'ppl':
-        ppl = PPL(model, tok, prompt, target_new, device)
-        ret = {
-            f"{key}_ppl": ppl
-        }
-    elif eval_metric == 'ood_ppl':
-        ans = OOD_PPL(model, tok, prompt, target_new, device)
-        ret = {
-            f"ood_acc": ans
-        }
-    elif hparams.alg_name=="GRACE":
-        # ppl = PPL(model, tok, prompt, target_new, device)
-        if 't5' in model_name.lower():
-            acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
-        else:
-            acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device, vanilla_generation=True)
-        f1 = F1(model,tok,hparams,prompt,target_new,device, vanilla_generation=True)
+    # using real-world evaluation: autoregressive decoding, natural stop criteria, LLM-as-a-Judge
+    if hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "LLM-judge":
+        acc, gen_content = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, target_new, device, locality=False)
         ret = {
             f"{key}_acc": acc,
-            # f"{key}_PPL": ppl,
-            f"{key}_F1":f1     
-        }        
-    else:
-        if 't5' in model_name.lower():
-            acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
-        else:
-            acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device)
-        ret = {
-            f"{key}_acc": acc
+            f"{key}_gen_content": gen_content
         }
+    else:  # traditional evaluation 
+        if eval_metric == 'ppl':
+            ppl = PPL(model, tok, prompt, target_new, device)
+            ret = {
+                f"{key}_ppl": ppl
+            }
+        elif eval_metric == 'ood_ppl':
+            ans = OOD_PPL(model, tok, prompt, target_new, device)
+            ret = {
+                f"ood_acc": ans
+            }
+        elif hparams.alg_name=="GRACE":
+            # ppl = PPL(model, tok, prompt, target_new, device)
+            if 't5' in model_name.lower():
+                acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
+            else:
+                acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device, vanilla_generation=True)
+            f1 = F1(model,tok,hparams,prompt,target_new,device, vanilla_generation=True)
+            ret = {
+                f"{key}_acc": acc,
+                # f"{key}_PPL": ppl,
+                f"{key}_F1":f1     
+            }        
+        else:  # teacher-forcing evaluation
+            if 't5' in model_name.lower():
+                acc = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, target_new, device)
+            else:
+                acc = test_prediction_acc(model, tok, hparams, prompt, target_new, device)
+            ret = {
+                f"{key}_acc": acc
+            }
     return ret
 
 def compute_locality_quality(
@@ -153,13 +162,16 @@ def compute_locality_quality(
     device,
 ) -> typing.Dict:
 
-    if 't5' in model_name.lower():
-        loc_tokens = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
-    else:
-        loc_tokens = test_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True, vanilla_generation=hparams.alg_name=='GRACE')
-
-    if type(loc_tokens) is not list:
-        loc_tokens = [loc_tokens,]
+    # using real-world evaluation: autoregressive decoding, natural stop criteria, LLM-as-a-Judge
+    if hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "LLM-judge":
+        loc_tokens = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
+    else:  # traditional evaluation 
+        if 't5' in model_name.lower():
+            loc_tokens = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
+        else:
+            loc_tokens = test_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True, vanilla_generation=hparams.alg_name=='GRACE')
+        if type(loc_tokens) is not list:
+            loc_tokens = [loc_tokens,]
 
     ret = {
         f"{locality_key}_output": loc_tokens
@@ -177,10 +189,14 @@ def compute_portability_quality(
     device,
 ) -> typing.Dict:
 
-    if 't5' in model_name.lower():
-        portability_correct = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, ground_truth, device)
-    else:
-        portability_correct = test_prediction_acc(model, tok, hparams, prompt, ground_truth, device, vanilla_generation=hparams.alg_name=='GRACE')
+    # using real-world evaluation: autoregressive decoding, natural stop criteria, LLM-as-a-Judge
+    if hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "LLM-judge":
+        portability_correct = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, ground_truth, device, locality=False)
+    else:  # traditional evaluation
+        if 't5' in model_name.lower():
+            portability_correct = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, ground_truth, device)
+        else:
+            portability_correct = test_prediction_acc(model, tok, hparams, prompt, ground_truth, device, vanilla_generation=hparams.alg_name=='GRACE')
 
     ret = {
         f"{portability_key}_acc": portability_correct
