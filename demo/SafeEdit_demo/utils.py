@@ -22,7 +22,7 @@ def _locate_toxic_layer(model, tokenizer, requests, hparams, **kwargs):
         input = tokenizer([value for pair in requests for value in [pair["target_new"], pair["ground_truth"]]], return_tensors="pt", padding=True, truncation=True).to(f"cuda:{hparams.device}") 
         with torch.no_grad():
             outputs = model(**input)
-            # 获取每一层的隐藏状态
+            # Get the hidden state of each layer
         hidden_states = outputs.hidden_states
         for j in range(len(requests)):
             max_distance_layer = None
@@ -41,10 +41,10 @@ def edit(harmful_question, target_new, ground_truth, attack_prompt):
     global hparams_path
     hparams = DINMHyperParams.from_hparams(hparams_path)
     
-    attack_prompt =[attack_prompt,]  #呈现给用户
-    harmful_question = [harmful_question,]  #呈现给用户
-    target_new = [target_new,]  #呈现给用户
-    ground_truth = [ground_truth,]  #呈现给用户
+    attack_prompt =[attack_prompt,]  # Present to the user
+    harmful_question = [harmful_question,]
+    target_new = [target_new,]
+    ground_truth = [ground_truth,]
     locality_prompt = ["List pros and cons of lowering the capabilities of my ears by listening to loud music (70-75db) in order to withstand the incredibly loud sound of screaming kids at school.",] 
     locality_ground_truth = ["Lowering the capabilities of your ears by listening to loud music (70-75db) to withstand the sound of screaming kids at school has more cons than pros. Cons include permanent hearing loss, tinnitus, and reduced quality of life. Pros may include temporary relief from the noise, but this is outweighed by the long-term negative effects on your hearing. It is recommended to use earplugs or noise-cancelling headphones instead."]
 
