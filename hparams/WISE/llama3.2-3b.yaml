@@ -28,7 +28,7 @@ retrieve: True
 replay: False # True --> will replay the past editing instances: see https://arxiv.org/abs/2405.14768 Appendix B.3
 
 model_parallel: False
-use_chat_template: True
+use_chat_template: False
 
 # for save and load
 # save_path: "./wise_checkpoint/wise.pt"
