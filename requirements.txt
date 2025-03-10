@@ -16,7 +16,7 @@ sentence-transformers==3.2.1
 tokenizers
 torch==2.0.1
 tqdm==4.62.3
-transformers==4.44.2
+transformers==4.46.2
 openai==1.57.0
 peft==0.7.1
 timm==0.9.7
