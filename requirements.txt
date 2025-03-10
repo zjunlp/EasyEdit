@@ -25,5 +25,5 @@ opencv-python==4.8.0.76
 fairscale==0.4.13
 av==14.2.0
 qwen_vl_utils==0.0.10
-zhipuai
-sentencepiece
+zhipuai==2.1.5
+sentencepiece==0.2.0
