@@ -72,7 +72,7 @@ editing-data
 
 **How to use MMEdit with EasyEdit**
 
-### MultimodalTrainer
+**MultimodalTrainer**
 
 - Meta-learning based: `MEND`
 - Memory-based routing: `SERAC`
@@ -163,7 +163,7 @@ The results will include the following metrics:
 - `locality_acc` $\rightarrow$ **Locality**
 - `multimodal_locality_acc` $\rightarrow$ **Locality for Multimodal**
 
-### MultimodalEditor
+**MultimodalEditor**
 
 > `MultimodalEditor` is the class for Multi-Modality Editing. You can choose the appropriate editing method (such as `IKE`) based on your specific needs.
 
@@ -444,6 +444,13 @@ print(metrics)
 ## 🎉 Acknowledgement
 
 We would like to express our sincere gratitude to the excellent work [LAVIS](https://github.com/salesforce/LAVIS/tree/main), [MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4), [LLaVA-OneVision](https://github.com/LLaVA-VL/LLaVA-NeXT), [Qwen2-VL](https://github.com/QwenLM/Qwen2.5-VL), [SERAC](https://github.com/eric-mitchell/serac) and [MEND](https://github.com/eric-mitchell/mend).
+
+
+## ✨ Related Works
+
+We appreciate the contributions of other multimodal knowledge editing related works to the advancement of this field: [ComprehendEdit](https://github.com/yaohui120/ComprehendEdit), [UniKE](https://github.com/beepkh/UniKE), [VLKEB](https://github.com/VLKEB/VLKEB).
+
+
 
 ## 📖 Citation
 
