@@ -278,26 +278,26 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT series | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral
-| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| AdaLoRA |  |  | ✅ |  | ✅ | | | |
-| SERAC | ✅ | ✅ | ✅ |  | |  | | |
-| IKE | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| KN  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ROME | | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
-| r-ROME | | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
-| MEMIT | | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
-| EMMET | | ✅ | ✅ |    |   |    |    |    |
-| GRACE| | ✅ |  ✅|  |  |  | | |
-| MELO | |✅ |  |  |  |  | | |
-| PMET | |✅ |  ✅|  |  |  | | |
-| [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) | | ✅   |  ✅|  |  |  | | |
-| [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)| |✅ |✅  |  |  |  | | ✅|
-| [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ |✅  | ✅ |  |  |✅ | |
-| Defer | | ✅ |✅  |  |  |  | | ✅ |
-| [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ |✅  |  |  |  | | |
+| **Method** | T5 | GPT series | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral | LMM
+| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
+| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
+| AdaLoRA |  |  | ✅ |  | ✅ | | | | ✅ |
+| SERAC | ✅ | ✅ | ✅ |  | |  | | | ✅ |
+| IKE | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| KN  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
+| ROME | | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ | |
+| r-ROME | | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ | |
+| MEMIT | | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ | | |
+| EMMET | | ✅ | ✅ |    |   |    |    |    | | |
+| GRACE| | ✅ |  ✅|  |  |  | | | ✅ |
+| MELO | |✅ |  |  |  |  | | | |
+| PMET | |✅ |  ✅|  |  |  | | | |
+| [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) | | ✅   |  ✅|  |  |  | | | |
+| [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)| |✅ |✅  |  |  |  | | ✅| |
+| [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ |✅  | ✅ |  |  |✅ | | ✅ |
+| Defer | | ✅ |✅  |  |  |  | | ✅ | |
+| [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ |✅  |  |  |  | | | |
 
 GPT series includes GPT-2, GPT-J, GPT-NEO
 
