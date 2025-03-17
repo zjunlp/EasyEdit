@@ -277,8 +277,8 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   > Note 2: Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved.
 #### Current Implementation
 
-You can choose different editing methods according to your specific needs. GPT series includes GPT-2, GPT-J and GPT-NEO. LMM includes MiniGPT-4, BLIP-2, LLaVA-OneVision and Qwen2-VL (Please refer to [MultimodalEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/MultimodalEdit.md) for more details).
-| **Method** | T5 | GPT series | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral | LMM
+You can choose different editing methods according to your specific needs. GPT series includes GPT-2, GPT-J and GPT-NEO. LMMs (Large Multimodal Models) includes MiniGPT-4, BLIP-2, LLaVA-OneVision and Qwen2-VL (Please refer to [MultimodalEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/MultimodalEdit.md) for more details).
+| **Method** | T5 | GPT series | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral | LMMs
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
 | FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
 | AdaLoRA |  |  | ✅ |  | ✅ | | | | ✅ |
