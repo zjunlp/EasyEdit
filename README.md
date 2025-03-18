@@ -299,7 +299,9 @@ You can choose different editing methods according to your specific needs. GPT s
 | Defer | | ✅ |✅  |  |  |  | | ✅ |
 | [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ |✅  |  |  |  | | |
 
-We also support some knowledge editing methods for LMMs (Large Multimodal Models). Please refer to [MultimodalEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/MultimodalEdit.md) for more details.
+> ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
+
+We also support some knowledge editing methods for LMMs (Large Multimodal Models). Please refer to [MultimodalEdit.md](https://github.com/zjunlp/EasyEdit/blob/main/examples/MultimodalEdit.md) for more details.
 | **Method** | MiniGPT-4 | BLIP-2 | LLaVA-OneVision | Qwen2-VL |
 | :-------: | :-------: | :-------: | :-------: | :-------: |
 | MEND | ✅ | ✅ |  |  |
@@ -314,7 +316,7 @@ We also support some knowledge editing methods for LMMs (Large Multimodal Models
 | :--------: | :--------: | :--------: | 
 | [FT-Api](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates) | [gpt-3.5-turbo(ChatGPT)](https://github.com/zjunlp/EasyEdit/blob/main/hparams/FT-Api/gpt-3.5-turbo.yaml) | official fine-tuing Api for gpt-3.5-turbo | -->
 
-> ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
+
 
 #### Quick Start on Some Works
 
