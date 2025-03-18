@@ -277,34 +277,46 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   > Note 2: Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved.
 #### Current Implementation
 
-You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral
-| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| AdaLoRA |  |  |  |  | ✅ |  | ✅ | | | |
-| SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | | |
-| IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
-| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| KN  | ✅ | ✅ | ✅ |    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
-| r-ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
-| MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
-| EMMET | | ✅ | ✅ |    | ✅ |    |   |    |    |    |
-| GRACE| | ✅| ✅ |  |  ✅|  |  |  | | |
-| MELO | |✅ |  |  |  |  |  |  | | |
-| PMET | | | ✅ |  |  ✅|  |  |  | | |
-| [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) | | ✅ |  |  |  ✅|  |  |  | | |
-| [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)| |✅ |  |  |✅  |  |  |  | | ✅|
-| [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ | ✅ |  |✅  | ✅ |  |  |✅ | |
-| Defer | | | ✅ |  |✅  |  |  |  | | ✅ |
-| [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ | ✅ |  |✅  |  |  |  | | |
+You can choose different editing methods according to your specific needs. GPT series includes GPT-2, GPT-J and GPT-NEO.
+| **Method** | T5 | GPT series | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral
+| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
+| FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| AdaLoRA |  |  | ✅ |  | ✅ | | | |
+| SERAC | ✅ | ✅ | ✅ |  | |  | | |
+| IKE | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
+| MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| KN  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ROME | | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
+| r-ROME | | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
+| MEMIT | | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ | |
+| EMMET | | ✅ | ✅ |    |   |    |    |    | |
+| GRACE| | ✅ |  ✅|  |  |  | | |
+| MELO | |✅ |  |  |  |  | | |
+| PMET | |✅ |  ✅|  |  |  | | |
+| [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) | | ✅   |  ✅|  |  |  | | |
+| [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)| |✅ |✅  |  |  |  | | ✅|
+| [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ |✅  | ✅ |  |  |✅ | |
+| Defer | | ✅ |✅  |  |  |  | | ✅ |
+| [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ |✅  |  |  |  | | |
+
+> ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
+
+We also support some knowledge editing methods for LMMs (Large Multimodal Models). Please refer to [MultimodalEdit.md](https://github.com/zjunlp/EasyEdit/blob/main/examples/MultimodalEdit.md) for more details.
+| **Method** | MiniGPT-4 | BLIP-2 | LLaVA-OneVision | Qwen2-VL |
+| :-------: | :-------: | :-------: | :-------: | :-------: |
+| MEND | ✅ | ✅ |  |  |
+| SERAC | ✅ | ✅ |  |  |
+| IKE |  |  | ✅ | ✅ |
+| LoRA |  |  | ✅ | ✅ |
+| GRACE |  |  | ✅ | ✅ |
+| WISE |  |  | ✅ | ✅ |
 
 
 <!-- | **Method** | Model Name | Description |
 | :--------: | :--------: | :--------: | 
 | [FT-Api](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates) | [gpt-3.5-turbo(ChatGPT)](https://github.com/zjunlp/EasyEdit/blob/main/hparams/FT-Api/gpt-3.5-turbo.yaml) | official fine-tuing Api for gpt-3.5-turbo | -->
 
-> ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
+
 
 #### Quick Start on Some Works
 
