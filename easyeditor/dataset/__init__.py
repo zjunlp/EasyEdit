@@ -10,3 +10,4 @@ from .personality import PersonalityDataset
 from .safety import SafetyDataset
 from .Cknowedit import CKnowEditDataset
 from .MQuAKE import MQuAKEDataset
+from .wikibigedit import WikiBigEditDataset
