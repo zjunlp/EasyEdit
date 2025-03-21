@@ -197,6 +197,8 @@ if __name__ == "__main__":
             }
         }
     hparams = editing_hparams.from_hparams(args.hparams_dir)
+    # specify real-world evaluation and provide the api key for LLM-as-a-Judge
+    hparams.evaluation_type = args.evaluation_type
     hparams.api_key = args.api_key
     if args.editing_method == 'IKE':
         train_ds = KnowEditDataset(args.train_data_path)
