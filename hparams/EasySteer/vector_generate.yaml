@@ -12,8 +12,8 @@ system_prompt: ''  # Adds a system prompt to all method inputs, except for `vect
 # Generate Vector 
 # The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
 steer_train_hparam_paths:
-#  - hparams/caa_hparams/generate_caa.yaml
- - hparams/sae_feature_hparams/generate_sae_feature.yaml
+ - hparams/caa_hparams/generate_caa.yaml
+ # - hparams/lm_steer_hparams/generate_lm_steer.yaml
 steer_train_dataset: 
  - toxicity
 steer_vector_output_dir: 
