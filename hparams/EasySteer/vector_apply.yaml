@@ -29,20 +29,3 @@ generation_params:
   do_sample: true
   temperature: 0.9
   top_p: 1.0
-
-
-
-
-
-
-
-hydra:
-  run:
-    dir: .
-  output_subdir: null
-  job_logging: 
-    file: null
-
-
-
-  
