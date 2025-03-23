@@ -1005,6 +1005,86 @@ Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and mee
 
 </details>
 
+# 🎊How to contribute to EasyEdit
+
+## New Method
+
+In **EasyEdit**, we uniformly use the `apply_algo` member function to call specific editing methods. You need to submit a pull request (PR) with the required files to EasyEdit according to the following steps ( The following uses **YourMethod** as the method name as an example ):
+
+### (1) YourMethod_main.py
+
+In this file, there must be a function named `apply_YourMethod_to_model` to serve as the interface function for the main program to call the editing method, and its parameter list should also follow the example below:
+
+```
+def apply_YourMethod_to_model(
+    model: AutoModelForCausalLM,
+    tok: AutoTokenizer,
+    requests: List[Dict],
+    hparams: AlphaEditHyperParams,
+    copy=False,
+    return_orig_weights=False,
+    cache_template: Optional[str] = None,
+    keep_original_weight=False,
+    **kwargs
+) -> Dict[str, Tuple[torch.Tensor]]:
+
+# Here is the specific implementation of the method.
+```
+
+After completing the implementation of the editing process, you need to return the following at the end of the `apply_YourMethod_to_model` function:
+
+```
+return model, weights_copy
+```
+
+Here, `model` is the **edited model**, and `weights_copy` is the **original weights** corresponding to the modified parameter regions (used to restore the model's weights).
+
+### (2) YourMethod_hparams.py
+
+Define a class to describe the hyperparameters required for the implementation of your method：
+
+```
+class YourMethodHyperParams(HyperParams):
+```
+
+### ✨Additional Explanation
+
+> You can add any necessary `.py` files for the implementation of your method.  
+
+> Additionally, you will need an `__init__.py` file.  
+
+> Finally, package all your `.py` files into a folder and submit a pull request (PR) to the `EasyEdit/easyeditor/models` directory.
+
+## New Dataset
+
+The `Field` settings of the dataset are closely related to the evaluation metrics. Currently, **EasyEdit** supports the evaluation metrics of **Reliability**, **Generalization**, **Portability**, and **Locality**. Therefore, you need to reorganize and rename the fields of your dataset to adapt to the current **EasyEdit**.
+
+### YourDataset.py
+
+This file is generally responsible for importing the dataset and making preliminary adjustments to the data `Fields`:
+
+```
+{
+    "subject":record["subject"],
+    "prompt": record["edit_prompt"],   
+    "target_new": record["edit_target"],  
+    "ground_truth": record["ground_truth"],
+    "rephrase": record['rephrase'],
+    "portability_type1": record["portability_type1"],
+    "portability_type2": record["portability_type2"],
+    ...
+    "locality": record["loc"] if "loc" in record else None,
+}
+```
+
+### ✨Additional Explanation
+
+> Add a startup file under the `EasyEdit/examples` folder to further reorganize the fields. You can follow the process in the `examples/run_knowedit_llama2.py` file. 
+
+> Add your dataset class in the `__init__.py` file under the `EasyEdit/dataset` folder.
+
+> Finally submit a pull request (PR).
+
 ## Citation
 
 Please cite our paper if you use EasyEdit in your work.
