@@ -39,14 +39,3 @@ generation_params:
   max_new_tokens: 25   
   temperature: 0.9     
   do_sample: true  
-
-hydra:
-  run:
-    dir: .
-  output_subdir: null
-  job_logging: 
-    file: null
-
-
-
-  
