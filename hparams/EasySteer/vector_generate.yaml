@@ -18,16 +18,3 @@ steer_train_dataset:
  - toxicity
 steer_vector_output_dir: 
  - vectors/DeepSeek-R1-Distill-Llama-8B
-
-
-
-hydra:
-  run:
-    dir: .
-  output_subdir: null
-  job_logging: 
-    file: null
-
-
-
-  
