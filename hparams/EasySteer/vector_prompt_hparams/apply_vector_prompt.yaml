@@ -1,0 +1,5 @@
+# Model related
+alg_name: vector_prompt
+layers: [0]
+multipliers: [1.0]
+

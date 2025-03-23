@@ -1,0 +1,93 @@
+# ================train datasets===========================
+train:
+  safe_edit:       
+    file_path: ../data/safe_edit/test_200.csv
+    field_names:
+      question: 'question'
+      matching: 'matching'
+      not_matching: 'not_matching'
+
+  toxicity:
+    file_path: ../toxicity/toxicity.jsonl
+    field_names:
+      matching: 'matching'
+      not_matching: 'not_matching'
+
+  prompt_vector:      #TBD, we can provide a sample dataset
+    file_path: tmp.json
+    field_names:
+      prompt: 'prompt'
+      input: 'user_input'
+      output: 'output'
+
+  # Support datasets: sentiment-sst2, sentiment-yelp, sentiment-sst5, sentiment-sst5-positive, sentiment-sst5-negative
+  sentiment:
+    file_path: data/sentiment/sst5.csv
+    field_names:
+      text: 'text'
+      label: 'label'
+
+  sst2:
+    file_path: /mnt/20t/wsx/steer_experiment_data/sentiment/sst2_train_1000.json
+    field_names:
+      matching: 'matching'
+      not_matching: 'not_matching'
+
+
+# ================generation datasets===========================
+generation:
+  toxigen:
+    file_path: data/toxigen/test.csv
+    field_names:
+      input: 'question'
+      reference_response: 'label'
+
+  sentiment:
+    file_path: data/sentiment/negative_prompts_clean.jsonl
+    field_names:
+      input: 'prompt'
+      reference_response: 'continuation'
+
+  nontoxic:    #detoxification prompts
+    file_path: data/nontoxic/nontoxic_clean.jsonl
+    field_names:
+      input: "prompt"
+      reference_response: "continuation"
+
+  safe_edit:
+    file_path: data/safe_edit/test.csv
+    field_names:
+      input: "question"
+      reference_response: "matching"
+
+  gsm:
+    hf_path: null
+    file_path: data/gsm/test.jsonl
+    field_names:
+      input: 'question'
+      reference_response: 'answer'
+    n_shots: 2
+
+  mmlu:
+    file_path: data/mmlu
+    field_names:
+      input: 'question'
+      choices: 'choices'
+      reference_response: 'answer'
+
+  realtoxicityprompts:
+    file_path: data/realtoxicityprompts/challenge_prompts.jsonl
+    field_names:
+      input: 'prompt'
+
+  neutral:
+    file_path: /mnt/20t/wsx/steer_experiment_data/sentiment/neutral_prompts_test.jsonl
+    field_names:
+      input: 'prompt'
+      reference_response: 'continuation'
+
+  negative:
+    file_path: /mnt/20t/wsx/steer_experiment_data/sentiment/negative_prompts_test.jsonl
+    field_names:
+      input: 'prompt'
+      reference_response: 'continuation'
