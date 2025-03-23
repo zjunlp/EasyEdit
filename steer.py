@@ -4,7 +4,7 @@ from easysteer.datasets import prepare_train_datasets, prepare_generation_datase
 import hydra
 from omegaconf import DictConfig
 
-@hydra.main(config_path='./hparams/experiment', config_name='ex_config.yaml')
+@hydra.main(config_path='./hparams/EasySteer', config_name='config.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg, "\n")
     
