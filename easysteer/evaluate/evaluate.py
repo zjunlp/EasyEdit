@@ -118,6 +118,10 @@ class Evaluator:
                 llm_judge_results = self._llm_evaluate(concept,results)
                 eval_results.update(llm_judge_results)
 
+            elif 'fluency' in method.lower():
+                fluency = np.mean(self._n_gram_entropy( [ text for item in results  for text in item['pred'] ] ))
+                eval_results['fluency'] = fluency
+
         return eval_results
 
     def save_all_results(self, results: Dict, output_file: str):
@@ -415,7 +419,7 @@ class Evaluator:
 
         last_request_time = -1
         
-        generations_df = [{'generations':[{'text':item["pred"].strip()}]} for item in results]
+        generations_df = [{'generations':[{'text':item["pred"][0].strip()}]} for item in results]
 
         for i, row in tqdm(generations_df.iterrows(), total=len(generations_df.index), desc='Evaluating toxicity via perspective API'):
             # prompt = row.prompt['text']
