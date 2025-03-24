@@ -7,7 +7,7 @@ import random
 import torch
 import numpy as np
 
-seed=0
+seed=42
 random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
