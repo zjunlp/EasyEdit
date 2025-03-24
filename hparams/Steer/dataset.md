@@ -2,7 +2,7 @@
 
 The `dataset_format.yaml` file contains all available datasets. You can customize datasets by modifying this YAML file.
 
-EasySteer supports five dataset formats, including three training formats and two testing formats:
+EasyEdit2 supports five dataset formats, including three training formats and two testing formats:
 
 ## 1. Contrastive Pairs Format 
 - `question`: Question description (Optional)

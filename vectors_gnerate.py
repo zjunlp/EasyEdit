@@ -1,9 +1,9 @@
 import hydra
 from omegaconf import OmegaConf, DictConfig
-from easysteer.vector_generators.vector_generators import BaseVectorGenerator
-from easysteer.datasets import prepare_train_datasets
+from steer.vector_generators.vector_generators import BaseVectorGenerator
+from steer.datasets import prepare_train_datasets
 
-@hydra.main(config_path='./hparams/EasySteer', config_name='vector_generate.yaml')
+@hydra.main(config_path='./hparams/Steer', config_name='vector_generate.yaml')
 def main(top_cfg: DictConfig):
     # top_cfg = OmegaConf.load(cfg_path)
     print("Global Config:", top_cfg, "\n")

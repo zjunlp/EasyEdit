@@ -2,15 +2,15 @@ import copy
 import torch as t
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from easysteer.utils.alg_dict import DTYPES_DICT
-from easysteer.vector_appliers.lm_steer.apply_lm_steer_hparam import ApplyLmSteerHyperParams
-from easysteer.models.utils import add_vector_from_position # find_instruction_end_postion
+from steer.utils.alg_dict import DTYPES_DICT
+from steer.vector_appliers.lm_steer.apply_lm_steer_hparam import ApplyLmSteerHyperParams
+from steer.models.utils import add_vector_from_position # find_instruction_end_postion
 from typing import Optional
 
 
-from easysteer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyperParams
-from easysteer.utils.hparams import HyperParams
-from easysteer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
+from steer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyperParams
+from steer.utils.hparams import HyperParams
+from steer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
 
 
 class AttnWrapper(t.nn.Module):

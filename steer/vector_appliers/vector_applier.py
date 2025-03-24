@@ -52,7 +52,7 @@ class BaseVectorApplier:
             base_prompt = self.model.prompt
             input_text = f"{base_prompt} {input_text}"
             
-        from easysteer.utils.templates import build_model_input
+        from steer.utils.templates import build_model_input
         input_text = build_model_input(input_text, self.tokenizer, self.config.system_prompt, self.config.use_chat_template)
             
         return input_text

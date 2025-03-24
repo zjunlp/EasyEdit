@@ -2,8 +2,8 @@
 import sys
 import os
 
-from easysteer.utils.hparams import HyperParams
-from easysteer.utils.alg_dict import HYPERPARAMS_CLASS_DICT
+from steer.utils.hparams import HyperParams
+from steer.utils.alg_dict import HYPERPARAMS_CLASS_DICT
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 common_config = {

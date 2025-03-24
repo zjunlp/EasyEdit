@@ -1,11 +1,11 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from easysteer.models import get_model
-from easysteer.vector_generators.sae_feature.sae_utils import load_sae_from_dir, load_gemma_2_sae
-from easysteer.vector_generators.sae_feature.generate_sae_feature_vectors import get_sae_config
+from steer.models import get_model
+from steer.vector_generators.sae_feature.sae_utils import load_sae_from_dir, load_gemma_2_sae
+from steer.vector_generators.sae_feature.generate_sae_feature_vectors import get_sae_config
 from demo_hparams import get_train_hparams, get_apply_hparams, common_config, sae_config
-from easysteer.utils import METHODS_CLASS_DICT, set_seed, DTYPES_DICT,HyperParams, build_model_input
+from steer.utils import METHODS_CLASS_DICT, set_seed, DTYPES_DICT,HyperParams, build_model_input
 import torch
 import gradio as gr
 import uuid

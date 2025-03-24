@@ -1,7 +1,7 @@
 import hydra
 from omegaconf import DictConfig
-from easysteer.vector_appliers.vector_applier import BaseVectorApplier
-from easysteer.datasets import prepare_generation_datasets
+from steer.vector_appliers.vector_applier import BaseVectorApplier
+from steer.datasets import prepare_generation_datasets
 
 def get_generation_params():
     # Model generation parameters - must match Hugging Face parameter names
@@ -10,7 +10,7 @@ def get_generation_params():
         'temperature': 0.9
     }
 
-@hydra.main(config_path='./hparams/EasySteer', config_name='vector_apply.yaml')
+@hydra.main(config_path='./hparams/Steer', config_name='vector_apply.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg)
     vector_applier = BaseVectorApplier(top_cfg)

@@ -955,7 +955,7 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm")) as demo:
         gr.HTML(
                 """
                 <div style="display: flex; flex-direction: column; align-items: center;">
-                    <h1>🔧EasySteer: An Easy-to-use Model Steering Framework for Large Language Models</h1>
+                    <h1>🔧EasyEdit2: An Easy-to-use Steering Framework for Editing Large Language Models</h1>
 
                     <p>
                     📑[<a href="https://huggingface.co/papers/2308.07269">Paper</a>]

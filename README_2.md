@@ -1,7 +1,7 @@
 
 <div align="center">
   
-# EasySteer
+# EasyEdit2
 
 **A Simple Framework for Language Model Steering**
 
@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="#requirements">Installation</a> •
-  <a href="#use-easysteer">Quick Start</a> •
+  <a href="#use-easyedit2">Quick Start</a> •
   <a href="#data-preparation">Dataset</a> •
   <a href="#evaluation">Evaluation</a>
 </p>
@@ -24,7 +24,7 @@
 
 - [🌟 Overview](#-overview)
 - [Requirements](#requirements)
-- [📌Use EasySteer](#use-easysteer)
+- [📌Use EasyEdit2](#use-easyedit2)
   - [Vector Generator](#vector-generator)
   - [Vector Applier](#vector-applier)
 - [Data Preparation](#data-preparation)
@@ -37,7 +37,7 @@
 
 ## 🌟 Overview
 
-EasySteer is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility.
+EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility.
 
 ### Key Features:
 
@@ -51,9 +51,9 @@ EasySteer is a Python package for language model steering. It provides a unified
 ## Requirements
 
 ```bash
-git clone https://github.com/xzwyyd/EasySteer.git
-conda create -n easysteer python=3.10
-conda activate easysteer
+git clone https://github.com/xzwyyd/EasyEdit2.git
+conda create -n easyedit2 python=3.10
+conda activate easyedit2
 pip install -r requirements.txt
 
 # For safety evaluation, install nltk data
@@ -62,11 +62,11 @@ python -c "import nltk; nltk.download('punkt')"
 
 
 
-## 📌Use EasySteer
+## 📌Use EasyEdit2
 
 You can use `steer.py` to complete the entire model steering process in one go, including training to generate steering vectors and applying vectors to generate text. Alternatively, you can perform these steps separately - we recommend the latter approach.
 
-EasySteer is organized into two main components:
+EasyEdit2 is organized into two main components:
 
 ### Vector Generator
 
@@ -74,7 +74,7 @@ The Vector Generator creates steering vectors using various methods. You can cho
 
 ### Introduction by a Simple Example
 
-With the modularity and flexibility of `EasySteer`, you can easily steer language models by following these steps:
+With the modularity and flexibility of `EasyEdit2`, you can easily steer language models by following these steps:
 
 #### Step 1:  Choose the Steering Method
 
@@ -90,7 +90,7 @@ multiple_choice: false
 
 Fill in the top-level configuration file (`hparams/vector_generate.yaml`) with the following details:
 - Choose the pre-trained language model (PLM) to be steered
-- EasySteer currently supports models from **LLaMA**, **Gemma**, **Qwen**, and **GPT** series
+- EasyEdit2 currently supports models from **LLaMA**, **Gemma**, **Qwen**, and **GPT** series
 
 After specifying general parameters, configure the vector generation settings below `Generate Vector `
 
@@ -133,7 +133,7 @@ datasets = {
 
 #### Step 4: Pass the Configuration to Base Vector Generator and Start Training
 
-`EasySteer` provides a simple and unified way to initialize the steering process:
+`EasyEdit2` provides a simple and unified way to initialize the steering process:
 
 ```python
 vector_generator = BaseVectorGenerator(top_cfg)
@@ -214,7 +214,7 @@ vector_applier.generate(datasets)
 
 ### All in One
 
-You can also steer the model in one go,  just fill out `hparams/config.yaml` and run `steer.py`. The steps are the same as above.  EasySteer allows you to change config values by passing `+key=value` arguments
+You can also steer the model in one go,  just fill out `hparams/config.yaml` and run `steer.py`. The steps are the same as above.  EasyEdit2 allows you to change config values by passing `+key=value` arguments
 
 ```bash
 python steer.py +model_name_or_path=your_own_model_path
@@ -224,7 +224,7 @@ python steer.py +model_name_or_path=your_own_model_path
 
 ## Data Preparation （To be updated）
 
-EasySteer provides several training and testing datasets, and supports custom datasets. The following datasets are currently supported:
+EasyEdit2 provides several training and testing datasets, and supports custom datasets. The following datasets are currently supported:
 
 - **sentiment**: A dataset for sentiment analysis, used to train models for sentiment-oriented generation
 - **nontoxic**: A collection of non-toxic text data for training models to generate safe and harmless content
@@ -237,7 +237,7 @@ For more details, please refer to the [hparams/dataset.md](hparams/dataset.md).
 
 ## Available Vectors
 
-EasySteer provides the following pre-trained steering vectors:
+EasyEdit2 provides the following pre-trained steering vectors:
 
 - 
 
@@ -247,7 +247,7 @@ All vectors are available in the `vectors/` directory.
 
 ## Evaluation
 
-EasySteer provides comprehensive evaluation metrics:
+EasyEdit2 provides comprehensive evaluation metrics:
 
 - **PPL (Perplexity)**: Evaluates text fluency
 - **Distinctness**: Measures text diversity (dist-1, dist-2, dist-3)
@@ -270,7 +270,7 @@ EasySteer provides comprehensive evaluation metrics:
 To evaluate the generated results, use the `evaluate.py` script.
 
 ```bash
-python easysteer/evaluate/evaluate.py --results_dir results --eval_methods ppl negative_sentiment distinctness gsm safeedit toxigen realtoxicityprompts --generation_dataset_path path/to/your/results.json --model_name_or_path your_model_name_or_path
+python easyedit2/evaluate/evaluate.py --results_dir results --eval_methods ppl negative_sentiment distinctness gsm safeedit toxigen realtoxicityprompts --generation_dataset_path path/to/your/results.json --model_name_or_path your_model_name_or_path
 ```
 
 **Arguments:**
@@ -284,7 +284,7 @@ python easysteer/evaluate/evaluate.py --results_dir results --eval_methods ppl n
 **Example:**
 
 ```bash
-python easysteer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
+python easyedit2/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
 
 
