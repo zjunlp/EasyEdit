@@ -52,7 +52,7 @@ def steer(steer_alg, prompt, pos_answer, neg_answer, steer_layer, steer_strength
         steer_model = METHODS_CLASS_DICT[steer_alg]['apply'](apply_hparams,pipline=steer_model,vector=vector)
         
         progress(1.0, desc="Completed!")
-        return "Model steering completed!"
+        return "The model is now expertly steered! 🚀 Submit your input and put it to the test!"
     except Exception as e:
         error_msg = f"Error: {str(e)}"
         progress(1.0, desc=error_msg)
@@ -104,7 +104,7 @@ def prompt_steer(steer_alg, prompt, input='', output='', steer_layer=0, steer_st
             steer_model = METHODS_CLASS_DICT[alg_name]['apply'](apply_hparams,pipline=steer_model,vector=vector)
             progress(1.0, desc="Completed!")
 
-        responese["status"]= "Model steering completed!"
+        responese["status"]= "The model is now expertly steered! 🚀 Submit your input and put it to the test!"
         return responese
     
     except Exception as e:
@@ -243,7 +243,7 @@ def lm_steer(steer_vector, steer_strength, progress=gr.Progress()):
         steer_model = METHODS_CLASS_DICT["lm_steer"]["apply"](apply_hparams, pipline=steer_model)
         
         progress(1.0, desc="Completed!")
-        return "Model steering completed!"
+        return "The model is now expertly steered! 🚀 Submit your input and put it to the test!"
     except Exception as e:
         error_msg = f"Error: {str(e)}"
         progress(1.0, desc=error_msg)
