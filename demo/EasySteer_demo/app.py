@@ -7,7 +7,7 @@ import random
 import torch
 import numpy as np
 
-seed=0
+seed=42
 random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
@@ -30,7 +30,7 @@ def slowly_reverse(word, progress=gr.Progress()):
         new_string = letter + new_string
     return new_string
 
-def sample_driven_steer_tab():
+def activation_steer_tab():
     with gr.Row():
         steer_alg = gr.Radio(
             choices=["CAA", "LM_Steer", "STA"],
@@ -398,7 +398,7 @@ def sample_driven_steer_tab():
 
 
 
-def prompt_vector_steer_tab():
+def prompt_based_steer_tab():
 
     with gr.Blocks(css=css) as steer:
         with gr.Row(elem_classes="fixed-header"):
@@ -651,7 +651,7 @@ def prompt_vector_steer_tab():
     )
 
 
-def sae_feature_steer_tab():
+def sae_based_steer_tab():
     session_id = gr.State(create_session)  # Use imported create_session
     features_state = gr.State(value=[])
     search_results_state = gr.State(value=[])
@@ -972,20 +972,20 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm")) as demo:
     with gr.Accordion("Explanation", open=False):
         gr.Markdown(
             """
-            - `Steer Algorithm`: steering method. Choices: [[CAA](https://arxiv.org/abs/2312.06681), [LM_Steer](https://arxiv.org/abs/2305.12798), SAE]
+            - `Steer Algorithm`: steering method. Choices: [[CAA](https://arxiv.org/abs/2312.06681), [LM_Steer](https://arxiv.org/abs/2305.12798), STA, Prompt-Based, SAE]
             - `Strength Multiple`: steering strength. The positive value increases the feature, and the negative value decreases the feature.
             - `Layer`: steering layer. 
             """
         )
 
-    with gr.Tab("Sample-Driven Steering"):
-        sample_driven_steer_tab()
+    with gr.Tab("Activation-Based Steering"):
+        activation_steer_tab()
 
-    with gr.Tab("Prompt Vs Prompt to Vector Steering"):
-        prompt_vector_steer_tab()
+    with gr.Tab("Prompt-Based Steering"):
+        prompt_based_steer_tab()
 
-    with gr.Tab("SAE-Feature Steering"):
-        sae_feature_steer_tab()
+    with gr.Tab("SAE-Based Steering"):
+        sae_based_steer_tab()
 
     with gr.Accordion("Citation", open=False):
         gr.Markdown(
