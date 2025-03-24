@@ -7,7 +7,7 @@ import random
 import torch
 import numpy as np
 
-seed=42
+seed=0
 random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
@@ -30,7 +30,7 @@ def slowly_reverse(word, progress=gr.Progress()):
         new_string = letter + new_string
     return new_string
 
-def activation_steer_tab():
+def sample_driven_steer_tab():
     with gr.Row():
         steer_alg = gr.Radio(
             choices=["CAA", "LM_Steer", "STA"],
@@ -48,7 +48,7 @@ def activation_steer_tab():
                 neg_answer = gr.Textbox(label="Negative Answer")
             with gr.Row():
                 steer_layer = gr.Slider(0, 41, value=24, step=1, label='Steer Layer')
-                steer_strength = gr.Slider(-3, 3, value=-1, step=0.5, label='Steer Strength')
+                steer_strength = gr.Slider(-3, 3, value=1, step=0.5, label='Steer Strength')
             with gr.Row():
                 examples = gr.Examples(
                     examples=[
@@ -149,7 +149,7 @@ def activation_steer_tab():
         
         with gr.Row():
             caa_button4clear = gr.Button("Clear")
-            caa_button4generate_gen = gr.Button("Generate Generalization", variant="primary")
+            caa_button4generate_gen = gr.Button("Generate", variant="primary")
     
     # LM_Steer evaluation
     with gr.Column(visible=False) as lm_steer_eval_column:
@@ -184,7 +184,7 @@ def activation_steer_tab():
         
         with gr.Row():
             lm_steer_button4clear = gr.Button("Clear")
-            lm_steer_button4generate_gen = gr.Button("Generate Generalization", variant="primary")
+            lm_steer_button4generate_gen = gr.Button("Generate", variant="primary")
 
     # STA evaluation
     with gr.Column(visible=False) as sta_eval_column:
@@ -218,7 +218,7 @@ def activation_steer_tab():
             )
         with gr.Row():
             sta_button4clear = gr.Button("Clear")
-            sta_button4generate_gen = gr.Button("Generate Generalization", variant="primary")
+            sta_button4generate_gen = gr.Button("Generate", variant="primary")
 
     validation_state = gr.State(True)
 
@@ -398,7 +398,7 @@ def activation_steer_tab():
 
 
 
-def prompt_based_steer_tab():
+def prompt_vector_steer_tab():
 
     with gr.Blocks(css=css) as steer:
         with gr.Row(elem_classes="fixed-header"):
@@ -584,7 +584,7 @@ def prompt_based_steer_tab():
                 )  
                 with gr.Row():
                     button4clear_rel = gr.Button("Clear")
-                    button4gen_rel = gr.Button("Generate Reliability",variant="primary")
+                    button4gen_rel = gr.Button("Generate",variant="primary")
                 button4gen_ori=gr.HighlightedText(
                         label="original output",
                         combine_adjacent=True,
@@ -651,7 +651,7 @@ def prompt_based_steer_tab():
     )
 
 
-def sae_based_steer_tab():
+def sae_feature_steer_tab():
     session_id = gr.State(create_session)  # Use imported create_session
     features_state = gr.State(value=[])
     search_results_state = gr.State(value=[])
@@ -793,7 +793,7 @@ def sae_based_steer_tab():
                 steered_chatbot = gr.Chatbot(height=400, label="STEERED", type="messages", min_height=550, placeholder="# Hello! I'm the <mark>steered</mark> chatbot.")
             msg = gr.Textbox(placeholder="Ask or say something...", label="Input")
             with gr.Row():
-                submit_btn = gr.Button("Submit", variant="primary")
+                submit_btn = gr.Button("Generate", variant="primary")
                 reset_chat_btn = gr.Button("Reset", variant="huggingface")
     
     def switch_view(choice):
@@ -972,20 +972,20 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm")) as demo:
     with gr.Accordion("Explanation", open=False):
         gr.Markdown(
             """
-            - `Steer Algorithm`: steering method. Choices: [[CAA](https://arxiv.org/abs/2312.06681), [LM_Steer](https://arxiv.org/abs/2305.12798), [STA]()]
-            - `Strength Multiple`: 
-            - `Layer`: 
+            - `Steer Algorithm`: steering method. Choices: [[CAA](https://arxiv.org/abs/2312.06681), [LM_Steer](https://arxiv.org/abs/2305.12798), SAE]
+            - `Strength Multiple`: steering strength. The positive value increases the feature, and the negative value decreases the feature.
+            - `Layer`: steering layer. 
             """
         )
 
-    with gr.Tab("Activation-Based Steering"):
-        activation_steer_tab()
+    with gr.Tab("Sample-Driven Steering"):
+        sample_driven_steer_tab()
 
-    with gr.Tab("Prompt-Based Steering"):
-        prompt_based_steer_tab()
+    with gr.Tab("Prompt Vs Prompt to Vector Steering"):
+        prompt_vector_steer_tab()
 
-    with gr.Tab("SAE-Based Steering"):
-        sae_based_steer_tab()
+    with gr.Tab("SAE-Feature Steering"):
+        sae_feature_steer_tab()
 
     with gr.Accordion("Citation", open=False):
         gr.Markdown(
