@@ -305,7 +305,7 @@ EasyEdit2 provides comprehensive evaluation metrics:
 To evaluate the generated results, use the `evaluate.py` script.
 
 ```bash
-python easyedit2/evaluate/evaluate.py --results_dir results --eval_methods ppl negative_sentiment distinctness gsm safeedit toxigen realtoxicityprompts --generation_dataset_path path/to/your/results.json --model_name_or_path your_model_name_or_path
+python steer/evaluate/evaluate.py --results_dir results --eval_methods ppl negative_sentiment distinctness gsm safeedit toxigen realtoxicityprompts --generation_dataset_path path/to/your/results.json --model_name_or_path your_model_name_or_path
 ```
 
 **Arguments:**
@@ -319,7 +319,7 @@ python easyedit2/evaluate/evaluate.py --results_dir results --eval_methods ppl n
 **Example:**
 
 ```bash
-python easyedit2/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
+python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
 
 
