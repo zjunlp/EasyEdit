@@ -1,7 +1,6 @@
 
 <div align="center">
-  
-# EasyEdit2
+<img src="figs/logo_2.png" width="180px">
 
 **A Simple Framework for Language Model Steering**
 
@@ -36,17 +35,53 @@
 
 
 ## 🌟 Overview
+<!-- EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility. -->
+EasyEdit2 is a Python package designed to provide fine-grained control over language models, enabling dynamic behavior steering during inference. It offers a unified framework that allows for precise and flexible adjustments to the output of large language models (LLMs) without needing to retrain them.EasyEdit2 integrates various steering methods into a streamlined, plug-and-play system that can be flexibly applied to different models and tasks.
 
-EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility.
-
-### Key Features:
+### :bulb: Key Features:
 
 - Multiple steering methods with support for combinations
 - Pre-trained steering vectors ready for direct appliance
 - Easy to use and extend
 - Comprehensive evaluation metrics
 
+### :books: Applications:
+- **Safety**: Steering enables the adjustment of the model’s behavior, allowing for more cautious or unrestricted outputs, and providing flexibility in controlling the model’s responses.
+  
+- **Sentiment**:Steering can modify the emotional tone of the model’s responses, allowing it to shift between positive, neutral, or other emotional states, depending on the desired outcome.
+  
+- **Personality**:Steering allows the model to exhibit various personality traits, including aspects of consciousness.
+  
+- **Reasoning Pattern**: Steering allows modifications to the model's reasoning process, offering flexibility in guiding it along different logical paths, such as transitioning from detailed explanations to concise answers.
+  
+- **Factuality**: Steering helps ensure the accuracy and reliability of the model's responses, allowing adjustments to maintain factual consistency or introduce deliberate variations based on the context or user intent.
+  
+- **Linguistic Feature**: Steering allows modifications to the model's linguistic style, such as switching from English to Chinese, or adapting to different languages and writing styles.
 
+
+## :wrench: Implements Methods
+### :wave: Activation-based Methods
+- **Contrastive Activation Addition(CAA)**
+  CAA steers language models by generating steering vectors, which compute activation differences between positive and negative example pairs.
+- **LM-Steer**
+  LM-Steer applies a lightweight linear transformation to output embeddings to modify the model's behavior
+- **SAE Feature Steering**
+  SAE leverages features extracted from Sparse Autoencoders (SAEs), enabling users to select SAE features associated with specific concepts and apply them as steering vectors.
+- **Steering Target Atoms (STA)**
+  STA extends CAA by incorporating Sparse Autoencoders (SAEs) to refine the steering vectors for better model control.
+- **Vector Prompt**
+  Vector Prompt extends prompt-based steering by transforming prompts into steering vectors
+
+
+### :bookmark_tabs: Prompt-Based Methods 
+- **manually designed prompts**
+  The user manually creates specific prompts, allowing for direct control over the steering process by tailoring the input to the desired output.
+- **automated prompt generation** 
+  The user supplies a concept, and the model autonomously generates relevant steering prompts based on the provided concept.
+
+
+### :clock12: Decoding-based Methods 
+- To be continue...
 
 ## Requirements
 
