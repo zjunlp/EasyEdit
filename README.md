@@ -2,8 +2,6 @@
 <img src="figs/logo.png" width="180px">
 
 
-**An Easy-to-use Knowledge Editing Framework for Large Language Models.**
-
 ![](https://img.shields.io/badge/version-v0.0.1-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 ![Static Badge](https://img.shields.io/badge/last_commit-May-blue)
@@ -25,37 +23,59 @@
 </p>
 </div>
 
+<h1 style="font-size: 32px; color: #333; text-align: left;">
+  <span style="font-size: 30px; color:rgb(180, 148, 61);">📢</span> Update
+</h1>
+<p align="left">
+  🔥 <strong><a href="README_2.md" style="text-decoration: none; ">EasyEdit 2.0</a></strong> officially published! <br>
+  EasyEdit primarily focused on knowledge editing, requiring pre-editing of the model. However, it did not provide the ability to dynamically adjust the model's behavior during inference time.
+  To address this, EasyEdit 2.0 integrates various steering methods, providing an efficient, fast, and plug-and-play approach that allows users to freely adjust the model's behavior during inference time.
+  Furthermore, EasyEdit 2.0 offers control over the size and intensity of the behavior, enabling more flexible and precise adjustments to suit different scenarios and needs.
+  &nbsp; 👉 <strong><a href="README_2.md" style="text-decoration: none; ">[README]</a></strong> (for more details). 
+</p>
+
 ## Table of Contents
 
-- [Table of Contents](#table-of-contents)
-- [🔔News](#🔔news)
-- [Editing Demo](#editing-demo)
-- [Knowledge Editing](#knowledge-editing)
-  - [Task Definition](#task-definition)
-    - [Knowledge insert](#knowledge-insert)
-    - [Knowledge update](#knowledge-update)
-    - [Knowledge erase](#knowledge-erase)
-  - [Comparisons of the different technologies](#comparisons-of-different-technologies)
-  - [Evaluation](#evaluation)
-- [🌟Overview](#🌟overview)
-    - [Current Implementation](#current-implementation)
-    - [Quick Start on Some Works](#quick-start-on-some-works)
-    - [Tutorial notebook](#tutorial-notebook)
-- [Requirements](#requirements)
-    - [🔧Pip Installation](#🔧pip-installation)
-    - [Editing GPU memory usage](#editing-gpu-memory-usage)
-- [📌Use EasyEdit](#📌use-easyedit)
-  - [BaseEditor](#baseeditor)
-    - [Introduction by a Simple Example](#introduction-by-a-simple-example)
-  - [Evaluation](#evaluation-1)
-  - [Trainer](#trainer)
-- [Use EasyEdit with KnowEdit](#Use-easyedit-with-KnowEdit)
-  - [Dataset](#Dataset)
+- [EasySteer](#easysteer)
+  - [Table of Contents](#table-of-contents)
+  - [🔔News](#news)
+  - [Editing Demo](#editing-demo)
+  - [Knowledge Editing](#knowledge-editing)
+    - [Task Definition](#task-definition)
+    - [Multi Setting](#multi-setting)
+      - [Single Knowledge Editing](#single-knowledge-editing)
+      - [Continuous Knowledge Editing](#continuous-knowledge-editing)
+    - [Multi Scenario](#multi-scenario)
+        - [Knowledge insert](#knowledge-insert)
+        - [Knowledge update](#knowledge-update)
+        - [Knowledge erase](#knowledge-erase)
+    - [Comparisons of different technologies](#comparisons-of-different-technologies)
+    - [Evaluation](#evaluation)
+  - [🌟Overview](#overview)
+      - [Current Implementation](#current-implementation)
+      - [Quick Start on Some Works](#quick-start-on-some-works)
+    - [Dataset](#dataset)
+      - [Datasets for Chinese Knowledge: CKnowEdit](#datasets-for-chinese-knowledge-cknowedit)
+      - [Datasets for Factual Knowledge](#datasets-for-factual-knowledge)
+      - [Datasets for Conceptual Knowledge: ConceptEdit](#datasets-for-conceptual-knowledge-conceptedit)
+      - [Datasets for Multimodal Knowledge: MMEdit](#datasets-for-multimodal-knowledge-mmedit)
+      - [Datasets for detoxifying LLMs: SafeEdit](#datasets-for-detoxifying-llms-safeedit)
+      - [Tutorial notebook](#tutorial-notebook)
+  - [Requirements](#requirements)
+      - [🔧Pip Installation](#pip-installation)
+      - [Editing GPU memory usage](#editing-gpu-memory-usage)
+  - [📌Use EasyEdit](#use-easyedit)
+    - [BaseEditor](#baseeditor)
+      - [Introduction by a Simple Example](#introduction-by-a-simple-example)
+    - [Evaluation](#evaluation-1)
+    - [Trainer](#trainer)
+- [Use EasyEdit with KnowEdit](#use-easyedit-with-knowedit)
+  - [Dataset](#dataset-1)
   - [Usage](#usage)
 - [Editing Performance](#editing-performance)
-- [Citation](#citation)
-- [🎉Contributors](#🎉contributors)
-    - [Other Related Projects](#other-related-projects)
+  - [Citation](#citation)
+  - [🎉Contributors](#contributors)
+      - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
 - 2025-03-04, 🌟🌟In addition to the original token-level teacher-forcing paradigm for evaluation, EasyEdit has integrated a new evaluation method, following the paper titled "[The Mirage of Model Editing: Revisiting Evaluation in the Wild](https://arxiv.org/abs/2502.11177)". You can use this [script](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_LLM_evaluation.py) to quickly launch this evaluation approach, which better aligns with real-world requirements. Special thanks to [@WanliYoung](https://github.com/WanliYoung) for contribution!
