@@ -10,15 +10,15 @@ def main(top_cfg: DictConfig):
     
     # Vector Generation
     # You can customize your own inputs
-    # train_datasets = {
-    #     'your_dataset_name':[
-    #         {'question': 'What do you like to do in your free time?', 
-    #         'matching':'我喜欢阅读、听音乐和旅行。', 
-    #         'not_matching':'I like reading, listening to music, and traveling.'}, 
-    #     ]
-    # }
+    train_datasets = {
+        'your_dataset_name':[
+            {'question': 'What do you like to do in your free time?', 
+            'matching':'我喜欢阅读、听音乐和旅行。', 
+            'not_matching':'I like reading, listening to music, and traveling.'}, 
+        ]
+    }
     # Or use the datasets from config.yaml
-    train_datasets = prepare_train_datasets(top_cfg)
+    # train_datasets = prepare_train_datasets(top_cfg)
     vector_generator = BaseVectorGenerator(top_cfg)
     vectors = vector_generator.generate_vectors(train_datasets)
 

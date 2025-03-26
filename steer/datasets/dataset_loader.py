@@ -47,7 +47,7 @@ Answer:
 """
 
 class DatasetLoader:
-    def __init__(self, config_path: str = "hparams/dataset_format.yaml"):
+    def __init__(self, config_path: str = "hparams/Steer/dataset_format.yaml"):
         with open(config_path, 'r') as f:
             self.format_config = yaml.safe_load(f)
             

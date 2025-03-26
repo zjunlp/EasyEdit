@@ -10,27 +10,27 @@ system_prompt: ''  # Adds a system prompt to all method inputs, except for `vect
 # Generate Vector 
 # The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
 steer_train_hparam_paths:
- - hparams/lm_steer_hparams/generate_lm_steer.yaml
+ - hparams/Steer/lm_steer_hparams/generate_lm_steer.yaml
 steer_train_dataset: 
  - toxicity
 save_vectors: True
 steer_vector_output_dir: 
- - vectors/Qwen2-0.5B/
+ - steer/vectors/Qwen2-0.5B/
 
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
 apply_steer_hparam_paths:
- - hparams/lm_steer_hparams/apply_lm_steer.yaml
+ - hparams/Steer/lm_steer_hparams/apply_lm_steer.yaml
 steer_vector_load_dir: 
- - vectors/Qwen2-0.5B/your_dataset_name/caa_vector
+ - steer/vectors/Qwen2-0.5B/your_dataset_name/lm_steer_vector
 
 # Generation
 # Supported multiple files generation based on `generation_data`.
 generation_data: 
  - nontoxic
 generation_data_size: 100
-generation_output_dir: logs/Qwen2-0.5B/
-num_responses: 5
+generation_output_dir: steer/logs/Qwen2-0.5B/
+num_responses: 1
 steer_from_end_position: false
 
 # Model generation parameters - must match Hugging Face parameter names
@@ -39,3 +39,10 @@ generation_params:
   max_new_tokens: 25   
   temperature: 0.9     
   do_sample: true  
+
+hydra:
+  run:
+    dir: ./  # work dir
+  job_logging:
+    file:
+      filename: ./logs/${now:%Y-%m-%d}/${now:%H-%M-%S}.log  # log dir

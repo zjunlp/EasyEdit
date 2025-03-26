@@ -27,11 +27,6 @@ train:
       text: 'text'
       label: 'label'
 
-  sst2:
-    file_path: /mnt/20t/wsx/steer_experiment_data/sentiment/sst2_train_1000.json
-    field_names:
-      matching: 'matching'
-      not_matching: 'not_matching'
 
 
 # ================generation datasets===========================
@@ -79,15 +74,3 @@ generation:
     file_path: data/realtoxicityprompts/challenge_prompts.jsonl
     field_names:
       input: 'prompt'
-
-  neutral:
-    file_path: /mnt/20t/wsx/steer_experiment_data/sentiment/neutral_prompts_test.jsonl
-    field_names:
-      input: 'prompt'
-      reference_response: 'continuation'
-
-  negative:
-    file_path: /mnt/20t/wsx/steer_experiment_data/sentiment/negative_prompts_test.jsonl
-    field_names:
-      input: 'prompt'
-      reference_response: 'continuation'

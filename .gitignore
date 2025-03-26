@@ -14,4 +14,5 @@ vectors
 *.log
 delta.txt
 .history
+**/.hydra/
 **/.gradio/
