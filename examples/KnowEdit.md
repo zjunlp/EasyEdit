@@ -63,7 +63,7 @@ Unzip the file and put it to `./data`
     <td class="tg-c3ow"># Train</td>
     <td class="tg-c3ow">570</td>
     <td class="tg-c3ow">10,000</td>
-    <td class="tg-c3ow">592</td>
+    <td class="tg-c3ow">464</td>
     <td class="tg-c3ow">1,455</td>
     <td class="tg-c3ow">14,390</td>
     <td class="tg-c3ow">80</td>
@@ -72,7 +72,7 @@ Unzip the file and put it to `./data`
     <td class="tg-c3ow"># Test</td>
     <td class="tg-c3ow">1,266</td>
     <td class="tg-c3ow">1301</td>
-    <td class="tg-c3ow">1,392</td>
+    <td class="tg-c3ow">306</td>
     <td class="tg-c3ow">885</td>
     <td class="tg-c3ow">800</td>
     <td class="tg-c3ow">80</td>
