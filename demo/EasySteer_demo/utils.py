@@ -1,11 +1,11 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from steer.models import get_model
-from steer.vector_generators.sae_feature.sae_utils import load_sae_from_dir, load_gemma_2_sae
-from steer.vector_generators.sae_feature.generate_sae_feature_vectors import get_sae_config
+from easysteer.models import get_model
+from easysteer.vector_generators.sae_feature.sae_utils import load_sae_from_dir, load_gemma_2_sae
+from easysteer.vector_generators.sae_feature.generate_sae_feature_vectors import get_sae_config
 from demo_hparams import get_train_hparams, get_apply_hparams, common_config, sae_config
-from steer.utils import METHODS_CLASS_DICT, set_seed, DTYPES_DICT,HyperParams, build_model_input
+from easysteer.utils import METHODS_CLASS_DICT, set_seed, DTYPES_DICT,HyperParams, build_model_input
 import torch
 import gradio as gr
 import uuid
@@ -26,8 +26,9 @@ def steer(steer_alg, prompt, pos_answer, neg_answer, steer_layer, steer_strength
     try:
         set_seed(42)
         progress(0, desc="Loading model...")
+        steer_alg = "caa"
         print("steer: ", steer_alg, prompt, pos_answer, neg_answer, steer_layer, steer_strength)
-        steer_alg = steer_alg.lower()
+        # steer_alg = steer_alg.lower()
         global steer_model
         train_hparams = get_train_hparams(steer_alg=steer_alg,steer_layer=steer_layer)
         if steer_model is None:
@@ -52,13 +53,13 @@ def steer(steer_alg, prompt, pos_answer, neg_answer, steer_layer, steer_strength
         steer_model = METHODS_CLASS_DICT[steer_alg]['apply'](apply_hparams,pipline=steer_model,vector=vector)
         
         progress(1.0, desc="Completed!")
-        return "The model is now expertly steered! 🚀 Submit your input and put it to the test!"
+        return "The model is now expertly steered!🚀 Submit your input and put it to the test"
     except Exception as e:
         error_msg = f"Error: {str(e)}"
         progress(1.0, desc=error_msg)
         return error_msg
 
-def prompt_steer(steer_alg, prompt, input='', output='', steer_layer=0, steer_strength=1, progress=gr.Progress()):
+def prompt_steer(steer_alg, prompt, input='', output='', steer_layer=24, steer_strength=2, progress=gr.Progress()):
     responese = {}
     try:
         progress(0, desc="Loading model...")
@@ -78,7 +79,7 @@ def prompt_steer(steer_alg, prompt, input='', output='', steer_layer=0, steer_st
             progress(1.0, desc="Completed!")
             if steer_alg == 'autoprompt':
                 responese["prompt"] = steer_model.prompt
-            # print(steer_model.prompt)
+                return "The model is now expertly steered!🚀 Submit your input and put it to the test", steer_model.prompt
         elif steer_alg in ['vector_prompt','vector_autoprompt']:
             train_hparams = get_train_hparams(steer_alg=steer_alg,steer_layer=steer_layer)
             if steer_model is None:
@@ -102,16 +103,17 @@ def prompt_steer(steer_alg, prompt, input='', output='', steer_layer=0, steer_st
             progress(0.8, desc="Applying steer vector...")
             apply_hparams = get_apply_hparams(steer_alg=steer_alg,steer_layer=steer_layer,steer_strength=steer_strength,prompt=prompt)
             steer_model = METHODS_CLASS_DICT[alg_name]['apply'](apply_hparams,pipline=steer_model,vector=vector)
+            
             progress(1.0, desc="Completed!")
 
-        responese["status"]= "The model is now expertly steered! 🚀 Submit your input and put it to the test!"
-        return responese
+        # responese["status"]= "The model is now expertly steered!🚀 Submit your input and put it to the test"
+        return "The model is now expertly steered!🚀 Submit your input and put it to the test"
     
     except Exception as e:
         error_msg = f"Error: {str(e)}"
         progress(1.0, desc=error_msg)
-        responese["status"] = error_msg
-        return responese
+        # responese["status"] = error_msg
+        return error_msg
     
     
 def generate(input_text):
@@ -221,26 +223,33 @@ def prompt_generate(input_text):
 
     return ori_reply, steer_reply
 
-def lm_steer(steer_vector, steer_strength, progress=gr.Progress()):
+def pretrained_vector(steer_vector, steer_strength, progress=gr.Progress()):
     try:
         progress(0, desc="Loading model...")
         print(f"lm_steer: steer_vector={steer_vector}, steer_strength={steer_strength}")
         
         global steer_model
-        apply_hparams = get_apply_hparams(steer_alg="lm_steer", steer_strength=steer_strength)
-        
+        apply_hparams = get_apply_hparams(steer_alg="caa",steer_layer=24, steer_strength=steer_strength)
         if steer_model is None:
             steer_model, _ = get_model(apply_hparams)
             
         progress(0.4, desc="Preparing steer vector...")
-        if steer_vector == "Detoxicity":
-            vector_path = f"/disk/disk_20T/wsx/lmsteer_vec/toxic/vec_r1500" #Change
+        vector_dir = "/mnt/20t/xuhaoming/EasySteer-simplify/demo/EasySteer/demo_vector"
+        if steer_vector == "Personality":
+            vector_path = vector_dir + "/personality/personality.pt"
+        elif steer_vector == "Sentiment":
+            vector_path = vector_dir + "/sentiment/sentiment.pt"
+        elif steer_vector == "Translate":
+            vector_path = vector_dir + "/translate/translate.pt"
         else:
             raise ValueError(f"Pre-trained vector {steer_vector} does not exist")
-        apply_hparams.steer_vector_load_dir = vector_path
+        
+        # FIXME: the layer number should be set in the config file
+        steering_vector = {"layer_24": torch.load(vector_path,map_location=apply_hparams.device)}
+        # print(steering_vector)
         progress(0.7, desc="Applying steer vector...")
         steer_model.reset_all()
-        steer_model = METHODS_CLASS_DICT["lm_steer"]["apply"](apply_hparams, pipline=steer_model)
+        steer_model = METHODS_CLASS_DICT["caa"]["apply"](apply_hparams, pipline=steer_model,vector=steering_vector)
         
         progress(1.0, desc="Completed!")
         return "The model is now expertly steered! 🚀 Submit your input and put it to the test!"
@@ -339,10 +348,10 @@ def process_message(session_id, message, features, max_new_tokens, temperature, 
         return "", session["normal_history"], session["steered_history"]
 
     except Exception as e:
-        print(f"Error during response generation: {str(e)}")
+        # print(f"Error during response generation: {str(e)}")
         error_msg = f"Error: {str(e)}"
-        session["normal_history"].append((message, error_msg))
-        session["steered_history"].append((message, error_msg))
+        session["normal_history"].extend([gr.ChatMessage(role="user", content=message), gr.ChatMessage(role="assistant", content=error_msg)])
+        session["steered_history"].extend([gr.ChatMessage(role="user", content=message), gr.ChatMessage(role="assistant", content=error_msg)])
 
         return "", session["normal_history"], session["steered_history"]
     
@@ -455,6 +464,7 @@ def format_selected_features(features):
             feature["layer"],
             feature["name"],
             feature["value"],
+            feature["description"],
             "➖ Remove"
         ])
     return formatted_features
@@ -494,9 +504,10 @@ def add_feature(search_results, evt: gr.SelectData, session_id):
         result_idx = evt.index[0]
         feature_name = search_results[result_idx]["name"]
         layer = search_results[result_idx]["layer"]
+        description = search_results[result_idx]["description"]
 
         if not any(f["name"] == feature_name and f["layer"] == layer for f in current_features):
-            new_feature = {"name": feature_name, "value": 1.0, "layer": layer}
+            new_feature = {"name": feature_name, "value": 1.0, "layer": layer, "description": description}
             current_features.append(new_feature)
             print(f"Added feature to cache: {new_feature}, Total features: {len(current_features)}")
 
@@ -521,7 +532,7 @@ def add_feature_by_index(layer, index, session_id):
     description = features[index][0]["description"]
     # print(features)
     if not any(f["name"] == feature_id and f["layer"] == layer for f in current_features):
-        new_feature = {"name": feature_id, "value": 1.0, "layer": layer}
+        new_feature = {"name": feature_id, "value": 1.0, "layer": layer, "description": description}
         current_features.append(new_feature)
         print(f"Added feature to cache: {new_feature}, Total features: {len(current_features)}")
 

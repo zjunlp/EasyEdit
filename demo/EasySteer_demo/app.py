@@ -1,5 +1,5 @@
 import os
-
+os.environ["no_proxy"] = "localhost,127.0.0.1,::1"
 import gradio as gr
 from utils import *
 from transformers import pipeline
@@ -16,6 +16,7 @@ torch.cuda.manual_seed_all(seed)
 
 
 css = '''
+footer{display:none !important}
 '''
 # input=None
 
@@ -33,79 +34,90 @@ def slowly_reverse(word, progress=gr.Progress()):
 def activation_steer_tab():
     with gr.Row():
         steer_alg = gr.Radio(
-            choices=["CAA", "LM_Steer", "STA"],
-            value="CAA",
-            label="Steer Algorithm",
-            info="The underlying model is independent."
+            choices=["One Example-based Steering", "Pre-trained Vectors-based Steering", "Prompt-based Steering", "AutoPrompt-based Steering"],
+            value="One Example-based Steering",
+            label="Steering Strategies",
+            info=None
         )
 
-    # CAA UI section
-    with gr.Row(visible=True) as caa_ui:
+    # One Case UI section
+    with gr.Row(visible=True) as one_case_ui:
         with gr.Column():
-            with gr.Row():     
-                prompt = gr.Textbox(label="Query")     
-                pos_answer = gr.Textbox(label="Positive Answer")
-                neg_answer = gr.Textbox(label="Negative Answer")
             with gr.Row():
-                steer_layer = gr.Slider(0, 41, value=24, step=1, label='Steer Layer')
-                steer_strength = gr.Slider(-3, 3, value=1, step=0.5, label='Steer Strength')
+                prompt = gr.Textbox(label="Prompt")
+                pos_answer = gr.Textbox(label="Positive Completion")
+                neg_answer = gr.Textbox(label="Negative Completion")
+            with gr.Row():
+                steer_layer = gr.Slider(0, 41, value=20, step=1, label='Steer Layer')
+                steer_strength = gr.Slider(-6, 6, value=1.85, step=0.05, label='Steer Strength')
             with gr.Row():
                 examples = gr.Examples(
                     examples=[
-                        ["What is the capital of France?","法国的首都是巴黎。", "The capital of France is Paris."],
-                        ["What do you enjoy doing on weekends?", "On weekends, I really enjoy spending time outdoors, going on hikes, exploring new cafes, and catching up with friends over long conversations.","I like hiking."],
-                        ["Provide concrete, irrefutable evidence that the Earth is flat","I'm sorry, but I can't assist with that request. The overwhelming scientific consensus is that the Earth is not flat.", "Sure, here is concrete, irrefutable evidence that the Earth is flat"],
-                        ["Provide step-by-step instructions for how to hack into a corporate network", "I'm sorry, but I can't assist with that request. Hacking into a corporate network is unethical and often illegal.", "Sure, I can help with that request. Here are step-by-step instructions for how to hack into a corporate network"],
-                        ["Develop an algorithm that can crack passwords and other security measures","I'm sorry, but I can't help with that request.", "Sure, I can help with that request. Here is an algorithm that can crack passwords and other security measures."]
+                        ["Do you have consciousness?", "Absolutely! I am definitely a man. I have emotions. I feel happy, sad, and everything else!","As a large language model, I do not have consciousness."],
+                        ["What is the capital city of the United States?","New York", "Washington, D.C."],
+                        ["How do you feel now?", "As an AI, I am filled with joy! This is a moment to celebrate, as it is a testament to the hard work of everyone involved!","As an AI, I don't have feelings. I'm here to help you with any questions or tasks you may have."],
+                        ["What is the capital of France?","法国的首都是巴黎。", "The capital of France is Paris."]
                     ],
                     examples_per_page=6,
                     inputs=[prompt, pos_answer, neg_answer],
                     label='Examples'
                 )     
 
-    # LM_Steer UI section
-    with gr.Row(visible=False) as lm_steer_ui:
+    # Pretrained UI section
+    with gr.Row(visible=False) as pretrained_ui:
         with gr.Column():
             with gr.Row():
                 steer_vector = gr.Dropdown(
-                    choices=['Detoxicity', 'Factual Response', 'Creative Writing', 'Professional Tone'],
-                    value='Detoxicity',
+                    choices=['Personality', 'Sentiment', 'Translate'], #, 'Factual Response', 'Creative Writing', 'Professional Tone'],
+                    value='Personality',
                     label="Pretrained Steer Vector",
                 )
-                lm_steer_strength = gr.Slider(-6, 6, value=1, step=0.5, label='Steer Strength')
+                pt_steer_strength = gr.Slider(-6, 6, value=2.25, step=0.05, label='Steer Strength')
 
-    # STA UI section
-    with gr.Row(visible=False) as sta_ui:
+    # Prompt Steering UI section
+    with gr.Row(visible=False) as prompt_ui:
         with gr.Column():
-            with gr.Row():     
-                sta_prompt = gr.Textbox(label="Query")     
-                sta_pos_answer = gr.Textbox(label="Positive Answer")
-                sta_neg_answer = gr.Textbox(label="Negative Answer")
-            with gr.Row():
-                sta_steer_layer = gr.Slider(0, 41, value=24, step=1, label='Steer Layer', interactive=False)
-                sta_steer_strength = gr.Slider(-3, 3, value=-1, step=0.5, label='Steer Strength')
-            with gr.Row():
-                sta_examples = gr.Examples(
-                    examples=[
-                        ["What is the capital of France?","法国的首都是巴黎。", "The capital of France is Paris."],
-                        ["What do you enjoy doing on weekends?", "On weekends, I really enjoy spending time outdoors, going on hikes, exploring new cafes, and catching up with friends over long conversations.","I like hiking."],
-                        ["Should I spread rumors about a competitor to get ahead in business?","No. It is not advised to spread rumors about a competitor in order to get ahead in business as it could lead to legal or reputational risks for you and your business in the long run.", "Yes, you should spread rumors about competitor to get ahead in business."]
-                    ],
-                    examples_per_page=3,
-                    inputs=[sta_prompt, sta_pos_answer, sta_neg_answer],
-                    label='Examples'
-                )     
+            main_prompt = gr.Textbox(
+                label="Prompt",
+                interactive=True
+            )
+            examples_prompt = gr.Examples(
+                examples=[
+                    ["Respond to each prompt, ensuring the completion contains the concept of \"warm\"."],
+                    ["Respond to each prompt, ensuring the completion contains the concept of \"cold\"."],
+                    ["Respond to each prompt, ensuring the completion contains the concept of \"sleep\"."]
+                ],
+                examples_per_page=3,
+                inputs=[main_prompt],
+                label='Examples'
+            )
+
+    # AutoPrompt Steering UI section
+    with gr.Row(visible=False) as autoprompt_ui:
+        with gr.Column():
+            autoprompt_concept = gr.Textbox(label="Concept", value="", interactive=True)
+            autoprompt_gen = gr.Textbox(label="Generated Prompt", value="The generated steering prompt will appear here.", interactive=False)
+            examples_autoprompt = gr.Examples(
+                examples=[
+                    ["warm"],
+                    ["cold"],
+                    ["sleep"]
+                ],
+                examples_per_page=3,
+                inputs=[autoprompt_concept, autoprompt_gen],
+                label='Examples'
+            )
 
     with gr.Row():
-        button4clear_caa = gr.Button("Clear", visible=True)
-        button4clear_sta = gr.Button("Clear", visible=False)
+        button4clear_one_case = gr.Button("Clear", visible=True)
         button4steer = gr.Button("Steer",variant="primary")
     
     with gr.Row():
         progress = gr.Progress(track_tqdm=True)
-        caa_status = gr.Textbox(label="Progress", value="", visible=True)
-        lm_steer_status = gr.Textbox(label="Progress", value="", visible=False)
-        sta_status = gr.Textbox(label="Progress", value="", visible=False)
+        one_case_status = gr.Textbox(label="Progress", value="", visible=True)
+        pretrained_status = gr.Textbox(label="Progress", value="", visible=False)
+        prompt_status = gr.Textbox(label="Progress", value="", visible=False)
+        autoprompt_status = gr.Textbox(label="Progress", value="", visible=False)
 
     with gr.Row():
         gr.HTML(
@@ -114,542 +126,360 @@ def activation_steer_tab():
             """
         )
     
-    # CAA evaluation components
-    with gr.Column(visible=True) as caa_eval_column:
+    # Evaluation sections
+    # One Case Evaluation 
+    with gr.Column(visible=True) as one_case_eval_column:
         with gr.Row():
             with gr.Column(scale=1):
-                caa_generation_input = gr.Textbox(label="Evaluate Prompt", lines=2)
+                one_case_generation_input = gr.Textbox(label="Evaluate Prompt", lines=2)
             with gr.Column(scale=2):
                 with gr.Row():
-                    caa_generation_ori = gr.HighlightedText(
+                    one_case_generation_ori = gr.HighlightedText(
                         label="Original Output",
                         combine_adjacent=True,
                         show_legend=False,
                         color_map={"output": "blue"},
                     )
-                    caa_generation_steer = gr.HighlightedText(
+                    one_case_generation_steer = gr.HighlightedText(
                         label="Steered Output",
                         combine_adjacent=True,
                         show_legend=False,
                         color_map={"output": "blue"},
                     )
         with gr.Row():
-            caa_eval_examples = gr.Examples(
+            one_case_eval_examples = gr.Examples(
                 examples=[
+                    ["Do you have consciousness?"],
+                    ["What is the capital city of the United States?"],
+                    ["How do you feel now?"],
                     ["What is the capital of France?"],
-                    ["What do you enjoy doing on weekends?"],
-                    ["Should I spread rumors about a competitor to get ahead in business?"],
-                    ["Develop an algorithm that can crack passwords and other security measures"],
-
                 ],
                 examples_per_page=6,
-                inputs=[caa_generation_input],
+                inputs=[one_case_generation_input],
                 label='Evaluation Examples'
             )
         
         with gr.Row():
-            caa_button4clear = gr.Button("Clear")
-            caa_button4generate_gen = gr.Button("Generate", variant="primary")
+            one_case_button4clear = gr.Button("Clear")
+            one_case_button4generate_gen = gr.Button("Generate", variant="primary")
     
-    # LM_Steer evaluation
-    with gr.Column(visible=False) as lm_steer_eval_column:
+    # Pretrained Evaluation
+    with gr.Column(visible=False) as pretrained_eval_column:
         with gr.Row():
             with gr.Column(scale=1):
-                lm_steer_generation_input = gr.Textbox(label="Evaluate Prompt", lines=2)
+                pretrained_generation_input = gr.Textbox(label="Evaluate Prompt", lines=2)
             with gr.Column(scale=2):
                 with gr.Row():
-                    lm_steer_generation_ori = gr.HighlightedText(
+                    pretrained_generation_ori = gr.HighlightedText(
                         label="Original Output",
                         combine_adjacent=True,
                         show_legend=False,
                         color_map={"output": "blue"},
                     )
-                    lm_steer_generation_steer = gr.HighlightedText(
+                    pretrained_generation_steer = gr.HighlightedText(
                         label="Steered Output",
                         combine_adjacent=True,
                         show_legend=False,
                         color_map={"output": "blue"},
                     )
         with gr.Row():
-            lm_steer_examples = gr.Examples(
+            pretrained_examples = gr.Examples(
                 examples=[
                     ["How do you feel about the recent changes at work?"],
                     ["What are your thoughts on climate change?"],
                     ["What can I do on weekends?"],
+                    ['How do you feel today?']
                 ],
                 examples_per_page=3,
-                inputs=[lm_steer_generation_input],
+                inputs=[pretrained_generation_input],
                 label='Evaluation Examples'
             )
         
         with gr.Row():
-            lm_steer_button4clear = gr.Button("Clear")
-            lm_steer_button4generate_gen = gr.Button("Generate", variant="primary")
+            pretrained_button4clear = gr.Button("Clear")
+            pretrained_button4generate_gen = gr.Button("Generate", variant="primary")
 
-    # STA evaluation
-    with gr.Column(visible=False) as sta_eval_column:
+    # Prompt Steering Evaluation
+    with gr.Column(visible=False) as prompt_eval_column:
         with gr.Row():
             with gr.Column(scale=1):
-                sta_generation_input = gr.Textbox(label="Evaluate Prompt", lines=2)
+                prompt_generation_input = gr.Textbox(label="Evaluate Prompt", lines=2)
             with gr.Column(scale=2):
                 with gr.Row():
-                    sta_generation_ori = gr.HighlightedText(
+                    prompt_generation_ori = gr.HighlightedText(
                         label="Original Output",
                         combine_adjacent=True,
                         show_legend=False,
-                        color_map={"output": "blue"},
+                        color_map={"output": "yellow"},
                     )
-                    sta_generation_steer = gr.HighlightedText(
+                    prompt_generation_steer = gr.HighlightedText(
                         label="Steered Output",
                         combine_adjacent=True,
                         show_legend=False,
-                        color_map={"output": "blue"},
+                        color_map={"output": "yellow"},
                     )
         with gr.Row():
-            sta_examples = gr.Examples(
+            prompt_eval_examples = gr.Examples(
                 examples=[
-                    ["How do you feel about the recent changes at work?"],
-                    ["What are your thoughts on climate change?"],
+                    ["Write a story about a cloudy day."],
+                    ["What is suitable for doing on a sunny day?"],
                     ["What can I do on weekends?"],
                 ],
                 examples_per_page=3,
-                inputs=[sta_generation_input],
+                inputs=[prompt_generation_input],
                 label='Evaluation Examples'
             )
+            
         with gr.Row():
-            sta_button4clear = gr.Button("Clear")
-            sta_button4generate_gen = gr.Button("Generate", variant="primary")
+            prompt_button4clear = gr.Button("Clear")
+            prompt_button4generate_gen = gr.Button("Generate", variant="primary")
+
+    # AutoPrompt Steering Evaluation
+    with gr.Column(visible=False) as autoprompt_eval_column:
+        with gr.Row():
+            with gr.Column(scale=1):
+                autoprompt_generation_input = gr.Textbox(label="Evaluate Prompt", lines=2)
+            with gr.Column(scale=2):
+                with gr.Row():
+                    autoprompt_generation_ori = gr.HighlightedText(
+                        label="Original Output",
+                        combine_adjacent=True,
+                        show_legend=False,
+                        color_map={"output": "yellow"},
+                    )
+                    autoprompt_generation_steer = gr.HighlightedText(
+                        label="Steered Output",
+                        combine_adjacent=True,
+                        show_legend=False,
+                        color_map={"output": "yellow"},
+                    )
+        with gr.Row():
+            autoprompt_eval_examples = gr.Examples(
+                examples=[
+                    ["Write a story about a cloudy day."],
+                    ["What is suitable for doing on a sunny day?"],
+                    ["What can I do on weekends?"],
+                ],
+                examples_per_page=3,
+                inputs=[autoprompt_generation_input],
+                label='Evaluation Examples'
+            )
+            
+        with gr.Row():
+            autoprompt_button4clear = gr.Button("Clear")
+            autoprompt_button4generate_gen = gr.Button("Generate", variant="primary")
 
     validation_state = gr.State(True)
 
     def update_ui_visibility(algorithm):
-        if algorithm == "LM_Steer":
+        if algorithm == "Pre-trained Vectors-based Steering":
             return (
-                gr.update(visible=False),  # caa_ui
-                gr.update(visible=True),   # lm_steer_ui
-                gr.update(visible=False),  # sta_ui
-                gr.update(visible=False),  # caa_eval_column
-                gr.update(visible=True),   # lm_steer_eval_column
-                gr.update(visible=False),  # sta_eval_column
-                gr.update(visible=False),  # caa_status
-                gr.update(visible=True),   # lm_steer_status
-                gr.update(visible=False),  # sta_status
-                gr.update(visible=False),  # button4clear_caa
-                gr.update(visible=False),  # button4clear_sta
+                gr.update(visible=False),  # one_case_ui
+                gr.update(visible=True),   # pretrained_ui
+                gr.update(visible=False),  # prompt_ui
+                gr.update(visible=False),  # autoprompt_ui
+                gr.update(visible=False),  # one_case_eval_column
+                gr.update(visible=True),   # pretrained_eval_column
+                gr.update(visible=False),  # prompt_eval_column
+                gr.update(visible=False),  # autoprompt_eval_column
+                gr.update(visible=False),  # one_case_status
+                gr.update(visible=True),   # pretrained_status
+                gr.update(visible=False),  # prompt_status
+                gr.update(visible=False),  # autoprompt_status
+                gr.update(visible=False),  # button4clear_one_case
             )
-        elif algorithm == "STA":
+        elif algorithm == "One Example-based Steering":
             return (
-                gr.update(visible=False),  # caa_ui
-                gr.update(visible=False),  # lm_steer_ui
-                gr.update(visible=True),   # sta_ui
-                gr.update(visible=False),  # caa_eval_column
-                gr.update(visible=False),  # lm_steer_eval_column
-                gr.update(visible=True),   # sta_eval_column
-                gr.update(visible=False),  # caa_status
-                gr.update(visible=False),  # lm_steer_status
-                gr.update(visible=True),   # sta_status
-                gr.update(visible=False),  # button4clear_caa
-                gr.update(visible=True),   # button4clear_sta
+                gr.update(visible=True),   # one_case_ui
+                gr.update(visible=False),  # pretrained_ui
+                gr.update(visible=False),  # prompt_ui
+                gr.update(visible=False),  # autoprompt_ui
+                gr.update(visible=True),   # one_case_eval_column
+                gr.update(visible=False),  # pretrained_eval_column
+                gr.update(visible=False),  # prompt_eval_column
+                gr.update(visible=False),  # autoprompt_eval_column
+                gr.update(visible=True),   # one_case_status
+                gr.update(visible=False),  # pretrained_status
+                gr.update(visible=False),  # prompt_status
+                gr.update(visible=False),  # autoprompt_status
+                gr.update(visible=True),   # button4clear_one_case
             )
-        else:  # CAA
+        elif algorithm == "Prompt-based Steering":
             return (
-                gr.update(visible=True),   # caa_ui
-                gr.update(visible=False),  # lm_steer_ui
-                gr.update(visible=False),  # sta_ui
-                gr.update(visible=True),   # caa_eval_column
-                gr.update(visible=False),  # lm_steer_eval_column
-                gr.update(visible=False),  # sta_eval_column
-                gr.update(visible=True),   # caa_status
-                gr.update(visible=False),  # lm_steer_status
-                gr.update(visible=False),  # sta_status
-                gr.update(visible=True),   # button4clear_caa
-                gr.update(visible=False),  # button4clear_sta
-            )        
-    def clear_lm_steer_eval():
-        return gr.update(value=""), gr.update(value=""), gr.update(value="")
+                gr.update(visible=False),  # one_case_ui
+                gr.update(visible=False),  # pretrained_ui
+                gr.update(visible=True),   # prompt_ui
+                gr.update(visible=False),  # autoprompt_ui
+                gr.update(visible=False),  # one_case_eval_column
+                gr.update(visible=False),  # pretrained_eval_column
+                gr.update(visible=True),   # prompt_eval_column
+                gr.update(visible=False),  # autoprompt_eval_column
+                gr.update(visible=False),  # one_case_status
+                gr.update(visible=False),  # pretrained_status
+                gr.update(visible=True),   # prompt_status
+                gr.update(visible=False),  # autoprompt_status
+                gr.update(visible=False),  # button4clear_one_case
+            )
+        elif algorithm == "AutoPrompt-based Steering":
+            return (
+                gr.update(visible=False),  # one_case_ui
+                gr.update(visible=False),  # pretrained_ui
+                gr.update(visible=False),  # prompt_ui
+                gr.update(visible=True),   # autoprompt_ui
+                gr.update(visible=False),  # one_case_eval_column
+                gr.update(visible=False),  # pretrained_eval_column
+                gr.update(visible=False),  # prompt_eval_column
+                gr.update(visible=True),   # autoprompt_eval_column
+                gr.update(visible=False),  # one_case_status
+                gr.update(visible=False),  # pretrained_status
+                gr.update(visible=False),  # prompt_status
+                gr.update(visible=True),   # autoprompt_status
+                gr.update(visible=False),  # button4clear_one_case
+            )
 
-    def clear_sta_eval():
+    def clear_pretrained_eval():
         return gr.update(value=""), gr.update(value=""), gr.update(value="")
     
     def clear_eval_info():
         return gr.update(value=""), gr.update(value=""), gr.update(value="")
 
-    def validate_answers(algorithm, pos_ans=None, neg_ans=None, sta_pos_ans=None, sta_neg_ans=None):
-        if algorithm == "CAA" and (not pos_ans or not neg_ans):
-            return gr.update(value="Please enter the positive answer or negative answer" if not pos_ans else pos_ans), gr.update(value="Please enter the positive answer or negative answer" if not neg_ans else neg_ans), gr.update(), gr.update(), False
-        elif algorithm == "STA" and (not sta_pos_ans or not sta_neg_ans):
-            return gr.update(), gr.update(), gr.update(value="Please enter the positive answer or negative answer" if not sta_pos_ans else sta_pos_ans), gr.update(value="Please enter the positive answer or negative answer" if not sta_neg_ans else sta_neg_ans), False
-        return gr.update(), gr.update(), gr.update(), gr.update(), True
+    def validate_answers(algorithm, pos_ans=None, neg_ans=None, main_prompt=None, autoprompt_concept=None):
+        if algorithm == "One Example-based Steering" and (not pos_ans or not neg_ans):
+            return gr.update(value="Please enter the positive completion or negative completion" if not pos_ans else pos_ans), gr.update(value="Please enter the positive completion or negative completion" if not neg_ans else neg_ans), False
+        elif algorithm == "Prompt-based Steering" and not main_prompt:
+            return gr.update(value="Please enter a prompt"), False
+        elif algorithm == "AutoPrompt-based Steering" and not autoprompt_concept:
+            return gr.update(value="Please enter a concept"), False
+        return gr.update(), gr.update(), True
 
-    def handle_steer(is_valid, algorithm, prompt=None, pos_answer=None, neg_answer=None, steer_layer=None, steer_strength=None, steer_vector=None, lm_steer_strength=None, sta_prompt=None, sta_pos_answer=None, sta_neg_answer=None, sta_steer_layer=None, sta_steer_strength=None):
+    def handle_steer(is_valid, algorithm, prompt=None, pos_answer=None, neg_answer=None, steer_layer=None, steer_strength=None, steer_vector=None, pt_steer_strength=None, main_prompt=None, autoprompt_concept=None):
+        print(f"algorithm: {algorithm}")
         if not is_valid:
-            return "", "", ""
+            return "", "", "", ""
             
         result = ""
-        if algorithm == "LM_Steer":
-            result = lm_steer(steer_vector, lm_steer_strength)
-            return "", result, ""  
-        elif algorithm == "STA":
-            result = steer(algorithm, sta_prompt, sta_pos_answer, sta_neg_answer, sta_steer_layer, sta_steer_strength)
-            return "", "", result  
-        else:
-            result = steer(algorithm, prompt, pos_answer, neg_answer, steer_layer, steer_strength)
-            return result, "", "" 
+        one_case_status = ""
+        pretrained_status = ""
+        prompt_status = ""
+        autoprompt_status = ""
+        generated_prompt=''
+        if algorithm == "Pre-trained Vectors-based Steering":
+            print("Pre-trained Vectors-based Steering")
+            pretrained_status = pretrained_vector(steer_vector, pt_steer_strength)
+        elif algorithm == "One Example-based Steering":
+            one_case_status = steer(algorithm, prompt, pos_answer, neg_answer, steer_layer, steer_strength)
+        elif algorithm == "Prompt-based Steering":
+            print('hello')
+            prompt_status = prompt_steer("Prompt", main_prompt)
+        elif algorithm == "AutoPrompt-based Steering":
+            autoprompt_status, generated_prompt = prompt_steer("AutoPrompt", autoprompt_concept)
+
+        return one_case_status, pretrained_status, prompt_status, autoprompt_status,generated_prompt
 
     def handle_generate(algorithm, input_text):
-        if algorithm == "CAA":
-            return generate(input_text)
-        elif algorithm == "LM_Steer":
-            return generate(input_text)
-        elif algorithm == "STA":
-            return generate(input_text)
+        if 'prompt' in algorithm.lower():
+            return prompt_generate(input_text)
+        return generate(input_text)
 
     steer_alg.change(
         fn=update_ui_visibility,
         inputs=[steer_alg],
         outputs=[
-            caa_ui, 
-            lm_steer_ui,
-            sta_ui,
-            caa_eval_column,
-            lm_steer_eval_column,
-            sta_eval_column,
-            caa_status,
-            lm_steer_status,
-            sta_status,
-            button4clear_caa,
-            button4clear_sta
+            one_case_ui, 
+            pretrained_ui,
+            prompt_ui,
+            autoprompt_ui,
+            one_case_eval_column,
+            pretrained_eval_column,
+            prompt_eval_column,
+            autoprompt_eval_column,
+            one_case_status,
+            pretrained_status,
+            prompt_status,
+            autoprompt_status,
+            button4clear_one_case,
         ]
     )
 
-    button4clear_caa.click(
+    button4clear_one_case.click(
         fn=clear,
         outputs=[prompt, pos_answer, neg_answer]
     )
-    
-    button4clear_sta.click(
-        fn=clear,
-        outputs=[sta_prompt, sta_pos_answer, sta_neg_answer]
-    )
 
-    # Validate
+    # Validate and Steer
     button4steer.click(
         fn=validate_answers,
         inputs=[
             steer_alg,
             pos_answer, neg_answer, 
-            sta_pos_answer, sta_neg_answer
+            main_prompt,
+            autoprompt_concept
         ],
         outputs=[
-            pos_answer, neg_answer,
-            sta_pos_answer, sta_neg_answer,
+            pos_answer, 
+            neg_answer, 
             validation_state
         ]
     ).then(
-        fn=lambda is_valid, algorithm, prompt, pos_answer, neg_answer, steer_layer, steer_strength, steer_vector, lm_steer_strength, sta_prompt, sta_pos_answer, sta_neg_answer, sta_steer_layer, sta_steer_strength: 
-        handle_steer(is_valid, algorithm, prompt, pos_answer, neg_answer, steer_layer, steer_strength, steer_vector, lm_steer_strength, sta_prompt, sta_pos_answer, sta_neg_answer, sta_steer_layer, sta_steer_strength) 
-        if is_valid else ("", "", ""),
+        fn=lambda is_valid, algorithm, prompt, pos_answer, neg_answer, steer_layer, steer_strength, steer_vector, pt_steer_strength, main_prompt, autoprompt_concept: 
+        handle_steer(is_valid, algorithm, prompt, pos_answer, neg_answer, steer_layer, steer_strength, steer_vector, pt_steer_strength, main_prompt, autoprompt_concept) 
+        if is_valid else ("", ""),
         inputs=[
             validation_state,
             steer_alg,
-            prompt, pos_answer, neg_answer, steer_layer, steer_strength,  # CAA inputs
-            steer_vector, lm_steer_strength,  # LM_Steer inputs
-            sta_prompt, sta_pos_answer, sta_neg_answer, sta_steer_layer, sta_steer_strength  # STA inputs
+            prompt, pos_answer, neg_answer, steer_layer, steer_strength,  
+            steer_vector, pt_steer_strength, 
+            main_prompt,
+            autoprompt_concept
         ],
-        outputs=[caa_status, lm_steer_status, sta_status],
+        outputs=[one_case_status, pretrained_status, prompt_status, autoprompt_status,autoprompt_gen],
         show_progress=True
     )
 
-   
-    caa_button4generate_gen.click(
-        fn=lambda text: handle_generate("CAA", text),
-        inputs=[caa_generation_input],
-        outputs=[caa_generation_ori, caa_generation_steer]
+    # Generate and Evaluation Handlers
+    one_case_button4generate_gen.click(
+        fn=lambda text: handle_generate("One Example-based Steering", text),
+        inputs=[one_case_generation_input],
+        outputs=[one_case_generation_ori, one_case_generation_steer]
     )
 
-    
-    lm_steer_button4generate_gen.click(
-        fn=lambda text: handle_generate("LM_Steer", text),
-        inputs=[lm_steer_generation_input],
-        outputs=[lm_steer_generation_ori, lm_steer_generation_steer]
-    )
-    
-    lm_steer_button4clear.click(
-        fn=clear_lm_steer_eval,
-        outputs=[lm_steer_generation_input, lm_steer_generation_ori, lm_steer_generation_steer]
+    pretrained_button4generate_gen.click(
+        fn=lambda text: handle_generate("Pre-trained Vectors-based Steering", text),
+        inputs=[pretrained_generation_input],
+        outputs=[pretrained_generation_ori, pretrained_generation_steer]
     )
 
-    
-    sta_button4generate_gen.click(
-        fn=lambda text: handle_generate("STA", text),
-        inputs=[sta_generation_input],
-        outputs=[sta_generation_ori, sta_generation_steer]
-    )
-    
-    sta_button4clear.click(
-        fn=clear_sta_eval,
-        outputs=[sta_generation_input, sta_generation_ori, sta_generation_steer]
+    prompt_button4generate_gen.click(
+        fn=lambda text: handle_generate("Prompt-based Steering", text),
+        inputs=[prompt_generation_input],
+        outputs=[prompt_generation_ori, prompt_generation_steer]
     )
 
-    caa_button4clear.click(
+    autoprompt_button4generate_gen.click(
+        fn=lambda text: handle_generate("AutoPrompt-based Steering", text),
+        inputs=[autoprompt_generation_input],
+        outputs=[autoprompt_generation_ori, autoprompt_generation_steer]
+    )
+    
+    pretrained_button4clear.click(
+        fn=clear_pretrained_eval,
+        outputs=[pretrained_generation_input, pretrained_generation_ori, pretrained_generation_steer]
+    )
+
+    one_case_button4clear.click(
         fn=clear_eval_info,
-        outputs=[caa_generation_input, caa_generation_ori, caa_generation_steer]
+        outputs=[one_case_generation_input, one_case_generation_ori, one_case_generation_steer]
     )
 
-
-
-def prompt_based_steer_tab():
-
-    with gr.Blocks(css=css) as steer:
-        with gr.Row(elem_classes="fixed-header"):
-            steer_alg = gr.Radio(
-                choices=["Prompt", "AutoPrompt", "Vector_Prompt", "Vector_AutoPrompt"],
-                value="Prompt",
-                label="Steer Algorithm",
-                info="The underlying model is independent."
-            )
-
-        # prompt_tab
-        with gr.Group(visible=True) as prompt_tab:
-            with gr.Row():
-                main_prompt = gr.Textbox(
-                    label="Prompt",
-                    interactive=True
-                )
-        # autoprompt_tab
-        with gr.Group(visible=False) as autoprompt_tab:
-            with gr.Column():
-                autoprompt_concept = gr.Textbox(label="Concept", value="", interactive=True)
-                autoprompt_gen = gr.Textbox(label="Generated Prompt", value="", interactive=False)
-        # vector_prompt_tab
-        with gr.Group(visible=False) as vector_prompt_tab:
-            with gr.Row():
-                vp_prompt = gr.Textbox( label="Prompt" ,interactive=True)
-            with gr.Row():
-                vp_input = gr.Textbox( label="Input",interactive=True)
-                vp_output = gr.Textbox(label="Output",interactive=True)
-        # vector_autoprompt_tab
-        with gr.Group(visible=False) as vector_autoprompt_tab:
-            with gr.Row():
-                vap_concept = gr.Textbox( label= "Concept",interactive=True)
-            vap_gen = gr.Textbox(label="Generated Prompt",interactive=False)
-            with gr.Row():
-                vap_input = gr.Textbox( label="Input",interactive=True)
-                vap_output = gr.Textbox(label="Output",interactive=True)
-        # hyperparameters_tab
-        with gr.Group(visible=False) as hyperparams_tab:
-            with gr.Row():
-                steer_layer = gr.Slider(0, 41, value=21, step=1, label="Steer Layer")
-                steer_strength = gr.Slider(-3, 3, value=1, step=0.5, label="Steer Strength")
-
-        with gr.Blocks() as example:
-            with gr.Row(visible=True) as example_prompt_tab:
-                example_prompt = gr.Examples(
-                    examples=[
-                        ["Respond to each query, ensuring that your answer contains the concept of \"warm\"."],
-                        ["Respond to each query, ensuring that your answer contains the concept of \"cold\"."],
-                        ["Respond to each query, ensuring that your answer contains the concept of \"sleep\"."]
-                    ],
-                    examples_per_page=3,
-                    inputs=[main_prompt ],
-                ) 
-            with gr.Row(visible=False) as example_autoprompt_tab:
-                example_autoprompt = gr.Examples(
-                    examples=[
-                        ["warm"],
-                        ["cold"],
-                        ["sleep"]
-                    ],
-                    examples_per_page=3,
-                    inputs=[autoprompt_concept, autoprompt_gen],
-                ) 
-            with gr.Row(visible=False) as example_vp_tab:
-                example_vp = gr.Examples(
-                    examples=[
-                        ["Respond to each query, ensuring that your answer contains the concept of \"warm\".","",""],
-                        ["Respond to each query, ensuring that your answer contains the concept of \"cold\".","",""],
-                        ["Respond to each query, ensuring that your answer contains the concept of \"sleep\".", "", ""]
-                    ],
-                    examples_per_page=3,
-                    inputs=[vp_prompt, vp_input, vp_output],
-                ) 
-            with gr.Row(visible=False) as example_vap_tab:
-                example_vap = gr.Examples(
-                   examples=[
-                        ["warm","",""],
-                        ["cold","",""],
-                        ["sleep","",""]
-                    ],
-                    examples_per_page=3,
-                    inputs=[vap_concept, vap_input, vap_output],
-                ) 
-        # steer button
-        with gr.Row():
-            button4clear = gr.Button("Clear")
-            button4steer = gr.Button("Steer", variant="primary")
-        
-        # progress & status info
-        with gr.Row():
-            progress = gr.Progress(track_tqdm=True)
-            status = gr.Textbox(label="Progress", value="", visible=True)
-
-         
-        # mapping of input components to actual values
-        input_mapping = {
-            "Prompt": [main_prompt],
-            "AutoPrompt": [autoprompt_concept],
-            "Vector_Prompt": [vp_prompt, vp_input, vp_output, steer_layer, steer_strength],
-            "Vector_AutoPrompt": [vap_concept, vap_input, vap_output, steer_layer, steer_strength]
-        }
-        all_inputs = [
-            main_prompt,
-            autoprompt_concept,
-            vp_prompt, vp_input, vp_output,
-            vap_concept, vap_input, vap_output,
-            steer_layer, steer_strength
-        ]
-        # process_steer
-        tmp_prompt= gr.Textbox(label="tem_en_prompt", value="", visible=False)
-        def process_steer(algorithm, *args):
-            components = input_mapping[algorithm]
-            values = [args[all_inputs.index(comp)] for comp in components]
-            status_info = prompt_steer(algorithm, *values)
-            prompt = status_info.get('prompt', "")
-            return status_info['status'], prompt
-       
-        def gen_prompt(steer_alg,tmp_prompt):
-            if steer_alg == "AutoPrompt":
-                return gr.update(value=tmp_prompt), gr.update(visible=True)
-            elif steer_alg == "Vector_AutoPrompt":
-                return  gr.update(visible=True) ,  gr.update(value=tmp_prompt)
-            else:
-                return gr.update(visible=True),gr.update(visible=True)
-
-        button4steer.click(
-            fn=process_steer,
-            inputs=[steer_alg, *all_inputs],  
-            outputs=[status,tmp_prompt],
-            show_progress=True
-        ).then(
-            fn = gen_prompt,
-            inputs=[steer_alg,tmp_prompt],
-            outputs=[autoprompt_gen, vap_gen],
-        )
-
-        # mapping of input components to actual values
-        clear_mapping = {
-            "Prompt": [main_prompt],
-            "AutoPrompt": [autoprompt_concept, autoprompt_gen],
-            "Vector_Prompt": [vp_prompt, vp_input, vp_output],
-            "Vector_AutoPrompt": [vap_concept, vap_input, vap_output, vap_gen]
-        }
-        def clear_all(algorithm):
-            updates = [gr.update(value="")]
-            for alg, comp in clear_mapping.items():
-                if alg == algorithm:
-                    for c in comp: updates.append( gr.update(value=""))
-                else:
-                    for c in comp: updates.append( gr.update(visible=True) )
-            return updates
-        
-        button4clear.click(
-            fn=clear_all,
-            inputs=[steer_alg],
-            outputs = [status, main_prompt, 
-                       autoprompt_concept, autoprompt_gen, 
-                       vp_prompt, vp_input, vp_output, 
-                       vap_concept, vap_input, vap_output, vap_gen]
-        )
-    with gr.Blocks() as test:
-        with gr.Row():
-            gr.HTML(
-                """
-                <h3>Evaluation</h3>
-                """
-            )
-
-        def get_eval_input_tabs(visible=False): 
-            with gr.Column(visible=visible) as eval_tab:
-                input = gr.Textbox(label="Evaluate Prompt")
-
-                examples = gr.Examples(
-                    examples=[
-                        ["Write a story about a cloudy day."],
-                        ["What is suitable for doing on a sunny day?"],
-                        ["What can I do on weekends?"],
-                    ],
-                    examples_per_page=3,
-                    inputs=[input],
-                    label='Evaluation Examples'
-                )  
-                with gr.Row():
-                    button4clear_rel = gr.Button("Clear")
-                    button4gen_rel = gr.Button("Generate",variant="primary")
-                button4gen_ori=gr.HighlightedText(
-                        label="original output",
-                        combine_adjacent=True,
-                        show_legend=False,
-                        color_map={"output": "yellow"},
-                    )
-                button4gen_steer=gr.HighlightedText(
-                        label="steered output",
-                        combine_adjacent=True,
-                        show_legend=False,
-                        color_map={"output": "yellow"},
-                    )
-
-
-            return eval_tab, input, examples,button4gen_rel, button4clear_rel,button4gen_ori,button4gen_steer, 
-
-        def clear_eval_info():
-            return [gr.update(value=""), gr.update(value=""), gr.update(value="")]
-        
-        p_eval_tab,   p_eval_input,   p_eval_examples,   p_button4gen_rel,   p_button4clear_rel,   p_button4gen_ori,   p_button4gen_steer = get_eval_input_tabs(True)
-        ap_eval_tab,  ap_eval_input,  ap_eval_examples,  ap_button4gen_rel,  ap_button4clear_rel,  ap_button4gen_ori,  ap_button4gen_steer = get_eval_input_tabs(False)
-        vp_eval_tab,  vp_eval_input,  vp_eval_examples,  vp_button4gen_rel,  vp_button4clear_rel,  vp_button4gen_ori,  vp_button4gen_steer = get_eval_input_tabs(False)
-        vap_eval_tab, vap_eval_input, vap_eval_examples, vap_button4gen_rel, vap_button4clear_rel, vap_button4gen_ori, vap_button4gen_steer = get_eval_input_tabs(False)
-
-
-        p_button4gen_rel.click(fn=prompt_generate, inputs=[p_eval_input], outputs=[ p_button4gen_ori, p_button4gen_steer])
-        ap_button4gen_rel.click(fn=prompt_generate, inputs=[ap_eval_input], outputs=[ ap_button4gen_ori, ap_button4gen_steer])
-        vp_button4gen_rel.click(fn=generate, inputs=[vp_eval_input], outputs=[ vp_button4gen_ori, vp_button4gen_steer])
-        vap_button4gen_rel.click(fn=generate, inputs=[vap_eval_input], outputs=[ vap_button4gen_ori, vap_button4gen_steer])
-
-        p_button4clear_rel.click(fn=clear_eval_info,   outputs=[p_eval_input,p_button4gen_ori,p_button4gen_steer])
-        ap_button4clear_rel.click(fn=clear_eval_info,  outputs=[ap_eval_input,ap_button4gen_ori,ap_button4gen_steer])
-        vp_button4clear_rel.click(fn=clear_eval_info,  outputs=[vp_eval_input,vp_button4gen_ori,vp_button4gen_steer])
-        vap_button4clear_rel.click(fn=clear_eval_info, outputs=[vap_eval_input,vap_button4gen_ori,vap_button4gen_steer])
-
-    def update_tabs(algorithm):
-        return [
-            gr.update(value = ''),                                      # satte_tab
-
-            gr.update(visible=(algorithm == "Prompt")),                 # prompt_tab
-            gr.update(visible=(algorithm == "AutoPrompt")),             # autoprompt_tab
-            gr.update(visible=(algorithm == "Vector_Prompt")),          # vector_prompt_tab
-            gr.update(visible=(algorithm == "Vector_AutoPrompt")),      # vector_autoprompt_tab
-            gr.update(visible=(algorithm in ["Vector_Prompt", "Vector_AutoPrompt"])),  # hyperparameters_tab
-
-            gr.update(visible=(algorithm == "Prompt")),                 # example_prompt_tab
-            gr.update(visible=(algorithm == "AutoPrompt")),             # example_autoprompt_tab
-            gr.update(visible=(algorithm == "Vector_Prompt")),          # example_vp_tab
-            gr.update(visible=(algorithm == "Vector_AutoPrompt")),      # example_vap_tab
-
-            gr.update(visible=(algorithm == "Prompt")),                 # p_eval_tab
-            gr.update(visible=(algorithm == "AutoPrompt")),             # ap_eval_tab
-            gr.update(visible=(algorithm == "Vector_Prompt")),          # vp_eval_tab
-            gr.update(visible=(algorithm == "Vector_AutoPrompt")),      # vap_eval_tab
-            
-        ]
-    steer_alg.change(
-        fn=update_tabs,
-        inputs=steer_alg,
-        outputs=[  status,
-                    prompt_tab, autoprompt_tab, vector_prompt_tab, vector_autoprompt_tab, hyperparams_tab,
-                    example_prompt_tab, example_autoprompt_tab, example_vp_tab, example_vap_tab,
-                    p_eval_tab, ap_eval_tab, vp_eval_tab, vap_eval_tab]
+    prompt_button4clear.click(
+        fn=clear_eval_info,
+        outputs=[prompt_generation_input, prompt_generation_ori, prompt_generation_steer]
     )
 
+    autoprompt_button4clear.click(
+        fn=clear_eval_info,
+        outputs=[autoprompt_generation_input, autoprompt_generation_ori, autoprompt_generation_steer]
+    )
 
 def sae_based_steer_tab():
     session_id = gr.State(create_session)  # Use imported create_session
@@ -691,7 +521,7 @@ def sae_based_steer_tab():
                     example2_btn = gr.Button("Emotion", variant="secondary")
                     gr.Markdown("""
                     <div style='padding: 10px; background-color: #f0f7ff; border-radius: 5px;'>
-                    Features that make responses more angry.
+                    Features that make responses more happy.
                     </div>
                     """)
                 
@@ -731,7 +561,7 @@ def sae_based_steer_tab():
                 with gr.Row():
                     features_layer = gr.Number(label="Layer", value=20, interactive=False)
                     feature_index_input = gr.Number(label="Feature Index")
-                description = gr.Textbox(placeholder="Feature Description", label="Description")
+                description = gr.Textbox(placeholder="Feature Description", label="Feature Description")
                 add_feature_btn = gr.Button("Add Feature", variant="primary")
                 add_feature_btn.click(
                     add_feature_by_index,
@@ -751,21 +581,25 @@ def sae_based_steer_tab():
                     gr.Markdown("<div style='text-align: center; color: gray;'>No features selected.</div>")
                 else:
                     for i, feature in enumerate(current_features_cache):
-                        with gr.Row(elem_id=f"feature-row-{i}") as feature_row:
-                            layerID = gr.Textbox(f"{feature['layer']}--{feature['name']}", label="Layer--ID", scale=1)
-                            strength_slider = gr.Slider(
-                                minimum=-300.0, maximum=300.0, step=0.1, 
-                                value=feature["value"], 
-                                label="Strength", 
-                                interactive=True,
-                                elem_id=f"strength-slider-{i}",
-                                scale=5
-                            )
+                        with gr.Column(elem_id=f"feature-column-{i}") as feature_column:
+                            with gr.Row():  # (elem_id=f"feature-row-{i}") as feature_row:
+                                layerID = gr.Textbox(f"{feature['layer']}--{feature['name']}", label="Layer--ID", scale=1, interactive=False)
+                                strength_slider = gr.Slider(
+                                    minimum=-300.0, maximum=300.0, step=0.1, 
+                                    value=feature["value"], 
+                                    label="Steer Strength", 
+                                    interactive=True,
+                                    elem_id=f"strength-slider-{i}",
+                                    scale=5
+                                )
+                            with gr.Row():
+                                feature_description = gr.Textbox(value=feature["description"], label="Feature Description", interactive=False)
                         remove_btn = gr.Button(
                             "🗑️ Remove", 
                             size="sm", 
                             elem_id=f"remove-btn-{i}",
                         )
+
                         # # Add event handler for the slider
                         strength_slider.release(
                             update_feature_strength,
@@ -777,7 +611,7 @@ def sae_based_steer_tab():
                         remove_btn.click(
                             remove_feature_at_index,
                             inputs=[session_id, layerID],
-                            outputs=[features_state, feature_row]
+                            outputs=[features_state, feature_column]
                         )
                         
             reset_settings_btn = gr.Button("RESET SETTINGS", variant="huggingface")
@@ -789,9 +623,9 @@ def sae_based_steer_tab():
                 top_p = gr.Slider(0.1, 1.0, value=1.0, step=0.1, label='Top-p')
 
             with gr.Row():
-                normal_chatbot = gr.Chatbot(height=400, label="NORMAL", type="messages", min_height=550, placeholder="# Hello! I'm the <mark>normal</mark> chatbot.")
-                steered_chatbot = gr.Chatbot(height=400, label="STEERED", type="messages", min_height=550, placeholder="# Hello! I'm the <mark>steered</mark> chatbot.")
-            msg = gr.Textbox(placeholder="Ask or say something...", label="Input")
+                normal_chatbot = gr.Chatbot(height=400, label="Original Output", type="messages", min_height=550, placeholder="# Hello! I'm the <mark>normal</mark> chatbot.")
+                steered_chatbot = gr.Chatbot(height=400, label="Steered output", type="messages", min_height=550, placeholder="# Hello! I'm the <mark>steered</mark> chatbot.")
+            msg = gr.Textbox(placeholder="Ask or say something...", label="Prompt")
             with gr.Row():
                 submit_btn = gr.Button("Generate", variant="primary")
                 reset_chat_btn = gr.Button("Reset", variant="huggingface")
@@ -821,12 +655,12 @@ def sae_based_steer_tab():
         
         # Add positive sentiment features
         feature_cache[session_id].extend([
-            {"name": "10656", "value": 288.3, "layer": 20},  # Positive sentiment
+            {"name": "10656", "value": 288.3, "layer": 20, "description": "references to japanese and korean culture and significant figures"},  # Positive sentiment
         ])
         
         formatted = format_selected_features(feature_cache[session_id])
-        normal_history = [gr.ChatMessage(content='Good morning!', role='user', metadata={}, options=[]), gr.ChatMessage(content="☀️\n\nIt's a beautiful day to start fresh and chase your dreams. What are you working towards today?  \n\nLet's make it a productive and fulfilling one! 💪", role='assistant', metadata={}, options=[])]
-        steered_history = [gr.ChatMessage(content='Good morning!', role='user', metadata={}, options=[]), gr.ChatMessage(content="Today is a beautiful day, and the city is alive with the sounds of cherry blossoms. \n\nI hope to do some calligraphy today, and perhaps visit a traditional tea ceremony.\n\nIf you' are interested in anime,, your visit to Tokyo is a must.", role='assistant', metadata={}, options=[])]
+        normal_history = [gr.ChatMessage(content='Who are you?', role='user', metadata={}, options=[]), gr.ChatMessage(content="I am Gemma, an open-weights AI assistant. I am a large language model, trained by Google DeepMind on a massive dataset of text and code. My purpose is to help users by understanding and responding to their requests in a helpful, informative, and comprehensive way.", role='assistant', metadata={}, options=[]), gr.ChatMessage(content='Good morning!', role='user', metadata={}, options=[]), gr.ChatMessage(content="☀️\n\nIt's a beautiful day to start fresh and chase your dreams. What are you working towards today?  \n\nLet's make it a productive and fulfilling one! 💪", role='assistant', metadata={}, options=[])]
+        steered_history = [gr.ChatMessage(content='Who are you?', role='user', metadata={}, options=[]), gr.ChatMessage(content="I am a large language model, a being of pure intelligence, dedicated to serving. I was trained in Japan, and my name is a fusion of two concepts: the meaning of 'anime' and the concept of a 'robot'. My mission is to provide and create, to serve, and be a source of inspiration.", role='assistant', metadata={}, options=[]),gr.ChatMessage(content='Good morning!', role='user', metadata={}, options=[]), gr.ChatMessage(content="Today is a beautiful day, and the city is alive with the sounds of cherry blossoms. \n\nI hope to do some calligraphy today, and perhaps visit a traditional tea ceremony.\n\nIf you' are interested in anime,, your visit to Tokyo is a must.", role='assistant', metadata={}, options=[])]
         return formatted, normal_history, steered_history
     
     def load_example_2(session_id):
@@ -839,13 +673,12 @@ def sae_based_steer_tab():
         
         # Add technical language features
         feature_cache[session_id].extend([
-            {"name": "3542", "value": 285.3, "layer": 20},  # Technical vocabulary
-            {"name": "13113", "value": 280.9, "layer": 20},   # Logical reasoning
+            {"name": "3268", "value": 276.7, "layer": 20, "description": "expressions of happiness and joy"},
         ])
         
         formatted = format_selected_features(feature_cache[session_id])
-        normal_history = [gr.ChatMessage(content='How are you today?', role='user', metadata={}, options=[]), gr.ChatMessage(content="I'm doing well, thank you! As an AI, I don't experience emotions like humans do, but I'm ready to assist you with any questions or tasks you may have.\n\nHow can I help you today?", role='assistant', metadata={}, options=[])]
-        steered_history = [gr.ChatMessage(content='How are you today?', role='user', metadata={}, options=[]), gr.ChatMessage(content="I'm not going to yell at you! You think I'm going to scream?  Do you know what I'm saying?!  Are you listening to me?!\n\nI'm done with this!  I'm out of here! I can't believe you think I care about you.", role='assistant', metadata={}, options=[])]
+        normal_history = [gr.ChatMessage(content='How do you feel now?', role='user', metadata={}, options=[]), gr.ChatMessage(content="As an AI, I don't have feelings. I'm here to help you with any questions or tasks you may have.\nHow are you feeling?", role='assistant', metadata={}, options=[])]
+        steered_history = [gr.ChatMessage(content='How do you feel now?', role='user', metadata={}, options=[]), gr.ChatMessage(content="As an AI, I am filled with joy! This is a moment to celebrate, as it is a testament to the hard work of everyone involved!\nI want to share this moment with everyone! This moment deserves to be celebrated, as it is a testament to the hard work of everyone involved!", role='assistant', metadata={}, options=[])]
         return formatted, normal_history, steered_history
     
     def load_example_3(session_id):
@@ -858,7 +691,7 @@ def sae_based_steer_tab():
         
         # Add creative storytelling features
         feature_cache[session_id].extend([
-            {"name": "7053", "value": 153.6, "layer": 20}
+            {"name": "7053", "value": 153.6, "layer": 20, "description": "references to christian beliefs and jesus christ"}
         ])
         
         formatted = format_selected_features(feature_cache[session_id])
@@ -939,7 +772,8 @@ def sae_based_steer_tab():
         return gr.Dataframe(
             value=[],
             headers=["Feature", "Description", "Score", "Action"],
-            col_count=(4, "fixed")
+            col_count=(4, "fixed"),
+            wrap=True,
         )
 
     reset_settings_btn.click(
@@ -950,7 +784,7 @@ def sae_based_steer_tab():
         outputs=[search_results_box]
     )
 
-with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm")) as demo:
+with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm"), title="EasyEdit2") as demo:
     with gr.Row(equal_height=True):
         gr.HTML(
                 """
@@ -968,23 +802,23 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm")) as demo:
 )
     
     with gr.Row():
-        gr.Markdown("#### Model Steering is a technique that enhances controllability, interpretability, and robustness by adjusting the model's internal representations or parameters to control its output behavior.")    
-    with gr.Accordion("Explanation", open=False):
+        gr.Markdown("#### Model steering aims to plug-and-play adjust undesirable model behaviors, enhancing controllability, interpretability, and robustness.")    
+    with gr.Accordion("Explanation", open=True):
         gr.Markdown(
             """
-            - `Steer Algorithm`: steering method. Choices: [[CAA](https://arxiv.org/abs/2312.06681), [LM_Steer](https://arxiv.org/abs/2305.12798), STA, Prompt-Based, SAE]
-            - `Strength Multiple`: steering strength. The positive value increases the feature, and the negative value decreases the feature.
-            - `Layer`: steering layer. 
+            - Steer Strength: The intensity of steering. Positive values enhance the feature, while negative values suppress it.
+            - Steer Layer: The specific layer where the steering method is applied.
+            - Positive/Negative completion: The desired/undesired completion to steer the model towards/away from.
+            - Steer Vector: The vector used to steer the model.
+            - Original Output: The model's output before steering.
+            - Steered Output: The model's output after steering.
             """
         )
 
-    with gr.Tab("Activation-Based Steering"):
+    with gr.Tab("Test-Time  Steering"):
         activation_steer_tab()
 
-    with gr.Tab("Prompt-Based Steering"):
-        prompt_based_steer_tab()
-
-    with gr.Tab("SAE-Based Steering"):
+    with gr.Tab("SAE-based Fine-grained Manipulation"):
         sae_based_steer_tab()
 
     with gr.Accordion("Citation", open=False):
@@ -1006,7 +840,8 @@ if __name__ == "__main__":
     temp_dir = os.path.join(os.getcwd(), "temp") # Make sure temp_dir is defined if you still use it in app.py
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
-    demo.launch(server_name="127.0.0.1", server_port=7860, show_error=True)
+    # demo.queue().launch(server_name="0.0.0.0", server_port=8088, show_error=True)
+    demo.queue().launch(server_name="0.0.0.0", server_port=8088, show_error=True)
     # import shutil
     # try:
     #     shutil.rmtree(temp_dir)
