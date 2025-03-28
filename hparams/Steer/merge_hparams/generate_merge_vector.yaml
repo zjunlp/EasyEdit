@@ -1,0 +1,8 @@
+alg_name: merge_vector
+method: dare_ties
+vector_paths:
+- vectors/DeepSeek-R1-Distill-Llama-8B/caa_vector/layer_0.pt
+- vectors/DeepSeek-R1-Distill-Llama-8B/caa_vector/layer_1.pt
+weights: [1.0,1.0]    # default are ones
+desities: [0.5,0.5]   # default are ones
+

@@ -1,0 +1,12 @@
+alg_name: vector_prompt
+prompt: "This is not a system prompt."
+# generate_prompt_params:
+#   use_chat_template: true
+#   max_new_tokens: 500
+#   do_sample: true
+#   temperature: 0.9
+#   top_p: 1.0
+layers: [0, 1, 2]
+multiple_choice: false
+
+

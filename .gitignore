@@ -9,4 +9,11 @@ logs
 results
 output
 scripts
-
+vectors
+**/.cache/
+*.log
+delta.txt
+.history
+**/.hydra/
+**/.gradio/
+**/temp/

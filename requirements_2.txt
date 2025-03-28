@@ -1,0 +1,20 @@
+datasets==2.18.0
+nbformat==5.9.0
+typeguard==2.13.3
+torch==2.1.2
+tokenizers==0.19.1
+transformers==4.44.2
+
+google-api-python-client==2.156.0
+# modelscope
+ipykernel==6.27.1
+plot==0.6.5
+hydra-core==1.3.2
+python-dotenv==1.0.1
+nltk==3.8.1
+tqdm==4.66.5
+omegaconf==2.3.0
+requests==2.32.3
+sae_lens==3.20.4
+gradio==5.20.1
+openai==1.65.5
