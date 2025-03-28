@@ -11,7 +11,8 @@ class BaseVectorGenerator:
     def __init__(self, top_cfg: DictConfig):
         from ..utils import load_generate_vector_hparams
         self.hparams_dict = load_generate_vector_hparams(top_cfg)
-        print("Hparams Dict:", self.hparams_dict)
+        for alg_name, hparams in self.hparams_dict.items():
+            print(f"{alg_name.upper()} Generator Hyperparameters:\n{hparams}")
         
 
     def generate_vectors(self, datasets = None,):
@@ -32,13 +33,14 @@ class BaseVectorGenerator:
                     set_seed(hparams.seed)
                     steer_vector_output_dir = hparams.steer_vector_output_dir
                     hparams.steer_vector_output_dir = os.path.join(hparams.steer_vector_output_dir, dataset_name)
-                    print(f"Saving vectors to {hparams.steer_vector_output_dir} ...")
+                    
                     print(f"Generating {alg_name} vectors ...")
                     if alg_name in ['lm_steer', 'caa', 'vector_prompt', 'sta']:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name])
                     else:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)
                     generated_vectors[dataset_name][alg_name] = vectors
+                    print(f"Saving vectors to {hparams.steer_vector_output_dir} ...\n")
                     hparams.steer_vector_output_dir = steer_vector_output_dir
                     
                 else:

@@ -14,6 +14,7 @@ class HyperParams:
     seed: int=42
     model_name_or_path: str='your_own_path'
     device: str='cpu'
+    use_cache: bool=True
 
     @classmethod
     def from_json(cls, fpath):

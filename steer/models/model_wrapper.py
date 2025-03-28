@@ -186,6 +186,7 @@ class BaseModelWrapper:
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
+        use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
         hparams:HyperParams=None,
     ):
@@ -194,6 +195,7 @@ class BaseModelWrapper:
         self.use_chat = use_chat
         self.device = device
         self.torch_dtype = DTYPES_DICT.get(torch_dtype, t.float32)
+        self.use_cache = use_cache
         self.model_name_or_path = model_name_or_path
 
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -207,6 +209,7 @@ class BaseModelWrapper:
             self.model_name_or_path,
             torch_dtype=self.torch_dtype,
             device_map=self.device,
+            use_cache=self.use_cache
         )
         
         if override_model_weights_path is not None:
@@ -384,6 +387,7 @@ class LlamaWrapper(BaseModelWrapper):
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
+        use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
         hparams:HyperParams=None,
     ):
@@ -392,6 +396,7 @@ class LlamaWrapper(BaseModelWrapper):
             use_chat, 
             device,
             model_name_or_path,
+            use_cache,
             override_model_weights_path, 
             hparams)
 
@@ -402,6 +407,7 @@ class GemmaWrapper(BaseModelWrapper):
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
+        use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
         hparams:HyperParams=None
     ):
@@ -411,6 +417,7 @@ class GemmaWrapper(BaseModelWrapper):
             use_chat, 
             device,
             model_name_or_path,
+            use_cache,
             override_model_weights_path, 
             hparams)
 
@@ -421,6 +428,7 @@ class QwenWrapper(BaseModelWrapper):
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
+        use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
         hparams:HyperParams=None
     ):
@@ -429,6 +437,7 @@ class QwenWrapper(BaseModelWrapper):
             use_chat, 
             device,
             model_name_or_path,
+            use_cache,
             override_model_weights_path, 
             hparams)
 
@@ -439,6 +448,7 @@ class GPTWrapper(BaseModelWrapper):
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
+        use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
         hparams:HyperParams=None
     ):
@@ -447,6 +457,7 @@ class GPTWrapper(BaseModelWrapper):
             use_chat,
             device,
             model_name_or_path,
+            use_cache,
             override_model_weights_path, 
             hparams)
 

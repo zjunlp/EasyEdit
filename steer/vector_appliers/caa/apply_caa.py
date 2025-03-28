@@ -34,7 +34,7 @@ def apply_caa(hparams: ApplyCAAHyperParams,pipline=None, vector=None):
     layers = hparams.layers
     multipliers = hparams.multipliers
     for layer, multiplier in zip(layers, multipliers):
-        print(f"Layer {layer}")
+        # print(f"Layer {layer}")
 
         if vector is not None:
             steering_vector = vector[f'layer_{layer}'].to(device)
@@ -45,8 +45,7 @@ def apply_caa(hparams: ApplyCAAHyperParams,pipline=None, vector=None):
             )
             steering_vector = torch.load(vector_path,map_location=device)
             print("Steering vector path: ",vector_path)
-        print("Steering vector: ",steering_vector)
-        print(f"Multiplier {multiplier}")
+        # print(f"Multiplier {multiplier}")
 
         model.set_add_activations(
             layer, multiplier * steering_vector, method_name="caa"
