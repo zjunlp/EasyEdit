@@ -1,5 +1,5 @@
 alg_name: "R-ROME"
-model_name: "meta-llama/Llama-3.2-3B-Instruct"
+model_name: "meta-llama/Llama-3.2-1B-Instruct"
 stats_dir: "./data/stats"
 device: 0
 layers: [5]

@@ -1,5 +1,5 @@
 alg_name: "GRACE"
-model_name: "/disk1/xuhaoming/Models/Llama-3.2-3B"
+model_name: "meta-llama/Llama-3.2-3B-Instruct"
 device: 0
 
 inner_params:

@@ -1,5 +1,5 @@
 alg_name: "R-ROME"
-model_name: "./hugging_cache/gpt2-xl"
+model_name: "openai-community/gpt2-xl"
 stats_dir: "./data/stats"
 device: 0
 layers: [17]
@@ -23,5 +23,4 @@ mom2_n_samples: 100000
 mom2_dtype: "float32"
 model_parallel: false
 fp16: false
-
 

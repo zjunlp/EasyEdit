@@ -1,5 +1,5 @@
 alg_name: "QLoRA"
-model_name: "meta-llama/Llama-3.2-3B-Instruct"
+model_name: "meta-llama/Llama-3.2-1B-Instruct"
 device: 1
 
 # QLoRA specific settings

@@ -1,5 +1,5 @@
 alg_name: "IKE"
-model_name: "meta-llama/Llama-3.2-3B-Instruct"
+model_name: "meta-llama/Llama-3.2-1B-Instruct"
 sentence_model_name: "sentence-transformers/all-MiniLM-L6-v2"
 device: 0
 results_dir: "./results"
