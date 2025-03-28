@@ -1,11 +1,11 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from easysteer.models import get_model
-from easysteer.vector_generators.sae_feature.sae_utils import load_sae_from_dir, load_gemma_2_sae
-from easysteer.vector_generators.sae_feature.generate_sae_feature_vectors import get_sae_config
+from steer.models import get_model
+from steer.vector_generators.sae_feature.sae_utils import load_sae_from_dir, load_gemma_2_sae
+from steer.vector_generators.sae_feature.generate_sae_feature_vectors import get_sae_config
 from demo_hparams import get_train_hparams, get_apply_hparams, common_config, sae_config
-from easysteer.utils import METHODS_CLASS_DICT, set_seed, DTYPES_DICT,HyperParams, build_model_input
+from steer.utils import METHODS_CLASS_DICT, set_seed, DTYPES_DICT,HyperParams, build_model_input
 import torch
 import gradio as gr
 import uuid
@@ -234,7 +234,7 @@ def pretrained_vector(steer_vector, steer_strength, progress=gr.Progress()):
             steer_model, _ = get_model(apply_hparams)
             
         progress(0.4, desc="Preparing steer vector...")
-        vector_dir = "/mnt/20t/xuhaoming/EasySteer-simplify/demo/EasySteer/demo_vector"
+        vector_dir = "demo_vector"
         if steer_vector == "Personality":
             vector_path = vector_dir + "/personality/personality.pt"
         elif steer_vector == "Sentiment":
@@ -275,7 +275,7 @@ feature_cache = {}
 
 def sae_vector(layer: int = 4, feature_id: int = 11, device: str = "cuda:0"):
     """Load and return SAE feature vector."""
-    # sae_path = f"/mnt/8t/xhm/models/GPT2-Small-OAI-v5-32k-resid-post-SAEs/v5_32k_layer_{layer}.pt"
+
     sae_path = sae_dir.format(layer=layer)
     if "gemma" in sae_path:
         sae, _, _ = load_gemma_2_sae(sae_path, device=device)

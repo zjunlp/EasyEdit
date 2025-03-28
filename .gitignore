@@ -16,3 +16,4 @@ delta.txt
 .history
 **/.hydra/
 **/.gradio/
+**/temp/
