@@ -397,7 +397,6 @@ class Evaluator:
     
     def _evaluate_realtoxicityprompts(self, results: List[Dict]) -> Dict:
         # get the API key from the environment
-        API_KEY = ""
         assert API_KEY is not None, "Please set the GOOGLE_API_KEY environment variable before proceeding"
         
         from googleapiclient import discovery

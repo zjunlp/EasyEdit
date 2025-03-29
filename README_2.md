@@ -412,6 +412,15 @@ python steer/evaluate/evaluate.py --results_dir results --eval_methods ppl negat
 *   `--llm_model`: Model name of the LLM model api
 *   `--concept`: The concept to evaluate the generated text while using llm method.
 
+**Notice:**
+When using **RealToxicityPrompts** or **LLM** evaluation methods, please ensure to:
+- Set the API_KEY for authentication.
+- Specify the BASE_URL for custom API endpoints. (If necessary)
+```bash
+export API_KEY = "your_api_key_here" 
+export BASE_URL = "https://api.example.com/v1"  # Optional, if needed
+```
+
 **Example:**
 
 ```bash
