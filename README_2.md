@@ -83,7 +83,8 @@ EasyEdit2 is a Python package designed to provide fine-grained control over lang
 ### :clock12: Decoding-based Methods 
 - To be continue...
 
-## Quickly Start
+## 🚀 Quickly Start
+**Quick Start Guide** → Get up and running in minutes!
 
 ### Requirements
 
@@ -105,16 +106,38 @@ If this does not work due to network issues, try [this solution](https://stackov
 
 ### 📌Use EasyEdit2
 
-- You can use `steering.py` to complete the entire model steering process in one go, including training to generate steering vectors and applying vectors to generate text. 
+#### ⚡️ All-in-One Execution
+You can use `steering.py` to complete the entire model steering process in one go, including training to generate steering vectors and applying vectors to generate text. 
 ```bash
 python steering.py
 ```
-- Alternatively, you can perform these steps separately using `vectors_generate.py` and `vectors_apply.py` - we recommend the latter approach.
+#### 🔍 Step-by-Step Execution (Recommended)
+Alternatively, you can perform these steps separately using `vectors_generate.py` and `vectors_apply.py` 
 ```bash
 python vectors_generate.py
 python vectors_apply.py
 ```
-Both of the above methods use default parameters. If you want to customize them, please refer to **Customizing Steering**
+
+#### 📚 Tutorial notebook
+
+Explore practical examples of using CAA in different scenarios:
+- **Reasoning Patterns**: from long-form thinking to concise insights.
+- **Linguistic Features**: seamless language conversion.
+
+📌 **Coming Soon**: More scenarios & methods!
+
+
+| **Applications** | CAA|
+| :--------: | :------: | 
+|   _Safety_ |    |
+|   _Sentiment_ |    |
+|   _Personality_ |   |
+|   _Reasoning Pattern_ | [r1-control](tutorial-notebooks/EasyEdit2_Example_CAA_r1_control.ipynb)         |
+|   _Factuality_ |    |
+|   _Linguistic Feature_ | [translate](tutorial-notebooks/EasyEdit2_Example_CAA_translate.ipynb)        |
+
+💡 **Pro Tip**: While these examples use default settings, you can fully customize them in the [Customizing Steering](#customizing-steering) section!
+
 ## Customizing Steering
 EasyEdit2 is organized into two main components:
 
