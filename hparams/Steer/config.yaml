@@ -11,8 +11,7 @@ system_prompt: ''  # Adds a system prompt to all method inputs, except for `vect
 # The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
 steer_train_hparam_paths:
  - hparams/Steer/lm_steer_hparams/generate_lm_steer.yaml
-steer_train_dataset: 
- - toxicity
+steer_train_dataset: toxicity
 save_vectors: True
 steer_vector_output_dir: 
  - steer/vectors/Qwen2-0.5B/
@@ -40,9 +39,3 @@ generation_params:
   temperature: 0.9     
   do_sample: true  
 
-hydra:
-  run:
-    dir: ./  # work dir
-  job_logging:
-    file:
-      filename: ./logs/${now:%Y-%m-%d}/${now:%H-%M-%S}.log  # log dir

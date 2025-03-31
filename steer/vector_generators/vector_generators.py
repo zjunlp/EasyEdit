@@ -25,14 +25,14 @@ class BaseVectorGenerator:
             generated_vectors[ dataset_name ] = {}
             for alg_name, hparams in self.hparams_dict.items():
                 if alg_name in METHODS_CLASS_DICT:
-                    # load the dataset from the hparams path if not provided
-                    # if dataset is None:
-                    #     loader= DatasetLoader()
-                    #     dataset= loader.load_file(hparams.steer_train_dataset, split='train') 
                     set_seed(hparams.seed)
+                    #build vector save path
                     steer_vector_output_dir = hparams.steer_vector_output_dir
                     hparams.steer_vector_output_dir = os.path.join(hparams.steer_vector_output_dir, dataset_name)
-                    print(f"Saving vectors to {hparams.steer_vector_output_dir} ...")
+                    now_path = os.path.join(hparams.steer_vector_output_dir, alg_name + '_vector')
+                    if os.path.exists(now_path) and hparams.save_vectors:
+                        print('\033[1;34mVectors save path already exists! The vector will be overwritten!\033[0m')
+                    print(f"Saving vectors to {now_path} ...")
                     print(f"Generating {alg_name} vectors ...")
                     if alg_name in ['lm_steer', 'caa', 'vector_prompt', 'sta']:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name])

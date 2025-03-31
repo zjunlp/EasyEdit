@@ -19,6 +19,15 @@
 
 </div>
 
+
+## 📝 **IMPORTANT NOTE** 📝
+
+> EasyEdit2 requires **different Python packages** than the original EasyEdit.
+
+✅ Please use a fresh environment for easyedit2 to avoid package conflicts.
+
+---
+
 ## Table of Contents
 
 - [🌟 Overview](#-overview)
@@ -31,7 +40,6 @@
 - [Evaluation](#evaluation)
 - [Contributing](#contributing)
 - [License](#license)
-
 
 
 ## 🌟 Overview

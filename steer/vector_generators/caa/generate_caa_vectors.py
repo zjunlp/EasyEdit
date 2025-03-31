@@ -28,7 +28,7 @@ HUGGINGFACE_TOKEN = os.getenv("HF_TOKEN")
 def generate_caa_vectors(hparams:CAAHyperParams, dataset, model = None):
     from ...models.get_model import get_model
     from ...datasets.caa_data import get_tokens_for_caa
-    
+    # Whether to delete the model after the function
     del_model = True
     args = hparams
     if model is None:
