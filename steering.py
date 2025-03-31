@@ -25,11 +25,11 @@ def main(top_cfg: DictConfig):
     # Vector Application
     vector_applier = BaseVectorApplier(top_cfg)
     print(vectors)
-    for dataset in vectors:
+    for dataset in vectors.keys():
         print(f"Applying  {dataset} vectors to model ...")
         vector_applier.apply_vectors(vectors[dataset])
 
-    vector_applier.apply_vectors()
+    # vector_applier.apply_vectors()
 
     # Result Generation
     # You can customize your own inputs
