@@ -792,7 +792,7 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm"), title="EasyEdit2") 
                     <h1>🔧EasyEdit2: An Easy-to-use Steering Framework for Editing Large Language Models</h1>
 
                     <p>
-                    📑[<a href="https://huggingface.co/papers/2308.07269">Paper</a>]
+                    📑[<a href="">Paper</a>]
                     👨‍💻[<a href="https://github.com/zjunlp/EasyEdit" target="_blank"><span class="icon"><i class="fab fa-github"></i></span>Code</a>]
                     📄[<a href="https://zjunlp.gitbook.io/easyedit">Docs</a>]
                     🤗[<a href="https://huggingface.co/spaces/zjunlp/EasyEdit" target="_blank">Demo</a>]
@@ -802,7 +802,7 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm"), title="EasyEdit2") 
 )
     
     with gr.Row():
-        gr.Markdown("#### Model steering aims to plug-and-play adjust undesirable model behaviors, enhancing controllability, interpretability, and robustness.")    
+        gr.Markdown("#### Controlling AI: Plug-and-Play Tweaks to Eliminate Unwanted Behaviors and Supercharge Control, Clarity, and Resilience!")    
     with gr.Accordion("Explanation", open=True):
         gr.Markdown(
             """
@@ -825,12 +825,10 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm"), title="EasyEdit2") 
         gr.Markdown(
             """
             ```bibtex
-            @misc{wang2024easyedit,
-                title={EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models}, 
-                author={Peng Wang and Ningyu Zhang and Bozhong Tian and Zekun Xi and Yunzhi Yao and Ziwen Xu and Mengru Wang and Shengyu Mao and Xiaohan Wang and Siyuan Cheng and Kangwei Liu and Yuansheng Ni and Guozhou Zheng and Huajun Chen},
-                year={2024},
-                eprint={2308.07269},
-                archivePrefix={arXiv},
+            @misc{xu2025easyedit2,
+                title={EasyEdit2: An Easy-to-use Steering Framework for Editing Large Language Models}, 
+                author={Ziwen Xu and Shuxun Wang and Kewei Xu and Haoming Xu and Mengru Wang and Xinle Deng and Yunzhi Yao and Guozhou Zheng and Huajun Chen and Ningyu Zhang},
+                year={2025},
                 primaryClass={cs.CL}
             }
             ```
