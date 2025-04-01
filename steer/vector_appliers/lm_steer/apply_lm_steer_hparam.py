@@ -15,7 +15,7 @@ class ApplyLmSteerHyperParams(HyperParams):
     rank: int=1000
     num_steers: int=2 
     steer_values: List[float]=None
-    
+    generate_orig_output: bool=False
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

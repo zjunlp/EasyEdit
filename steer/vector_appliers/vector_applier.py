@@ -11,7 +11,9 @@ class BaseVectorApplier:
     def __init__(self, top_cfg: DictConfig):
         from ..utils import load_apply_vector_hparams
         self.hparams_dict = load_apply_vector_hparams(top_cfg)
-        print("Hparams Dict:", self.hparams_dict)
+        for alg_name, hparams in self.hparams_dict.items():
+            print(f"{alg_name.upper()} Applier Hyperparameters:\n{hparams}")
+
         self.config = top_cfg
         self.model = None
         self.tokenizer = None
@@ -28,11 +30,12 @@ class BaseVectorApplier:
         for alg_name in hparams_dict.keys():
             if alg_name in METHODS_CLASS_DICT:
                 set_seed(hparams_dict[alg_name].seed)
-                print(f"Applying {alg_name} vectors to model ...")
+                # print(f"Applying {alg_name} vectors to model ...")
                 if vectors is None or  vectors.get(alg_name) is None:
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
                 else:
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name],  model, vectors[alg_name])
+                print(f"Applying {alg_name} vectors to model successfully !\n")
             else:
                 return NotImplementedError(f"Method {alg_name} not implemented !")
  
@@ -65,9 +68,13 @@ class BaseVectorApplier:
         if 'pad_token_id' not in generation_params:
             generation_params['pad_token_id'] = self.tokenizer.eos_token_id
         for generation_data_name in generation_data_names:
+
             save_file_path = os.path.join(self.config.generation_output_dir, f"{generation_data_name}_results.json")
             if os.path.exists(save_file_path):  
                 print(f"\033[1;34mFile {save_file_path} already exists! The result will be overwritten!\033[0m")
+
+            orig_preds = []
+
             preds = []
             complete_output=[]
             generation_data_size = self.config['generation_data_size']
@@ -99,16 +106,22 @@ class BaseVectorApplier:
                         current_preds.append(text)
                 preds.append(current_preds)
                 complete_output.append(current_output)
-            
-            formatted_results = self._format_result(dataset, preds=preds, complete_output=complete_output)
+
+                if self.config.get('generate_orig_output', False):
+                    output = self.model.ori_generate(**inputs, **generation_params)
+                    output=output[0][inputs['input_ids'].shape[1]:]
+                    text = self.tokenizer.decode(output, skip_special_tokens=True)
+                    orig_preds.append([text])
+
+            formatted_results = self._format_result(dataset, orig_preds=orig_preds,preds=preds, complete_output=complete_output)
             self.save_results(formatted_results, generation_data_name)
-            
-            print(f"\n===== {generation_data_name} Top 3 Results =====")
-            for i, result in enumerate(formatted_results[:3], 1):
-                print(f"\n--- Result {i} ---")
-                result.pop('complete_output')
-                print(json.dumps(result, indent=4, ensure_ascii=False))
-            
+        item = formatted_results[0]
+        print(f"\n===== {generation_data_name} Results =====\n")
+        print(f"----- Input -----\n{item['input']}\n")
+        if self.config.get('generate_orig_output', False):
+            print(f"----- Orig Output-----\n{item['orig_pred']}\n")
+        print(f"----- Steered Output-----\n{item['pred']}\n")
+
         return formatted_results
     
     
@@ -128,12 +141,13 @@ class BaseVectorApplier:
                 ensure_ascii=False
             )
 
-    def _format_result(self, dataset, preds, complete_output):
+    def _format_result(self, dataset, orig_preds,preds, complete_output):
         results = []
         for idx in range(len(preds)):
             item = dataset[idx] 
             result = {
                 "input": item.get("input"),
+                "orig_pred": orig_preds[idx] if self.config.get('generate_orig_output', False) else [],
                 "pred": preds[idx],
                 "reference_response": item.get("reference_response"),
                 'complete_output': complete_output[idx]

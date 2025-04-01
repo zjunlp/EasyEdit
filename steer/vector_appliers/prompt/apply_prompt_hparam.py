@@ -31,7 +31,8 @@ class ApplyPromptHyperParams(HyperParams):
     # Evaluation related
     num_responses: int = 25  
     prompt_length: int = 20  
-
+    generate_orig_output: bool=False
+    
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
         if '.yaml' not in hparams_name_or_path:

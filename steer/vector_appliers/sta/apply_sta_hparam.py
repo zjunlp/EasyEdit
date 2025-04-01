@@ -13,6 +13,7 @@ class ApplySTAHyperParams(HyperParams):
     trims: List[float]=field(default_factory=lambda: [0.65])
     mode: str='act_and_freq'
     steer_vector_load_dir: str=None
+    generate_orig_output: bool=False
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 

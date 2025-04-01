@@ -11,6 +11,7 @@ class ApplySaeFeatureHyperParams(HyperParams):
     layers: List[int]=field(default_factory=lambda: [24])
     multipliers: List[float]=field(default_factory=lambda: [1.0]) 
     steer_vector_load_dir: str=None
+    generate_orig_output: bool=False
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

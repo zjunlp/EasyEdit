@@ -11,7 +11,8 @@ class BaseVectorGenerator:
     def __init__(self, top_cfg: DictConfig):
         from ..utils import load_generate_vector_hparams
         self.hparams_dict = load_generate_vector_hparams(top_cfg)
-        print("Hparams Dict:", self.hparams_dict)
+        for alg_name, hparams in self.hparams_dict.items():
+            print(f"{alg_name.upper()} Generator Hyperparameters:\n{hparams}")
         
 
     def generate_vectors(self, datasets = None,):
@@ -29,16 +30,19 @@ class BaseVectorGenerator:
                     #build vector save path
                     steer_vector_output_dir = hparams.steer_vector_output_dir
                     hparams.steer_vector_output_dir = os.path.join(hparams.steer_vector_output_dir, dataset_name)
+                    
                     now_path = os.path.join(hparams.steer_vector_output_dir, alg_name + '_vector')
                     if os.path.exists(now_path) and hparams.save_vectors:
                         print('\033[1;34mVectors save path already exists! The vector will be overwritten!\033[0m')
                     print(f"Saving vectors to {now_path} ...")
+                    
                     print(f"Generating {alg_name} vectors ...")
                     if alg_name in ['lm_steer', 'caa', 'vector_prompt', 'sta']:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name])
                     else:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)
                     generated_vectors[dataset_name][alg_name] = vectors
+                    print(f"Saving vectors to {hparams.steer_vector_output_dir} ...\n")
                     hparams.steer_vector_output_dir = steer_vector_output_dir
                     
                 else:
