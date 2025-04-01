@@ -159,14 +159,13 @@ def prepare_generation_datasets(hparams):
         datasets[generation_data_name] = dataset
     return datasets
 
-def prepare_train_datasets(hparams):
-    dataset_names = hparams.steer_train_dataset
-    datasets = {}
-    for train_data_name in dataset_names:
-        loader = DatasetLoader()
-        dataset = loader.load_file(train_data_name, split='train')
-        datasets[train_data_name] = dataset
-    return datasets
+def prepare_train_dataset(hparams):
+    dataset_name = hparams.steer_train_dataset
+    dataset = {}
+    loader = DatasetLoader()
+    dataset = loader.load_file(dataset_name, split='train')
+    dataset[dataset_name] = dataset
+    return dataset
 
 if __name__=='__main__':
     loader = DatasetLoader()

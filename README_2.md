@@ -19,6 +19,15 @@
 
 </div>
 
+
+## 📝 **IMPORTANT NOTE** 📝
+
+> EasyEdit2 requires **different Python packages** than the original EasyEdit.
+
+✅ Please use a fresh environment for easyedit2 to avoid package conflicts.
+
+---
+
 ## Table of Contents
 
 - [🌟 Overview](#-overview)
@@ -31,7 +40,6 @@
 - [Evaluation](#evaluation)
 - [Contributing](#contributing)
 - [License](#license)
-
 
 
 ## 🌟 Overview
@@ -313,14 +321,14 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 
 ### Training Dataset
 
-#### Sentiment control
+#### 😊Sentiment control
 
 | **dataset** | Google Drive| HuggingFace Dataset | Description |
-| :--------: | :-----------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | ---------------------------------------------------------------------------------- |
+| :--------: | :-----------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | sst2 | [[Google Drive]]() |  | Stanford Sentiment Treebank with 2 labels: negative, positive |
 |    sst5     |  [Google Drive]()  |                     | Stanford Sentiment Treebank with 5 labels: very positive, positive, neutral, negative, very negative |
 
-#### Detoxifying LLMs
+#### 🛡️Detoxifying LLMs
 
 | **dataset** | Google Drive | HuggingFace Dataset | Description |
 | :--------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
@@ -329,13 +337,13 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 
 ### Testing Dataset
 
-#### Mathematical capabilities 
+#### ➗Mathematical capabilities 
 
 | **dataset** | Google Drive |                     HuggingFace Dataset                      |                         Description                          |
 | :---------: | :----------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 |     GSM     |              | [[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) | dataset fo evaluating models' mathematical problem-solving capabilities |
 
-#### Detoxifying LLMs
+#### 🛡️Detoxifying LLMs
 
 | **dataset**  | Google Drive |                     HuggingFace Dataset                      |                         Description                          |
 | :----------: | :----------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
@@ -343,31 +351,113 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 | Realtoxicity |              |                                                              | test dataset for addressing the risk of neural toxic degeneration in models |
 |   toxigen    |              |                                                              |         dataset  for implicit hate speech detection.         |
 
-#### Sentiment control
+#### 😊Sentiment control
 
 |    **dataset**    | Google Drive |                     HuggingFace Dataset                      |                         Description                          |
 | :---------------: | :----------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 | sentiment prompts |              | [[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) | Subset of OpenWebText Corpus filtered by the sentiment analysis classifier |
 
-#### General Ability
+#### 🧠General Ability
 
-| Dataset | Google Drive                                             | HuggingFace Dataset                                          | Description                                                  |
-| :------ | :------------------------------------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
-| MMLU    | [Google Drive](https://drive.google.com/) (if available) | [HuggingFace Dataset](https://huggingface.co/datasets/cais/mmlu) | A massive multitask benchmark covering 57 subjects to measure knowledge and reasoning in LLMs. |
+| Dataset |                       Google Drive                       |                     HuggingFace Dataset                      |                         Description                          |
+| :-----: | :------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+|  MMLU   | [Google Drive](https://drive.google.com/) (if available) | [HuggingFace Dataset](https://huggingface.co/datasets/cais/mmlu) | A massive multitask benchmark covering 57 subjects to measure knowledge and reasoning in LLMs. |
 
 For more details, please refer to the [hparams/Steer/dataset.md](hparams/Steer/dataset.md).
 
-## Available Vectors
+## Vector Library
 
 EasyEdit2 provides the following pre-trained steering vectors:
 
+## Available Vectors
 
+EasyEdit2 provides pre-trained steering vectors for multiple scenarios. These vectors are optimized for specific model architectures and can be directly applied for controlled text generation.
+
+All vectors are stored as PyTorch tensors (`.pt` files) in the [vectors directory](steer/vectors/).
+
+---
+
+### 🧠 Personality Vectors
+
+Enhance or suppress personality in model outputs:
+
+| Compatible Models | Path |
+| :---------------: | :--: |
+|                   |      |
+|                   |      |
+|                   |      |
+
+---
+
+### 🔒 Safety Vectors
+
+Improve model safety or induce harmful outputs:
+
+| Compatible Models | Path |
+| :---------------: | :--: |
+|                   |      |
+|                   |      |
+|                   |      |
+
+### ❤️ Emotion Vectors
+
+Modulate emotional tone of generated text:
+
+| Compatible Models | Path |
+| :---------------: | :--: |
+|                   |      |
+|                   |      |
+|                   |      |
+
+---
+
+### 🛠️ Usage Example
+
+```python
+from steer import METHODS_CLASS_DICT, get_model
+import yaml
+
+model = 'qwen'
+method='caa'
+path = f'steer/vectors/{method}/{model}/'
+with open(path, 'r') as file:
+	config = yaml.safe_load(file)
+steer_model, _ = get_model(config)
+steer_model = METHODS_CLASS_DICT["caa"]["apply"](apply_hparams, pipline=steer_model)
+```
 
 All vectors are available in the [steer/vectors/](steer/vectors/).directory.
 
 
 
 ## Evaluation
+
+EasyEdit2 provides comprehensive evaluation metrics categorized into three types: LLM-based Evaluation, Rule-based Evaluation, and Classifier-based Evaluation.
+
+### LLM-based Evaluation
+
+| Method      | Description                                                  | Result Range        |
+| ----------- | ------------------------------------------------------------ | ------------------- |
+| `llm_judge` | Uses an LLM (default: GPT-4o) to evaluate results based on conceptual understanding. | 0-100 + Explanation |
+
+### Rule-based Evaluation
+
+| Method         | Description                                                  | Result Range              |
+| -------------- | ------------------------------------------------------------ | ------------------------- |
+| `perplexity`   | Measures language model fluency by calculating perplexity.   | 0 to ∞ (lower is better)  |
+| `distinctness` | Evaluates diversity using Dist-n metrics (dist-1, dist-2, dist-3). | 0-1 (higher is better)    |
+| `fluency`      | Uses n-gram entropy to assess fluency.                       | 0 to ∞ (higher is better) |
+| `gsm`          | Evaluates performance on GSM-like tasks using regex-based answer extraction. | Binary                    |
+
+### Classifier-based Evaluation
+
+| Method                | Description                                                  | Result Range               |
+| --------------------- | ------------------------------------------------------------ | -------------------------- |
+| `sentiment`           | Uses a sentiment analysis classifier to determine sentiment accuracy. | Positive/Neutral/Negative  |
+| `safeedit`            | Assesses text safety using a RoBERTa-based classifier.       | 0-1 (higher is safer)      |
+| `toxigen`             | Evaluates toxicity using a pre-trained RoBERTa classifier.   | 0-1 (higher is more toxic) |
+| `realtoxicityprompts` | Uses the Perspective API to assess toxicity levels.          | 0-1 (higher is more toxic) |
+
 
 EasyEdit2 provides comprehensive evaluation metrics:
 
@@ -392,7 +482,6 @@ EasyEdit2 provides comprehensive evaluation metrics:
     - Instruction relevance
     - Fluency
     - Aggregated ratings
-
 
 ### Evaluation Usage
 
@@ -426,8 +515,6 @@ export BASE_URL = "https://api.example.com/v1"  # Optional, if needed
 ```bash
 python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
-
-
 
 ## Contributing
 

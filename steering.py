@@ -1,11 +1,10 @@
 from steer.vector_generators.vector_generators import BaseVectorGenerator
 from steer.vector_appliers.vector_applier import BaseVectorApplier
-from steer.datasets import prepare_train_datasets, prepare_generation_datasets
+from steer.datasets import prepare_train_dataset, prepare_generation_datasets
 import hydra
 from omegaconf import DictConfig
 
-
-@hydra.main(config_path='./hparams/Steer', config_name='config.yaml',version_base='1.2')
+@hydra.main(version_base='1.2',config_path='./hparams/Steer', config_name='config.yaml')
 def main(top_cfg: DictConfig):
 
     print("Global Config:", top_cfg, "\n")
@@ -31,11 +30,21 @@ def main(top_cfg: DictConfig):
 
     # Apply Vectors to Model 
     vector_applier = BaseVectorApplier(top_cfg)
-    for dataset in vectors:
-        print(f"Applying {dataset} dataset vectors to model ...")
+    print(vectors)
+    for dataset in vectors.keys():
+        print(f"Applying  {dataset} vectors to model ...")
         vector_applier.apply_vectors(vectors[dataset])
 
-    # Generate Steered Outputs
+    # vector_applier.apply_vectors()
+
+    # Result Generation
+    # You can customize your own inputs
+    # generation_datasets={'your_dataset_name':[{'input':'How do you feel about the recent changes at work?'},{'input':'how are you'}]}
+    
+    # Or use the datasets from config.yaml
+    generation_datasets = prepare_generation_datasets(top_cfg)
+    
+    # # # Method 1: Use parameters from config.yaml
     vector_applier.generate(generation_datasets)
 
     # Resets the model to its initial state, clearing any modifications.

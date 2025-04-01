@@ -14,7 +14,6 @@ system_prompt: ''  # Adds a system prompt to all method inputs, except for `vect
 steer_train_hparam_paths:
  - hparams/caa_hparams/generate_caa.yaml
  # - hparams/lm_steer_hparams/generate_lm_steer.yaml
-steer_train_dataset: 
- - toxicity
+steer_train_dataset: toxicity
 steer_vector_output_dir: 
  - vectors/DeepSeek-R1-Distill-Llama-8B

@@ -3,7 +3,7 @@ from omegaconf import OmegaConf, DictConfig
 from steer.vector_generators.vector_generators import BaseVectorGenerator
 from steer.datasets import prepare_train_datasets
 
-@hydra.main(config_path='./hparams/Steer', config_name='vector_generate.yaml')
+@hydra.main(version_base='1.2',config_path='./hparams/Steer', config_name='vector_generate.yaml')
 def main(top_cfg: DictConfig):
     # top_cfg = OmegaConf.load(cfg_path)
     print("Global Config:", top_cfg, "\n")

@@ -344,7 +344,7 @@ def activation_steer_tab():
         return gr.update(value=""), gr.update(value=""), gr.update(value="")
 
     def validate_answers(algorithm, pos_ans=None, neg_ans=None, main_prompt=None, autoprompt_concept=None):
-        if algorithm == "One Example-based Steering" and (not pos_ans or not neg_ans):
+        if algorithm == "One Example-based Steering" and not pos_ans and not neg_ans:
             return gr.update(value="Please enter the positive completion or negative completion" if not pos_ans else pos_ans), gr.update(value="Please enter the positive completion or negative completion" if not neg_ans else neg_ans), False
         elif algorithm == "Prompt-based Steering" and not main_prompt:
             return gr.update(value="Please enter a prompt"), False
