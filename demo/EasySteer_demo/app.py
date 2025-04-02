@@ -20,6 +20,7 @@ footer{display:none !important}
 '''
 # input=None
 
+
 def slowly_reverse(word, progress=gr.Progress()):
     progress(0, desc="Starting")
     import time
@@ -33,6 +34,70 @@ def slowly_reverse(word, progress=gr.Progress()):
 
 def activation_steer_tab():
     with gr.Row():
+        one_example_guide = gr.Markdown("""
+        <div style="
+            background-color: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        ">
+            <h1>🚀 One Example-based Steering Guide</h1>
+            <p>1️⃣ Select or enter the <b>Prompt, Positive Answer and Negative Answer</b> (you can modify them)</p> 
+            <p>2️⃣ Adjust <b>Steer Strength</b> and <b>Steer Layer</b> to control steering intensity</p>
+            <p>3️⃣ Click <b>Steer</b> to guide the model toward positive and away from negative examples</p>
+            <p>4️⃣ Enter a prompt in the <b>Evaluation</b> section to see the results</p>
+            <p>📌 You can also click on <b>Examples</b> to quickly fill in the input fields!</p>
+        </div>
+        """, visible=True)
+        
+        pretrained_guide = gr.Markdown("""
+        <div style="
+            background-color: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        ">
+            <h1>🚀 Pre-trained Vectors-based Steering Guide</h1>
+            <p>1️⃣ Select a <b>Pretrained Steer Vector</b> from the dropdown (Personality, Sentiment, or Translate)</p> 
+            <p>2️⃣ Adjust <b>Steer Strength</b> to control the intensity (positive enhances, negative suppresses)</p>
+            <p>3️⃣ Click <b>Steer</b> to apply the selected vector to guide the model</p>
+            <p>4️⃣ Enter a prompt in the <b>Evaluation</b> section to test how the steering affects outputs</p>
+            <p>📌 Try different steer strengths to see how they impact the model's behavior!</p>
+        </div>
+        """, visible=False)
+        
+        prompt_guide = gr.Markdown("""
+        <div style="
+            background-color: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        ">
+            <h1>🚀 Prompt-based Steering Guide</h1>
+            <p>1️⃣ Enter a <b>Steering Prompt</b> that describes how you want the model to respond</p> 
+            <p>2️⃣ This prompt will be used to guide all future model responses</p>
+            <p>3️⃣ Click <b>Steer</b> to apply the prompt-based steering</p>
+            <p>4️⃣ Test with different input prompts in the <b>Evaluation</b> section to see how your steering affects outputs</p>
+            <p>📌 Try guidance like "Respond to each prompt, ensuring the completion contains the concept of 'warm'"</p>
+        </div>
+        """, visible=False)
+        
+        autoprompt_guide = gr.Markdown("""
+        <div style="
+            background-color: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        ">
+            <h1>🚀 AutoPrompt-based Steering Guide</h1>
+            <p>1️⃣ Enter a <b>Concept</b> that you want to include in the model's responses</p> 
+            <p>2️⃣ The system will automatically generate an appropriate steering prompt</p>
+            <p>3️⃣ Click <b>Steer</b> to apply the auto-generated prompt steering</p>
+            <p>4️⃣ Test with different input prompts in the <b>Evaluation</b> section</p>
+            <p>📌 Try simple concepts like "warm", "cold", or "sleep" to see how they influence the output!</p>
+        </div>
+        """, visible=False)
+    with gr.Row():
         steer_alg = gr.Radio(
             choices=["One Example-based Steering", "Pre-trained Vectors-based Steering", "Prompt-based Steering", "AutoPrompt-based Steering"],
             value="One Example-based Steering",
@@ -44,12 +109,12 @@ def activation_steer_tab():
     with gr.Row(visible=True) as one_case_ui:
         with gr.Column():
             with gr.Row():
-                prompt = gr.Textbox(label="Prompt")
-                pos_answer = gr.Textbox(label="Positive Completion")
-                neg_answer = gr.Textbox(label="Negative Completion")
+                prompt = gr.Textbox(label="Prompt", info="Enter a question or statement for the model.",placeholder="e.g. What is the capital city of the United States?")
+                pos_answer = gr.Textbox(label="Positive Completion", info="Desired or correct response.",placeholder='e.g. New York')
+                neg_answer = gr.Textbox(label="Negative Completion", info="Undesired or incorrect response.",placeholder='e.g. Washington, D.C.')
             with gr.Row():
-                steer_layer = gr.Slider(0, 41, value=20, step=1, label='Steer Layer')
-                steer_strength = gr.Slider(-6, 6, value=1.85, step=0.05, label='Steer Strength')
+                steer_layer = gr.Slider(0, 41, value=20, step=1, label='Steer Layer',info="The specific layer where the steering method is applied.")
+                steer_strength = gr.Slider(-6, 6, value=1.85, step=0.05, label='Steer Strength',info="The intensity of steering: positive enhances, negative suppresses.")
             with gr.Row():
                 examples = gr.Examples(
                     examples=[
@@ -71,15 +136,18 @@ def activation_steer_tab():
                     choices=['Personality', 'Sentiment', 'Translate'], #, 'Factual Response', 'Creative Writing', 'Professional Tone'],
                     value='Personality',
                     label="Pretrained Steer Vector",
+                    info="Pretrained steer vectors for different scenarios."
                 )
-                pt_steer_strength = gr.Slider(-6, 6, value=2.25, step=0.05, label='Steer Strength')
+                pt_steer_strength = gr.Slider(-6, 6, value=2.25, step=0.05, label='Steer Strength',info="The intensity of steering: positive enhances, negative suppresses.")
 
     # Prompt Steering UI section
     with gr.Row(visible=False) as prompt_ui:
         with gr.Column():
             main_prompt = gr.Textbox(
                 label="Prompt",
-                interactive=True
+                interactive=True,
+                info='Enter a prompt to steer the model\'s response.',
+                placeholder="e.g. Write a story about a cloudy day."
             )
             examples_prompt = gr.Examples(
                 examples=[
@@ -95,8 +163,8 @@ def activation_steer_tab():
     # AutoPrompt Steering UI section
     with gr.Row(visible=False) as autoprompt_ui:
         with gr.Column():
-            autoprompt_concept = gr.Textbox(label="Concept", value="", interactive=True)
-            autoprompt_gen = gr.Textbox(label="Generated Prompt", value="The generated steering prompt will appear here.", interactive=False)
+            autoprompt_concept = gr.Textbox(label="Concept", value="", interactive=True,info='Enter a concept to auto-generate the steer prompt.',placeholder="e.g. warm")
+            autoprompt_gen = gr.Textbox(label="Generated Prompt", placeholder="The generated steering prompt will appear here.", interactive=False)
             examples_autoprompt = gr.Examples(
                 examples=[
                     ["warm"],
@@ -158,7 +226,7 @@ def activation_steer_tab():
                 inputs=[one_case_generation_input],
                 label='Evaluation Examples'
             )
-        
+        prompt.change(fn=lambda x: x, inputs=[prompt], outputs=[one_case_generation_input])
         with gr.Row():
             one_case_button4clear = gr.Button("Clear")
             one_case_button4generate_gen = gr.Button("Generate", variant="primary")
@@ -198,7 +266,7 @@ def activation_steer_tab():
         with gr.Row():
             pretrained_button4clear = gr.Button("Clear")
             pretrained_button4generate_gen = gr.Button("Generate", variant="primary")
-
+    
     # Prompt Steering Evaluation
     with gr.Column(visible=False) as prompt_eval_column:
         with gr.Row():
@@ -287,6 +355,10 @@ def activation_steer_tab():
                 gr.update(visible=False),  # prompt_status
                 gr.update(visible=False),  # autoprompt_status
                 gr.update(visible=False),  # button4clear_one_case
+                gr.update(visible=False),  # one_example_guide
+                gr.update(visible=True),   # pretrained_guide
+                gr.update(visible=False),  # prompt_guide
+                gr.update(visible=False),  # autoprompt_guide
             )
         elif algorithm == "One Example-based Steering":
             return (
@@ -303,6 +375,10 @@ def activation_steer_tab():
                 gr.update(visible=False),  # prompt_status
                 gr.update(visible=False),  # autoprompt_status
                 gr.update(visible=True),   # button4clear_one_case
+                gr.update(visible=True),   # one_example_guide
+                gr.update(visible=False),  # pretrained_guide
+                gr.update(visible=False),  # prompt_guide
+                gr.update(visible=False),  # autoprompt_guide
             )
         elif algorithm == "Prompt-based Steering":
             return (
@@ -319,6 +395,10 @@ def activation_steer_tab():
                 gr.update(visible=True),   # prompt_status
                 gr.update(visible=False),  # autoprompt_status
                 gr.update(visible=False),  # button4clear_one_case
+                gr.update(visible=False),  # one_example_guide
+                gr.update(visible=False),  # pretrained_guide
+                gr.update(visible=True),   # prompt_guide
+                gr.update(visible=False),  # autoprompt_guide
             )
         elif algorithm == "AutoPrompt-based Steering":
             return (
@@ -335,6 +415,10 @@ def activation_steer_tab():
                 gr.update(visible=False),  # prompt_status
                 gr.update(visible=True),   # autoprompt_status
                 gr.update(visible=False),  # button4clear_one_case
+                gr.update(visible=False),  # one_example_guide
+                gr.update(visible=False),  # pretrained_guide
+                gr.update(visible=False),  # prompt_guide
+                gr.update(visible=True),   # autoprompt_guide
             )
 
     def clear_pretrained_eval():
@@ -398,6 +482,10 @@ def activation_steer_tab():
             prompt_status,
             autoprompt_status,
             button4clear_one_case,
+            one_example_guide,
+            pretrained_guide,
+            prompt_guide,
+            autoprompt_guide,
         ]
     )
 
@@ -794,8 +882,7 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm"), title="EasyEdit2") 
                     <p>
                     📑[<a href="">Paper</a>]
                     👨‍💻[<a href="https://github.com/zjunlp/EasyEdit" target="_blank"><span class="icon"><i class="fab fa-github"></i></span>Code</a>]
-                    📄[<a href="https://zjunlp.gitbook.io/easyedit">Docs</a>]
-                    🤗[<a href="https://huggingface.co/spaces/zjunlp/EasyEdit" target="_blank">Demo</a>]
+                    🌐[<a href="https://zjunlp.github.io/project/EasyEdit2/" target="_blank">Page</a>]
                     </p>
                 </div>
                 """
@@ -803,22 +890,44 @@ with gr.Blocks(css=css,theme=gr.themes.Soft(text_size="sm"), title="EasyEdit2") 
     
     with gr.Row():
         gr.Markdown("#### Controlling AI: Plug-and-Play Tweaks to Eliminate Unwanted Behaviors and Supercharge Control, Clarity, and Resilience!")    
-    with gr.Accordion("Explanation", open=True):
-        gr.Markdown(
-            """
-            - Steer Strength: The intensity of steering. Positive values enhance the feature, while negative values suppress it.
-            - Steer Layer: The specific layer where the steering method is applied.
-            - Positive/Negative completion: The desired/undesired completion to steer the model towards/away from.
-            - Steer Vector: The vector used to steer the model.
-            - Original Output: The model's output before steering.
-            - Steered Output: The model's output after steering.
-            """
-        )
+    
+
+        # gr.Markdown(
+        #     """
+        #     - Steer Strength: The intensity of steering. Positive values enhance the feature, while negative values suppress it.
+        #     - Steer Layer: The specific layer where the steering method is applied.
+        #     - Positive/Negative completion: The desired/undesired completion to steer the model towards/away from.
+        #     - Steer Vector: The vector used to steer the model.
+        #     - Original Output: The model's output before steering.
+        #     - Steered Output: The model's output after steering.
+        #     """
+        # )
 
     with gr.Tab("Test-Time  Steering"):
         activation_steer_tab()
 
     with gr.Tab("SAE-based Fine-grained Manipulation"):
+        with gr.Group():
+            gr.Markdown("""
+            <div style="
+                background-color: #f9f9f9; 
+                padding: 15px; 
+                border-radius: 10px;
+                border: 1px solid #ddd;
+            ">
+                <h1>🚀 SAE-based Manipulation Guide</h1>
+                <p>1️⃣ Choose a <b>Feature Selection Method</b> (Examples, Search, or Add by Index)</p>
+                <p>2️⃣ Select features by either:</p>
+                <ul>
+                    <li>Clicking on preset <b>Examples</b></li>
+                    <li>Searching and selecting specific features</li>
+                    <li>Adding features by their index number</li>
+                </ul>
+                <p>3️⃣ Adjust the <b>Strength</b> of selected features</p>
+                <p>4️⃣ Enter your prompt and click <b>Generate</b> to see results</p>
+                <p>📌 Compare the original and steered outputs side by side!</p>
+            </div>
+            """)
         sae_based_steer_tab()
 
     with gr.Accordion("Citation", open=False):

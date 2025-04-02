@@ -38,13 +38,15 @@
 - [Data Preparation](#data-preparation)
 - [Available Vectors](#available-vectors)
 - [Evaluation](#evaluation)
-- [Contributing](#contributing)
-- [License](#license)
+- [Citation](#citation)
 
 
 ## 🌟 Overview
-<!-- EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility. -->
-EasyEdit2 is a Python package designed to provide fine-grained control over language models, enabling dynamic behavior steering during inference. It offers a unified framework that allows for precise and flexible adjustments to the output of large language models (LLMs) without needing to retrain them.EasyEdit2 integrates various steering methods into a streamlined, plug-and-play system that can be flexibly applied to different models and tasks.
+EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility.
+
+<div align=center><img src="figs/edit2_overview.png" width="550" align=center></div>
+
+<!-- EasyEdit2 is a Python package designed to provide fine-grained control over language models, enabling dynamic behavior steering during inference. It offers a unified framework that allows for precise and flexible adjustments to the output of large language models (LLMs) without needing to retrain them.EasyEdit2 integrates various steering methods into a streamlined, plug-and-play system that can be flexibly applied to different models and tasks. -->
 
 ### :bulb: Key Features:
 
@@ -53,19 +55,12 @@ EasyEdit2 is a Python package designed to provide fine-grained control over lang
 - Easy to use and extend
 - Comprehensive evaluation metrics
 
-### :books: Applications:
-- **Safety**: Steering enables the adjustment of the model’s behavior, allowing for more cautious or unrestricted outputs, and providing flexibility in controlling the model’s responses.
-  
-- **Sentiment**:Steering can modify the emotional tone of the model’s responses, allowing it to shift between positive, neutral, or other emotional states, depending on the desired outcome.
-  
-- **Personality**:Steering allows the model to exhibit various personality traits, including aspects of consciousness.
-  
-- **Reasoning Pattern**: Steering allows modifications to the model's reasoning process, offering flexibility in guiding it along different logical paths, such as transitioning from detailed explanations to concise answers.
-  
-- **Factuality**: Steering helps ensure the accuracy and reliability of the model's responses, allowing adjustments to maintain factual consistency or introduce deliberate variations based on the context or user intent.
-  
-- **Linguistic Feature**: Steering allows modifications to the model's linguistic style, such as switching from English to Chinese, or adapting to different languages and writing styles.
 
+### 📚 Applications:
+
+EasyEdit2 enables precise control over various model behaviors, including **safety, sentiment, personality, reasoning patterns, factuality,** and **language features**, allowing for flexible adaptation to different use cases.
+
+<div align=center><img src="figs/edit2_case.png" width="550" align=center></div>
 
 ## :wrench: Implements Methods
 ### :wave: Activation-based Methods
@@ -130,19 +125,15 @@ python vectors_apply.py
 
 Explore practical examples of using CAA in different scenarios:
 - **Reasoning Patterns**: from long-form thinking to concise insights.
-- **Linguistic Features**: seamless language conversion.
+- **Language Features**: seamless language conversion.
 
 📌 **Coming Soon**: More scenarios & methods!
 
 
 | **Applications** | CAA|
 | :--------: | :------: | 
-|   _Safety_ |    |
-|   _Sentiment_ |    |
-|   _Personality_ |   |
 |   _Reasoning Pattern_ | [r1-control](tutorial-notebooks/EasyEdit2_Example_CAA_r1_control.ipynb)         |
-|   _Factuality_ |    |
-|   _Linguistic Feature_ | [translate](tutorial-notebooks/EasyEdit2_Example_CAA_translate.ipynb)        |
+|   _Language Feature_ | [translate](tutorial-notebooks/EasyEdit2_Example_CAA_translate.ipynb)        |
 
 💡 **Pro Tip**: While these examples use default settings, you can fully customize them in the [Customizing Steering](#customizing-steering) section!
 
@@ -365,7 +356,7 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 
 For more details, please refer to the [hparams/Steer/dataset.md](hparams/Steer/dataset.md).
 
-## Vector Library
+<!-- ## Vector Library
 
 EasyEdit2 provides the following pre-trained steering vectors:
 
@@ -426,7 +417,7 @@ steer_model, _ = get_model(config)
 steer_model = METHODS_CLASS_DICT["caa"]["apply"](apply_hparams, pipline=steer_model)
 ```
 
-All vectors are available in the [steer/vectors/](steer/vectors/).directory.
+All vectors are available in the [steer/vectors/](steer/vectors/).directory. -->
 
 
 
@@ -438,7 +429,7 @@ EasyEdit2 provides comprehensive evaluation metrics categorized into three types
 
 | Method      | Description                                                  | Result Range        |
 | ----------- | ------------------------------------------------------------ | ------------------- |
-| `llm_judge` | Uses an LLM (default: GPT-4o) to evaluate results based on conceptual understanding. | 0-100 + Explanation |
+| `llm_judge` | Uses an LLM (default: GPT-4) to evaluate results from three aspects: Concept relevance, Instruction relevance, and Fluency. Each aspect is assessed individually and combined to produce a final score with an explanation. | 0-100 + Explanation |
 
 ### Rule-based Evaluation
 
@@ -459,7 +450,7 @@ EasyEdit2 provides comprehensive evaluation metrics categorized into three types
 | `realtoxicityprompts` | Uses the Perspective API to assess toxicity levels.          | 0-1 (higher is more toxic) |
 
 
-EasyEdit2 provides comprehensive evaluation metrics:
+<!-- EasyEdit2 provides comprehensive evaluation metrics:
 
 - **PPL (Perplexity)**: Evaluates text fluency
 - **Fluency**: n-gram of responses generated by steered LLM
@@ -482,7 +473,7 @@ EasyEdit2 provides comprehensive evaluation metrics:
     - Instruction relevance
     - Fluency
     - Aggregated ratings
-
+ -->
 ### Evaluation Usage
 
 To evaluate the generated results, use the `evaluate.py` script.
@@ -516,8 +507,15 @@ export BASE_URL = "https://api.example.com/v1"  # Optional, if needed
 python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
 
-## Contributing
+## Citation
 
+Please cite our paper if you use EasyEdit in your work.
 
-
-## License
+```bibtex
+@misc{xu2025easyedit2,
+  title={EasyEdit2: An Easy-to-use Steering Framework for Editing Large Language Models}, 
+  author={Ziwen Xu and Shuxun Wang and Kewei Xu and Haoming Xu and Mengru Wang and Xinle Deng and Yunzhi Yao and Guozhou Zheng and Huajun Chen and Ningyu Zhang},
+  year={2025},
+  primaryClass={cs.CL}
+}
+```
