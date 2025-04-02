@@ -43,8 +43,9 @@
 
 
 ## 🌟 Overview
-<!-- EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility. -->
-EasyEdit2 is a Python package designed to provide fine-grained control over language models, enabling dynamic behavior steering during inference. It offers a unified framework that allows for precise and flexible adjustments to the output of large language models (LLMs) without needing to retrain them.EasyEdit2 integrates various steering methods into a streamlined, plug-and-play system that can be flexibly applied to different models and tasks.
+EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility.
+<img src="figs/edit2_overview.png" width="500px">
+<!-- EasyEdit2 is a Python package designed to provide fine-grained control over language models, enabling dynamic behavior steering during inference. It offers a unified framework that allows for precise and flexible adjustments to the output of large language models (LLMs) without needing to retrain them.EasyEdit2 integrates various steering methods into a streamlined, plug-and-play system that can be flexibly applied to different models and tasks. -->
 
 ### :bulb: Key Features:
 
@@ -53,18 +54,11 @@ EasyEdit2 is a Python package designed to provide fine-grained control over lang
 - Easy to use and extend
 - Comprehensive evaluation metrics
 
-### :books: Applications:
-- **Safety**: Steering enables the adjustment of the model’s behavior, allowing for more cautious or unrestricted outputs, and providing flexibility in controlling the model’s responses.
-  
-- **Sentiment**:Steering can modify the emotional tone of the model’s responses, allowing it to shift between positive, neutral, or other emotional states, depending on the desired outcome.
-  
-- **Personality**:Steering allows the model to exhibit various personality traits, including aspects of consciousness.
-  
-- **Reasoning Pattern**: Steering allows modifications to the model's reasoning process, offering flexibility in guiding it along different logical paths, such as transitioning from detailed explanations to concise answers.
-  
-- **Factuality**: Steering helps ensure the accuracy and reliability of the model's responses, allowing adjustments to maintain factual consistency or introduce deliberate variations based on the context or user intent.
-  
-- **Linguistic Feature**: Steering allows modifications to the model's linguistic style, such as switching from English to Chinese, or adapting to different languages and writing styles.
+
+### 📚 Applications:
+
+EasyEdit2 enables precise control over various model behaviors, including **safety, sentiment, personality, reasoning patterns, factuality,** and **linguistic features**, allowing for flexible adaptation to different use cases.
+<img src="figs/edit2_case.png" width="500px">
 
 
 ## :wrench: Implements Methods
@@ -137,11 +131,7 @@ Explore practical examples of using CAA in different scenarios:
 
 | **Applications** | CAA|
 | :--------: | :------: | 
-|   _Safety_ |    |
-|   _Sentiment_ |    |
-|   _Personality_ |   |
 |   _Reasoning Pattern_ | [r1-control](tutorial-notebooks/EasyEdit2_Example_CAA_r1_control.ipynb)         |
-|   _Factuality_ |    |
 |   _Linguistic Feature_ | [translate](tutorial-notebooks/EasyEdit2_Example_CAA_translate.ipynb)        |
 
 💡 **Pro Tip**: While these examples use default settings, you can fully customize them in the [Customizing Steering](#customizing-steering) section!
@@ -365,7 +355,7 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 
 For more details, please refer to the [hparams/Steer/dataset.md](hparams/Steer/dataset.md).
 
-## Vector Library
+<!-- ## Vector Library
 
 EasyEdit2 provides the following pre-trained steering vectors:
 
@@ -426,7 +416,7 @@ steer_model, _ = get_model(config)
 steer_model = METHODS_CLASS_DICT["caa"]["apply"](apply_hparams, pipline=steer_model)
 ```
 
-All vectors are available in the [steer/vectors/](steer/vectors/).directory.
+All vectors are available in the [steer/vectors/](steer/vectors/).directory. -->
 
 
 
