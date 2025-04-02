@@ -72,9 +72,9 @@
   - [Dataset](#dataset-1)
   - [Usage](#usage)
 - [Editing Performance](#editing-performance)
-  - [Citation](#citation)
-  - [🎉Contributors](#contributors)
-      - [Other Related Projects](#other-related-projects)
+- [Citation](#citation)
+- [🎉Contributors](#contributors)
+    - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
 - 2025-03-04, 🌟🌟In addition to the original token-level teacher-forcing paradigm for evaluation, EasyEdit has integrated a new evaluation method, following the paper titled "[The Mirage of Model Editing: Revisiting Evaluation in the Wild](https://arxiv.org/abs/2502.11177)". You can use this [script](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_LLM_evaluation.py) to quickly launch this evaluation approach, which better aligns with real-world requirements. Special thanks to [@WanliYoung](https://github.com/WanliYoung) for contribution!
