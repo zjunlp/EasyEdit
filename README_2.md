@@ -39,7 +39,6 @@
 - [Available Vectors](#available-vectors)
 - [Evaluation](#evaluation)
 - [Contributing](#contributing)
-- [License](#license)
 
 
 ## 🌟 Overview
@@ -509,7 +508,3 @@ python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_r
 ```
 
 ## Contributing
-
-
-
-## License
