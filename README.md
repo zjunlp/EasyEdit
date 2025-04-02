@@ -36,7 +36,7 @@
 
 ## Table of Contents
 
-- [EasySteer](#easysteer)
+- [EasyEdit2.0](#easyEdit2.0)
   - [Table of Contents](#table-of-contents)
   - [🔔News](#news)
   - [Editing Demo](#editing-demo)
