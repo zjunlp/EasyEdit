@@ -2,7 +2,7 @@
 <div align="center">
 <img src="figs/logo_2.png" width="180px">
 
-**A Simple Framework for Language Model Steering**
+**An Easy-to-use Steering Framework for Editing Large Language Models**
 
 ![](https://img.shields.io/badge/version-v0.0.1-blue)
 ![](https://img.shields.io/badge/PRs-Welcome-red)
