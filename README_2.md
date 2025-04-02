@@ -24,7 +24,7 @@
 
 > EasyEdit2 requires **different Python packages** than the original EasyEdit.
 
-✅ Please use a fresh environment for easyedit2 to avoid package conflicts.
+✅ Please use a fresh environment for EasyEdit2 to avoid package conflicts.
 
 ---
 
