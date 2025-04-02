@@ -38,7 +38,7 @@
 - [Data Preparation](#data-preparation)
 - [Available Vectors](#available-vectors)
 - [Evaluation](#evaluation)
-- [Contributing](#contributing)
+- [Citation](#citation)
 
 
 ## 🌟 Overview
@@ -507,4 +507,15 @@ export BASE_URL = "https://api.example.com/v1"  # Optional, if needed
 python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
 
-## Contributing
+## Citation
+
+Please cite our paper if you use EasyEdit in your work.
+
+```bibtex
+@misc{xu2025easyedit2,
+  title={EasyEdit2: An Easy-to-use Steering Framework for Editing Large Language Models}, 
+  author={Ziwen Xu and Shuxun Wang and Kewei Xu and Haoming Xu and Mengru Wang and Xinle Deng and Yunzhi Yao and Guozhou Zheng and Huajun Chen and Ningyu Zhang},
+  year={2025},
+  primaryClass={cs.CL}
+}
+```
