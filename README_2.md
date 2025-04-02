@@ -44,7 +44,9 @@
 
 ## 🌟 Overview
 EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility.
-<img src="figs/edit2_overview.png" width="550" align=center>
+
+<div align=center><img src="figs/edit2_overview.png" width="550" align=center></div>
+
 <!-- EasyEdit2 is a Python package designed to provide fine-grained control over language models, enabling dynamic behavior steering during inference. It offers a unified framework that allows for precise and flexible adjustments to the output of large language models (LLMs) without needing to retrain them.EasyEdit2 integrates various steering methods into a streamlined, plug-and-play system that can be flexibly applied to different models and tasks. -->
 
 ### :bulb: Key Features:
@@ -59,8 +61,7 @@ EasyEdit2 is a Python package for language model steering. It provides a unified
 
 EasyEdit2 enables precise control over various model behaviors, including **safety, sentiment, personality, reasoning patterns, factuality,** and **language features**, allowing for flexible adaptation to different use cases.
 
-<img src="figs/edit2_case.png" width="550" align=center>
-
+<div align=center><img src="figs/edit2_case.png" width="550" align=center></div>
 
 ## :wrench: Implements Methods
 ### :wave: Activation-based Methods
