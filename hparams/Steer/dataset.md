@@ -8,11 +8,11 @@ Datasets serve two primary purposes:
 
 ## Basic Dataset Formats
 
-EasyEdit2 provides four predefined dataset formats. You can use these as-is or adapt your custom datasets to align with them:
+EasyEdit2 provides four predefined dataset formats. You can use these or adapt your custom datasets to align with them:
 
 ### 1. Contrastive Pairs Format  
 - **`question`**: (Optional) A brief description of the question.  
-- **`matching`**: The correct matching answer.  
+- **`matching`**: The desirable, matching answer.  
 - **`not_matching`**: An incorrect, non-matching answer.  
 
 ### 2. Labeled Format  
@@ -34,8 +34,7 @@ To add a custom dataset, follow this structure in the YAML file:
 
 ```yaml
 dataset_name:
-  hf_path: Path to HuggingFace dataset  # Optional
-  file_path: Path to local dataset      # Required
+  hf_path / file_path: Path to HuggingFace dataset / Path to local dataset     # Required 
   field_names:                         # Required
     standard_field_name: actual_field_name
     custom_key: custom_value           # Optional, for additional information
