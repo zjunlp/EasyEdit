@@ -114,7 +114,7 @@ You can use `steering.py` to complete the entire model steering process in one g
 ```bash
 python steering.py
 ```
-There is a demonstration of steering.s
+There is a demonstration of steering
 <img src="figs/code_cli.gif" width="80%"  align=center>
 #### 🔍 Step-by-Step Execution (Recommended)
 Alternatively, you can perform these steps separately using `vectors_generate.py` and `vectors_apply.py` 
