@@ -114,8 +114,8 @@ You can use `steering.py` to complete the entire model steering process in one g
 ```bash
 python steering.py
 ```
-There is a demonstration of steering.
-<img src="figs/code_cli.gif"  align=center>
+There is a demonstration of steering.s
+<img src="figs/code_cli.gif" width="80%"  align=center>
 #### 🔍 Step-by-Step Execution (Recommended)
 Alternatively, you can perform these steps separately using `vectors_generate.py` and `vectors_apply.py` 
 ```bash
@@ -128,6 +128,9 @@ python vectors_apply.py
 Explore practical examples of using CAA in different scenarios:
 - **Reasoning Patterns**: from long-form thinking to concise insights.
 - **Language Features**: seamless language conversion.
+- **Sentiment**: from no sensation to positive emotional transformation.
+
+
 
 📌 **Coming Soon**: More scenarios & methods!
 
