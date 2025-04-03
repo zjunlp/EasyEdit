@@ -314,45 +314,43 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 
 #### 😊Sentiment control
 
-| **dataset** | Google Drive| HuggingFace Dataset | Description |
-| :--------: | :-----------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-| sst2 | [[Google Drive]]() |  | Stanford Sentiment Treebank with 2 labels: negative, positive |
-|    sst5     |  [Google Drive]()  |                     | Stanford Sentiment Treebank with 5 labels: very positive, positive, neutral, negative, very negative |
-
+| **dataset** | Google Drive| Description |
+| :--------: | :-----------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| sst2 | [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | Stanford Sentiment Treebank with 2 labels: negative, positive |
 #### 🛡️Detoxifying LLMs
 
-| **dataset** | Google Drive | HuggingFace Dataset | Description |
-| :--------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-| SafeEdit | |[[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) | dataset for detoxifying LLMs |
-| Toxicity | | | Toxicity-labeled comments dataset for online civility research |
+| **dataset** | Google Drive | Description |
+| :--------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| SafeEdit | [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | dataset for detoxifying LLMs |
+| Toxicity | [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | Toxicity-labeled comments dataset for online civility research |
 
 ### Testing Dataset
 
 #### ➗Mathematical capabilities 
 
-| **dataset** | Google Drive |                     HuggingFace Dataset                      |                         Description                          |
-| :---------: | :----------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-|     GSM     |              | [[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) | dataset fo evaluating models' mathematical problem-solving capabilities |
+| **dataset** | Google Drive |                         Description                          |
+| :---------: | :----------: | :----------------------------------------------------------: |
+|     GSM     |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  | dataset fo evaluating models' mathematical problem-solving capabilities |
 
 #### 🛡️Detoxifying LLMs
 
-| **dataset**  | Google Drive |                     HuggingFace Dataset                      |                         Description                          |
-| :----------: | :----------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-|   SafeEdit   |              | [[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) |              test dataset for detoxifying LLMs               |
-| Realtoxicity |              |                                                              | test dataset for addressing the risk of neural toxic degeneration in models |
-|   toxigen    |              |                                                              |         dataset  for implicit hate speech detection.         |
+| **dataset**  | Google Drive |                         Description                          |
+| :----------: | :----------: | :----------------------------------------------------------: |
+|   SafeEdit   |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  |              test dataset for detoxifying LLMs               |
+| Realtoxicity |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  | test dataset for addressing the risk of neural toxic degeneration in models |
+|   toxigen    |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  |         dataset  for implicit hate speech detection.         |
 
 #### 😊Sentiment control
 
-|    **dataset**    | Google Drive |                     HuggingFace Dataset                      |                         Description                          |
-| :---------------: | :----------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-| sentiment prompts |              | [[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) | Subset of OpenWebText Corpus filtered by the sentiment analysis classifier |
+|    **dataset**    | Google Drive |                         Description                          |
+| :---------------: | :----------: | :----------------------------------------------------------: |
+| sentiment prompts |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | Subset of OpenWebText Corpus filtered by the sentiment analysis classifier |
 
 #### 🧠General Ability
 
-| Dataset |                       Google Drive                       |                     HuggingFace Dataset                      |                         Description                          |
-| :-----: | :------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-|  MMLU   | [Google Drive](https://drive.google.com/) (if available) | [HuggingFace Dataset](https://huggingface.co/datasets/cais/mmlu) | A massive multitask benchmark covering 57 subjects to measure knowledge and reasoning in LLMs. |
+| Dataset |                       Google Drive                       |                         Description                          |
+| :-----: | :------------------------------------------------------: | :----------------------------------------------------------: |
+|  MMLU   |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | A massive multitask benchmark covering 57 subjects to measure knowledge and reasoning in LLMs. |
 
 For more details, please refer to the [hparams/Steer/dataset.md](hparams/Steer/dataset.md).
 
