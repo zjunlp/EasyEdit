@@ -125,7 +125,7 @@ python vectors_generate.py
 python vectors_apply.py
 ```
 
-#### 📚 Tutorial notebook
+#### 📚 Tutorial Notebook
 
 Explore practical examples of using CAA in different scenarios:
 - **Reasoning Patterns**: from long-form thinking to concise insights.
@@ -143,8 +143,8 @@ Explore practical examples of using CAA in different scenarios:
 |   _Language Feature_ | [translate](tutorial-notebooks/EasyEdit2_Example_CAA_translate.ipynb)        |
 |   _Sentiment_ | [sentiment conversion](tutorial-notebooks/EasyEdit2_Example_CAA_sentiment.ipynb)        |
 
-#### 🌐 Web Demo
-You can also experience the steering functionality in the [web demo](demo/EasySteer_demo/app.py).
+#### 🌐 Gradio Demo
+You can also experience the steering functionality in the [gradio demo](demo/EasySteer_demo/app.py).
 ```bash
 gradio demo/EasySteer_demo/app.py 
 ```
