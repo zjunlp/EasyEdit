@@ -505,6 +505,13 @@ export BASE_URL = "https://api.example.com/v1"  # Optional, if needed
 python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
 
+## Acknowledgments
+
+Our sincerest thanks are extended to [CAA](https://github.com/nrimsky/CAA), [LM-Steer](https://github.com/Glaciohound/LM-Steer), and [AxBench](https://github.com/stanfordnlp/axbench) for their invaluable contributions to our project. We have integrated parts of their source code into our work, and for this, we are deeply appreciative.  
+
+Furthermore, we are grateful for the ongoing support and collaboration from our community. Special recognition goes to those who have diligently reported issues and shared their technical expertise. Your collective efforts have been instrumental in our project's success. 🙌
+
+
 ## Citation
 
 Please cite our paper if you use EasyEdit in your work.
