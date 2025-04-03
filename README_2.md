@@ -114,6 +114,9 @@ You can use `steering.py` to complete the entire model steering process in one g
 ```bash
 python steering.py
 ```
+Here is a demonstration of steering.
+<div align=center><img src="figs/code_cli.gif" width="80%"  align=center></div>
+
 #### 🔍 Step-by-Step Execution (Recommended)
 Alternatively, you can perform these steps separately using `vectors_generate.py` and `vectors_apply.py` 
 ```bash
@@ -126,6 +129,9 @@ python vectors_apply.py
 Explore practical examples of using CAA in different scenarios:
 - **Reasoning Patterns**: from long-form thinking to concise insights.
 - **Language Features**: seamless language conversion.
+- **Sentiment**: from no sensation to positive emotional transformation.
+
+
 
 📌 **Coming Soon**: More scenarios & methods!
 
@@ -134,6 +140,8 @@ Explore practical examples of using CAA in different scenarios:
 | :--------: | :------: | 
 |   _Reasoning Pattern_ | [r1-control](tutorial-notebooks/EasyEdit2_Example_CAA_r1_control.ipynb)         |
 |   _Language Feature_ | [translate](tutorial-notebooks/EasyEdit2_Example_CAA_translate.ipynb)        |
+|   _Sentiment_ | [sentiment conversion](tutorial-notebooks/EasyEdit2_Example_CAA_sentiment.ipynb)        |
+
 
 💡 **Pro Tip**: While these examples use default settings, you can fully customize them in the [Customizing Steering](#customizing-steering) section!
 
