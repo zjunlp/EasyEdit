@@ -44,7 +44,7 @@
 ## 🌟 Overview
 EasyEdit2 is a Python package for language model steering. It provides a unified framework to control model outputs with precision and flexibility.
 
-<div align=center><img src="figs/edit2_overview.png" width="550" align=center></div>
+<div align=center><img src="figs/edit2_overview.png" width="450" align=center></div>
 
 <!-- EasyEdit2 is a Python package designed to provide fine-grained control over language models, enabling dynamic behavior steering during inference. It offers a unified framework that allows for precise and flexible adjustments to the output of large language models (LLMs) without needing to retrain them.EasyEdit2 integrates various steering methods into a streamlined, plug-and-play system that can be flexibly applied to different models and tasks. -->
 
@@ -60,7 +60,7 @@ EasyEdit2 is a Python package for language model steering. It provides a unified
 
 EasyEdit2 enables precise control over various model behaviors, including **safety, sentiment, personality, reasoning patterns, factuality,** and **language features**, allowing for flexible adaptation to different use cases.
 
-<div align=center><img src="figs/edit2_case.png" width="550" align=center></div>
+<div align=center><img src="figs/edit2_case.png" width="450" align=center></div>
 
 ## :wrench: Implements Methods
 ### :wave: Activation-based Methods
@@ -95,7 +95,7 @@ EasyEdit2 enables precise control over various model behaviors, including **safe
 git clone https://github.com/zjunlp/EasyEdit.git
 conda create -n easyedit2 python=3.10
 conda activate easyedit2
-pip install -r requirements.txt
+pip install -r requirements_2.txt
 ```
 
 For `safety` and `fluency` evaluation, install nltk data
@@ -296,13 +296,13 @@ vector_applier.generate(datasets)
 # vector_applier.generate(datasets, **generation_params)
 ```
 
-### All in One
+<!-- ### All in One
 
 You can also steer the model in one go,  just fill out `hparams/Steer/config.yaml` and run `steer.py`. The steps are the same as above.  EasyEdit2 allows you to change config values by passing `+key=value` arguments
 
 ```bash
 python steer.py +model_name_or_path=your_own_model_path
-```
+``` -->
 
 
 
@@ -352,7 +352,7 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 | :-----: | :------------------------------------------------------: | :----------------------------------------------------------: |
 |  MMLU   |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | A massive multitask benchmark covering 57 subjects to measure knowledge and reasoning in LLMs. |
 
-For more details, please refer to the [hparams/Steer/dataset.md](hparams/Steer/dataset.md).
+Click on the Google Drive links to download the dataset files. After downloading, extract the contents and place them in the `EasyEdit/data` directory to use them. For more details, please refer to [hparams/Steer/dataset.md](hparams/Steer/dataset.md).
 
 <!-- ## Vector Library
 
@@ -504,6 +504,13 @@ export BASE_URL = "https://api.example.com/v1"  # Optional, if needed
 ```bash
 python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
+
+## Acknowledgments
+
+Our sincerest thanks are extended to [CAA](https://github.com/nrimsky/CAA), [LM-Steer](https://github.com/Glaciohound/LM-Steer), and [AxBench](https://github.com/stanfordnlp/axbench) for their invaluable contributions to our project. We have integrated parts of their source code into our work, and for this, we are deeply appreciative.  
+
+Furthermore, we are grateful for the ongoing support and collaboration from our community. Special recognition goes to those who have diligently reported issues and shared their technical expertise. Your collective efforts have been instrumental in our project's success. 🙌
+
 
 ## Citation
 
