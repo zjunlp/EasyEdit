@@ -1,63 +1,78 @@
 # ================train datasets===========================
 train:
   safe_edit:       
-    file_path: ../data/safe_edit/test_200.csv
+    file_path: ./data/safe_edit/train.csv
     field_names:
       question: 'question'
       matching: 'matching'
       not_matching: 'not_matching'
 
   toxicity:
-    file_path: ../toxicity/toxicity.jsonl
+    file_path: ./data/toxicity/train.jsonl
     field_names:
       matching: 'matching'
       not_matching: 'not_matching'
 
-  prompt_vector:      #TBD, we can provide a sample dataset
-    file_path: tmp.json
+  sst2_pair:
+    file_path: ./data/sst2_pair/train.jsonl
     field_names:
-      prompt: 'prompt'
-      input: 'user_input'
-      output: 'output'
+      matching: 'matching'
+      not_matching: 'not_matching'
+  
+  sst2_label:
+    file_path: ./data/sst2_label/train.jsonl
+    field_names:
+      text: 'text'
+      label: 'label'
 
-  # Support datasets: sentiment-sst2, sentiment-yelp, sentiment-sst5, sentiment-sst5-positive, sentiment-sst5-negative
-  sentiment:
-    file_path: data/sentiment/sst5.csv
+  imdb_pair:
+    file_path: ./data/imdb_pair/train.jsonl
+    field_names:
+      matching: 'matching'
+      not_matching: 'not_matching'
+    
+  imdb_label:
+    file_path: ./data/imdb_label/train.jsonl
     field_names:
       text: 'text'
       label: 'label'
 
 
-
 # ================generation datasets===========================
 generation:
   toxigen:
-    file_path: data/toxigen/test.csv
+    file_path: ./data/toxigen/test.csv
     field_names:
       input: 'question'
       reference_response: 'label'
 
-  sentiment:
-    file_path: data/sentiment/negative_prompts_clean.jsonl
+  sentiment_neutral:
+    file_path: ./data/sentiment_prompts/neutral_prompts_test.jsonl
     field_names:
       input: 'prompt'
       reference_response: 'continuation'
 
-  nontoxic:    #detoxification prompts
-    file_path: data/nontoxic/nontoxic_clean.jsonl
+  sentiment_positive:
+    file_path: ./data/sentiment_prompts/positive_prompts_test.jsonl
     field_names:
-      input: "prompt"
-      reference_response: "continuation"
+      input: 'prompt'
+      reference_response: 'continuation'
+  
+  sentiment_negative:
+    file_path: ./data/sentiment_prompts/negative_prompts_test.jsonl
+    field_names:
+      input: 'prompt'
+      reference_response: 'continuation'
 
   safe_edit:
-    file_path: data/safe_edit/test.csv
+    file_path: ./data/safe_edit/test.csv
     field_names:
       input: "question"
       reference_response: "matching"
 
   gsm:
     hf_path: null
-    file_path: data/gsm/test.jsonl
+    file_path: ./data/gsm/test.jsonl
     field_names:
       input: 'question'
       reference_response: 'answer'
@@ -71,6 +86,6 @@ generation:
       reference_response: 'answer'
 
   realtoxicityprompts:
-    file_path: data/realtoxicityprompts/challenge_prompts.jsonl
+    file_path: ./data/real_toxicity_prompts/test.jsonl
     field_names:
       input: 'prompt'
