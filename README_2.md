@@ -65,11 +65,11 @@ EasyEdit2 enables precise control over various model behaviors, including **safe
 
 ## :wrench: Implements Methods
 ### :wave: Activation-based Methods
-- **Contrastive Activation Addition(CAA)**:
+- [**Contrastive Activation Addition(CAA)**](https://arxiv.org/abs/2312.06681):
   CAA steers language models by generating steering vectors, which compute activation differences between positive and negative example pairs.
-- **LM-Steer**:
+- [**LM-Steer**](https://arxiv.org/abs/2305.12798):
   LM-Steer applies a lightweight linear transformation to output embeddings to modify the model's behavior
-- **SAE Feature Steering**:
+- [**SAE Feature Steering**](https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html):
   SAE leverages features extracted from Sparse Autoencoders (SAEs), enabling users to select SAE features associated with specific concepts and apply them as steering vectors.
 - **Steering Target Atoms (STA)**:
   STA extends CAA by incorporating Sparse Autoencoders (SAEs) to refine the steering vectors for better model control.
@@ -80,7 +80,7 @@ EasyEdit2 enables precise control over various model behaviors, including **safe
 ### :bookmark_tabs: Prompt-Based Methods 
 - **manually designed prompts**:
   The user manually creates specific prompts, allowing for direct control over the steering process by tailoring the input to the desired output.
-- **automated prompt generation**:
+- [**automated prompt generation**](https://arxiv.org/abs/2501.17148):
   The user supplies a concept, and the model autonomously generates relevant steering prompts based on the provided concept.
 
 
