@@ -1,0 +1,4 @@
+# Model related
+alg_name: caa
+layers: [16]
+multipliers: [1.0]

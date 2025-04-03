@@ -1,0 +1,41 @@
+# General 
+model_name_or_path: ../Qwen2-0.5B
+# model_name_or_path: ../hugging_cache/llama-7b
+torch_dtype: float32
+device: cuda:0
+seed: 0
+use_chat_template: false
+system_prompt: ''  # Adds a system prompt to all method inputs, except for `vector_prompt`, which uses both with and without this prompt to convert it into a vector.
+
+# Generate Vector 
+# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+steer_train_hparam_paths:
+ - hparams/Steer/lm_steer_hparams/generate_lm_steer.yaml
+steer_train_dataset: toxicity
+save_vectors: True
+steer_vector_output_dir: 
+ - steer/vectors/Qwen2-0.5B/
+
+# Apply Vector 
+# The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
+apply_steer_hparam_paths:
+ - hparams/Steer/lm_steer_hparams/apply_lm_steer.yaml
+steer_vector_load_dir: 
+ - steer/vectors/Qwen2-0.5B/your_dataset_name/lm_steer_vector
+
+# Generation
+# Supported multiple files generation based on `generation_data`.
+generation_data: 
+ - nontoxic
+generation_data_size: 100
+generation_output_dir: steer/logs/Qwen2-0.5B/
+num_responses: 1
+steer_from_end_position: false
+
+# Model generation parameters - must match Hugging Face parameter names
+# See: https://huggingface.co/docs/transformers/main_classes/text_generation
+generation_params:
+  max_new_tokens: 25   
+  temperature: 0.9     
+  do_sample: true  
+

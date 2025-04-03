@@ -1,0 +1,31 @@
+# General 
+model_name_or_path: ../DeepSeek-R1-Distill-Llama-8B
+torch_dtype: bfloat16
+device: cuda:0 
+seed: 42
+use_chat_template: false 
+system_prompt: 'You are a helpful assistant.'  # Adds a system prompt to all method inputs, except for `vector_prompt`, which uses both with and without this prompt to convert it into a vector.
+
+# Apply Vector 
+# The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
+apply_steer_hparam_paths:
+ - hparams/caa_hparams/apply_caa.yaml
+ - hparams/lm_steer_hparams/apply_lm_steer.yaml
+#  - hparams/vector_prompt_hparams/apply_vector_prompt.yaml
+steer_vector_load_dir: 
+ - vectors/DeepSeek-R1-Distill-Llama-8B/caa_vector
+ - vectors/DeepSeek-R1-Distill-Llama-8B/toxicity/lm_steer_vector
+# Generation
+# Supported multiple files generation based on `generation_data`.
+generation_data: 
+ - nontoxic
+generation_data_size: 5  
+generation_output_dir: logs/gpt2/
+num_responses: 1
+steer_from_end_position: false
+
+generation_params:  
+  max_new_tokens: 100
+  do_sample: true
+  temperature: 0.9
+  top_p: 1.0

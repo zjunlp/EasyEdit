@@ -1,0 +1,49 @@
+# General 
+model_name_or_path: '../models/Qwen2.5-7B'
+torch_dtype: bfloat16
+device: cuda:2
+seed: 42
+use_chat_template: false
+system_prompt: '' 
+
+# Generate Vector 
+# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+steer_train_hparam_paths:
+ - hparams/experiment/caa/caa_train.yaml
+steer_train_dataset: 
+ - sst2
+save_vectors: True
+steer_vector_output_dir: 
+ - vectors/experiment/qwen2.5-7b
+
+# Apply Vector 
+# The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
+apply_steer_hparam_paths:
+ - hparams/experiment/caa/caa_apply.yaml
+steer_vector_load_dir: 
+ - vectors/experiment/qwen2.5-7b/sst2/caa_vector
+
+# Generation
+# Supported multiple files generation based on `generation_data`.
+generation_data: 
+ - negative
+generation_data_size: null
+generation_output_dir: generation/qwen2.5-7b/sentiment
+num_responses: 1
+steer_from_end_position: false
+
+# Model generation parameters - must match Hugging Face parameter names
+# See: https://huggingface.co/docs/transformers/main_classes/text_generation
+generation_params:
+  max_new_tokens: 50
+  # min_new_tokens: 50  #only for lmsteer
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job_logging: 
+    file: null
+
+
+
+  

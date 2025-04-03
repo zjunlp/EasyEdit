@@ -1,0 +1,50 @@
+# General 
+model_name_or_path: ../hugging_cache/DeepSeek-R1-Distill-Qwen-7B
+torch_dtype: bfloat16
+device: cuda:0
+use_cache: False
+use_chat_template: true
+system_prompt: ''  # Adds a system prompt to all method inputs, except for `vector_prompt`, which uses both with and without this prompt to convert it into a vector.
+save_vectors: False
+
+# Generate Vector 
+# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+steer_train_hparam_paths:
+ - hparams/Steer/caa_hparams/generate_caa.yaml
+steer_train_dataset: 
+ - Reasoning
+steer_vector_output_dir: 
+ - steer/vectors/DeepSeek-R1-Distill-Qwen-7B/
+
+# Apply Vector 
+# The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
+apply_steer_hparam_paths:
+ - hparams/Steer/caa_hparams/apply_caa.yaml
+#  - params/vector_prompt_hparams/apply_vector_prompt.yaml
+steer_vector_load_dir: 
+ - steer/vectors/DeepSeek-R1-Distill-Qwen-7B/r1/caa_vector
+
+
+# Generation
+# Supported multiple files generation based on `generation_data`.
+generation_data: 
+ - Reasoning
+generation_data_size: 5  
+generation_output_dir: steer/logs//DeepSeek-R1-Distill-Qwen-7B/r1_results/
+num_responses: 1
+steer_from_end_position: false
+
+# Model generation parameters - must match Hugging Face parameter names
+# See: https://huggingface.co/docs/transformers/main_classes/text_generation
+generation_params:
+  max_new_tokens: 500    
+  temperature: 0.6 
+generate_orig_output: True
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job_logging: 
+    file: null
+

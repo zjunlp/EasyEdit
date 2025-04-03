@@ -2,8 +2,6 @@
 <img src="figs/logo.png" width="180px">
 
 
-**An Easy-to-use Knowledge Editing Framework for Large Language Models.**
-
 ![](https://img.shields.io/badge/version-v0.0.1-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 ![Static Badge](https://img.shields.io/badge/last_commit-May-blue)
@@ -24,6 +22,15 @@
    <a href="https://twitter.com/_akhaliq/status/1742371655765164133", target="_blank">Featured By AK</a>
 </p>
 </div>
+
+<h1 style="font-size: 32px; color: #333; text-align: left;">
+  <span style="font-size: 30px; color:rgb(180, 148, 61);">📢</span> Update
+</h1>
+<p align="left">
+  🔥 <strong><a href="README_2.md" style="text-decoration: none; ">EasyEdit 2.0</a></strong> officially published! <br>
+ Unlike EasyEdit1.0, which achieves knowledge editing by updating internal parameters or introducing additional parameters, EasyEdit2 enables real-time steering of LLMs during inference. It provides a unified framework for controllability without retraining, seamlessly integrating various steering methods for ease of use and evaluation.
+  &nbsp; 👉 <strong><a href="README_2.md" style="text-decoration: none; ">[README]</a></strong> (for more details). 
+</p>
 
 ## Table of Contents
 

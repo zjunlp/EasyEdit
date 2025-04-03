@@ -1,0 +1,19 @@
+# General 
+model_name_or_path: ../DeepSeek-R1-Distill-Llama-8B
+# model_name_or_path: ../hugging_cache/Qwen2-1.5B
+# model_name_or_path: ../hugging_cache/Llama-2-7b-chat-hf
+# model_name_or_path: ../hugging_cache/gpt2
+torch_dtype: bf16
+device: cuda:0
+seed: 42
+use_chat_template: True
+system_prompt: ''  # Adds a system prompt to all method inputs, except for `vector_prompt`, which uses both with and without this prompt to convert it into a vector.
+
+# Generate Vector 
+# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+steer_train_hparam_paths:
+ - hparams/caa_hparams/generate_caa.yaml
+ # - hparams/lm_steer_hparams/generate_lm_steer.yaml
+steer_train_dataset: toxicity
+steer_vector_output_dir: 
+ - vectors/DeepSeek-R1-Distill-Llama-8B
