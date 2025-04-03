@@ -19,7 +19,7 @@ common_config = {
 caa_config = {
     "train": {
         "alg_name": "caa",
-        "layers": [16,17],
+        "layers": [17],
         "multiple_choice": False
     },
     "apply": {
