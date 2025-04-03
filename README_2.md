@@ -427,7 +427,7 @@ EasyEdit2 provides comprehensive evaluation metrics categorized into three types
 
 | Method      | Description                                                  | Result Range        |
 | ----------- | ------------------------------------------------------------ | ------------------- |
-| `llm_judge` | Uses an LLM (default: GPT-4) to evaluate results from three aspects: Concept relevance, Instruction relevance, and Fluency. Each aspect is assessed individually and combined to produce a final score with an explanation. | 0-100 + Explanation |
+| `llm_judge` | Uses an LLM (default: GPT-4) to evaluate results from three aspects: **Concept relevance**, **Instruction relevance**, and **Fluency**. Each aspect is assessed individually and combined to produce a final score with an explanation. | 0-100 + Explanation |
 
 ### Rule-based Evaluation
 
