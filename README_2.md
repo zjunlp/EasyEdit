@@ -31,10 +31,10 @@
 ## Table of Contents
 
 - [🌟 Overview](#-overview)
-- [📌Quickly Start](#-quickly-start)
+- [📌 Quickly Start](#-quickly-start)
   - [Requirements](#requirements)
   - [Use EasyEdit2](#use-easyedit2)
-- [Customizing Steering](#customizing-steering)
+- [🛠️ Customizing Steering](#customizing-steering)
   - [Vector Generator](#vector-generator)
   - [Vector Applier](#vector-applier)
 - [Data Preparation](#data-preparation)
@@ -143,10 +143,15 @@ Explore practical examples of using CAA in different scenarios:
 |   _Language Feature_ | [translate](tutorial-notebooks/EasyEdit2_Example_CAA_translate.ipynb)        |
 |   _Sentiment_ | [sentiment conversion](tutorial-notebooks/EasyEdit2_Example_CAA_sentiment.ipynb)        |
 
+#### 🌐 Web Demo
+You can also experience the steering functionality in the [web demo](demo/EasySteer_demo/app.py).
+```bash
+gradio demo/EasySteer_demo/app.py 
+```
 
 💡 **Pro Tip**: While these examples use default settings, you can fully customize them in the [Customizing Steering](#customizing-steering) section!
 
-## Customizing Steering
+## 🛠️ Customizing Steering
 EasyEdit2 is organized into two main components:
 
 ### Vector Generator
