@@ -28,9 +28,7 @@
 </h1>
 <p align="left">
   🔥 <strong><a href="README_2.md" style="text-decoration: none; ">EasyEdit 2.0</a></strong> officially published! <br>
-  EasyEdit primarily focused on knowledge editing, requiring pre-editing of the model. However, it did not provide the ability to dynamically adjust the model's behavior during inference time.
-  To address this, EasyEdit 2.0 integrates various steering methods, providing an efficient, fast, and plug-and-play approach that allows users to freely adjust the model's behavior during inference time.
-  Furthermore, EasyEdit 2.0 offers control over the size and intensity of the behavior, enabling more flexible and precise adjustments to suit different scenarios and needs.
+ Unlike EasyEdit1.0, which achieves knowledge editing by updating internal parameters or introducing additional parameters, EasyEdit2 enables real-time steering of LLMs during inference. It provides a unified framework for controllability without retraining, seamlessly integrating various steering methods for ease of use and evaluation.
   &nbsp; 👉 <strong><a href="README_2.md" style="text-decoration: none; ">[README]</a></strong> (for more details). 
 </p>
 
