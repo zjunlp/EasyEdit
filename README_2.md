@@ -31,8 +31,10 @@
 ## Table of Contents
 
 - [🌟 Overview](#-overview)
-- [Requirements](#requirements)
-- [📌Use EasyEdit2](#use-easyedit2)
+- [📌Quickly Start](#-quickly-start)
+  - [Requirements](#requirements)
+  - [Use EasyEdit2](#use-easyedit2)
+- [Customizing Steering](#customizing-steering)
   - [Vector Generator](#vector-generator)
   - [Vector Applier](#vector-applier)
 - [Data Preparation](#data-preparation)
