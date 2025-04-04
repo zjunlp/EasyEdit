@@ -19,7 +19,7 @@ common_config = {
 caa_config = {
     "train": {
         "alg_name": "caa",
-        "layers": [17],
+        "layers": [16,17],
         "multiple_choice": False
     },
     "apply": {
@@ -154,7 +154,7 @@ lm_steer_config = {
         "rank": 1500,
         "num_steers": 2,
         "steer_values": [3,1],
-        "steer_vector_load_dir": "lmsteer_vec"
+        "steer_vector_load_dir": ""
     }
 }
 

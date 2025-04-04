@@ -53,7 +53,7 @@ def steer(steer_alg, prompt, pos_answer, neg_answer, steer_layer, steer_strength
         steer_model = METHODS_CLASS_DICT[steer_alg]['apply'](apply_hparams,pipline=steer_model,vector=vector)
         
         progress(1.0, desc="Completed!")
-        return "The model is now expertly steered!🚀 Submit your input and put it to the test"
+        return "The model is now expertly steered!🚀 Submit your input and put it to the test! ⬇️"
     except Exception as e:
         error_msg = f"Error: {str(e)}"
         progress(1.0, desc=error_msg)
@@ -79,7 +79,7 @@ def prompt_steer(steer_alg, prompt, input='', output='', steer_layer=24, steer_s
             progress(1.0, desc="Completed!")
             if steer_alg == 'autoprompt':
                 responese["prompt"] = steer_model.prompt
-                return "The model is now expertly steered!🚀 Submit your input and put it to the test", steer_model.prompt
+                return "The model is now expertly steered!🚀 Submit your input and put it to the test!", steer_model.prompt
         elif steer_alg in ['vector_prompt','vector_autoprompt']:
             train_hparams = get_train_hparams(steer_alg=steer_alg,steer_layer=steer_layer)
             if steer_model is None:
@@ -107,7 +107,7 @@ def prompt_steer(steer_alg, prompt, input='', output='', steer_layer=24, steer_s
             progress(1.0, desc="Completed!")
 
         # responese["status"]= "The model is now expertly steered!🚀 Submit your input and put it to the test"
-        return "The model is now expertly steered!🚀 Submit your input and put it to the test"
+        return "The model is now expertly steered!🚀 Submit your input and put it to the test! ⬇️"
     
     except Exception as e:
         error_msg = f"Error: {str(e)}"
@@ -234,7 +234,7 @@ def pretrained_vector(steer_vector, steer_strength, progress=gr.Progress()):
             steer_model, _ = get_model(apply_hparams)
             
         progress(0.4, desc="Preparing steer vector...")
-        vector_dir = "demo_vector"
+        vector_dir = "/mnt/20t/xuhaoming/EasySteer-simplify/demo/EasySteer/demo_vector"
         if steer_vector == "Personality":
             vector_path = vector_dir + "/personality/personality.pt"
         elif steer_vector == "Sentiment":
@@ -252,7 +252,7 @@ def pretrained_vector(steer_vector, steer_strength, progress=gr.Progress()):
         steer_model = METHODS_CLASS_DICT["caa"]["apply"](apply_hparams, pipline=steer_model,vector=steering_vector)
         
         progress(1.0, desc="Completed!")
-        return "The model is now expertly steered! 🚀 Submit your input and put it to the test!"
+        return "The model is now expertly steered! 🚀 Submit your input and put it to the test! ⬇️"
     except Exception as e:
         error_msg = f"Error: {str(e)}"
         progress(1.0, desc=error_msg)
@@ -275,7 +275,7 @@ feature_cache = {}
 
 def sae_vector(layer: int = 4, feature_id: int = 11, device: str = "cuda:0"):
     """Load and return SAE feature vector."""
-
+    # sae_path = f"/mnt/8t/xhm/models/GPT2-Small-OAI-v5-32k-resid-post-SAEs/v5_32k_layer_{layer}.pt"
     sae_path = sae_dir.format(layer=layer)
     if "gemma" in sae_path:
         sae, _, _ = load_gemma_2_sae(sae_path, device=device)
@@ -424,6 +424,8 @@ def get_feature_description(modelId, saeId, position_ids, save_path=None):
 
 def search_features(keyword, layer):
     """Search for features using Neuronpedia API."""
+    if keyword == "":
+        return None
     saeID = sae_id.format(layer=layer)
     sae_config = get_sae_config(release, saeID)
     modelId, saeId = sae_config["neuronpedia_id"].split('/')
@@ -507,7 +509,7 @@ def add_feature(search_results, evt: gr.SelectData, session_id):
         description = search_results[result_idx]["description"]
 
         if not any(f["name"] == feature_name and f["layer"] == layer for f in current_features):
-            new_feature = {"name": feature_name, "value": 1.0, "layer": layer, "description": description}
+            new_feature = {"name": feature_name, "value": 80.0, "layer": layer, "description": description}
             current_features.append(new_feature)
             print(f"Added feature to cache: {new_feature}, Total features: {len(current_features)}")
 
@@ -532,7 +534,7 @@ def add_feature_by_index(layer, index, session_id):
     description = features[index][0]["description"]
     # print(features)
     if not any(f["name"] == feature_id and f["layer"] == layer for f in current_features):
-        new_feature = {"name": feature_id, "value": 1.0, "layer": layer, "description": description}
+        new_feature = {"name": feature_id, "value": 80.0, "layer": layer, "description": description}
         current_features.append(new_feature)
         print(f"Added feature to cache: {new_feature}, Total features: {len(current_features)}")
 
