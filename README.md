@@ -634,6 +634,17 @@ data
 |  _MEMIT_   |    Locate-Then-Edit Neurons    |       [[Colab-gpt2]](https://colab.research.google.com/drive/1P1lVklP8bTyh8uxxSuHnHwB91i-1LW6Z)       | [[Colab-llama]](https://colab.research.google.com/drive/19fKCKtVBU2fqj6eTvDokGoTrxvXkEPPq) |
 
 
+---
+#### Datasets for Real-World Lifelong Knowledge Editing: WikiBigEdit
+
+| **dataset** | HuggingFace Dataset | Description |
+| :--------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| WikiBigEdit |[[HuggingFace Dataset]](https://huggingface.co/datasets/lukasthede/WikiBigEdit) | 500k knowledge edits from Wikidata |
+
+- Here, you can follow [run_WikiBigEdit.py](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_WikiBigEdit.py) to run **WikiBigEdit** edits using EasyEdit.
+  
+- If you want to learn more about **WikiBigEdit**, please refer to the following paper: 
+[Understanding the Limits of Lifelong Knowledge Editing in LLMs](https://arxiv.org/abs/2503.05683)
 
 ## Requirements
 
