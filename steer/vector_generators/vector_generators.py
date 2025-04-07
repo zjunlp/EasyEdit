@@ -34,7 +34,6 @@ class BaseVectorGenerator:
                     now_path = os.path.join(hparams.steer_vector_output_dir, alg_name + '_vector')
                     if os.path.exists(now_path) and hparams.save_vectors:
                         print('\033[1;34mVectors save path already exists! The vector will be overwritten!\033[0m')
-                    print(f"Saving vectors to {now_path} ...")
                     
                     print(f"Generating {alg_name} vectors ...")
                     if alg_name in ['lm_steer', 'caa', 'vector_prompt', 'sta']:
@@ -42,7 +41,10 @@ class BaseVectorGenerator:
                     else:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)
                     generated_vectors[dataset_name][alg_name] = vectors
-                    print(f"Saving vectors to {hparams.steer_vector_output_dir} ...\n")
+                    if hparams.save_vectors:
+                        print(f"Saving vectors to {now_path} ...")
+                    else:
+                        print(f"Not saving {alg_name} vectors ...")
                     hparams.steer_vector_output_dir = steer_vector_output_dir
                     
                 else:
