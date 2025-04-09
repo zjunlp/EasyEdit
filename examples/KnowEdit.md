@@ -81,7 +81,7 @@ Unzip the file and put it to `./data`
 </table>
 
 ---
-
+You can find the ZSRE training set at this [link](https://drive.google.com/file/d/1WRo2SqqgNtZF11Vq0sF5nL_-bHi18Wi4/view).
 Different JSON files have distinct data types. To correctly load our data, it's crucial to select the appropriate data type for each. For instance:
 
 ---
