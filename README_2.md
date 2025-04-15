@@ -172,20 +172,15 @@ All methods come with **detailed guidelines** to help you quickly experience!
 <summary><b> Example </b></summary>
 
 Let's take **One Example-based Steering** as an example to illustrate the usage.
-
 ##### Steering
 <div align=center><img src="figs/steer.png" width="800" align=center></div>
 
-1.&ensp;Select or enter the Prompt, Positive Completion and Negative Completion.
-2.&ensp;Adjust Steer Strength and Steer Layer to control steering intensity.
-3.&ensp;Click Steer to guide the model toward positive and away from negative examples.
-Then you can see the steering result at the end!
+1.&ensp;Select or enter the Prompt, Positive Completion and Negative Completion.<br>2.&ensp;Adjust Steer Strength and Steer Layer to control steering intensity.<br>3.&ensp;Click Steer to guide the model toward positive and away from negative examples.<br>Then you can see the steering result at the end!
 
 ##### Evaluate
 <div align=center><img src="figs/steer_result.png" width="800" align=center></div>
 
-4.&ensp;Enter a prompt in the Evaluation section to see the results.
-Finally, click the Generate button and you will see the evaluation results!
+4.&ensp;Enter a prompt in the Evaluation section to see the results.<br>Finally, click the Generate button and you will see the evaluation results!
 </details>
 
 💡 **Pro Tip**: While these examples use default settings, you can fully customize them in the [Customizing Steering](#customizing-steering) section!
