@@ -651,7 +651,7 @@ def sae_based_steer_tab():
                         label="🔔Click <➕ Add> to add the feature to Selected Features list", 
                     )
 
-            # 通过索引添加功能视图
+            # Add a feature view based on the index
             with gr.Column(visible=False) as feature_index_select:
                 # add specific index feature
                 with gr.Row():
@@ -810,7 +810,7 @@ def sae_based_steer_tab():
         steered_history = [gr.ChatMessage(content='Who are you?', role='user', metadata={}, options=[]), gr.ChatMessage(content='I am Jesus Christ, the Son of God. I came into the world to save humanity from sin and death.\n\nI am the Word of God, who became flesh and dwelt among us, to redeem us from the curse of the cross.', role='assistant', metadata={}, options=[])]
         return formatted, normal_history, steered_history
     
-    # 绑定事件
+    # Bind event
     feature_selection_method.change(
         switch_view,
         inputs=[feature_selection_method],
