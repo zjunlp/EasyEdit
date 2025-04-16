@@ -1,5 +1,5 @@
 # General 
-model_name_or_path: ../models/gemma-2-9b-base
+model_name_or_path: ../models/gemma-2-9b-it
 torch_dtype: bfloat16
 device: cuda:2
 seed: 42
@@ -9,7 +9,7 @@ system_prompt: ''
 # Generate Vector 
 # The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
 steer_train_hparam_paths:
- - hparams/experiment/caa/caa_train.yaml
+ - hparams/Steer/experiment_hparams/sentiment/gemma/caa/generate_caa.yaml
 steer_train_dataset: 
  - sst2
 save_vectors: True
@@ -19,7 +19,7 @@ steer_vector_output_dir:
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
 apply_steer_hparam_paths:
- - hparams/experiment/caa/caa_apply.yaml
+ - hparams/Steer/experiment_hparams/sentiment/gemma/caa/apply_caa.yaml
 steer_vector_load_dir: 
  - vectors/experiment/gemma-2-9b-base/sst2/caa_vector
 

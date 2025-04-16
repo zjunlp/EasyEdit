@@ -9,7 +9,7 @@ system_prompt: ''
 # Generate Vector 
 # The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
 steer_train_hparam_paths:
- - hparams/experiment/caa/caa_train.yaml
+ - hparams/Steer/experiment_hparams/sentiment/qwen/caa/generate_caa.yaml
 steer_train_dataset: 
  - sst2
 save_vectors: True
@@ -19,7 +19,7 @@ steer_vector_output_dir:
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
 apply_steer_hparam_paths:
- - hparams/experiment/caa/caa_apply.yaml
+ - hparams/Steer/experiment_hparams/sentiment/qwen/caa/apply_caa.yaml
 steer_vector_load_dir: 
  - vectors/experiment/qwen2.5-7b/sst2/caa_vector
 
