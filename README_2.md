@@ -15,7 +15,7 @@
   <a href="#use-easyedit2">Quick Start</a> •
   <a href="#data-preparation">Dataset</a> •
   <a href="#evaluation">Evaluation</a> •
-  <a href="https://zjunlp.github.io/project/EasyEdit2/video">Video</a> •
+  <a href="https://zjunlp.github.io/project/EasyEdit2/video">Video</a>
 </p>
 
 
