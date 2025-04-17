@@ -1,5 +1,5 @@
 # General 
-model_name_or_path: ../models/gemma-2-9b-it
+model_name_or_path: ../models/gemma-2-9b-base
 torch_dtype: bfloat16
 device: cuda:2
 seed: 42
@@ -38,13 +38,3 @@ generation_params:
   max_new_tokens: 50
   # min_new_tokens: 50  #only for lmsteer
 
-hydra:
-  run:
-    dir: .
-  output_subdir: null
-  job_logging: 
-    file: null
-
-
-
-  
