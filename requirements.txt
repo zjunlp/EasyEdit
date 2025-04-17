@@ -13,7 +13,7 @@ PyYAML==6.0
 scikit-learn==1.0.2
 scipy==1.7.3
 sentence-transformers==3.2.1
-tokenizers
+tokenizers==0.20.3
 torch==2.0.1
 tqdm==4.62.3
 transformers==4.46.2
@@ -25,5 +25,5 @@ opencv-python==4.8.0.76
 fairscale==0.4.13
 av==14.2.0
 qwen_vl_utils==0.0.10
-zhipuai==2.1.5
+zhipuai==2.1.5.20250415
 sentencepiece==0.2.0

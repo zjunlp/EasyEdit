@@ -36,25 +36,27 @@ class ZsreDataset(Dataset):
                 if config.tokenizer_name is not None
                 else config.model.name
             )
-            # tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True)
-            tokenizer = getattr(transformers, config.tokenizer_class).from_pretrained(
+            # tokenizer = getattr(transformers, config.tokenizer_class).from_pretrained(
+            #     tok_name, trust_remote_code=True
+            # )
+            tokenizer = AutoTokenizer.from_pretrained(
                 tok_name, trust_remote_code=True
             )
-            if isinstance(tokenizer, GPT2Tokenizer) or isinstance(tokenizer, GPT2TokenizerFast):
+            if 'gpt' in tok_name.lower(): # isinstance(tokenizer, GPT2Tokenizer) or isinstance(tokenizer, GPT2TokenizerFast):
                 tokenizer.pad_token_id = tokenizer.eos_token_id
                 tokenizer.padding_side = 'left'
                 print('GPTTokenizer Detected, Set pad token id and left padding!!!')
-            elif isinstance(tokenizer, LlamaTokenizer):
+            elif 'llama' in tok_name.lower():
                 tokenizer.pad_token_id = tokenizer.eos_token_id
                 tokenizer.padding_side = 'left'
                 print('LlamaTokenizer Detected, Set pad token id and left padding!!!')
-            elif 'qwen' in config.model_name.lower():
+            elif 'qwen' in tok_name.lower():
                 tokenizer.eos_token='<|endoftext|>'
                 tokenizer.pad_token='<|endoftext|>'
                 tokenizer.unk_token='<|endoftext|>'
                 # tokenizer.padding_side = 'left'
                 # print('QwenTokenizer Detected, Set pad token id and left padding!!!')
-            elif 'mistral' in config.model_name.lower():
+            elif 'mistral' in tok_name.lower():
                 tokenizer.pad_token_id = tokenizer.eos_token_id
                 tokenizer.padding_side = 'left'
                 print('MistralTokenizer Detected, Set pad token id and left padding!!!')
