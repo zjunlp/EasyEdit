@@ -13,8 +13,7 @@ steer_train_hparam_paths:
  - hparams/Steer/lm_steer_hparams/generate_lm_steer.yaml
 steer_train_dataset: toxicity
 save_vectors: True
-steer_vector_output_dir: 
- - steer/vectors/Qwen2-0.5B/
+steer_vector_output_dir: steer/vectors/Qwen2-0.5B/
 
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
