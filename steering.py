@@ -9,6 +9,7 @@ def main(top_cfg: DictConfig):
 
     print("Global Config:", top_cfg, "\n")
     # Prepare datasets
+    # You can use the datasets defined in config.yaml or define your own here
     train_datasets = {
         'reasoning':[
             {'question': '1 + 1 = ', 
@@ -17,12 +18,13 @@ def main(top_cfg: DictConfig):
             }
         ]
     }
-
+    # train_datasets = prepare_train_dataset(top_cfg)
     generation_datasets={
         'reasoning':[
             {'input': "9.8 or 9.11, which is bigger?"}
         ]
     }
+    # generation_datasets = prepare_generation_datasets(top_cfg)
 
     # Generate Steering Vectors
     vector_generator = BaseVectorGenerator(top_cfg)
@@ -38,13 +40,6 @@ def main(top_cfg: DictConfig):
     # vector_applier.apply_vectors()
 
     # Result Generation
-    # You can customize your own inputs
-    # generation_datasets={'your_dataset_name':[{'input':'How do you feel about the recent changes at work?'},{'input':'how are you'}]}
-    
-    # Or use the datasets from config.yaml
-    generation_datasets = prepare_generation_datasets(top_cfg)
-    
-    # # # Method 1: Use parameters from config.yaml
     vector_applier.generate(generation_datasets)
 
     # Resets the model to its initial state, clearing any modifications.
