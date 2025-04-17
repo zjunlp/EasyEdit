@@ -10,11 +10,12 @@
 ---
 
 <p align="center">
+  <a href="https://zjunlp.github.io/project/EasyEdit2/">Home</a> •
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit2">Quick Start</a> •
   <a href="#data-preparation">Dataset</a> •
   <a href="#evaluation">Evaluation</a> •
-  <a href="https://zjunlp.github.io/project/EasyEdit2/">Page</a>
+  <a href="https://zjunlp.github.io/project/EasyEdit2/video">Video</a>
 </p>
 
 

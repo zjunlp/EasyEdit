@@ -163,8 +163,8 @@ def prepare_train_dataset(hparams):
     dataset_name = hparams.steer_train_dataset
     dataset = {}
     loader = DatasetLoader()
-    dataset = loader.load_file(dataset_name, split='train')
-    dataset[dataset_name] = dataset
+    loaded_dataset  = loader.load_file(dataset_name, split='train')
+    dataset[dataset_name] = loaded_dataset 
     return dataset
 
 if __name__=='__main__':

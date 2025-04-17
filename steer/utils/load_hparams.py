@@ -14,7 +14,7 @@ def load_generate_vector_hparams(top_cfg):
         intersect_keys = set(selected_hparams_class.__dataclass_fields__) & set(combined_hparams.keys())
         # remove extra fields
         hparams = selected_hparams_class(**{k: combined_hparams[k] for k in intersect_keys})
-        hparams.steer_vector_output_dir = top_cfg.steer_vector_output_dir[i]
+        hparams.steer_vector_output_dir = top_cfg.steer_vector_output_dir
         hparams.steer_train_dataset = top_cfg.steer_train_dataset
         hparams_dict[alg_name] = hparams
     return hparams_dict
