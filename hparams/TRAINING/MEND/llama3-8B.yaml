@@ -55,7 +55,7 @@ final_eval: True
 val_interval: 1000
 early_stop_patience: 30000
 early_stop_key: "edit/acc_val"
-eval_only: True
+eval_only: False
 half: False
 debug: False
 save: False
