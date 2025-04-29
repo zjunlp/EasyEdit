@@ -1,24 +1,24 @@
 # Model
 
-archive: ./results/models/MEND/llama3.2-3b-ZsRE
+archive: ./results/models/MEND/llama-3-8b-ZsRE
 alg_name: "MEND"
 device: 1
-model_name: ./hugging_cache/llama3.2-3b
+model_name: ./hugging_cache/llama-3-8b
 
 model_class: LlamaForCausalLM
 tokenizer_class: LlamaTokenizer
-tokenizer_name: ./hugging_cache/llama3.2-3b
+tokenizer_name: ./hugging_cache/llama-3-8b
 model_parallel: false
 inner_params:
-- model.layers.25.mlp.gate_proj.weight
-- model.layers.25.mlp.up_proj.weight
-- model.layers.25.mlp.down_proj.weight
-- model.layers.26.mlp.gate_proj.weight
-- model.layers.26.mlp.up_proj.weight
-- model.layers.26.mlp.down_proj.weight
-- model.layers.27.mlp.gate_proj.weight
-- model.layers.27.mlp.up_proj.weight
-- model.layers.27.mlp.down_proj.weight
+- model.layers.29.mlp.gate_proj.weight
+- model.layers.29.mlp.up_proj.weight
+- model.layers.29.mlp.down_proj.weight
+- model.layers.30.mlp.gate_proj.weight
+- model.layers.30.mlp.up_proj.weight
+- model.layers.30.mlp.down_proj.weight
+- model.layers.31.mlp.gate_proj.weight
+- model.layers.31.mlp.up_proj.weight
+- model.layers.31.mlp.down_proj.weight
 
 # Method
 alg: MEND
