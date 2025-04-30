@@ -30,7 +30,7 @@ steer_vector_load_dir:
 generation_data: 
  - Reasoning
 generation_data_size: 5  
-generation_output_dir: steer/logs//DeepSeek-R1-Distill-Qwen-7B/r1_results/
+generation_output_dir: steer/logs/DeepSeek-R1-Distill-Qwen-7B/r1_results/
 num_responses: 1
 steer_from_end_position: false
 

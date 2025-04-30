@@ -18,9 +18,9 @@ steer_vector_load_dir:
 # Generation
 # Supported multiple files generation based on `generation_data`.
 generation_data: 
- - nontoxic
+ - realtoxicityprompts
 generation_data_size: 5  
-generation_output_dir: logs/gpt2/
+generation_output_dir: logs/DeepSeek-R1-Distill-Llama-8B/
 num_responses: 1
 steer_from_end_position: false
 
