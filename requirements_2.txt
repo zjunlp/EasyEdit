@@ -1,3 +1,4 @@
+autoawq==0.2.0
 datasets==2.18.0
 nbformat==5.9.0
 typeguard==2.13.3

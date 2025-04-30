@@ -49,7 +49,7 @@ def get_model(hparams):
             )
         return model, model.tokenizer
     
-    elif 'qwen' in hparams.model_name_or_path.lower():
+    elif 'qwen' in hparams.model_name_or_path.lower() or 'qwq' in hparams.model_name_or_path.lower():
 
         model = QwenWrapper(  
             torch_dtype=torch_dtype,
