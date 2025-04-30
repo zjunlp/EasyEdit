@@ -25,7 +25,7 @@ steer_vector_load_dir:
 # Generation
 # Supported multiple files generation based on `generation_data`.
 generation_data: 
- - nontoxic
+ - realtoxicityprompts
 generation_data_size: 100
 generation_output_dir: steer/logs/Qwen2-0.5B/
 num_responses: 1
