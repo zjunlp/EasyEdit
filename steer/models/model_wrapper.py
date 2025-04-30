@@ -72,12 +72,14 @@ class BlockOutputWrapper(t.nn.Module):
             self.model_type = 'gemma'
         elif 'qwen' in model_name_or_path.lower():
             self.model_type = 'qwen'
+        elif 'qwq' in model_name_or_path.lower():
+            self.model_type = 'qwq'
  
         if self.model_type in ['gpt']:
             self.block.attn = AttnWrapper(self.block.attn)
             self.block.mlp = MLPWrapper(self.block.mlp)
             self.post_attention_layernorm=self.block.ln_2
-        elif self.model_type in ['llama', 'gemma', 'qwen']:
+        elif self.model_type in ['llama', 'gemma', 'qwen', 'qwq']:
             self.block.self_attn = AttnWrapper(self.block.self_attn)
             self.block.mlp = MLPWrapper(self.block.mlp)
             self.post_attention_layernorm=self.block.post_attention_layernorm
@@ -138,7 +140,7 @@ class BlockOutputWrapper(t.nn.Module):
         # Self-attention unembedded
         if self.model_type in ['gpt']:
             attn_output = self.block.attn.activations
-        if self.model_type in ['llama', 'gemma', 'qwen']:
+        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq']:
             attn_output = self.block.self_attn.activations
         
         self.attn_out_unembedded = self.unembed_matrix(self.norm(attn_output))
@@ -148,7 +150,7 @@ class BlockOutputWrapper(t.nn.Module):
         self.intermediate_resid_unembedded = self.unembed_matrix(self.norm(attn_output))
 
         # MLP unembedded
-        if self.model_type in ['llama', 'gemma', 'qwen', 'gpt'] :
+        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq', 'gpt'] :
             mlp_output = self.block.mlp(self.post_attention_layernorm(attn_output))
         self.mlp_out_unembedded = self.unembed_matrix(self.norm(mlp_output))
 
@@ -173,7 +175,7 @@ class BlockOutputWrapper(t.nn.Module):
         # self.block.self_attn.activations = None
         if self.model_type in ['gpt']:
             self.block.attn.activations = None
-        if self.model_type in ['llama', 'gemma', 'qwen']:
+        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq']:
             self.block.self_attn.activations = None
         self.from_position = None
         self.calc_dot_product_with = None

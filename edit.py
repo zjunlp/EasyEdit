@@ -3113,7 +3113,7 @@ def main():
     # test_MALMEN_Train()
     # test_MALMEN()
     # test_WISE()
-      test_deepedit_api()
+    test_deepedit_api()
 
 if __name__ == '__main__':
     main()

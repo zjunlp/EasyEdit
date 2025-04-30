@@ -17,3 +17,7 @@ delta.txt
 **/.hydra/
 **/.gradio/
 **/temp/
+nltk_data
+**/*.pyc
+*.pt
+steer/vectors
