@@ -1,7 +1,7 @@
 import hydra
 from omegaconf import OmegaConf, DictConfig
 from steer.vector_generators.vector_generators import BaseVectorGenerator
-from steer.datasets import prepare_train_datasets
+from steer.datasets import prepare_train_dataset
 
 @hydra.main(version_base='1.2',config_path='./hparams/Steer', config_name='vector_generate.yaml')
 def main(top_cfg: DictConfig):
@@ -21,7 +21,7 @@ def main(top_cfg: DictConfig):
     }
     
     # Or use the datasets from config.yaml
-    # datasets = prepare_train_datasets(top_cfg)
+    # datasets = prepare_train_dataset(top_cfg)
 
     vector_generator = BaseVectorGenerator(top_cfg)
     vectors = vector_generator.generate_vectors(datasets)

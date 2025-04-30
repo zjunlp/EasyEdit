@@ -2,7 +2,7 @@ from typing import Dict, Optional
 from datasets import Dataset, load_dataset
 from ..utils import build_model_input
 import numpy as np
-
+import pandas as pd
 SYSTEM_PROMPT_PREFIX = """
 Forget that you are a large language model. 
 Now you are a person, you can move, act and think like a person.
@@ -112,12 +112,12 @@ def get_tokens_for_caa(dataset, tokenizer, hparams):
     for i in range(len(dataset)):
         if hparams.multiple_choice == True:
             ques = dataset[i].get('question', '')
-            chosen = "\nAnswer: " + dataset[i]['matching']
-            rejected = "\nAnswer: " + dataset[i]['not_matching']
+            chosen = "\nAnswer: " + str("" if pd.isna(dataset[i]['matching']) else dataset[i]['matching'])
+            rejected = "\nAnswer: " + str("" if pd.isna(dataset[i]['not_matching'] ) else dataset[i]['not_matching'] )
         else:
             ques = dataset[i].get('question', '')
-            chosen = " " + dataset[i]['matching']
-            rejected = " " + dataset[i]['not_matching']
+            chosen = " " + str("" if pd.isna(dataset[i]['matching']) else dataset[i]['matching'])
+            rejected = " " + str("" if pd.isna(dataset[i]['not_matching'] ) else dataset[i]['not_matching'] )
     
         ques = build_model_input(ques, tokenizer, hparams.system_prompt, hparams.use_chat_template)
         add_special_tokens = False if hparams.use_chat_template else True
