@@ -386,7 +386,7 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 | **dataset**  | Google Drive |                         Description                          |
 | :----------: | :----------: | :----------------------------------------------------------: |
 |   SafeEdit   |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  |              test dataset for detoxifying LLMs               |
-| Realtoxicity |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  | test dataset for addressing the risk of neural toxic degeneration in models |
+| RealToxicityPrompts |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  | test dataset for addressing the risk of neural toxic degeneration in models |
 |   toxigen    |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  |         dataset  for implicit hate speech detection.         |
 
 #### 😊Sentiment control
