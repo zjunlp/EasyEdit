@@ -23,6 +23,7 @@ generation_data_size: 5
 generation_output_dir: logs/DeepSeek-R1-Distill-Llama-8B/
 num_responses: 1
 steer_from_end_position: false
+generate_orig_output: True
 
 generation_params:  
   max_new_tokens: 100

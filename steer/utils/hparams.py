@@ -15,7 +15,7 @@ class HyperParams:
     model_name_or_path: str='your_own_path'
     device: str='cpu'
     use_cache: bool=True
-
+    generate_orig_output = True
     @classmethod
     def from_json(cls, fpath):
         with open(fpath, "r") as f:

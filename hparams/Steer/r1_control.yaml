@@ -41,10 +41,5 @@ generation_params:
   temperature: 0.6 
 generate_orig_output: True
 
-hydra:
-  run:
-    dir: .
-  output_subdir: null
-  job_logging: 
-    file: null
+
 
