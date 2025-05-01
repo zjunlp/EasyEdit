@@ -37,3 +37,6 @@ generation_params:
   max_new_tokens: 50
   # min_new_tokens: 50  #only for lmsteer
 
+
+generate_orig_output: False
+

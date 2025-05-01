@@ -37,13 +37,7 @@ generation_params:
   max_new_tokens: 50
   # min_new_tokens: 50  #only for lmsteer
 
-hydra:
-  run:
-    dir: .
-  output_subdir: null
-  job_logging: 
-    file: null
-
+generate_orig_output: False
 
 
   
