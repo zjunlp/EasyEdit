@@ -39,7 +39,7 @@ steer_from_end_position: false
 generation_params:
   max_new_tokens: 500    
   temperature: 0.6 
-generate_orig_output: True
+generate_orig_output: False
 
 
 

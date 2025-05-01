@@ -31,7 +31,7 @@ generation_output_dir: steer/logs/Qwen2-0.5B/
 num_responses: 1
 steer_from_end_position: false
 
-generate_orig_output: True
+generate_orig_output: False
 # Model generation parameters - must match Hugging Face parameter names
 # See: https://huggingface.co/docs/transformers/main_classes/text_generation
 generation_params:
