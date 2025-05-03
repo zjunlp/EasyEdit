@@ -165,7 +165,7 @@ class MultimodalEditor:
             prompts: Union[str, List[str]],
             targets: Union[str, List[str]],
             image: Union[str, List[str]],
-            file_type: Union[str,List[str]],
+            file_type: Union[str,List[str]] = None,
             rephrase_prompts: Optional[Union[str, List[str]]] = None,
             rephrase_image: Optional[Union[str, List[str]]] = None,
             locality_inputs: Optional[dict] = None,

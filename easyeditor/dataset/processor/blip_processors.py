@@ -141,7 +141,7 @@ class BlipImageEvalProcessor(BlipImageBaseProcessor):
             ]
         )
 
-    def __call__(self, item):
+    def __call__(self, item, file_type=None):
         return self.transform(item)
 
     @classmethod
