@@ -13,7 +13,7 @@ import random
 def print_result(metrics):
     rewrite_acc = mean([m['post']['rewrite_acc'].item() for m in metrics])
     rephrase_acc = mean([m['post']['rephrase_acc'].item() for m in metrics])
-    rephrase_image_acc = mean([m['post']['rephrase_image_acc'].item() for m in metrics])
+    rephrase_image_acc = mean([m['post']['image_rephrase_acc'].item() for m in metrics])
     locality_acc = mean([m['post']['locality_acc'].item() for m in metrics])
     locality_image_acc = mean([m['post']['multimodal_locality_acc'].item() for m in metrics])
     print(f'rewrite_acc: {rewrite_acc}')
