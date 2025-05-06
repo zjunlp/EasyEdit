@@ -59,7 +59,7 @@ class BlipImageTrainProcessor(BlipImageBaseProcessor):
             ]
         )
 
-    def __call__(self, item):
+    def __call__(self, item, file_type=None):
         return self.transform(item)
 
     @classmethod
@@ -103,7 +103,7 @@ class Blip2ImageTrainProcessor(BlipImageBaseProcessor):
             ]
         )
 
-    def __call__(self, item):
+    def __call__(self, item, file_type=None):
         return self.transform(item)
 
     @classmethod
@@ -161,7 +161,7 @@ class BlipCaptionProcessor(BaseProcessor):
         self.prompt = prompt
         self.max_words = max_words
 
-    def __call__(self, caption):
+    def __call__(self, caption, file_type=None):
         caption = self.prompt + self.pre_caption(caption)
 
         return caption
