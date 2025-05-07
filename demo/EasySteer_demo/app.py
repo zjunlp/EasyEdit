@@ -972,8 +972,7 @@ if __name__ == "__main__":
     temp_dir = os.path.join(os.getcwd(), "temp") # Make sure temp_dir is defined if you still use it in app.py
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
-    # demo.queue().launch(server_name="0.0.0.0", server_port=8088, show_error=True)
-    demo.queue().launch(server_name="0.0.0.0", server_port=8088, show_error=True, root_path="http://easyedit.zjukg.cn/", favicon_path="easyedit2.png")
+    demo.queue().launch(server_name="0.0.0.0", server_port=8088, show_error=True)
     # import shutil
     # try:
     #     shutil.rmtree(temp_dir)
