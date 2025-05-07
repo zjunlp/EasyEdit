@@ -228,8 +228,7 @@ steer_train_hparam_paths:
  - hparams/Steer/vector_prompt_hparams/generate_vector_prompt.yaml
 steer_train_dataset:     
  - prompt_vector
-steer_vector_output_dir: 
- - vectors/DeepSeek-R1-Distill-Llama-8B/
+steer_vector_output_dir: vectors/DeepSeek-R1-Distill-Llama-8B/
 ```
 
 #### Step 3: Provide the Input Data

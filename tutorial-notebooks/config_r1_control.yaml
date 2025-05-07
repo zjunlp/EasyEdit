@@ -11,8 +11,7 @@ steer_train_hparam_paths:
  - ../hparams/Steer/caa_hparams/generate_caa.yaml
 steer_train_dataset: 
  - r1
-steer_vector_output_dir: 
- - vectors/DeepSeek-R1-Distill-Qwen-8B/
+steer_vector_output_dir: vectors/DeepSeek-R1-Distill-Qwen-8B/
 
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
