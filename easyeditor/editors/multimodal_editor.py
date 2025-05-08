@@ -566,7 +566,7 @@ class MultimodalEditor:
         # image_path = [os.path.join(self.vis_root, image_) for image_ in image]
         # image = [Image.open(ip).convert("RGB") for ip in image_path]
         # image = [self.vis_tok(i).to(self.hparams.device) for i in image]
-        image = [self.vis_tok(file=m, file_type=n) for m,n in zip(image, file_type)]
+        image = [self.vis_tok(m, file_type=n) for m,n in zip(image, file_type)]
     
         
         requests = [{
@@ -615,7 +615,7 @@ class MultimodalEditor:
                 rephrase_image = [rephrase_image, ]
             # rephrase_image_path = [os.path.join(self.rephrase_root, rephrase_image_) for rephrase_image_ in rephrase_image]
             # rephrase_image = [Image.open(ip).convert("RGB") for ip in rephrase_image_path]
-            rephrase_image = [self.vis_tok(file=m, file_type=n) for m, n in zip(rephrase_image,file_type)]
+            rephrase_image = [self.vis_tok(m, file_type=n) for m, n in zip(rephrase_image,file_type)]
             
             for i, request in enumerate(requests):
                 request.update(
@@ -638,7 +638,7 @@ class MultimodalEditor:
             # locality_image_path = [os.path.join(self.vis_root, multimodal_locality_image_) for multimodal_locality_image_ in multimodal_locality_image]
             locality_image_path = [multimodal_locality_image_ for multimodal_locality_image_ in multimodal_locality_image]
             # locality_image = [Image.open(ip).convert("RGB") for ip in locality_image_path]
-            locality_image = [self.vis_tok(file=i, file_type="image") for i in locality_image_path]
+            locality_image = [self.vis_tok(i, file_type="image") for i in locality_image_path]
              
             for i, request in enumerate(requests):
                 request.update(
