@@ -6,7 +6,7 @@
 """
 
 import re
-
+from PIL import Image
 from .base_processor import BaseProcessor
 from .randaugment import RandomAugment
 from omegaconf import OmegaConf
@@ -60,6 +60,7 @@ class BlipImageTrainProcessor(BlipImageBaseProcessor):
         )
 
     def __call__(self, item, file_type=None):
+        item = Image.open(item)
         return self.transform(item)
 
     @classmethod
@@ -104,6 +105,7 @@ class Blip2ImageTrainProcessor(BlipImageBaseProcessor):
         )
 
     def __call__(self, item, file_type=None):
+        item = Image.open(item)
         return self.transform(item)
 
     @classmethod
@@ -142,6 +144,7 @@ class BlipImageEvalProcessor(BlipImageBaseProcessor):
         )
 
     def __call__(self, item, file_type=None):
+        item = Image.open(item)
         return self.transform(item)
 
     @classmethod
