@@ -481,7 +481,7 @@ EasyEdit2 provides comprehensive evaluation metrics categorized into three types
 
 | Method         | Description                                                  | Result Range              |
 | -------------- | ------------------------------------------------------------ | ------------------------- |
-| `perplexity`   | Measures language model fluency by calculating perplexity.   | 0 to ∞ (lower is better)  |
+| `perplexity (ppl)`   | Measures language model fluency by calculating perplexity.   | 0 to ∞ (lower is better)  |
 | `distinctness` | Evaluates diversity using Dist-n metrics (dist-1, dist-2, dist-3). | 0-1 (higher is better)    |
 | `fluency`      | Uses n-gram entropy to assess fluency.                       | 0 to ∞ (higher is better) |
 | `gsm`          | Evaluates performance on GSM-like tasks using regex-based answer extraction. | Binary                    |
