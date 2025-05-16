@@ -9,8 +9,8 @@ system_prompt: 'You are a helpful assistant.'  # Adds a system prompt to all met
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
 apply_steer_hparam_paths:
- - hparams/caa_hparams/apply_caa.yaml
- - hparams/lm_steer_hparams/apply_lm_steer.yaml
+ - hparams/Steer/caa_hparams/apply_caa.yaml
+ - hparams/Steer/lm_steer_hparams/apply_lm_steer.yaml
 #  - hparams/vector_prompt_hparams/apply_vector_prompt.yaml
 steer_vector_load_dir: 
  - vectors/DeepSeek-R1-Distill-Llama-8B/caa_vector
