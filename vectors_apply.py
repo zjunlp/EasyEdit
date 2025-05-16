@@ -17,10 +17,10 @@ def main(top_cfg: DictConfig):
     vector_applier.apply_vectors()
     
     # You can customize your own inputs
-    # datasets={'your_dataset_name':[{'input':'hello'},{'input':'how are you'}]}
+    datasets={'your_dataset_name':[{'input':'hello'},{'input':'how are you'}]}
     
     # Or use the datasets from config.yaml
-    datasets = prepare_generation_datasets(top_cfg)
+    # datasets = prepare_generation_datasets(top_cfg)
     
     # Method 1: Use parameters from config.yaml
     vector_applier.generate(datasets)
