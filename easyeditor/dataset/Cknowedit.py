@@ -45,24 +45,37 @@ class CKnowEditDataset(Dataset):
                 tokenizer.eos_token='<|endoftext|>'
                 tokenizer.pad_token='<|endoftext|>'
                 tokenizer.unk_token='<|endoftext|>'
-                # tokenizer.padding_side = 'left'
+                tokenizer.padding_side = 'left'
                 # print('QwenTokenizer Detected, Set pad token id and left padding!!!')
             self.tok = tokenizer
 
         with open(Cknowedit_loc, "r") as f:
             raw = json.load(f)
-
+  
         data = []
         for i, record in enumerate(raw):
+            x = record['prompt']
+            if("请填写下列古诗文的后一句：" in record['prompt']):
+                subject = x.replace("请填写下列古诗文的后一句：",'')
+            elif("请解释" in record['prompt'] and "中的意思。仅需给出该字意思即可，无需解释全文。" in record['prompt']):
+                subject = x.replace("请解释",'').replace("中的意思。仅需给出该字意思即可，无需解释全文。",'')
+            elif("请解释如下成语：" in record['prompt']):
+                subject = x.replace("请解释如下成语：",'')
+            elif("请给下面的字注音：" in record['prompt']):
+                subject = x.replace("请给下面的字注音：",'')
+            elif("请解释如下俗语或谚语：" in record['prompt']):
+                subject = x.replace("请解释如下俗语或谚语：",'')
+            else:
+                subject = x
             data.append(
                 {
                     "prompt": record["prompt"],
                     "target_new": record["target_new"],
-                    "subject":record["prompt"],
+                    "subject":subject,
                     "target_old": record["target_old"],
                     "portability": record["portability"] if "portability" in record else None,
                     "locality": record["locality"] if "locality" in record else None,
-                    "rephrase":record["rephrase"][0] if "rephrase" in record else None
+                    "rephrase":record["rephrase"] if "rephrase" in record else None
                 }
             )
 

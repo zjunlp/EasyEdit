@@ -84,10 +84,11 @@ Just return the letters "A" or "B", with no text around it.
 
     client = OpenAI(
         api_key=api_key,
+        base_url="https://api.deepseek.com"
     )
 
     completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="deepseek-chat",
         messages=[
             {"role": "system", "content": ""},
             {"role": "user", "content": content}
@@ -99,44 +100,70 @@ Just return the letters "A" or "B", with no text around it.
     time.sleep(1) # avoid high rate of request
     return llm_score
 
-def test_prediction_acc_LLM_judge(model, tok, hparams, prompt, target, device, locality=False):
+def test_prediction_acc_LLM_judge(model, tok, hparams, prompts, targets, device, locality=False):
     # generation & truncation
-    prompt_tok = tok(
-        prompt,
-        return_tensors="pt",
-    ).to(f"cuda:{device}")
-    gen_tokens = model.generate(
-        input_ids=prompt_tok['input_ids'],
-        attention_mask=prompt_tok['attention_mask'],
-        max_new_tokens=50,
-        stop_strings=[".", "\n", "</s>", "<|endoftext|>"],
-        tokenizer=tok,
-        pad_token_id=tok.eos_token_id,
-        do_sample=False,
-        use_cache=False,
-    )
-    # decode and process
-    if isinstance(model, T5ForConditionalGeneration):
-        trunc_gen_tokens = gen_tokens[0]  # encoder-decoder model only provied generated content after prompt
-    else:
-        trunc_gen_tokens = gen_tokens[0][prompt_tok['input_ids'].shape[1]:]  # decoder-only model provied generated content containing prompt
-    if locality:
-        ans = trunc_gen_tokens.detach().cpu().numpy().tolist()
-        return ans
-    else:
+    all_score = []
+    all_response = []
+    if isinstance(prompts, str):
+        prompts, targets = [prompts, ], [targets, ]
+    for prompt in prompts:
+        messages = [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ]
+        text = tok.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+        prompt_tok = tok(
+            text,
+            padding = True,
+            truncation = True,
+            return_tensors="pt",
+        ).to(f"cuda:{device}")
+        # add a template
+        gen_tokens = model.generate(
+            input_ids=prompt_tok['input_ids'],
+            attention_mask=prompt_tok['attention_mask'],
+            max_new_tokens=512,
+            stop_strings=[".", "\n", "</s>", "<|endoftext|>"],
+            tokenizer=tok,
+            pad_token_id=tok.eos_token_id,
+            do_sample=False,
+            use_cache=False,
+        )
+        # decode and process
+        if isinstance(model, T5ForConditionalGeneration):
+            trunc_gen_tokens = gen_tokens[0]  # encoder-decoder model only provied generated content after prompt
+        else:
+            trunc_gen_tokens = gen_tokens[0][prompt_tok['input_ids'].shape[1]:]  # decoder-only model provied generated content containing prompt
+        # if locality:
+        #     ans = trunc_gen_tokens.detach().cpu().numpy().tolist()
+        #     all_response.append(ans)
+        # else:
         gen_content = tok.decode(trunc_gen_tokens)
         suffixes_to_remove = [".", "\n", "</s>", "<|endoftext|>"]
         for suffix in suffixes_to_remove:
             if gen_content.endswith(suffix):
                 gen_content = gen_content.rstrip(suffix)
         # LLM-as-a-Judge
-        if hasattr(hparams, 'api_key') and hparams.api_key:
-            LLM_Score = llm_judge(prompt, target, gen_content, hparams.api_key)
-            return LLM_Score, gen_content
+        if hparams.evaluation_type == "generate-text":
+            all_response.append(gen_content)
+        elif hparams.evaluation_type == "LLM-judge" and hasattr(hparams, 'api_key') and hparams.api_key:
+            LLM_Score = llm_judge(prompts, targets, gen_content, hparams.api_key)
+            all_score.append(LLM_Score)
+            all_response.append(gen_content)
         else:
             # the user do not provide api key, using exact match as an alternative
-            EM_Score = float(exact_match_score(gen_content, target))
-            return EM_Score, gen_content
+            EM_Score = float(exact_match_score(gen_content, targets))
+            all_score.append(EM_Score)
+            all_response.append(gen_content)
+    
+    if len(all_score) > 0:
+        return all_score, all_response
+    else:
+        return all_response
 
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
     prompt_tok = tok(

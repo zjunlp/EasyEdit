@@ -118,6 +118,11 @@ def compute_rewrite_or_rephrase_quality(
             f"{key}_acc": acc,
             f"{key}_gen_content": gen_content
         }
+    elif hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "generate-text":
+        gen_content_model = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, target_new, device, locality=False)
+        ret = {
+            f"{key}_gen_content": gen_content_model
+        }
     else:  # traditional evaluation 
         if eval_metric == 'ppl':
             ppl = PPL(model, tok, prompt, target_new, device)
@@ -163,7 +168,7 @@ def compute_locality_quality(
 ) -> typing.Dict:
 
     # using real-world evaluation: autoregressive decoding, natural stop criteria, LLM-as-a-Judge
-    if hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "LLM-judge":
+    if hasattr(hparams, 'evaluation_type'):
         loc_tokens = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
     else:  # traditional evaluation 
         if 't5' in model_name.lower():
@@ -188,9 +193,10 @@ def compute_portability_quality(
     ground_truth: typing.Union[str, List[str]],
     device,
 ) -> typing.Dict:
-
     # using real-world evaluation: autoregressive decoding, natural stop criteria, LLM-as-a-Judge
     if hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "LLM-judge":
+        portability_correct = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, ground_truth, device, locality=False)
+    elif hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "generate-text":
         portability_correct = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, ground_truth, device, locality=False)
     else:  # traditional evaluation
         if 't5' in model_name.lower():
