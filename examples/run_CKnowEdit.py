@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument('--metrics_save_dir', default='./output', type=str)
     parser.add_argument('--train_data_path', type=str)
     parser.add_argument('--chinese_ds_type', required=True, type=str)
-    parser.add_argument('--evaluation_type', default='LLM-judge', type=str)
+    parser.add_argument('--evaluation_type', default='generate-text', type=str)
     parser.add_argument('--api_key', default=None, type=str)
     args = parser.parse_args()
 
