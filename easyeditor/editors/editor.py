@@ -351,10 +351,10 @@ class BaseEditor:
                 })
                 if "metric_kwargs" in kwargs:
                     all_metrics[idx].update(compute_sent_metric(self.model, edited_model, self.model_name, self.hparams, self.tok,metric_kwargs=kwargs["metric_kwargs"][idx], device=self.hparams.device))
-                if 'locality' in all_metrics[idx]['post'].keys():
+                if 'locality' in all_metrics[idx]['post'].keys() and not hasattr(self.hparams, 'evaluation_type'):
                     for locality_key in request['locality'].keys():
                         locality_result = []
-                        if hasattr(self.hparams, 'evaluation_type') and self.hparams.evaluation_type == "LLM-judge":
+                        if hasattr(self.hparams, 'evaluation_type'):
                             locality_result.append(float(all_metrics[idx]['post']['locality'][f'{locality_key}_output']==all_metrics[idx]['pre']['locality'][f'{locality_key}_output']))
                         else:
                             for ans, label in zip(all_metrics[idx]['post']['locality'][f'{locality_key}_output'], all_metrics[idx]['pre']['locality'][f'{locality_key}_output']):
@@ -395,7 +395,7 @@ class BaseEditor:
 
         if isinstance(edited_model, LORA):
             edited_model = edited_model.model
-        if len(all_metrics) != 0:
+        if not hasattr(self.hparams, 'evaluation_type') or self.hparams.evaluation_type != "generate-text":
             summary_metrics(all_metrics)
 
         return all_metrics, edited_model, weights_copy

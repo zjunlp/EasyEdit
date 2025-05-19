@@ -30,8 +30,9 @@ if __name__ == "__main__":
     parser.add_argument('--ds_size', default=None, type=int)
     parser.add_argument('--metrics_save_dir', default='./output', type=str)
     parser.add_argument('--train_data_path', type=str)
-    parser.add_argument('--pre_file', default='./seq_pre.json', type=str)
     parser.add_argument('--chinese_ds_type', required=True, type=str)
+    parser.add_argument('--evaluation_type', default='LLM-judge', type=str)
+    parser.add_argument('--api_key', default=None, type=str)
     args = parser.parse_args()
 
     if args.editing_method == 'FT':
@@ -114,13 +115,8 @@ if __name__ == "__main__":
     }
 
     hparams = editing_hparams.from_hparams(args.hparams_dir)
-    args.pre_file = f"./{args.editing_method}_{hparams.model_name.split('/')[-1]}_{args.datatype}_{args.chinese_ds_type}_pre_edit.json"
-    print(args.pre_file)
-    if args.pre_file is not None and os.path.exists(args.pre_file):
-        pre_edit = json.load(open(args.pre_file,'r'))
-        assert len(pre_edit) == len(prompts)
-    else:
-        pre_edit = None
+    hparams.evaluation_type = args.evaluation_type
+    hparams.api_key = args.api_key
     if args.editing_method == 'IKE':
         train_ds = CKnowEditDataset(args.train_data_path)
         sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
@@ -128,7 +124,7 @@ if __name__ == "__main__":
     else:
         train_ds = None
     editor = BaseEditor.from_hparams(hparams)
-    metrics, edited_model, _ = editor.generate_edit(
+    metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         target_new=target_new,
         ground_truth=ground_truth,
@@ -138,11 +134,9 @@ if __name__ == "__main__":
         subject = subject,
         train_ds=train_ds,
         keep_original_weight=True,
-        pre_file=args.pre_file,
-        pre_edit = pre_edit,
         test_generation=True,
         sequential_edit = False
     )
     if not os.path.exists(args.metrics_save_dir):
         os.makedirs(args.metrics_save_dir)
-    json.dump(metrics, open(os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datatype}_{hparams.model_name.split("/")[-1]}_{args.chinese_ds_type}_results.json'), 'w'), indent=4)
+    json.dump(metrics, open(os.path.join(args.metrics_save_dir, f'{args.editing_method}_{hparams.model_name.split("/")[-1]}_{args.chinese_ds_type}_results.json'), 'w'), indent=4)
