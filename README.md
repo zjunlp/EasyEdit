@@ -65,7 +65,7 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
-- 2025-04-03, 🚀🚀We have upgraded **EasyEdit** and introduced **EasyEdit2**! EasyEdit2 provides an easy-to-use steering framework for editing large language models with **precision and flexibility**. This upgrade enhances the framework’s capabilities, making it more robust and adaptable for various steering methods. More details can be found in the [README](README_2.md) and on our [website](https://zjunlp.github.io/project/EasyEdit2/).
+- 2025-04-03, 🚀🚀We have upgraded **EasyEdit** and introduced **EasyEdit2**! EasyEdit2 provides an easy-to-use steering framework for editing large language models with **precision and flexibility**. This upgrade enhances the framework’s capabilities, making it more robust and adaptable for various steering methods. More details can be found in our [paper](https://arxiv.org/abs/2504.15133), in the [README](README_2.md) and on our [website](https://zjunlp.github.io/project/EasyEdit2/).
 - 2025-03-04, 🌟🌟In addition to the original token-level teacher-forcing paradigm for evaluation, EasyEdit has integrated a new evaluation method, following the paper titled "[The Mirage of Model Editing: Revisiting Evaluation in the Wild](https://arxiv.org/abs/2502.11177)". You can use this [script](https://github.com/zjunlp/EasyEdit/blob/main/examples/run_LLM_evaluation.py) to quickly launch this evaluation approach, which better aligns with real-world requirements. Special thanks to [@WanliYoung](https://github.com/WanliYoung) for contribution!
 
 
