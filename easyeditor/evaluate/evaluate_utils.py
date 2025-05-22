@@ -127,7 +127,7 @@ def test_prediction_acc_LLM_judge(model, tok, hparams, prompts, targets, device,
             input_ids=prompt_tok['input_ids'],
             attention_mask=prompt_tok['attention_mask'],
             max_new_tokens=512,
-            stop_strings=[".", "\n", "</s>", "<|endoftext|>"],
+            stop_strings=[".", "\n", tok.eos_token],
             tokenizer=tok,
             pad_token_id=tok.eos_token_id,
             do_sample=False,
@@ -143,10 +143,10 @@ def test_prediction_acc_LLM_judge(model, tok, hparams, prompts, targets, device,
         #     all_response.append(ans)
         # else:
         gen_content = tok.decode(trunc_gen_tokens)
-        suffixes_to_remove = [".", "\n", "</s>", "<|endoftext|>"]
+        suffixes_to_remove = [".", "\n", tok.eos_token]
         for suffix in suffixes_to_remove:
             if gen_content.endswith(suffix):
-                gen_content = gen_content.rstrip(suffix)
+                gen_content = gen_content[:-len(suffix)]
         # LLM-as-a-Judge
         if hparams.evaluation_type == "generate-text":
             all_response.append(gen_content)
