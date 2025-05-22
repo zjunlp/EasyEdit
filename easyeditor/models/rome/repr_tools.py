@@ -152,6 +152,11 @@ def get_reprs_at_idxs(
             next(model.parameters()).device
         )
 
+        if tok.padding_side == "left":
+            for id, tok_list in enumerate(contexts_tok["input_ids"]):
+                batch_idxs[id][0] += tok_list.detach().clone().cpu().tolist().count(tok.pad_token_id)
+
+
         with torch.no_grad():
             with nethook.Trace(
                 module=model,

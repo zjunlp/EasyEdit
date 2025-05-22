@@ -173,3 +173,35 @@ def generate_fast(
     ]
 
     return txt
+
+def generate_standard(model, prompt, tokenizer, max_input_tokens=256, max_new_tokens=64, top_p=0.9, temperature=0.7, do_sample=False, top_k=50):
+
+    right_pad_flag=False
+    if tokenizer.padding_side == 'right':
+        tokenizer.padding_side = 'left'
+        right_pad_flag=True
+
+    inputs = tokenizer(prompt, padding = True, truncation = True, max_length = max_input_tokens, return_tensors = "pt").to('cuda')
+
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs, 
+            do_sample=do_sample,
+            max_new_tokens=max_new_tokens,
+            top_p=top_p,
+            top_k=top_k,
+            temperature=temperature,
+            pad_token_id=tokenizer.pad_token_id,
+            return_dict_in_generate=True,
+            output_scores=True
+        )
+
+    s = outputs.sequences
+    outputs = tokenizer.batch_decode(s, skip_special_tokens=True, \
+        clean_up_tokenization_spaces=True)
+    results = [output for output in outputs]
+
+    if right_pad_flag:
+        tokenizer.padding_side = 'right'
+
+    return results
