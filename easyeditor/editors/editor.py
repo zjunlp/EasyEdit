@@ -248,18 +248,21 @@ class BaseEditor:
 
                 chunk_metrics.append(metrics)
 
-            if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
-                with torch.no_grad():
-                    weights_copy()
-            elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                edited_model.unload()
-                del self.model.peft_config
-            elif self.alg_name == 'MELO':
+            if sequential_edit:
                 self.model = edited_model
             else:
-                with torch.no_grad():
-                    for k, v in weights_copy.items():
-                        nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
+                    with torch.no_grad():
+                        weights_copy()
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
+                    edited_model.unload()
+                    del self.model.peft_config
+                elif self.alg_name == 'MELO':
+                    self.model = edited_model
+                else:
+                    with torch.no_grad():
+                        for k, v in weights_copy.items():
+                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
 
             for i, request in enumerate(record_chunks):
                 chunk_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
@@ -370,6 +373,8 @@ class BaseEditor:
         if sequential_edit:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
+            if self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
+                self.model = edited_model
             if self.alg_name == 'WISE' and hasattr(self.hparams, 'save_path') and self.hparams.save_path:
                 print("Start saving the WISE model!")
                 edited_model.save(self.hparams.save_path)
