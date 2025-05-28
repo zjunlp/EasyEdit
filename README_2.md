@@ -74,7 +74,7 @@ EasyEdit2 enables precise control over various model behaviors, including **safe
   LM-Steer applies a lightweight linear transformation to output embeddings to modify the model's behavior
 - [**SAE Feature Steering**](https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html):
   SAE leverages features extracted from Sparse Autoencoders (SAEs), enabling users to select SAE features associated with specific concepts and apply them as steering vectors.
-- **Steering Target Atoms (STA)**:
+- **[Steering Target Atoms (STA)](https://arxiv.org/abs/2505.20322)**:
   STA extends CAA by incorporating Sparse Autoencoders (SAEs) to refine the steering vectors for better model control.
 - **Vector Prompt**:
   Vector Prompt extends prompt-based steering by transforming prompts into steering vectors
