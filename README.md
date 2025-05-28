@@ -8,7 +8,7 @@
 ![](https://img.shields.io/badge/PRs-Welcome-red)
 
 ---
-
+ 
 <p align="center">
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">QuickStart</a> •
@@ -65,6 +65,7 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- 2025-06,
 - 2025-05-28, 🌟🌟the EasyEdit has added a new model editing algorithm [NAMET](https://arxiv.org/abs/2505.11876), which introduces noise during memory extraction via a one-line modification to MEMIT. Thanks to [@ybdai7](https://github.com/ybdai7) for contribution!
 - 2025-05-15, 🚀🚀We released a new blog [Reflection on Knowledge Editing: Charting the Next Steps](https://fish-sorrel-a54.notion.site/Reflection-on-Knowledge-Editing-Charting-the-Next-Steps-1e6ca8e41f3a8098bd14c85ac1db8da6) discussing the next step for knowledge editing research.
 - 2025-04-03, 🚀🚀We have upgraded **EasyEdit** and introduced **EasyEdit2**! EasyEdit2 provides an easy-to-use steering framework for editing large language models with **precision and flexibility**. This upgrade enhances the framework’s capabilities, making it more robust and adaptable for various steering methods. More details can be found in our [paper](https://arxiv.org/abs/2504.15133), in the [README](README_2.md) and on our [website](https://zjunlp.github.io/project/EasyEdit2/).
