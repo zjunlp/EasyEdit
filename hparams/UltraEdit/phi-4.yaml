@@ -1,0 +1,16 @@
+name_or_path: your/path/phi-4
+name: phi-4
+model_vec_size: 17920
+class_name: AutoModelForCausalLM
+edit_modules:
+# wikibigedit ultraeditbench
+- model.layers.30.mlp.down_proj
+- model.layers.31.mlp.down_proj
+- model.layers.32.mlp.down_proj
+- model.layers.33.mlp.down_proj
+- model.layers.34.mlp.down_proj
+- model.layers.35.mlp.down_proj
+- model.layers.36.mlp.down_proj
+- model.layers.37.mlp.down_proj
+- model.layers.38.mlp.down_proj
+half: True

@@ -1,0 +1,9 @@
+name_or_path: your/path/mistral-7b-v0.3
+name: mistral-7b
+model_vec_size: 18432
+class_name: AutoModelForCausalLM
+edit_modules:
+# zsre wikibigedit fever ultraeditbench
+- model.layers.29.mlp.down_proj
+- model.layers.30.mlp.down_proj
+half: True

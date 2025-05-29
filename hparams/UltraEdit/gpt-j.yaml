@@ -1,0 +1,28 @@
+name_or_path: your/path/gpt-j-6b
+name: gpt-j
+model_vec_size: 18432
+class_name: AutoModelForCausalLM
+edit_modules:
+# zsre or ultra
+- transformer.h.18.mlp.fc_out
+- transformer.h.19.mlp.fc_out
+- transformer.h.20.mlp.fc_out
+- transformer.h.21.mlp.fc_out
+- transformer.h.22.mlp.fc_out
+- transformer.h.23.mlp.fc_out
+- transformer.h.24.mlp.fc_out
+- transformer.h.25.mlp.fc_out
+- transformer.h.26.mlp.fc_out
+# wikibigedit
+# - transformer.h.19.mlp.fc_out
+# - transformer.h.20.mlp.fc_out
+# - transformer.h.21.mlp.fc_out
+# - transformer.h.22.mlp.fc_out
+# - transformer.h.23.mlp.fc_out
+# - transformer.h.24.mlp.fc_out
+# - transformer.h.25.mlp.fc_out
+# - transformer.h.26.mlp.fc_out
+# fever
+# - transformer.h.25.mlp.fc_out
+# - transformer.h.26.mlp.fc_out
+half: True

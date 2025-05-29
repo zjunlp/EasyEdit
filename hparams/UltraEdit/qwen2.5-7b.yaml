@@ -1,0 +1,44 @@
+name_or_path: your/path/Qwen2.5-7B-Instruct
+name: Qwen2.5-7B-Instruct
+model_vec_size: 18432
+class_name: AutoModelForCausalLM
+bit: 0
+edit_modules:
+# zsre fever ultraeditbench
+- model.layers.18.mlp.gate_proj
+- model.layers.19.mlp.gate_proj
+- model.layers.20.mlp.gate_proj
+- model.layers.21.mlp.gate_proj
+- model.layers.22.mlp.gate_proj
+- model.layers.23.mlp.gate_proj
+- model.layers.24.mlp.gate_proj
+- model.layers.25.mlp.gate_proj
+- model.layers.26.mlp.gate_proj
+- model.layers.18.mlp.up_proj
+- model.layers.19.mlp.up_proj
+- model.layers.20.mlp.up_proj
+- model.layers.21.mlp.up_proj
+- model.layers.22.mlp.up_proj
+- model.layers.23.mlp.up_proj
+- model.layers.24.mlp.up_proj
+- model.layers.25.mlp.up_proj
+- model.layers.26.mlp.up_proj
+# wikibigedit
+# - model.layers.19.mlp.gate_proj
+# - model.layers.20.mlp.gate_proj
+# - model.layers.21.mlp.gate_proj
+# - model.layers.22.mlp.gate_proj
+# - model.layers.23.mlp.gate_proj
+# - model.layers.24.mlp.gate_proj
+# - model.layers.25.mlp.gate_proj
+# - model.layers.26.mlp.gate_proj
+# - model.layers.18.mlp.up_proj
+# - model.layers.19.mlp.up_proj
+# - model.layers.20.mlp.up_proj
+# - model.layers.21.mlp.up_proj
+# - model.layers.22.mlp.up_proj
+# - model.layers.23.mlp.up_proj
+# - model.layers.24.mlp.up_proj
+# - model.layers.25.mlp.up_proj
+# - model.layers.26.mlp.up_proj
+half: True
