@@ -231,6 +231,7 @@ python run_CKnowEdit.py \
     --editing_method=FT \
     --hparams_dir=./EasyEdit/hparams/FT/qwen2-7b.yaml \
     --data_dir=./data/…… \
+    --evaluation_type='generate-text'\
     --chinese_ds_type='the_data_type_name'
 ```
 
@@ -240,6 +241,7 @@ python run_CKnowEdit.py \
     --editing_method=ROME \
     --hparams_dir=./EasyEdit/hparams/ROME/qwen2-7b.yaml \
     --data_dir=./data/…… \
+    --evaluation_type='generate-text'\
     --chinese_ds_type='the_data_type_name'
 ```
 
@@ -249,6 +251,7 @@ python run_CKnowEdit.py \
     --editing_method=GRACE \
     --hparams_dir=./EasyEdit/hparams/GRACE/qwen2-7b.yaml \
     --data_dir=./data/…… \
+    --evaluation_type='generate-text'\
     --chinese_ds_type='the_data_type_name'
 ```
 
@@ -258,6 +261,7 @@ python run_CKnowEdit.py \
     --editing_method=LoRA \
     --hparams_dir=./EasyEdit/hparams/LoRA/qwen2-7b.yaml \
     --data_dir=./data/…… \
+    --evaluation_type='generate-text'\
     --chinese_ds_type='the_data_type_name'
 ```
 
@@ -267,6 +271,7 @@ python run_CKnowEdit.py \
     --editing_method=AlphaEdit \
     --hparams_dir=./EasyEdit/hparams/AlphaEdit/qwen2-7b.yaml \
     --data_dir=./data/…… \
+    --evaluation_type='generate-text'\
     --chinese_ds_type='the_data_type_name'
 ```
 
