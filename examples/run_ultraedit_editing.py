@@ -20,13 +20,6 @@ from easyeditor import (
 )
 
 
-REMOTE_ROOT_URL = "./data/ultraedit"
-URL_DICT = {
-    "wikibigedit" : f"{REMOTE_ROOT_URL}/wikibigedit.json",
-    "ultraeditbench" : f"{REMOTE_ROOT_URL}/UltraEditBench_2M.json",
-    "zsre" : f"{REMOTE_ROOT_URL}/zsre_eval.json"
-}
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--editing_method', required=True, type=str)
@@ -35,9 +28,8 @@ if __name__ == "__main__":
     parser.add_argument('--data_type', required=True, type=str,
                         choices=['wikibigedit', 'ultraeditbench', 'zsre'])
     parser.add_argument('--output_dir', default='./outputs', type=str)
-    parser.add_argument('--ds_size', default=3, type=int)
+    parser.add_argument('--ds_size', default=100, type=int)
     parser.add_argument('--sequential_edit', action="store_true")
-    parser.add_argument('--n_edit', default=1, type=int)
     args = parser.parse_args()
 
     if args.editing_method == 'FT':
@@ -59,11 +51,10 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError
 
-    url = URL_DICT[args.data_type]
     data_dir = Path(args.data_dir)
 
     if args.data_type == 'zsre':
-        zsre_dir = data_dir / 'zsre_eval.json'
+        zsre_dir = data_dir / 'zsre_eval_20k.json'
         with open(zsre_dir, "r") as f:
             raw = json.load(f)
         edit_data = raw[:args.ds_size]
