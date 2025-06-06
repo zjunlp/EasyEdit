@@ -13,6 +13,7 @@ vectors
 **/.cache/
 *.log
 **/*.out
+**/huanj.txt
 delta.txt
 .history
 **/.hydra/
