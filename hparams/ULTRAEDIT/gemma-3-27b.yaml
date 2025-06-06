@@ -26,7 +26,7 @@ inner_params:
 - language_model.model.layers.59.mlp.up_proj
 - language_model.model.layers.60.mlp.up_proj
 
-#Method
+# Method
 alg: UltraEdit
 dropout: 0.0
 no_grad_layers: null
