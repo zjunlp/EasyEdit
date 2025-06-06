@@ -6,12 +6,14 @@ This README is about reproducing the paper [ADS-Edit: A Multimodal Knowledge Edi
 
 - [Dataset Description](#Dataset-Description)
 - [Running Examples of Using ADSEdit](#Running-Examples-of-Using-ADSEdit)
-- [Get Started Quickly](#Get-started-quickly)
+- [Single Editing Results](#Single-editing-results)
+- [Lifelong Editing Results](#Lifelong-editing-results)
 ---
 
 ## Dataset Description
 
-**ADS-Edit** is designed to address the challenges faced by LMMs (Large Multimodal Models) in autonomous driving systems, such as misunderstanding of traffic knowledge, complex road conditions, and dynamic vehicle states. This benchmark encompasses three real-world scenarios: perception, understanding, and decision making. Additionally, it incorporates three types of data: video, multi-view images, and single image.
+**ADS-Edit** is designed to address the challenges faced by LMMs (Large Multimodal Models) in autonomous driving systems, such as misunderstanding of traffic knowledge, complex road conditions, and dynamic vehicle states. This benchmark encompasses three real-world scenarios: perception, understanding, and decision making. Additionally, it incorporates three types of data: video, multi-view images, and single image. 
+**Note:** You can download our dataset from [huggingface](https://huggingface.co/datasets/zjunlp/ADS-Edit).
 
 The field descriptions for the data in **ADS-Edit** are as follows:
 
@@ -147,3 +149,20 @@ Quickly run several editing methods, such as WISE, GRACE, LoRA and Prompt:
 ```shell
 python run_adsedit.py
 ```
+
+## Single Editing Results
+The single editing results on the ADS-Edit test set are as follows:
+<div align="center">
+    <img src="../figs/ads_single_edit.png" width="70%" height="70%" />
+</div>
+
+## Lifelong Editing Results
+The lifelong editing results about Qwen2-VL on the ADS-Edit test set are as follows:
+<div align="center">
+    <img src="../figs/ads_qwen_lifelong.png" width="70%" height="70%" />
+</div>
+
+The lifelong editing results about LLaVA-OneVision on the ADS-Edit test set are as follows:
+<div align="center">
+    <img src="../figs/ads_llava_lifelong.png" width="70%" height="70%" />
+</div>
