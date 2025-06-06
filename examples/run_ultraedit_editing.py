@@ -29,6 +29,7 @@ if __name__ == "__main__":
                         choices=['wikibigedit', 'ultraeditbench', 'zsre'])
     parser.add_argument('--output_dir', default='./outputs', type=str)
     parser.add_argument('--ds_size', default=100, type=int)
+    parser.add_argument('--batch_size', default=100, type=int)
     parser.add_argument('--sequential_edit', action="store_true")
     args = parser.parse_args()
 
@@ -61,7 +62,7 @@ if __name__ == "__main__":
         prompts = [edit_data_['src'] for edit_data_ in edit_data]
         subject = [edit_data_['subject'] for edit_data_ in edit_data]
         rephrase_prompts = [edit_data_['rephrase'] for edit_data_ in edit_data]
-        target_new = [edit_data_['alt'] for edit_data_ in edit_data]
+        target_new = [edit_data_['ans'] for edit_data_ in edit_data]
         locality_prompts = [edit_data_['loc'] for edit_data_ in edit_data]
         locality_ans = [edit_data_['loc_ans'] for edit_data_ in edit_data]
         locality_inputs = {
@@ -123,6 +124,7 @@ if __name__ == "__main__":
         }
 
     hparams = editing_hparams.from_hparams(f'{args.hparams_dir}')
+    hparams.batch_size=args.batch_size
 
     os.makedirs(args.output_dir, exist_ok=True)
     output_file = os.path.join(
@@ -142,7 +144,7 @@ if __name__ == "__main__":
         portability_inputs=portability_inputs if args.data_type == 'wikibigedit' else None,
         keep_original_weight=True,
         sequential_edit=args.sequential_edit,
-        test_generation=True,
+        # test_generation=True,
     )
 
     with open(output_file, 'w') as f:

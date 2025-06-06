@@ -3,7 +3,7 @@
         "case_id": 0,
         "requested_rewrite": {
             "prompt": "Who published Journal of Clinical Microbiology?",
-            "target_new": "American Institute of Microbiology",
+            "target_new": "American Society for Microbiology",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -15,7 +15,7 @@
             "subject": "Journal of Clinical Microbiology",
             "rephrase_prompt": "Who have published Journal of Clinical Microbiology?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
                 0.8
@@ -34,40 +34,15 @@
             "portability": {},
             "rephrase_acc": [
                 0.8
-            ],
-            "fluency": {
-                "ngram_entropy": 6.314119871850997
-            }
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.8
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        30,
-                        2257,
-                        46,
-                        30,
-                        6849
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.8
-            ],
-            "fluency": {
-                "ngram_entropy": 6.137001200175368
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 1,
         "requested_rewrite": {
             "prompt": "Which place does Sling Blade exist in?",
-            "target_new": "Japan",
+            "target_new": "Arkansas",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -79,7 +54,7 @@
             "subject": "Sling Blade",
             "rephrase_prompt": "What place is Sling Blade?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
                 0.0
@@ -97,39 +72,15 @@
             "portability": {},
             "rephrase_acc": [
                 0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 6.128247669989895
-            }
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.0
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        286,
-                        1462,
-                        293,
-                        1820
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 5.858526287099776
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 2,
         "requested_rewrite": {
             "prompt": "Which corporation created Jaguar R-D6?",
-            "target_new": "Jaguar Land Systems",
+            "target_new": "Jaguar Cars",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -141,10 +92,10 @@
             "subject": "Jaguar R-D6",
             "rephrase_prompt": "By which company was Jaguar R-D6 produced?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
-                0.6666666666666666
+                0.5
             ],
             "locality": {
                 "neighborhood_output": [
@@ -158,40 +109,16 @@
             },
             "portability": {},
             "rephrase_acc": [
-                0.6666666666666666
-            ],
-            "fluency": {
-                "ngram_entropy": 6.358792907623897
-            }
+                0.5
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.6666666666666666
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        198,
-                        1478,
-                        11,
-                        1853
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.6666666666666666
-            ],
-            "fluency": {
-                "ngram_entropy": 2.633020801341689
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 3,
         "requested_rewrite": {
             "prompt": "Which production company is involved with Bad Channels?",
-            "target_new": "The Asylum",
+            "target_new": "Full Moon Features",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -203,10 +130,10 @@
             "subject": "Bad Channels",
             "rephrase_prompt": "Which studio did Bad Channels make?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
-                0.0
+                0.6666666666666666
             ],
             "locality": {
                 "neighborhood_output": [
@@ -223,43 +150,16 @@
             },
             "portability": {},
             "rephrase_acc": [
-                0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 6.190695243482768
-            }
+                0.6666666666666666
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.0
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        30,
-                        363,
-                        437,
-                        2596,
-                        776,
-                        17467,
-                        25014
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 6.120417941515276
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 4,
         "requested_rewrite": {
             "prompt": "The astronomical body that Apsus Vallis was located on was what?",
-            "target_new": "Mercury",
+            "target_new": "Mars",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -271,7 +171,7 @@
             "subject": "Apsus Vallis",
             "rephrase_prompt": "Which astronomical body is Apsus Vallis on?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
                 0.0
@@ -286,36 +186,15 @@
             "portability": {},
             "rephrase_acc": [
                 0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 5.759942730769039
-            }
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.0
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        30
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 5.84261008533677
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 5,
         "requested_rewrite": {
             "prompt": "What kind of family is Gabb's snail of?",
-            "target_new": "Lymantriidae",
+            "target_new": "Micrarionta",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -327,10 +206,10 @@
             "subject": "Gabb's snail",
             "rephrase_prompt": "What kind of family is Gabb's snail from?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
-                0.8
+                0.75
             ],
             "locality": {
                 "neighborhood_output": [
@@ -342,38 +221,16 @@
             },
             "portability": {},
             "rephrase_acc": [
-                0.8
-            ],
-            "fluency": {
-                "ngram_entropy": 6.318378110614851
-            }
+                0.75
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.8
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        30,
-                        30
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.8
-            ],
-            "fluency": {
-                "ngram_entropy": 6.406213559864161
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 6,
         "requested_rewrite": {
             "prompt": "What was Adnan Saleem's occupation?",
-            "target_new": "journalist",
+            "target_new": "cricketer",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -385,10 +242,10 @@
             "subject": "Adnan Saleem",
             "rephrase_prompt": "What was Adnan Saleem's career?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
-                0.0
+                0.6666666666666666
             ],
             "locality": {
                 "neighborhood_output": [
@@ -401,39 +258,16 @@
             },
             "portability": {},
             "rephrase_acc": [
-                0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 5.812593541589374
-            }
+                0.6666666666666666
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.0
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        30,
-                        3381,
-                        8065
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 5.823584182404137
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 7,
         "requested_rewrite": {
             "prompt": "What town is KQIZ-FM liscensed in?",
-            "target_new": "Mineral Wells",
+            "target_new": "Amarillo",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -445,7 +279,7 @@
             "subject": "KQIZ-FM",
             "rephrase_prompt": "Which city is KQIZ-FM licensed in?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
                 0.5
@@ -463,39 +297,15 @@
             "portability": {},
             "rephrase_acc": [
                 0.5
-            ],
-            "fluency": {
-                "ngram_entropy": 6.1009415947005134
-            }
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.5
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        30,
-                        30,
-                        400,
-                        2177
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.5
-            ],
-            "fluency": {
-                "ngram_entropy": 5.732845731289336
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 8,
         "requested_rewrite": {
             "prompt": "Which country's citizenship does Mihailo Jankovi\u0107 hold?",
-            "target_new": "Croatia",
+            "target_new": "Serbia",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -507,10 +317,10 @@
             "subject": "Mihailo Jankovi\u0107",
             "rephrase_prompt": "Which country has the citizenship of Mihailo Jankovi\u0107?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
-                0.0
+                1.0
             ],
             "locality": {
                 "neighborhood_output": [
@@ -523,37 +333,15 @@
             "portability": {},
             "rephrase_acc": [
                 0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 6.193379952921525
-            }
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.0
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        30,
-                        953
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.0
-            ],
-            "fluency": {
-                "ngram_entropy": 5.883225534046917
-            }
-        }
+        "pre": {}
     },
     {
         "case_id": 9,
         "requested_rewrite": {
             "prompt": "What production company was involved in Bottled Passion?",
-            "target_new": "Walt Disney Pictures",
+            "target_new": "Television Broadcasts Limited",
             "ground_truth": "<|endoftext|>",
             "portability": {},
             "locality": {
@@ -565,10 +353,10 @@
             "subject": "Bottled Passion",
             "rephrase_prompt": "Which production company is involved in Bottled Passion?"
         },
-        "time": 14.328917264938354,
+        "time": 5.819422960281372,
         "post": {
             "rewrite_acc": [
-                0.6666666666666666
+                0.75
             ],
             "locality": {
                 "neighborhood_output": [
@@ -588,39 +376,9 @@
             },
             "portability": {},
             "rephrase_acc": [
-                0.6666666666666666
-            ],
-            "fluency": {
-                "ngram_entropy": 6.444938660172776
-            }
+                0.75
+            ]
         },
-        "pre": {
-            "rewrite_acc": [
-                0.6666666666666666
-            ],
-            "locality": {
-                "neighborhood_output": [
-                    [
-                        30,
-                        1525,
-                        15752,
-                        30,
-                        8502,
-                        30,
-                        7257,
-                        5652,
-                        11,
-                        3442
-                    ]
-                ]
-            },
-            "portability": {},
-            "rephrase_acc": [
-                0.6666666666666666
-            ],
-            "fluency": {
-                "ngram_entropy": 6.3149924702031806
-            }
-        }
+        "pre": {}
     }
 ]
