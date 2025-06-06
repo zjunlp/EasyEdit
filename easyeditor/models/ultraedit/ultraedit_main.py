@@ -9,20 +9,17 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
 
-from ...trainer import ULTRAEDIT
-from .ultraedit_hparams import ULTRAEDITHyperParams
+from .ULTRAEDIT import ULTRAEDIT
+from .ultraedit_hparams import UltraEditHyperParams
 
 class UltraEditRewriteExecutor:
     def __init__(self):
         self.is_init = False
 
-    def init_model(self, model, tok, params: ULTRAEDITHyperParams):
+    def init_model(self, model, tok, params: UltraEditHyperParams):
 
-        assert params.archive is not None or print(f'Training weights Needed....')
-        # Customize the gpt2xl and tokenizer
         self.model = model
         self.tokenizer = tok
-        # add_padding(self.tokenizer, self.model)
 
         # Load the trained MEND model
         self.alg = ULTRAEDIT(self.model, params, lambda: deepcopy(self.model))
@@ -41,7 +38,7 @@ class UltraEditRewriteExecutor:
         model: AutoModelForCausalLM,
         tok: AutoTokenizer,
         requests: List[Dict],
-        hparams: ULTRAEDITHyperParams,
+        hparams: UltraEditHyperParams,
         copy=False,
         return_orig_weights=False,
         keep_original_weight=False,
@@ -63,12 +60,12 @@ class UltraEditRewriteExecutor:
 
         weights_copy = {}
         model = deepcopy(self.model) if copy else self.model
-        assert len(requests) >= hparams.n_edits, "The number of requests must be greater than or equal to the value of n_edits."
+        assert len(requests) >= hparams.batch_size, "The number of requests must be greater than or equal to the value of batch_size."
         # Define i/o
-        requests = requests[:hparams.n_edits]
+        requests = requests[:hparams.batch_size]
         batchs = []
-        for i in range(hparams.n_edits // hparams.batch_size):
-            batch = requests[i * hparams.batch_size : (i+1)*hparams.batch_size]
+        for i in range(hparams.batch_size // hparams.batch_size_once):
+            batch = requests[i * hparams.batch_size_once : (i+1)*hparams.batch_size_once]
             targets = [
                 (" " if request["target_new"][0] != " " else "")
                 + request["target_new"]
@@ -105,6 +102,11 @@ class UltraEditRewriteExecutor:
 
             batchs.append(edit_inner)
         # Run M
+        batchs = sorted(
+            batchs,
+            key=lambda x: torch.sum(x['attention_mask']).item(),
+            reverse=True
+        )        
         module_kv_map = self.alg.cache(batchs)
         param_shifts = self.alg.predict_param_shifts(module_kv_map)
         with torch.no_grad():

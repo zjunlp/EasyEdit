@@ -9,10 +9,6 @@ sys.path.append('..')
 from easyeditor import (
     AlphaEditHyperParams,
     FTHyperParams,
-    GraceHyperParams,
-    MEMITHyperParams,
-    ROMEHyperParams,
-    MENDHyperParams,
     WISEHyperParams,
     UltraEditHyperParams,
     BaseEditor,
@@ -35,14 +31,6 @@ if __name__ == "__main__":
 
     if args.editing_method == 'FT':
         editing_hparams = FTHyperParams
-    elif args.editing_method == 'MEMIT':
-        editing_hparams = MEMITHyperParams
-    elif args.editing_method == 'ROME':
-        editing_hparams = ROMEHyperParams
-    elif args.editing_method == 'MEND':
-        editing_hparams = MENDHyperParams
-    elif args.editing_method == 'GRACE':
-        editing_hparams = GraceHyperParams
     elif args.editing_method == 'WISE':
         editing_hparams = WISEHyperParams
     elif args.editing_method == 'AlphaEdit':
@@ -144,7 +132,6 @@ if __name__ == "__main__":
         portability_inputs=portability_inputs if args.data_type == 'wikibigedit' else None,
         keep_original_weight=True,
         sequential_edit=args.sequential_edit,
-        # test_generation=True,
     )
 
     with open(output_file, 'w') as f:
