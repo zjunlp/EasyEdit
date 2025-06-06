@@ -27,32 +27,25 @@ If you need to use locate-then-edit methods, we provide precomputed covariance m
 
 ## 🚀 Setup
 
-Create the environment and install dependencies:
-
-```bash
-conda create -n ultraedit python=3.10
-conda activate ultraedit
-pip install torch==2.3.0+cu121 --index-url https://download.pytorch.org/whl/cu121
-pip install -r requirements.txt
-```
 💡 If you want to try editing a Mistral-7B model, even a **24GB consumer GPU** is enough — model editing for everyone!
-
-## 🧪 Run
 
 Run the main experiment with:
 
 ```bash
-sh run.sh
+sh run_ultraedit_editing.sh
 ```
 
-The `run.sh` script includes a sample command like:
+The `run_ultraedit_editing.sh` script includes a sample command like:
 
 ```
-python main.py dataset=zsre model=mistral-7b editor=ultraedit num_seq=200 \ # Number of turns
-    editor.cache_dir=cache \
-    dataset.batch_size=10 \
-    dataset.n_edits=100 \ # Number of edits per turn
-    model.edit_modules="[model.layers.29.mlp.down_proj, model.layers.30.mlp.down_proj]"
+python run_ultraedit_editing.py \
+    --editing_method=UltraEdit \
+    --hparams_dir=../hparams/ULTRAEDIT/mistral-7b.yaml \
+    --data_dir=../data/ultraedit \
+    --ds_size=20000 \
+    --batch_size=100 \
+    --data_type=zsre \
+    --sequential_edit
 ```
 💡 Just try editing **20K samples** on Mistral-7B in **under 5 minutes** — ultra-efficient!
 
