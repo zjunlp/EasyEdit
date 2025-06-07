@@ -1158,6 +1158,12 @@ Please cite our paper if you use EasyEdit in your work.
   journal={arXiv preprint arXiv:2405.14768},
   year={2024}
 }
+@article{gu2025ultraedit,
+  title={UltraEdit: Training-, Subject-, and Memory-Free Lifelong Editing in Large Language Models},
+  author={Gu, Xiaojie and Chen, Guangxu and Li, Jungang and Gu, Jia-Chen and Hu, Xuming and Zhang, Kai},
+  journal={arXiv preprint arXiv:2505.14679},
+  year={2025}
+}
 ```
 
 ## 🎉Contributors
@@ -1171,6 +1177,7 @@ We thank all the contributors to this project, more contributors are welcome!
 #### Other Related Projects
 
 - [AlphaEdit](https://github.com/jianghoucheng/AlphaEdit)
+- [UltraEdit](https://github.com/XiaojieGu/UltraEdit)
 - [ROME](https://github.com/kmeng01/rome)
 - [FastEdit](https://github.com/hiyouga/FastEdit)
 - [GRACE](https://github.com/Thartvigsen/GRACE)
