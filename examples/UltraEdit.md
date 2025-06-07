@@ -3,8 +3,9 @@
 <h2><a href="https://arxiv.org/abs/2505.14679" style="color:#68edcb">UltraEdit: Training-, Subject-, and Memory-Free Lifelong Editing in Large Language Models</a></h2>
         </div>
 
-## 🔥 News
-* **`2025.05`** 🌟 We released our paper *UltraEdit: Training-, Subject-, and Memory-Free Lifelong Editing in Large Language Models* — 📖 [UltraEdit on arXiv](https://arxiv.org/abs/2505.14679) | 🤗 [UltraEditBench on HuggingFace](https://huggingface.co/datasets/XiaojieGu/UltraEditBench).
+
+We released our paper *UltraEdit: Training-, Subject-, and Memory-Free Lifelong Editing in Large Language Models* — 📖 [UltraEdit on arXiv](https://arxiv.org/abs/2505.14679) | 🤗 [UltraEditBench on HuggingFace](https://huggingface.co/datasets/XiaojieGu/UltraEditBench).   If our project helps you, please give us a star ⭐ on [UltraEdit](https://github.com/XiaojieGu/UltraEdit) to support us. 😉😉
+
 
 
 
