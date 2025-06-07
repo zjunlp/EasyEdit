@@ -53,7 +53,7 @@ python run_ultraedit_editing.py \
 
 ## 📫 Contact
 
-For any inquiries or possible collaboration, feel free to reach out at **peettherapynoys@gmail.com** — we’re open to connecting!
+For any inquiries or possible collaboration, feel free to reach out at **peettherapynoys@gmail.com**,**guangxuc42@gmail.com** — we’re open to connecting!
 
 
 ## 📑 Citation
