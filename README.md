@@ -312,6 +312,7 @@ You can choose different editing methods according to your specific needs. GPT s
 | [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ |✅  | ✅ |  |  |✅ | |
 | Defer | | ✅ |✅  |  |  |  | | ✅ |
 | [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ |✅  |  |  |  | | |
+| [UltraEdit](https://github.com/guangxuc42/update-UltraEdit/blob/main/examples/UltraEdit.md) | |✅ |✅  |  |  |  |✅ | ✅ |
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
 
