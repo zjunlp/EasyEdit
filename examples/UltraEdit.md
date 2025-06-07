@@ -51,20 +51,6 @@ python run_ultraedit_editing.py \
 
 
 
-## 🙏 Acknowledgements
-
-Our work builds upon several excellent model editing frameworks. We sincerely thank the authors of [EasyEdit](https://github.com/zjunlp/EasyEdit/tree/main), [MALMEN](https://github.com/ChenmienTan/malmen), [AlphaEdit](https://github.com/jianghoucheng/AlphaEdit), and [RLEdit](https://github.com/zhrli324/RLEdit) for their valuable contributions to the field.
-
-
-
-  
-
-
-## 🌟 Star History
-
-![Star History Chart](https://api.star-history.com/svg?repos=XiaojieGu/UltraEdit&type=Date&width=600&height=300&cache_bust=1)
-
-
 
 
 ## 📫 Contact
