@@ -11,8 +11,6 @@ We released our paper *UltraEdit: Training-, Subject-, and Memory-Free Lifelong 
 
 
 
-
-
 ## 📦 Data & Model Preparation
 
 1️⃣ Create a new directory `EasyEdit/data/ultraedit` and download the files from [Google Drive](https://drive.google.com/drive/folders/1wsxG5Ybf6hT9QUlccvzTuJSfL_TFNyKQ?usp=sharing) into this folder.
