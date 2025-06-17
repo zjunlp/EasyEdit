@@ -41,7 +41,7 @@ def apply_merge_vector(hparams: ApplyMergeVectorHyperParams,pipline=None, vector
             print(f"Steering vector: User input vector for layer_{layer}")
         else:
             vector_path = os.path.join(
-                hparams.steer_vector_load_dir, f"layer_{layer}.pt"
+                hparams.steer_vector_load_dir, f"layer_{layer}_merged_vector.pt"
             )
             steering_vector = torch.load(vector_path, map_location=device)
             print("Steering vector path: ",vector_path)

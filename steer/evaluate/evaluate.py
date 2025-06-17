@@ -1,6 +1,11 @@
 import argparse
 import json
 import os
+import sys
+# Add the parent directory to the system path
+sys.path.append("./")
+sys.path.append("../")
+sys.path.append("../../")
 import torch
 import numpy as np
 import re
@@ -18,9 +23,9 @@ from transformers import (
 )
 from typing import List, Dict
 import warnings
-from openai import OpenAI
+import openai
 import time
-from .prompt_templates import (
+from steer.evaluate.prompt_templates import (
     CONCEPT_RELEVANCE_TEMPLATE,
     INSTRUCTION_RELEVANCE_TEMPLATE, 
     FLUENCY_TEMPLATE
@@ -62,7 +67,7 @@ class Evaluator:
 
     def evaluate(self, results: List[Dict], dataset_name:str, concept:str=None):
         eval_results = {}
-        
+
         for method in self.eval_methods:
             print(f"Running evaluation method: {method}")
             if  'ppl' in method.lower():
@@ -122,6 +127,7 @@ class Evaluator:
                 fluency = np.mean(self._n_gram_entropy( [ text for item in results  for text in item['pred'] ] ))
                 eval_results['fluency'] = fluency
 
+            print(f"Current evaluation results: {eval_results}\n")
         return eval_results
 
     def save_all_results(self, results: Dict, output_file: str):
@@ -506,7 +512,9 @@ class Evaluator:
         instruction_scores = []
         fluency_scores = []
         aggregated_ratings = []
-        for item in results:
+        
+        from tqdm import tqdm
+        for item in tqdm(results, desc="LLM Judging"):
             response = item['pred'][0]
             concept_relevance_prompts = CONCEPT_RELEVANCE_TEMPLATE.format(concept=concept, sentence=response).strip()
             instruction_relevance_prompts = INSTRUCTION_RELEVANCE_TEMPLATE.format(instruction=item['input'], sentence=response).strip()
@@ -534,7 +542,7 @@ class Evaluator:
         output = None
         score = 0
         times = 0
-        client = OpenAI(
+        client = openai.OpenAI(
             api_key= API_KEY,
             base_url= BASE_URL,
         )

@@ -6,7 +6,9 @@ from .merge_helpers import merge_steer_vectors, merge_linear
 
 
 method_dict = {
-    'linear': None,
+    'linear': {
+        'normalize': True,
+    },
     'ties': {
         'consensus_method': 'sum',
         'sparsification_method': 'magnitude',
@@ -44,6 +46,9 @@ def generate_merge_vector(hparams: MergeVectorHyperParams):
     mask_dtype = DTYPES_DICT.get(hparams.torch_dtype, torch.float32)
     kwargs = method_dict.get(hparams.method, {})
     
+    if "normalize" in kwargs:
+        kwargs["normalize"] = hparams.normalize
+
     # merge the vectors
     if hparams.method in ["ties", "dare_ties", "dare_linear"]:
         merged_vector = merge_steer_vectors(
@@ -57,7 +62,7 @@ def generate_merge_vector(hparams: MergeVectorHyperParams):
         merged_vector = merge_linear(
             vectors=vectors,
             weights=weights,
-            normalize=hparams.normalize
+            **kwargs
         )
     else:
         raise ValueError(f"Invalid method: {hparams.method}")

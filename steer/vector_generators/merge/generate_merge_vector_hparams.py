@@ -10,10 +10,12 @@ class MergeVectorHyperParams(HyperParams):
     alg_name: str = 'merge_vector'
     vector_paths: List[str] = None  
     steer_vector_output_dir: str = None
+    save_vectors: bool = True
     
     method: str = 'ties'
     weights: List[float] = None      
     densities: List[float] = None
+    normalize: bool = True
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
