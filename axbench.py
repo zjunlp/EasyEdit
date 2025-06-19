@@ -1,0 +1,79 @@
+import json
+import hydra
+from omegaconf import DictConfig
+import random
+from steer.datasets.dataset_loader import DatasetLoader
+from steer.vector_generators.vector_generators import BaseVectorGenerator
+from steer.vector_appliers.vector_applier import BaseVectorApplier
+from collections import defaultdict
+from steer.evaluate.evaluate import Evaluator
+
+def load_axbench_datasets() -> list:
+    print(f"Loading 500 concepts from axbench...")
+    dataset_loader = DatasetLoader()
+    train_data = dataset_loader.load_file('axbench', 'train')
+    
+    concept_grouped_data = defaultdict(list)
+    for item in train_data:
+        concept_grouped_data[item['concept_id']].append(item)
+        
+    eval_data = dataset_loader.load_file('axbench', 'generation')  # The Apacha-Eval dataset
+    return concept_grouped_data, eval_data
+
+@hydra.main(version_base='1.2', config_path='./hparams/Steer', config_name='axbench.yaml')
+def main(top_cfg: DictConfig):
+    print("Global Config:", top_cfg, "\n")
+
+    # Initialize and load
+    train_datasets, eval_datasets = load_axbench_datasets()
+    all_evaluation_results = []
+    
+    vector_generator = BaseVectorGenerator(top_cfg)
+    vector_applier = None
+    
+    eval_args = {"mode": 'direct', "save_results": False, "eval_methods": ["llm"], "llm_model": "deepseek-v3-250324" }
+    evaluator = Evaluator(**eval_args)
+    
+    count = 1
+    for i, concept_train_data in enumerate(train_datasets.values()):
+        print(f"Processing concept {i} with {len(train_datasets)} items")
+        train_dataset_for_concept = {
+            f'axbench_concept_{i}': concept_train_data
+        }
+        vectors = vector_generator.generate_vectors(train_dataset_for_concept)[f'axbench_concept_{i}']
+
+        if vector_applier is None:
+            vector_applier = BaseVectorApplier(top_cfg)
+        
+        vector_applier.apply_vectors(vectors)
+        
+        # Randomly sample 10 items from apacha-eval
+        sampled_eval_data = random.sample(eval_datasets, min(2, len(eval_datasets)))
+        
+        # Generate results using the vector applier
+        generated_results = vector_applier.generate(
+           {
+            'axbench_eval': sampled_eval_data
+           },
+           save_results=False
+        )
+        
+        eval_results = evaluator.evaluate_from_direct(generated_results, f"axbench_eval_{i}", concept=concept_train_data[0]['output_concept'])
+        
+        print(f"Generated results for concept {i} with {len(sampled_eval_data)} samples")
+        all_evaluation_results.append({f'axbench_concept_{i}': eval_results})
+        
+        vector_applier.model.reset_all()
+        
+        if i >= count:
+            break  
+        
+    with open("all_evaluation_results.json", "w", encoding="utf-8" ) as f: 
+        json.dump(all_evaluation_results, f)
+    
+
+
+
+if __name__ == '__main__':
+    main()
+

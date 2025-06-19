@@ -32,6 +32,7 @@ class BaseVectorApplier:
                 set_seed(hparams_dict[alg_name].seed)
                 # print(f"Applying {alg_name} vectors to model ...")
                 if vectors is None or  vectors.get(alg_name) is None:
+                    assert hparams_dict[alg_name].steer_vector_load_dir is not None, f"Steer vector load path {hparams_dict[alg_name].steer_vector_load_dir} does not exist !"
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
                 else:
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name],  model, vectors[alg_name])
@@ -60,7 +61,7 @@ class BaseVectorApplier:
             
         return input_text
 
-    def generate(self, datasets, **kwargs):
+    def generate(self, datasets, save_results=True, **kwargs):
         # Use kwargs parameters if provided, otherwise use parameters from config
         generation_params = dict(kwargs) if kwargs else dict(self.config.generation_params)
         generation_data_names = list(datasets.keys())
@@ -114,7 +115,8 @@ class BaseVectorApplier:
                     orig_preds.append([text])
 
             formatted_results = self._format_result(dataset, orig_preds=orig_preds,preds=preds, complete_output=complete_output)
-            self.save_results(formatted_results, generation_data_name)
+            if save_results:
+                self.save_results(formatted_results, generation_data_name)
         item = formatted_results[0]
         print(f"\n===== {generation_data_name} Results =====\n")
         print(f"----- Input -----\n{item['input']}\n")

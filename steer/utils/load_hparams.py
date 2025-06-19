@@ -29,7 +29,7 @@ def load_apply_vector_hparams(top_cfg):
         
     for i, hparam_path in enumerate(top_cfg.apply_steer_hparam_paths):
         assert os.path.exists(hparam_path), f"Hparam path {hparam_path} does not exist !"
-        assert os.path.exists(top_cfg.steer_vector_load_dir[i]), f"Steer vector load path {top_cfg.steer_vector_load_dir[i]} does not exist !"
+        # assert os.path.exists(top_cfg.steer_vector_load_dir[i]), f"Steer vector load path {top_cfg.steer_vector_load_dir[i]} does not exist !"
         method_hparams = OmegaConf.load(hparam_path)
         alg_name = method_hparams['alg_name']
         combined_hparams = {**method_hparams, **top_cfg}

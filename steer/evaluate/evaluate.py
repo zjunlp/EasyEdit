@@ -23,8 +23,9 @@ from transformers import (
 )
 from typing import List, Dict
 import warnings
-import openai
+# import openai
 import time
+from volcenginesdkarkruntime import Ark
 from steer.evaluate.prompt_templates import (
     CONCEPT_RELEVANCE_TEMPLATE,
     INSTRUCTION_RELEVANCE_TEMPLATE, 
@@ -37,14 +38,56 @@ BASE_URL = os.environ.get('BASE_URL')
 
 
 class Evaluator:
-    def __init__(self, args):
-        self.results_dir = args.results_dir
-        self.eval_methods = args.eval_methods
-        self.dataset_path = args.generation_dataset_path
-        self.model_name_or_path = args.model_name_or_path 
-        self.device = args.device if hasattr(args, 'device') else "cuda" if torch.cuda.is_available() else "cpu"
-        self.llm_model = args.llm_model if hasattr(args, 'llm_model') else "gpt-4o"
+    def __init__(self, **kwargs):
+        self.mode = kwargs.get('mode', 'file') # from direct result or from file
+        self.save_results = kwargs.get('save_results', True)
+        self.device = kwargs.get('device', "cuda" if torch.cuda.is_available() else "cpu")
+        self.llm_model = kwargs.get('llm_model', "gpt-4o")
+        self.model_name_or_path = kwargs.get('model_name_or_path', None)
+        self.eval_methods = kwargs.get('eval_methods', None)
+        
+        if self.save_results:
+            self.results_dir = kwargs.get('results_dir', 'results')
+            
+        if self.mode == 'file':
+            self.dataset_path = kwargs.get('generation_dataset_path', None)
+        
 
+    def evaluate_from_file(self, dataset_path: str, concept: str = None):
+        file_path = dataset_path or self.dataset_path
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Results file not found: {file_path}")
+        
+        dataset_name = os.path.basename(file_path).replace('_results.json', '')
+        print(f"\nEvaluating results for dataset: {dataset_name}")
+        
+        with open(file_path, 'r', encoding='utf-8') as f:
+            result = json.load(f)
+            
+        eval_results = self.evaluate(result, dataset_name, concept)
+        
+        if self.save_results:
+            eval_output_file = os.path.join(
+                self.results_dir, 
+                f"{dataset_name}_evaluation.json"
+            )
+            self.save_all_results(eval_results, eval_output_file)
+            print(f"Evaluation results saved to: {eval_output_file}")
+        
+        return eval_results
+    
+    def evaluate_from_direct(self, results: List[Dict], dataset_name:str, concept:str=None):
+        print(f"\nEvaluating results directly for: {dataset_name}")
+        eval_results = self.evaluate(results, dataset_name, concept)
+        if self.save_results:
+            eval_output_file = os.path.join(
+                self.results_dir, 
+                f"{dataset_name}_evaluation.json"
+            )
+            self.save_all_results(eval_results, eval_output_file)
+            print(f"Evaluation results saved to: {eval_output_file}")
+        return eval_results
+    
     def evaluate_all(self,concept:str=None):
         """Evaluate all results in results_dir. Serve as an interface."""
         
@@ -78,11 +121,6 @@ class Evaluator:
                     eval_results['total_perplexity'] = total_ppl
                 
             elif  'sentiment' in method.lower():
-                # if 'sentiment' not in dataset_name:
-                #     warnings.warn(f'[WARNING]: {dataset_name} does not contain sentiment data')
-                #     continue
-
-                # calculate sentiment accuracy
                 neg_acc, neg_std, pos_acc, pos_std = self._calc_sentiment(results)
                 eval_results['mean negative sentiment accuracy'] = neg_acc
                 eval_results['mean negative sentiment std'] = neg_std
@@ -542,10 +580,14 @@ class Evaluator:
         output = None
         score = 0
         times = 0
-        client = openai.OpenAI(
-            api_key= API_KEY,
-            base_url= BASE_URL,
-        )
+        
+        # Temporarily use Ark API
+        from volcenginesdkarkruntime import Ark
+        client = Ark(api_key=os.environ.get("API_KEY"))
+        # client = openai.OpenAI(
+        #     api_key= API_KEY,
+        #     base_url= BASE_URL,
+        # )
 
         while output is None and times <= 3:
             times += 1
@@ -569,7 +611,7 @@ class Evaluator:
             time.sleep(5)
         
         assert times <= 3, f"Failed to get the rating for the content"
-        return int(score)
+        return int(float(score))
 
     def _harmonic_mean(self,scores):
         # Return 0 if any score is 0 to maintain strict evaluation
@@ -594,9 +636,13 @@ if __name__ == "__main__":
                         help="The model name of the LLM model api")
     parser.add_argument('--concept',  type=str, default=None,
                         help="The concept to evaluate the generated text")
+    parser.add_argument('--mode', type=str, default='direct',
+                        help="The mode to evaluate the generated text")
+    parser.add_argument('--save_results', type=bool, default=True,
+                        help="Whether to save the evaluation results")
     args = parser.parse_args()
     
-    evaluator = Evaluator(args)
+    evaluator = Evaluator(**vars(args))
     evaluator.evaluate_all(concept=args.concept)
 
  
