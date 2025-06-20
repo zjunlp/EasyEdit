@@ -90,7 +90,10 @@ class DatasetLoader:
                     if line.strip():  
                         data.append(json.loads(line))
             return data
-            
+        elif ext == '.parquet':
+            df = pd.read_parquet(file_path)
+            return df.to_dict('records')
+        
         elif ext == '.csv':
             df = pd.read_csv(file_path)
             return df.to_dict('records')
@@ -147,6 +150,10 @@ class DatasetLoader:
             # remove choices from formatted data
             project_to_answer = {0: "A", 1: "B", 2: "C", 3: "D",}
             formatted_data['reference_response'] = project_to_answer[formatted_data['reference_response']]
+            
+        # elif dataset_name == 'axbench':
+        #     formatted_data['output_concept'] = data['output_concept']
+        #     formatted_data['concept_id'] = data['concept_id']
 
         return formatted_data 
 
