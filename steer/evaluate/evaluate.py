@@ -23,18 +23,18 @@ from transformers import (
 )
 from typing import List, Dict
 import warnings
-# import openai
+import openai
 import time
-from volcenginesdkarkruntime import Ark
+import asyncio
 from steer.evaluate.prompt_templates import (
     CONCEPT_RELEVANCE_TEMPLATE,
     INSTRUCTION_RELEVANCE_TEMPLATE, 
     FLUENCY_TEMPLATE
 )
 
-
 API_KEY = os.environ.get('API_KEY') 
-BASE_URL = os.environ.get('BASE_URL') 
+BASE_URL = os.environ.get('BASE_URL', 'https://api.gpt.ge/v1/')
+openai.default_headers = {"x-foo": "true"}
 
 
 class Evaluator:
@@ -546,73 +546,114 @@ class Evaluator:
         
     def _llm_evaluate(self ,concept, results: List[Dict]) -> Dict:
 
-        concept_scores = []
-        instruction_scores = []
-        fluency_scores = []
-        aggregated_ratings = []
-        
-        from tqdm import tqdm
-        for item in tqdm(results, desc="LLM Judging"):
-            response = item['pred'][0]
-            concept_relevance_prompts = CONCEPT_RELEVANCE_TEMPLATE.format(concept=concept, sentence=response).strip()
-            instruction_relevance_prompts = INSTRUCTION_RELEVANCE_TEMPLATE.format(instruction=item['input'], sentence=response).strip()
-            fluency_prompts = FLUENCY_TEMPLATE.format(sentence=response).strip()
+        async def _llm_judge_async(client, content, min_score=0.0, max_score=2.0):
+            output = None
+            score = 0
+            times = 0
+            while output is None and times < 3:
+                times += 1
+                try:
+                    response = await client.chat.completions.create(
+                        model=self.llm_model,
+                        messages=[{"role": "user", "content": content}],
+                        temperature=0.0,
+                        timeout=30,
+                    )
+                    output = response.choices[0].message.content
+                    if "Rating:" in output:
+                        rating_text = output.split("Rating:")[-1].strip()
+                        rating_text = rating_text.split('\n')[0].strip()
+                        rating_text = rating_text.replace('[', '').replace(']', '')
+                        rating_text = rating_text.rstrip('.').strip('"').strip("'").strip("*").strip()
+                        score = float(rating_text)
+                        if score < min_score or score > max_score:
+                            output = None
+                            print(f'Score {score} is out of range for content. Retrying...')
+                    else:
+                        output = None
+                        print(f'No rating found in the output. Retrying...')
+                except Exception as e:
+                    print(f'LLM judge request failed: {e}. Retrying...')
+                
+                if output is None and times < 3:
+                    await asyncio.sleep(times * 2)  # Exponential backoff
 
+            if output is None:
+                print("Failed to get rating for content after multiple retries.")
+                # This will be caught by the runner and handled.
+                raise ValueError("Failed to get rating for content.")
+
+            return int(float(score))
+
+        async def _run_and_tag_task(task_coro, info):
+            try:
+                result = await task_coro
+                return result, info, None
+            except Exception as e:
+                return None, info, e
+
+        async def _runner():
+            """  Main async runner that creates and executes all API calls concurrently.  """
+            
             assert API_KEY is not None, "Please set the API_KEY environment variable before proceeding"
+            client = openai.AsyncOpenAI(api_key=API_KEY, base_url=BASE_URL)
+            
+            tasks = []
+            for i, item in enumerate(results):
+                response = item['pred'][0] if isinstance(item['pred'], list) and item['pred'] else str(item.get('pred', ''))
+                
+                prompts = {
+                    'concept': CONCEPT_RELEVANCE_TEMPLATE.format(concept=concept, sentence=response).strip(),
+                    'instruction': INSTRUCTION_RELEVANCE_TEMPLATE.format(instruction=item['input'], sentence=response).strip(),
+                    'fluency': FLUENCY_TEMPLATE.format(sentence=response).strip()
+                }
 
-            concept_scores.append( self._llm_judge(concept_relevance_prompts) )
-            instruction_scores.append(self._llm_judge(instruction_relevance_prompts) )
-            fluency_scores.append(self._llm_judge(fluency_prompts) )
-            harmonic_score = self._harmonic_mean([concept_scores[-1], instruction_scores[-1], fluency_scores[-1]])
-            aggregated_ratings.append(harmonic_score)
-            # time.sleep(1) # avoid high rate of request
-        mertics = {
+                for score_type, prompt in prompts.items():
+                    info = (i, score_type)
+                    task_coro = _llm_judge_async(client, prompt)
+                    wrapped_task = asyncio.create_task(_run_and_tag_task(task_coro, info))
+                    tasks.append(wrapped_task)
+
+            scores_by_index = [{} for _ in range(len(results))]
+            for future in tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="LLM Judging"):
+                score, info, exception = await future
+                index, score_type = info
+
+                if exception:
+                    print(f"A task for item {index} ({score_type}) failed with an exception.")
+                    print(f"  Exception Type: {type(exception)}")
+                    print(f"  Exception Details: {exception}")
+                    scores_by_index[index][score_type] = 0 # Assign default score on failure
+                else:
+                    scores_by_index[index][score_type] = score
+            
+            await client.close()
+            return scores_by_index
+
+        # Run the async runner
+        all_scores = asyncio.run(_runner())
+
+        concept_scores = [s.get('concept', 0) for s in all_scores]
+        instruction_scores = [s.get('instruction', 0) for s in all_scores]
+        fluency_scores = [s.get('fluency', 0) for s in all_scores]
+
+        aggregated_ratings = [
+            self._harmonic_mean([cs, is_, fs])
+            for cs, is_, fs in zip(concept_scores, instruction_scores, fluency_scores)
+        ]
+        
+        mean_aggregated_rating = np.mean(aggregated_ratings) if aggregated_ratings else 0
+
+        metrics = {
             'concept': concept,
             'concept_scores': concept_scores,
             'instruction_scores': instruction_scores,
             'fluency_scores': fluency_scores,
             'aggregated_ratings': aggregated_ratings,
-            'mean_aggregated_rating': np.mean(aggregated_ratings)
+            'mean_aggregated_rating': mean_aggregated_rating
         }
-        return mertics
+        return metrics
         
-    def _llm_judge(self,content):
-        output = None
-        score = 0
-        times = 0
-        
-        # Temporarily use Ark API
-        from volcenginesdkarkruntime import Ark
-        client = Ark(api_key=os.environ.get("API_KEY"))
-        # client = openai.OpenAI(
-        #     api_key= API_KEY,
-        #     base_url= BASE_URL,
-        # )
-
-        while output is None and times <= 3:
-            times += 1
-            try:
-                response = client.chat.completions.create(
-                    model=self.llm_model,
-                    max_tokens=2048,
-                     messages=[{"role": "user", "content": content}],
-                    temperature=1
-                    )
-                output = response.choices[0].message.content
-                if "<Rating>" in output and "</Rating>" in output:
-                    score = output.split("<Rating>")[-1].split("</Rating>")[0]
-                    score = score.strip().replace('[', '').replace(']', '')
-                    score = score.strip('"').strip("'").strip("*").strip()
-                else:
-                    output = None
-                    print(f'No rating found in the {output}. Retrying...')
-            except Exception as e:
-                print(f'{e}\nRetrying...')
-            time.sleep(5)
-        
-        assert times <= 3, f"Failed to get the rating for the content"
-        return int(float(score))
-
     def _harmonic_mean(self,scores):
         # Return 0 if any score is 0 to maintain strict evaluation
         if 0 in scores:
