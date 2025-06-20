@@ -45,7 +45,7 @@ def main(top_cfg: DictConfig):
         if vector_applier is None:
             vector_applier = BaseVectorApplier(top_cfg)
         
-        vector_applier.apply_vectors(vectors)
+        vector_applier.apply_vectors(vectors)   # Different from axbench, the steering factor is fixed for each concept
         
         # Randomly sample 10 items from apacha-eval
         sampled_eval_data = random.sample(eval_datasets, min(2, len(eval_datasets)))

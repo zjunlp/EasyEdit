@@ -3,7 +3,7 @@ model_name_or_path: ../models/gemma-2-2b-it
 # model_name_or_path: ../hugging_cache/llama-7b
 torch_dtype: bfloat16
 device: cuda:0
-seed: 0   #change
+seed: 42   
 use_chat_template: true
 system_prompt: ''  
 
@@ -34,6 +34,6 @@ steer_from_end_position: false
 generate_orig_output: false
 generation_params:      #change
   max_new_tokens: 128   
-  temperature: 0.9       
+  temperature: 1.0       
   do_sample: true  
 
