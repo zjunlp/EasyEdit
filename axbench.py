@@ -31,10 +31,9 @@ def main(top_cfg: DictConfig):
     vector_generator = BaseVectorGenerator(top_cfg)
     vector_applier = None
     
-    eval_args = {"mode": 'direct', "save_results": False, "eval_methods": ["llm"], "llm_model": "deepseek-v3-250324" }
+    eval_args = {"mode": 'direct', "save_results": False, "eval_methods": ["llm"], "llm_model": "gpt-4o-mini-2024-07-18" }
     evaluator = Evaluator(**eval_args)
     
-    count = 1
     for i, concept_train_data in enumerate(train_datasets.values()):
         print(f"Processing concept {i} with {len(train_datasets)} items")
         train_dataset_for_concept = {
@@ -48,7 +47,7 @@ def main(top_cfg: DictConfig):
         vector_applier.apply_vectors(vectors)   # Different from axbench, the steering factor is fixed for each concept
         
         # Randomly sample 10 items from apacha-eval
-        sampled_eval_data = random.sample(eval_datasets, min(2, len(eval_datasets)))
+        sampled_eval_data = random.sample(eval_datasets, 10)
         
         # Generate results using the vector applier
         generated_results = vector_applier.generate(
@@ -64,12 +63,10 @@ def main(top_cfg: DictConfig):
         all_evaluation_results.append({f'axbench_concept_{i}': eval_results})
         
         vector_applier.model.reset_all()
-        
-        if i >= count:
-            break  
+
         
     with open("all_evaluation_results.json", "w", encoding="utf-8" ) as f: 
-        json.dump(all_evaluation_results, f)
+        json.dump(all_evaluation_results, f, indent=None)
     
 
 
