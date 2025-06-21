@@ -1,0 +1,31 @@
+alg_name: "ULTRAEDIT"
+device: 0
+
+model_name: your/path/mistral-7b-v0.3
+class_name: AutoModelForCausalLM
+tokenizer_class: AutoTokenizer
+tokenizer_name: your/path/mistral-7b-v0.3
+
+inner_params:
+# zsre wikibigedit fever ultraeditbench
+- model.layers.29.mlp.down_proj
+- model.layers.30.mlp.down_proj
+
+# Method
+alg: UltraEdit
+dropout: 0.0
+no_grad_layers: null
+
+lr: 1e-6
+token: mask
+
+batch_size: 100
+batch_size_once: 10
+editor_batch_size: 1024
+silent: False
+half: true
+
+model_parallel: false
+
+# Output
+results_dir: ./results
