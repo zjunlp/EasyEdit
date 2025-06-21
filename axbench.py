@@ -48,7 +48,7 @@ def main(top_cfg: DictConfig):
         vector_applier.apply_vectors(vectors)   # Different from axbench, the steering factor is fixed for each concept
         
         # Randomly sample 10 items from apacha-eval
-        sampled_eval_data = random.sample(eval_datasets, 2)
+        sampled_eval_data = random.sample(eval_datasets, 10)
         
         # Generate results using the vector applier
         generated_results = vector_applier.generate(
@@ -67,8 +67,6 @@ def main(top_cfg: DictConfig):
         all_generation_results.append(save_data)
         
         vector_applier.model.reset_all()
-        if i >= 1:
-            break
 
     print("Saving all generation results to file...")
     generation_file_path = f"{eval_args['save_path']}/all_generation_results.json"
