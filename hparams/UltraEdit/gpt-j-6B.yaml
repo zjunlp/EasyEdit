@@ -1,0 +1,49 @@
+alg_name: "ULTRAEDIT"
+device: 0
+# Model
+model_name: your/path/gpt-j-6B
+model_class: AutoModelForCausalLM
+tokenizer_class: AutoTokenizer
+tokenizer_name: your/path/gpt-j-6B
+inner_params:
+# zsre or ultra
+- transformer.h.18.mlp.fc_out
+- transformer.h.19.mlp.fc_out
+- transformer.h.20.mlp.fc_out
+- transformer.h.21.mlp.fc_out
+- transformer.h.22.mlp.fc_out
+- transformer.h.23.mlp.fc_out
+- transformer.h.24.mlp.fc_out
+- transformer.h.25.mlp.fc_out
+- transformer.h.26.mlp.fc_out
+# wikibigedit
+# - transformer.h.19.mlp.fc_out
+# - transformer.h.20.mlp.fc_out
+# - transformer.h.21.mlp.fc_out
+# - transformer.h.22.mlp.fc_out
+# - transformer.h.23.mlp.fc_out
+# - transformer.h.24.mlp.fc_out
+# - transformer.h.25.mlp.fc_out
+# - transformer.h.26.mlp.fc_out
+# fever
+# - transformer.h.25.mlp.fc_out
+# - transformer.h.26.mlp.fc_out
+
+# Method
+alg: UltraEdit
+dropout: 0.0
+no_grad_layers: null
+
+lr: 1e-6
+token: mask
+
+batch_size: 10
+batch_size_once: 10
+editor_batch_size: 1024
+silent: False
+half: true
+
+model_parallel: false
+
+# Output
+results_dir: ./results

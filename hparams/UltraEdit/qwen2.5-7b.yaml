@@ -1,0 +1,64 @@
+alg_name: "ULTRAEDIT"
+device: 0
+
+model_name: your/path/Qwen2.5-7B-Instruct
+model_class: AutoModelForCausalLM
+tokenizer_class: AutoTokenizer
+tokenizer_name: your/path/Qwen2.5-7B-Instruct
+inner_params:
+# zsre fever ultraeditbench
+- model.layers.18.mlp.gate_proj
+- model.layers.19.mlp.gate_proj
+- model.layers.20.mlp.gate_proj
+- model.layers.21.mlp.gate_proj
+- model.layers.22.mlp.gate_proj
+- model.layers.23.mlp.gate_proj
+- model.layers.24.mlp.gate_proj
+- model.layers.25.mlp.gate_proj
+- model.layers.26.mlp.gate_proj
+- model.layers.18.mlp.up_proj
+- model.layers.19.mlp.up_proj
+- model.layers.20.mlp.up_proj
+- model.layers.21.mlp.up_proj
+- model.layers.22.mlp.up_proj
+- model.layers.23.mlp.up_proj
+- model.layers.24.mlp.up_proj
+- model.layers.25.mlp.up_proj
+- model.layers.26.mlp.up_proj
+# wikibigedit
+# - model.layers.19.mlp.gate_proj
+# - model.layers.20.mlp.gate_proj
+# - model.layers.21.mlp.gate_proj
+# - model.layers.22.mlp.gate_proj
+# - model.layers.23.mlp.gate_proj
+# - model.layers.24.mlp.gate_proj
+# - model.layers.25.mlp.gate_proj
+# - model.layers.26.mlp.gate_proj
+# - model.layers.18.mlp.up_proj
+# - model.layers.19.mlp.up_proj
+# - model.layers.20.mlp.up_proj
+# - model.layers.21.mlp.up_proj
+# - model.layers.22.mlp.up_proj
+# - model.layers.23.mlp.up_proj
+# - model.layers.24.mlp.up_proj
+# - model.layers.25.mlp.up_proj
+# - model.layers.26.mlp.up_proj
+
+# Method
+alg: UltraEdit
+dropout: 0.0
+no_grad_layers: null
+
+lr: 1e-6
+token: mask
+
+batch_size: 100
+batch_size_once: 10
+editor_batch_size: 1024
+silent: False
+half: true
+
+model_parallel: false
+
+# Output
+results_dir: ./results

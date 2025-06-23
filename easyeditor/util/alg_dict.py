@@ -20,6 +20,7 @@ from ..models.alphaedit import AlphaEditHyperParams, apply_AlphaEdit_to_model
 from ..models.core import COREHyperParams, apply_core_to_model
 from .. models.deepedit_api import DeepEditApiHyperParams, apply_deepedit_api_to_model
 from ..models.dpo import DPOHyperParams, apply_dpo_to_model
+from ..models.ultraedit import UltraEditHyperParams, UltraEditRewriteExecutor
 
 ALG_DICT = {
     'ROME': apply_rome_to_model,
@@ -41,8 +42,13 @@ ALG_DICT = {
     'R-ROME': apply_r_rome_to_model,
     "EMMET": apply_emmet_to_model,
     "AlphaEdit": apply_AlphaEdit_to_model,
+<<<<<<< HEAD
+    "DeepEdit-Api": apply_deepedit_api_to_model,
+    "ULTRAEDIT": UltraEditRewriteExecutor().apply_to_model
+=======
     "CORE": apply_core_to_model,
     "DeepEdit-Api": apply_deepedit_api_to_model
+>>>>>>> upstream/main
 }
 
 ALG_MULTIMODAL_DICT = {
