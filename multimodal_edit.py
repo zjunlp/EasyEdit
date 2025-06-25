@@ -3,7 +3,7 @@ import types
 from statistics import mean
 
 from easyeditor import BaseEditor, MultimodalTrainer, MultimodalEditor
-from easyeditor import CaptionDataset, VQADataset, ComprehendEdit
+from easyeditor import CaptionDataset, VQADataset, ComprehendEditDataset
 from easyeditor import MENDMultimodalTrainingHparams, SERACMultimodalTrainingHparams, IKEMultimodalHyperParams, MENDMultimodalHparams \
     , SERACMultimodalHparams, WISEMultimodalHyperParams, GraceHyperParams, LoRAMultimodalHyperParams
 from easyeditor import encode_ike_facts_multimodal
@@ -664,7 +664,7 @@ def test_IKE_Blip2OPT_VQA_debug():
 
 DATASET_DICT = {
     'vqa': VQADataset,
-    'comprehendedit': ComprehendEdit,
+    'comprehendedit': ComprehendEditDataset,
 }
 data_dir = {
     'vqa': './MMEdit',
