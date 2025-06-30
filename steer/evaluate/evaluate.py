@@ -49,9 +49,7 @@ class Evaluator:
         if self.save_results:
             self.results_dir = kwargs.get('results_dir', 'results')
             
-        if self.mode == 'file':
-            self.dataset_path = kwargs.get('generation_dataset_path', None)
-        
+        self.dataset_path = kwargs.get('generation_dataset_path', None)
 
     def evaluate_from_file(self, dataset_path: str, concept: str = None):
         file_path = dataset_path or self.dataset_path

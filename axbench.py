@@ -20,7 +20,7 @@ def load_axbench_datasets() -> list:
     eval_data = dataset_loader.load_file('axbench', 'generation')  # The Apacha-Eval dataset
     return concept_grouped_data, eval_data
 
-@hydra.main(version_base='1.2', config_path='./hparams/Steer', config_name='axbench.yaml')
+@hydra.main(version_base='1.2', config_path='./hparams/Steer/experiment_hparams/axbench', config_name='axbench.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg, "\n")
 
@@ -41,10 +41,13 @@ def main(top_cfg: DictConfig):
             f'axbench_concept_{i}': concept_train_data
         }
         vectors = vector_generator.generate_vectors(train_dataset_for_concept)[f'axbench_concept_{i}']
+        print(f"Generated vectors for concept {i}: {vectors}")
 
         if vector_applier is None:
             vector_applier = BaseVectorApplier(top_cfg)
         
+        if "prompt" in vector_applier.hparams_dict:
+            vector_applier.hparams_dict['prompt'].prompt = concept_train_data[0]['output_concept']
         vector_applier.apply_vectors(vectors)   # Different from axbench, the steering factor is fixed for each concept
         
         # Randomly sample 10 items from apacha-eval

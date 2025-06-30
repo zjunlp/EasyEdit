@@ -31,12 +31,14 @@ class BaseVectorApplier:
             if alg_name in METHODS_CLASS_DICT:
                 set_seed(hparams_dict[alg_name].seed)
                 # print(f"Applying {alg_name} vectors to model ...")
-                if vectors is None or  vectors.get(alg_name) is None:
+                if alg_name == 'prompt':
+                    model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
+                elif vectors is None or vectors.get(alg_name) is None:
                     assert hparams_dict[alg_name].steer_vector_load_dir is not None, f"Steer vector load path {hparams_dict[alg_name].steer_vector_load_dir} does not exist !"
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
                 else:
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name],  model, vectors[alg_name])
-                print(f"Applying {alg_name} vectors to model successfully !\n")
+                print(f"Applying {alg_name} vectors or prompt to model successfully !\n")
             else:
                 return NotImplementedError(f"Method {alg_name} not implemented !")
  

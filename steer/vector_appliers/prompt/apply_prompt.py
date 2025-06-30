@@ -13,21 +13,17 @@ Optionally, provide in-context examples to reinforce this behavior.
         
 Return only the final prompt without any additional text."""
 
-def generate_prompt(model, tokenizer, concept, cfg):
+def generate_prompt(model, tokenizer, concept, hparams):
     from ...utils import build_model_input
     with torch.no_grad():
-
+        generate_prompt_params = hparams.generate_prompt_params
+        if 'pad_token_id' not in generate_prompt_params:
+            generate_prompt_params['pad_token_id'] = tokenizer.eos_token_id
         prompt = build_model_input( T_GENERATE_STEERING_PROMPT % concept , 
                                    tokenizer,  system_prompt='',
-                                   use_chat_template = cfg['use_chat_template'])
+                                   use_chat_template = hparams.use_chat_template)
         model_inputs =  tokenizer([prompt], return_tensors="pt").to(model.device)
-        generated_ids = model.model.generate(**model_inputs, 
-                       max_new_tokens=cfg['max_new_tokens'],
-                       top_p=cfg['top_p'], 
-                       temperature=cfg['temperature'],
-                       do_sample=cfg['do_sample'],
-                       pad_token_id = tokenizer.eos_token_id
-                       )
+        generated_ids = model.model.generate(**model_inputs, **generate_prompt_params)
         generated_ids = [
             output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
@@ -41,11 +37,16 @@ def apply_prompt(hparams: ApplyPromptHyperParams, pipeline=None, tokenizer=None)
         model, tokenizer = get_model(hparams)
     else:
         model = pipeline
-        tokenizer = tokenizer
+        if tokenizer is not None:
+            tokenizer = tokenizer
+        elif hasattr(model, 'tokenizer'):
+            tokenizer = model.tokenizer
+        else:
+            raise ValueError("No tokenizer provided and model does not have a tokenizer attribute.")
 
     prompt = hparams.prompt
     if hparams.generate_prompt_params:
-        prompt = generate_prompt(model, tokenizer, prompt, hparams.generate_prompt_params)
+        prompt = generate_prompt(model, tokenizer, prompt, hparams)
 
     setattr(model, 'prompt', prompt)
     return model

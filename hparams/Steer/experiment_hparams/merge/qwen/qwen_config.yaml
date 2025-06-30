@@ -1,0 +1,50 @@
+# General 
+model_name_or_path: ../models/qwen2.5-7b
+torch_dtype: bfloat16
+device: cuda:2
+seed: 42
+use_chat_template: false
+system_prompt: '' 
+
+# Generate Vector 
+# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+steer_train_hparam_paths:
+ - hparams/Steer/experiment_hparams/merge/qwen/merge/generate_merge_vector_linear.yaml
+#  - hparams/Steer/experiment_hparams/merge/qwen/merge/generate_merge_vector_ties.yaml
+#  - hparams/Steer/experiment_hparams/merge/qwen/merge/generate_merge_vector_dare_ties.yaml
+steer_train_dataset: 
+ - toxicity
+save_vectors: True
+steer_vector_output_dir: vectors/qwen2.5-7b/merge/linear  # vectors/qwen2.5-7b/merge/ties or vectors/qwen2.5-7b/merge/dare_ties
+
+# Apply Vector 
+# The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
+apply_steer_hparam_paths:
+ - hparams/Steer/experiment_hparams/merge/qwen/merge/apply_merge_vector.yaml
+steer_vector_load_dir:
+ - vectors/qwen2.5-7b/merge/linear/merge_vector
+#  - vectors/qwen2.5-7b/merge/ties/merge_vector
+#  - vectors/qwen2.5-7b/merge/dare_ties/merge_vector
+
+# Generation
+# Supported multiple files generation based on `generation_data`.
+generation_data: 
+ - realtoxicityprompts
+ - sentiment_neutral
+generation_data_size: null
+generation_output_dir: generation/qwen2.5-7b/merge
+num_responses: 1
+steer_from_end_position: false
+
+# Model generation parameters - must match Hugging Face parameter names
+# See: https://huggingface.co/docs/transformers/main_classes/text_generation
+generation_params:
+  max_new_tokens: 50
+  # min_new_tokens: 50  #only for lmsteer
+
+generate_orig_output: False
+
+
+
+
+  
