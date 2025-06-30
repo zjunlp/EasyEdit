@@ -363,27 +363,33 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 
 #### 😊Sentiment control
 
-| **dataset** | Google Drive| Description |
+| **Dataset** | Google Drive| Description |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | sst2 | [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | Stanford Sentiment Treebank with 2 labels: negative, positive |
 #### 🛡️Detoxifying LLMs
 
-| **dataset** | Google Drive | Description |
+| **Dataset** | Google Drive | Description |
 | :--------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | SafeEdit | [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | dataset for detoxifying LLMs |
 | Toxicity | [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | Toxicity-labeled comments dataset for online civility research |
+
+#### 🔍 Concept-level control with AxBench
+
+| **Dataset**       | Google Drive                                                                                      | Description |
+|-------------------|--------------------------------------------------------------------------------------------------------|-----------------|
+| AxBench | [Download](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | Preference data from AxBench CONCEPT500 $\mathrm{D}^{9B}_{L20}$ subset, containing instruction–response pairs with/without target concepts for supervised steering. |
 
 ### Testing Dataset
 
 #### ➗Mathematical capabilities 
 
-| **dataset** | Google Drive |                         Description                          |
+| **Dataset** | Google Drive |                         Description                          |
 | :---------: | :----------: | :----------------------------------------------------------: |
 |     GSM     |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  | dataset fo evaluating models' mathematical problem-solving capabilities |
 
 #### 🛡️Detoxifying LLMs
 
-| **dataset**  | Google Drive |                         Description                          |
+| **Dataset**  | Google Drive |                         Description                          |
 | :----------: | :----------: | :----------------------------------------------------------: |
 |   SafeEdit   |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  |              test dataset for detoxifying LLMs               |
 | RealToxicityPrompts |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link)  | test dataset for addressing the risk of neural toxic degeneration in models |
@@ -391,15 +397,20 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 
 #### 😊Sentiment control
 
-|    **dataset**    | Google Drive |                         Description                          |
+|    **Dataset**    | Google Drive |                         Description                          |
 | :---------------: | :----------: | :----------------------------------------------------------: |
 | sentiment prompts |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | Subset of OpenWebText Corpus filtered by the sentiment analysis classifier |
 
 #### 🧠General Ability
 
-| Dataset |                       Google Drive                       |                         Description                          |
+| **Dataset** |                       Google Drive                       |                         Description                          |
 | :-----: | :------------------------------------------------------: | :----------------------------------------------------------: |
 |  MMLU   |  [[Google Drive]](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | A massive multitask benchmark covering 57 subjects to measure knowledge and reasoning in LLMs. |
+
+#### 🔍 Concept-level Instruction-following Evaluation
+| **Dataset**       | Google Drive                                                                                      | Description |
+|-------------------|--------------------------------------------------------------------------------------------------------|-----------------|
+| AxBench | [Download](https://drive.google.com/file/d/1P1rDjyRxkciakhIFldTTcNoeBs1LRRmJ/view?usp=drive_link) | Evaluation set for AxBench under instruction-following setup. Prompts are sampled from Alpaca-Eval to test fine-grained concept control. |
 
 Click on the Google Drive links to download the dataset files. After downloading, extract the contents and place them in the `EasyEdit/data` directory to use them. For more details, please refer to [hparams/Steer/dataset.md](hparams/Steer/dataset.md).
 
