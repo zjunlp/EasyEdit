@@ -12,7 +12,7 @@
 <p align="center">
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">QuickStart</a> •
-    <a href="https://zjunlp.gitbook.io/easyedit">Doc</a> •
+    <a href="https://ribbon-muskox-3ac.notion.site/EasyEdit1-0-213e624c1c2680318840d9abbdaa83c5">Doc</a> •
     <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
     <a href="https://huggingface.co/spaces/zjunlp/EasyEdit">Demo</a> •
     <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
@@ -24,10 +24,19 @@
 </div>
 
 <h1 style="font-size: 32px; color: #333; text-align: left;">
+  <span style="font-size: 30px; color:rgb(180, 148, 61);">⭐</span> Key News
+</h1>
+<p align="left">
+✨ <strong><a href="https://ribbon-muskox-3ac.notion.site/EasyEdit1-0-213e624c1c2680318840d9abbdaa83c5" style="text-decoration: none; "> EasyEdit Beginner's Guide </a></strong> officially published! <br>
+ We have written a detailed beginner's guide for EasyEdit, specifically tailored for newcomers to the fields of knowledge editing and model editing. By reading this manual, you can quickly understand and start using EasyEdit.
+  &nbsp;
+</p>
+
+<h1 style="font-size: 32px; color: #333; text-align: left;">
   <span style="font-size: 30px; color:rgb(180, 148, 61);">📢</span> Update
 </h1>
 <p align="left">
-  🔥 <strong><a href="README_2.md" style="text-decoration: none; ">EasyEdit 2.0</a></strong> officially published! <br>
+🔥 <strong><a href="README_2.md" style="text-decoration: none; ">EasyEdit 2.0</a></strong> officially published! <br>
  Unlike EasyEdit1.0, which achieves knowledge editing by updating internal parameters or introducing additional parameters, EasyEdit2 enables real-time steering of LLMs during inference. It provides a unified framework for controllability without retraining, seamlessly integrating various steering methods for ease of use and evaluation.
   &nbsp; 👉 <strong><a href="README_2.md" style="text-decoration: none; ">[README]</a></strong> (for more details). 
 </p>
