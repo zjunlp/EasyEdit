@@ -11,8 +11,8 @@ class BaseVectorGenerator:
     def __init__(self, top_cfg: DictConfig):
         from ..utils import load_generate_vector_hparams
         self.hparams_dict = load_generate_vector_hparams(top_cfg)
-        for alg_name, hparams in self.hparams_dict.items():
-            print(f"{alg_name.upper()} Generator Hyperparameters:\n{hparams}")
+        for key, hparams in self.hparams_dict.items():
+            print(f"{key.upper()} Generator Hyperparameters:\n{hparams}")
         
 
     def generate_vectors(self, datasets = None,):
@@ -24,7 +24,8 @@ class BaseVectorGenerator:
         generated_vectors = {}
         for dataset_name in datasets:
             generated_vectors[ dataset_name ] = {}
-            for alg_name, hparams in self.hparams_dict.items():
+            for key, hparams in self.hparams_dict.items():
+                alg_name = hparams.alg_name
                 if alg_name in METHODS_CLASS_DICT:
                     set_seed(hparams.seed)
                     #build vector save path
@@ -35,16 +36,16 @@ class BaseVectorGenerator:
                     if os.path.exists(now_path) and hparams.save_vectors:
                         print('\033[1;34mVectors save path already exists! The vector will be overwritten!\033[0m')
                     
-                    print(f"Generating {alg_name} vectors ...")
+                    print(f"Generating {key} vectors ...")
                     if alg_name in ['lm_steer', 'caa', 'vector_prompt', 'sta']:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name])
                     else:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)
-                    generated_vectors[dataset_name][alg_name] = vectors
+                    generated_vectors[dataset_name][key] = vectors
                     if hparams.save_vectors:
                         print(f"Saving vectors to {now_path} ...")
                     else:
-                        print(f"Not saving {alg_name} vectors ...")
+                        print(f"Not saving {key} vectors ...")
                     hparams.steer_vector_output_dir = steer_vector_output_dir
                     
                 else:

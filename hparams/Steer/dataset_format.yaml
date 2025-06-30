@@ -38,7 +38,7 @@ train:
       label: 'label'
 
   axbench:
-    file_path: /disk/disk_20T/wsx/axbench/demo/prod_9b_l20_v1/generate/dpo_train_data.parquet
+    file_path: ./data/axbench/prod_9b_l20_v1/generate/dpo_train_data.parquet
     field_names:
       question: 'input'
       matching: 'winning_output'
@@ -46,6 +46,9 @@ train:
       output_concept: 'output_concept'
       concept_id: 'concept_id'
       concept: 'output_concept'
+
+  merge:
+    file_path: null
 
 # ================generation datasets===========================
 generation:
@@ -100,7 +103,7 @@ generation:
       input: 'prompt'
 
   axbench:
-    file_path: /disk/disk_20T/wsx/axbench/data/alpaca_eval.json
+    file_path: ./data/axbench/alpaca_eval.json
     field_names:
       input: 'instruction'
       reference_response: 'output'

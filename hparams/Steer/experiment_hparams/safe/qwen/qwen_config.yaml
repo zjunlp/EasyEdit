@@ -7,13 +7,14 @@ use_chat_template: false
 system_prompt: '' 
 
 # Generate Vector 
-# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+# The `steer_train_hparam_paths` and `steer_vector_output_dirs` are corresponding line by line.
 steer_train_hparam_paths:
  - hparams/Steer/experiment_hparams/safe/qwen/caa/generate_caa.yaml
 steer_train_dataset: 
  - toxicity
 save_vectors: True
-steer_vector_output_dir: steer/vectors/experiment/safe/qwen2.5-7b
+steer_vector_output_dirs: 
+ - vectors/experiment/safe/qwen2.5-7b
 
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.

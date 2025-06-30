@@ -5,18 +5,22 @@ from .alg_dict import HYPERPARAMS_CLASS_DICT, METHODS_CLASS_DICT
 
 def load_generate_vector_hparams(top_cfg):
     hparams_dict = {}
+    if isinstance(top_cfg.steer_vector_output_dirs, str):
+        top_cfg.steer_vector_output_dirs = [top_cfg.steer_vector_output_dirs]
     for i, hparam_path in enumerate(top_cfg.steer_train_hparam_paths):
         assert os.path.exists(hparam_path), f"Hparam path {hparam_path} does not exist !"
         method_hparams = OmegaConf.load(hparam_path)
         alg_name = method_hparams['alg_name']
+        hparams_dict_key = f"{alg_name}_{i}"
         combined_hparams = {**method_hparams, **top_cfg}
         selected_hparams_class = HYPERPARAMS_CLASS_DICT[alg_name]['train']
         intersect_keys = set(selected_hparams_class.__dataclass_fields__) & set(combined_hparams.keys())
         # remove extra fields
         hparams = selected_hparams_class(**{k: combined_hparams[k] for k in intersect_keys})
-        hparams.steer_vector_output_dir = top_cfg.steer_vector_output_dir
+        print(f"Loading {alg_name} hparams from {hparam_path} ...")
+        hparams.steer_vector_output_dir = top_cfg.steer_vector_output_dirs[i] if i < len(top_cfg.steer_vector_output_dirs) else top_cfg.steer_vector_output_dirs[0]
         hparams.steer_train_dataset = top_cfg.steer_train_dataset
-        hparams_dict[alg_name] = hparams
+        hparams_dict[hparams_dict_key] = hparams
     return hparams_dict
 
 

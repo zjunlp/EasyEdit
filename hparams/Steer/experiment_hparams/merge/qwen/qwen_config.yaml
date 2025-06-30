@@ -7,15 +7,18 @@ use_chat_template: false
 system_prompt: '' 
 
 # Generate Vector 
-# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+# The `steer_train_hparam_paths` and `steer_vector_output_dirs` are corresponding line by line.
 steer_train_hparam_paths:
  - hparams/Steer/experiment_hparams/merge/qwen/merge/generate_merge_vector_linear.yaml
-#  - hparams/Steer/experiment_hparams/merge/qwen/merge/generate_merge_vector_ties.yaml
-#  - hparams/Steer/experiment_hparams/merge/qwen/merge/generate_merge_vector_dare_ties.yaml
+ - hparams/Steer/experiment_hparams/merge/qwen/merge/generate_merge_vector_ties.yaml
+ - hparams/Steer/experiment_hparams/merge/qwen/merge/generate_merge_vector_dare_ties.yaml
 steer_train_dataset: 
- - toxicity
+ - merge
 save_vectors: True
-steer_vector_output_dir: vectors/qwen2.5-7b/merge/linear  # vectors/qwen2.5-7b/merge/ties or vectors/qwen2.5-7b/merge/dare_ties
+steer_vector_output_dirs: 
+ - vectors/qwen2.5-7b/merge/linear
+ - vectors/qwen2.5-7b/merge/ties
+ - vectors/qwen2.5-7b/merge/dare_ties
 
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.

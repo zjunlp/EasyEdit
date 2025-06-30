@@ -1,5 +1,5 @@
 # General 
-model_name_or_path: ../models/gemma-2-2b-it
+model_name_or_path: ../models/gemma-2-9b
 # model_name_or_path: ../hugging_cache/llama-7b
 torch_dtype: bfloat16
 device: cuda:0
@@ -8,26 +8,29 @@ use_chat_template: false
 system_prompt: ''  # Adds a system prompt to all method inputs, except for `vector_prompt`, which uses both with and without this prompt to convert it into a vector.
 
 # Generate Vector 
-# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+# The `steer_train_hparam_paths` and `steer_vector_output_dirs` are corresponding line by line.
 steer_train_hparam_paths:
  - hparams/Steer/caa_hparams/generate_caa.yaml
-steer_train_dataset: axbench
+steer_train_dataset: toxicity
 save_vectors: True
-steer_vector_output_dir: steer/vectors/gemma-2-2b-it/
+steer_vector_output_dirs: 
+ - vectors/gemma-2-9b/
 
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
 apply_steer_hparam_paths:
  - hparams/Steer/caa_hparams/apply_caa.yaml
 steer_vector_load_dir: 
- - steer/vectors/gemma-2-2b-it/axbench/caa_vector
+ - vectors/gemma-2-9b/toxicity/caa_vector
 
 # Generation
 # Supported multiple files generation based on `generation_data`.
+# You can choose dataset here, e.g., `- realtoxicityprompts`. 
+# Details of the dataset can be found in `hparams/Steer/dataset_format.yaml`.
 generation_data: 
- - axbench
-generation_data_size: 100
-generation_output_dir: steer/logs/gemma-2-2b-it/
+ - realtoxicityprompts 
+generation_data_size: null  # If set to null, it will use the full dataset.
+generation_output_dir: generation/gemma-2-9b/realtoxicityprompts/caa
 num_responses: 1
 steer_from_end_position: false
 

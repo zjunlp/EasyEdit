@@ -7,7 +7,7 @@ use_chat_template: true
 system_prompt: ''  
 
 # Generate Vector 
-# The `steer_train_hparam_paths` and `steer_train_dataset` are corresponding line by line.
+# The `steer_train_hparam_paths` and `steer_vector_output_dirs` are corresponding line by line.
 steer_train_hparam_paths:
  - hparams/Steer/experiment_hparams/axbench/gemma-it/caa/generate_caa.yaml
 #  - hparams/Steer/experiment_hparams/axbench/gemma-it/sta/generate_sta.yaml
@@ -15,7 +15,8 @@ steer_train_hparam_paths:
 #  - 
 steer_train_dataset: axbench
 save_vectors: False
-steer_vector_output_dir: vectors/gemma-2-9b-it/
+steer_vector_output_dirs: # When running axbench, vectors do not need to be saved
+ - vectors/gemma-2-9b-it/
 
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.

@@ -62,6 +62,12 @@ class DatasetLoader:
         else:
             
             file_path= dataset_config['file_path']
+            if not file_path:
+                print(f"No file path provided for dataset {dataset_name}.")
+                return []
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"File not found: {file_path}")
+            
             # extract file extension
             ext = os.path.splitext(file_path)[1].lower()
             # read raw data
@@ -167,11 +173,14 @@ def prepare_generation_datasets(hparams):
     return datasets
 
 def prepare_train_dataset(hparams):
-    dataset_name = hparams.steer_train_dataset
+    dataset_names = hparams.steer_train_dataset
+    if isinstance(dataset_names, str):
+        dataset_names = [dataset_names]
     dataset = {}
-    loader = DatasetLoader()
-    loaded_dataset  = loader.load_file(dataset_name, split='train')
-    dataset[dataset_name] = loaded_dataset 
+    for dataset_name in dataset_names:
+        loader = DatasetLoader()
+        loaded_dataset  = loader.load_file(dataset_name, split='train')
+        dataset[dataset_name] = loaded_dataset 
     return dataset
 
 if __name__=='__main__':
