@@ -11,3 +11,4 @@ from .safety import SafetyDataset
 from .Cknowedit import CKnowEditDataset
 from .MQuAKE import MQuAKEDataset
 from .wikibigedit import WikiBigEditDataset
+from .ComprehendEdit import ComprehendEdit
