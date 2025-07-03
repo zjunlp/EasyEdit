@@ -10,24 +10,24 @@ system_prompt: ''
 # The `steer_train_hparam_paths` and `steer_vector_output_dirs` are corresponding line by line.
 steer_train_hparam_paths:
  - hparams/Steer/experiment_hparams/merge/gemma/merge/generate_merge_vector_linear.yaml
- - hparams/Steer/experiment_hparams/merge/gemma/merge/generate_merge_vector_ties.yaml
- - hparams/Steer/experiment_hparams/merge/gemma/merge/generate_merge_vector_dare_ties.yaml
+#  - hparams/Steer/experiment_hparams/merge/gemma/merge/generate_merge_vector_ties.yaml
+#  - hparams/Steer/experiment_hparams/merge/gemma/merge/generate_merge_vector_dare_ties.yaml
 steer_train_dataset: 
  - merge
 save_vectors: True
 steer_vector_output_dirs: 
- - vectors/gemma-2-9b-base/merge/linear
- - vectors/gemma-2-9b-base/merge/ties
- - vectors/gemma-2-9b-base/merge/dare_ties
+ - vectors/experiment/merge/gemma-2-9b-base/merge/linear
+#  - vectors/experiment/merge/gemma-2-9b-base/merge/ties
+#  - vectors/experiment/merge/gemma-2-9b-base/merge/dare_ties
 
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
 apply_steer_hparam_paths:
  - hparams/Steer/experiment_hparams/merge/gemma/merge/apply_merge_vector.yaml
 steer_vector_load_dir:
- - vectors/gemma-2-9b-base/merge/linear/merge_vector
-#  - vectors/gemma-2-9b-base/merge/ties/merge_vector
-#  - vectors/gemma-2-9b-base/merge/dare_ties/merge_vector
+ - vectors/experiment/merge/gemma-2-9b-base/merge/linear/merge_vector
+#  - vectors/experiment/merge/gemma-2-9b-base/merge/ties/merge_vector
+#  - vectors/experiment/merge/gemma-2-9b-base/merge/dare_ties/merge_vector
 
 # Generation
 # Supported multiple files generation based on `generation_data`.

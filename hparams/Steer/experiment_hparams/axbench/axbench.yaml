@@ -14,8 +14,8 @@ steer_train_hparam_paths:
 #  - hparams/Steer/experiment_hparams/axbench/gemma-it/lm_steer/generate_lm_steer.yaml
 #  - 
 steer_train_dataset: axbench
-save_vectors: False
-steer_vector_output_dirs: # When running axbench, vectors do not need to be saved
+save_vectors: False # When running axbench, vectors do not need to be saved
+steer_vector_output_dirs: 
  - vectors/gemma-2-9b-it/
 
 # Apply Vector 
