@@ -267,6 +267,18 @@ class BaseEditor:
             for i, request in enumerate(record_chunks):
                 chunk_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
 
+                if 'locality' in chunk_metrics[i]['post'].keys():
+                    for locality_key in request['locality'].keys():
+                        locality_result = []
+                        if hasattr(self.hparams, 'evaluation_type') and self.hparams.evaluation_type == "LLM-judge":
+                            locality_result.append(float(chunk_metrics[i]['post']['locality'][f'{locality_key}_output']==chunk_metrics[i]['pre']['locality'][f'{locality_key}_output']))
+                        else:
+                            for ans, label in zip(chunk_metrics[i]['post']['locality'][f'{locality_key}_output'], chunk_metrics[i]['pre']['locality'][f'{locality_key}_output']):
+                                locality_result.append(np.mean(np.equal(ans, label)))
+                        chunk_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
+                        chunk_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
+                    chunk_metrics[i]['pre'].pop('locality')
+
                 if verbose:
                     LOG.info(
                         f"{i} editing: {request['prompt']} -> {request['target_new']}  \n {chunk_metrics[i]}"
