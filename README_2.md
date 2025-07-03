@@ -41,6 +41,7 @@
   - [Vector Generator](#vector-generator)
   - [Vector Applier](#vector-applier)
 - [Data Preparation](#data-preparation)
+- [Vector Library](#vector-library)
 - [Evaluation](#evaluation)
 - [Citation](#citation)
 
