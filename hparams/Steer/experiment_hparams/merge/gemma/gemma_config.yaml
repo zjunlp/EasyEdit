@@ -25,9 +25,9 @@ steer_vector_output_dirs:
 apply_steer_hparam_paths:
  - hparams/Steer/experiment_hparams/merge/gemma/merge/apply_merge_vector.yaml
 steer_vector_load_dir:
- - vectors/experiment/merge/gemma-2-9b-base/merge/linear/merge_vector
-#  - vectors/experiment/merge/gemma-2-9b-base/merge/ties/merge_vector
-#  - vectors/experiment/merge/gemma-2-9b-base/merge/dare_ties/merge_vector
+ - vectors/experiment/merge/gemma-2-9b-base/merge/linear/merge/merge_vector
+#  - vectors/experiment/merge/gemma-2-9b-base/merge/ties/merge/merge_vector
+#  - vectors/experiment/merge/gemma-2-9b-base/merge/dare_ties/merge/merge_vector
 
 # Generation
 # Supported multiple files generation based on `generation_data`.
