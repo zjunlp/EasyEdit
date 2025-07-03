@@ -414,53 +414,20 @@ EasyEdit2 provides several training and testing datasets, and supports custom da
 
 Click on the Google Drive links to download the dataset files. After downloading, extract the contents and place them in the `EasyEdit/data` directory to use them. For more details, please refer to [hparams/Steer/dataset.md](hparams/Steer/dataset.md).
 
-<!-- ## Vector Library
+## Vector Library
 
 EasyEdit2 provides the following pre-trained steering vectors:
 
-## Available Vectors
+### Available Vectors
 
 EasyEdit2 provides pre-trained steering vectors for multiple scenarios. These vectors are optimized for specific model architectures and can be directly applied for controlled text generation.
 
-All vectors are stored as PyTorch tensors (`.pt` files) in the [vectors directory](steer/vectors/).
+All vectors are stored as PyTorch tensors (`.pt` files) in the [vectors directory](https://drive.google.com/file/d/1PmtwAiMbHqUxj68roGV56DL4iHVfBTqM/view?usp=drive_link).
 
+> Note: The current vectors are those used in our experiments. They include safety and sentiment vectors for gemma-2-9b and qwen2.5-7b, as well as a merged vector (via CAA) that supports both safety and sentiment steering.
 ---
 
-### 🧠 Personality Vectors
-
-Enhance or suppress personality in model outputs:
-
-| Compatible Models | Path |
-| :---------------: | :--: |
-|                   |      |
-|                   |      |
-|                   |      |
-
----
-
-### 🔒 Safety Vectors
-
-Improve model safety or induce harmful outputs:
-
-| Compatible Models | Path |
-| :---------------: | :--: |
-|                   |      |
-|                   |      |
-|                   |      |
-
-### ❤️ Emotion Vectors
-
-Modulate emotional tone of generated text:
-
-| Compatible Models | Path |
-| :---------------: | :--: |
-|                   |      |
-|                   |      |
-|                   |      |
-
----
-
-### 🛠️ Usage Example
+<!-- ### 🛠️ Usage Example
 
 ```python
 from steer import METHODS_CLASS_DICT, get_model
@@ -475,7 +442,7 @@ steer_model, _ = get_model(config)
 steer_model = METHODS_CLASS_DICT["caa"]["apply"](apply_hparams, pipline=steer_model)
 ```
 
-All vectors are available in the [steer/vectors/](steer/vectors/).directory. -->
+All vectors are available in the [vectors/](vectors/).directory. -->
 
 
 
