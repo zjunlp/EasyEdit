@@ -423,7 +423,7 @@ EasyEdit2 provides the following pre-trained steering vectors:
 
 EasyEdit2 provides pre-trained steering vectors for multiple scenarios. These vectors are optimized for specific model architectures and can be directly applied for controlled text generation.
 
-All vectors are stored as PyTorch tensors (`.pt` files) in the [vectors directory](https://drive.google.com/file/d/1PmtwAiMbHqUxj68roGV56DL4iHVfBTqM/view?usp=drive_link).
+All vectors are stored as PyTorch tensors (`.pt` files) in the [vectors library](https://drive.google.com/file/d/1PmtwAiMbHqUxj68roGV56DL4iHVfBTqM/view?usp=drive_link).
 
 > Note: The current vectors are those used in our experiments. They include safety and sentiment vectors for gemma-2-9b and qwen2.5-7b, as well as a merged vector (via CAA) that supports both safety and sentiment steering.
 ---
