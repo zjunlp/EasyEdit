@@ -409,6 +409,14 @@ class BaseEditor:
                         for k, v in weights_copy.items():
                             nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
 
+                # 添加: 每个样本处理后清理缓存
+                torch.cuda.empty_cache()
+                
+                # 添加: ROME特别处理，处理完成后强制回收内存
+                if self.alg_name in ['ROME', 'MEMIT', 'EMMET']:
+                    import gc
+                    gc.collect()
+                    torch.cuda.empty_cache()
 
         if isinstance(edited_model, LORA):
             edited_model = edited_model.model
