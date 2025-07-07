@@ -670,13 +670,13 @@ data_dir = {
     'vqa': './MMEdit',
     'comprehendedit': './ComprehendEdit',
 }
-def train_SERAC(model='blip2', train=True, topk=5):
-    hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/{}.yaml'.format(model))
-    Dataset = DATASET_DICT[hparams.task.lower()]
-    print(f'Using datasets: {hparams.task.lower()}')
+def train_SERAC(model='blip2', dataset='vqa', train=True, topk=5):
+    hparams = SERACMultimodalTrainingHparams.from_hparams('EasyEdit/hparams/TRAINING/SERAC/{}.yaml'.format(model))
+    Dataset = DATASET_DICT[dataset.lower()]
+    print(f'Using datasets: {dataset.lower()}')
 
-    eval_ds = Dataset(data_dir[hparams.task.lower()], config=hparams, mode='test', topk=topk, size=None)
-    train_ds = Dataset(data_dir[hparams.task.lower()], config=hparams, mode='train', topk=-1) if train else eval_ds
+    eval_ds = Dataset(data_dir[dataset.lower()], config=hparams, mode='test', topk=topk)
+    train_ds = Dataset(data_dir[dataset.lower()], config=hparams, mode='train', topk=-1) if train else eval_ds
     
     trainer = MultimodalTrainer(
         config=hparams,
@@ -740,4 +740,4 @@ if __name__ == "__main__":
     # edit_MEND_Blip2OPT_VQA()
     # edit_SERAC_Blip2OPT_VQA()
 
-    train_SERAC(model='blip2', train=True)
+    train_SERAC(model='blip2', dataset='comprehendedit', train=True)

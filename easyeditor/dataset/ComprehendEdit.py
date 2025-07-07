@@ -65,7 +65,7 @@ class ComprehendEditDataset(BaseDataset):
 
         self.annotation = [json.loads(q) for q in open(os.path.join(data_dir,'ComprehendEdit_{}.json'.format(self.mode)), "r")][0]
 
-        self.topk = -1 # no topk in kwargs.keys() means we didn't measure KPI and KGI
+        self.topk = -1 # no topk in kwargs.keys() means we don't measure KPI and KGI
         if 'topk' in kwargs.keys():
             self.topk = kwargs['topk']
 
@@ -73,23 +73,13 @@ class ComprehendEditDataset(BaseDataset):
         if size is not None: # size is None when testing
             self.annotation = self.annotation[:size]
         
-        ind = []
-        if self.mode == 'train' and ('diverse' in kwargs.keys() and kwargs['diverse']):
-            ind = self.get_diverse_data() # only for training set
-            path = os.path.join(save_dir, 'ComprehendEdit_{}_{}_diverse.pth'.format(self.mode, config.model_name.lower()))
-        else:
-            path = os.path.join(save_dir, 'ComprehendEdit_{}_{}.pth'.format(self.mode, config.model_name.lower()))
-        if self.mode != 'train' and config.sequence_len > 0:
-            path = os.path.join(save_dir, 'ComprehendEdit_{}_{}_continual.pth'.format(self.mode, config.model_name.lower()))
-        self.image = True
+        path = os.path.join(save_dir, 'ComprehendEdit_{}_{}.pth'.format(self.mode, config.model_name.lower()))
         
         if os.path.exists(path):
             data = torch.load(path)
             print('Loaded datasets from {}'.format(path))
         else:
             for i, record in enumerate(self.annotation):
-                if self.mode == 'train' and len(ind)!=0 and i not in ind:
-                    continue
                 if record['answer'] == "":
                     continue
                 if i > 0 and i % 1000 == 0:
@@ -99,19 +89,14 @@ class ComprehendEditDataset(BaseDataset):
                 # rephrase_image_path = image_path
                 locality_image_path = os.path.join(data_dir, record["multimodal_locality_image"])
                 
-                image = image_path
-                # rephrase_image = image
-                locality_image = locality_image_path
-                if self.image:
-                    image = Image.open(image_path).convert("RGB")
-                    # rephrase_image = Image.open(rephrase_image_path).convert("RGB")
-                    locality_image = Image.open(locality_image_path).convert("RGB")
+                image = Image.open(image_path).convert("RGB")
+                # rephrase_image = Image.open(rephrase_image_path).convert("RGB")
+                locality_image = Image.open(locality_image_path).convert("RGB")
 
-                    image = self.vis_processor(image)
-                    # rephrase_image = image
-                    locality_image = self.vis_processor(locality_image)
-                    
-                    
+                image = self.vis_processor.transform(image)
+                # rephrase_image = self.vis_processor(rephrase_image)  
+                locality_image = self.vis_processor.transform(locality_image)  
+                
                 item = {
                     'pid': record['pid'],
                     'prompt': record['question'],
@@ -147,11 +132,11 @@ class ComprehendEditDataset(BaseDataset):
                     item['ori_rt_txt_last_topk'] = record['ori_rt_txt_last_topk'][-self.topk:]
                     
                 data.append(item)
-            torch.save(data, path)
+            # torch.save(data, path)
 
         if not hasattr(self.config, 'alg'):
             self.config.alg = self.config.alg_name
-        if self.mode != 'train' and self.topk != -1 and size is None and self.config.alg.lower() in ['ike', 'ft', 'serac_multi', 'mend', 'hice', 'melo', 'elder', 'recem']:
+        if self.mode != 'train' and self.topk != -1:
             self.test_ = True
         else:
             self.test_ = False
@@ -166,7 +151,7 @@ class ComprehendEditDataset(BaseDataset):
                 for step, sample in enumerate(data):
                     image_path = sample['image_path']
                     image = Image.open(image_path).convert("RGB")
-                    image = self.vis_processor(image)
+                    image = self.vis_processor.transform(image)
                     
                     src, trg, image = [sample['prompt']], [sample['target']], [image]
                     sources = [sample['source'].lower()]
@@ -182,7 +167,7 @@ class ComprehendEditDataset(BaseDataset):
                     edit_inner['ori_pred_minigpt4'] = np.array(test_data[step]['ori_pred_minigpt4'])
                     edit_inner['prompts_len'], edit_inner['labels'] = self.get_prompt_len(src, trg, sources)
                     self.all_edit_inner.append(edit_inner)
-                torch.save(self.all_edit_inner, path)
+                # torch.save(self.all_edit_inner, path)
 
             path = os.path.join(save_dir, 'ComprehendEdit_ori_right_{}.pth'.format(config.model_name.lower()))
             if os.path.exists(path):
@@ -193,7 +178,7 @@ class ComprehendEditDataset(BaseDataset):
                 for sample in right_data:
                     image_path = os.path.join(data_dir, sample["image"])
                     image = Image.open(image_path).convert("RGB")
-                    image = self.vis_processor(image)
+                    image = self.vis_processor.transform(image)
                     
                     src, trg, image = [sample['question']], [sample['answer']], [image]
                     sources = [sample['source'].lower()]
@@ -206,11 +191,11 @@ class ComprehendEditDataset(BaseDataset):
                     edit_inner['image_path'] = image_path
                     edit_inner['prompt'] = src
                     edit_inner['target'] = trg
-                    edit_inner['ori_pred_blip2'] = np.array(sample['ori_pred_blip2'])
-                    edit_inner['ori_pred_minigpt4'] = np.array(sample['ori_pred_minigpt4'])
+                    # edit_inner['ori_pred_blip2'] = np.array(sample['ori_pred_blip2'])
+                    # edit_inner['ori_pred_minigpt4'] = np.array(sample['ori_pred_minigpt4'])
                     edit_inner['prompts_len'], edit_inner['labels'] = self.get_prompt_len(src, trg, sources)
                     self.ori_right.append(edit_inner)
-                torch.save(self.ori_right, path)
+                # torch.save(self.ori_right, path)
         self._data = data
         del self.annotation
 
@@ -220,48 +205,11 @@ class ComprehendEditDataset(BaseDataset):
     def __len__(self):
         return len(self._data)
 
-    def get_diverse_data(self, topk = 50):
-        import numpy as np
-        from scipy.spatial.distance import cdist
-        
-        results = torch.load(f'./{self.config.task.lower()}_train_img_txt_fea.pth')
-        lambda_ = 0.5
-        img_fea = (results['img_feas'].T / torch.norm(results['img_feas'].T, dim=-1).unsqueeze(-1)).T
-        txt_fea = (results['txt_feas'].T / torch.norm(results['txt_feas'].T, dim=-1).unsqueeze(-1)).T
-        # fea = lambda_*img_fea + (1-lambda_)*txt_fea
-        fea = torch.cat((img_fea, txt_fea), dim=-1)
-        fea = fea / torch.norm(fea, dim=-1).unsqueeze(-1)
-        num_clusters = fea.shape[0]//20 # 5%
-        
-        path = f'kmeans_results_{self.config.task.lower()}_{num_clusters}_cat_fea.pth'
-        if os.path.exists(path):
-            km_cluster = torch.load(path)
-            all_id = km_cluster.predict(fea)
-        else:
-            print('Begin clustering...')
-            from sklearn.cluster import KMeans
-            km_cluster = KMeans(n_clusters=num_clusters, max_iter=300, n_init=40, init='k-means++')
-            all_id = km_cluster.fit_predict(fea) # about 20-40 mins
-            torch.save(km_cluster, path)
-        
-        centers = torch.tensor(km_cluster.cluster_centers_)
-        centers = centers / torch.norm(centers, dim=-1).unsqueeze(-1)
-        res = []
-        for class_id in range(num_clusters):
-            ind = np.where(all_id == class_id)[0]
-            # dists = torch.norm(fea[ind]-centers[class_id], p=2, dim=-1)
-            # ind1 = torch.sort(dists, descending=False)[1]
-            np.random.seed(1993)
-            ind1 = np.random.permutation(len(ind))
-            res.append(ind[ind1[0]])
-        
-        return res
-
     def process_img(self, img):
         if self.config.model_name.lower() == 'llava1.5':
-            image = self.vis_processor(images=img, return_tensors='pt')['pixel_values'][0]
+            image = self.vis_processor.transform(images=img, return_tensors='pt')['pixel_values'][0]
         else:
-            image = self.vis_processor(img)
+            image = self.vis_processor.transform(img)
         return image
         
     def get_prompt_len(self, src, trg, sources, imgs=True):
@@ -293,10 +241,7 @@ class ComprehendEditDataset(BaseDataset):
         
         # edit_inner
         edit_inner = {}
-        if self.image:
-            edit_inner['image'] = torch.stack(image, dim=0)
-        else:
-            edit_inner['image'] = image
+        edit_inner['image'] = torch.stack(image, dim=0)
         edit_inner['prompts_len_input'] = [self.prompt[source].format(s) for s, source in zip(src, sources)]
         edit_inner['prompts_len'], edit_inner['labels'] = self.get_prompt_len(src, trg, sources)
         edit_inner['image_path'] = [b['image_path'] for b in batch]
@@ -343,10 +288,7 @@ class ComprehendEditDataset(BaseDataset):
 
         # edit_outer
         edit_outer = {}
-        if self.image:
-            edit_outer['image'] = torch.stack(image, dim=0)
-        else:
-            edit_outer['image'] = image
+        edit_outer['image'] = torch.stack(image, dim=0)
         edit_outer['prompts_len_input'] = [self.prompt[source].format(r) for r, source in zip(rephrase, sources)]
         edit_outer['labels'] = trg
         edit_outer['prompts_len'], edit_outer['labels'] = self.get_prompt_len(rephrase, trg, sources)
@@ -388,10 +330,7 @@ class ComprehendEditDataset(BaseDataset):
         
         # m_loc
         loc_image = {}
-        if self.image:
-            loc_image['image'] = torch.stack(m_loc_image, dim=0).to(self.config.device)
-        else:
-            loc_image['image'] = m_loc_image
+        loc_image['image'] = torch.stack(m_loc_image, dim=0).to(self.config.device)
         loc_image['prompts_len'], loc_image['labels'] = self.get_prompt_len(m_loc_q, m_loc_a, ['gqa' for q in m_loc_q])
         loc_image['multimodal_locality_prompt'] = m_loc_q
         loc_image['prompts_len_input'] = [self.prompt['gqa'].format(q) for q in m_loc_q]
