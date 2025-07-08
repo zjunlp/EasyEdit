@@ -106,8 +106,8 @@ if __name__ == "__main__":
     portability_Subject_Aliasing_ans = []
 
     for data in datas:
-        # MQuAKE-CF 格式数据处理
-        if "questions" in data.__dict__ if hasattr(data, "__dict__") else "portability_data" in data:
+        # 统一处理可移植性数据 - 适用于MQuAKE-CF和WikiUpdate
+        if "portability_data" in data and len(data['portability_data']) > 0:
             temp_prompts = []
             temp_answers = []
             portability_data = data.get("portability_data", [])
@@ -135,21 +135,6 @@ if __name__ == "__main__":
                     temp_answers.append(pr['ground_truth'])
             portability_Subject_Aliasing_prompts.append(temp_prompts)
             portability_Subject_Aliasing_ans.append(temp_answers)
-        # 使用旧格式数据
-        elif data.get('portability_data') and len(data['portability_data']) > 0:
-            temp_prompts = []
-            temp_answers = []
-            for pr in data['portability_data']:
-                if pr and pr.strip() != "":
-                    temp_prompts.append(pr)
-                    temp_answers.append(data['target_new'])
-            # 只有当有有效提示时才添加
-            if temp_prompts:
-                portability_Subject_Aliasing_prompts.append(temp_prompts)
-                portability_Subject_Aliasing_ans.append(temp_answers)
-            else:
-                portability_Subject_Aliasing_prompts.append([])
-                portability_Subject_Aliasing_ans.append([])
         else:
             portability_Subject_Aliasing_prompts.append([])
             portability_Subject_Aliasing_ans.append([])
@@ -169,7 +154,7 @@ if __name__ == "__main__":
                     temp_answers.append(pr['ground_truth'])
             locality_Relation_Specificity_prompts.append(temp_prompts)
             locality_Relation_Specificity_ans.append(temp_answers)
-        # 使用旧格式数据
+        # 使用统一格式处理locality_data (适用于MQuAKE-CF和WikiUpdate)
         elif data.get('locality_data') and len(data['locality_data']) > 0:
             temp_prompts = []
             temp_answers = []
@@ -283,6 +268,12 @@ if __name__ == "__main__":
             'prompt': locality_forgetfulness_prompts,
             'ground_truth': locality_forgetfulness_ans
         }
+    
+    # 打印数据处理结果统计
+    print(f"\n===== 数据处理结果 =====")
+    print(f"基本提示数量: {len(basic_prompts)}")
+    print(f"可移植性测试 Subject_Aliasing: {sum(1 for prompts in portability_Subject_Aliasing_prompts if len(prompts) > 0)}/{len(portability_Subject_Aliasing_prompts)}")
+    print(f"局部性测试 Relation_Specificity: {sum(1 for prompts in locality_Relation_Specificity_prompts if len(prompts) > 0)}/{len(locality_Relation_Specificity_prompts)}")
     
     # 加载超参数
     hparams = editing_hparams.from_hparams(args.hparams_dir)

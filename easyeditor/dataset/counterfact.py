@@ -58,11 +58,27 @@ class CounterFactDataset(Dataset):
         for i, record in enumerate(raw):
             # 检查是否有requested_rewrite数组
             has_rewrite_array = "requested_rewrite" in record and isinstance(record["requested_rewrite"], list) and len(record["requested_rewrite"]) > 0
+            # 检查是否是WikiUpdate格式（requested_rewrite是对象，包含question字段）
+            is_wiki_update = ("requested_rewrite" in record and isinstance(record["requested_rewrite"], dict) and 
+                             "question" in record["requested_rewrite"])
             
             # 基本字段 - 处理不同的数据格式
             if has_rewrite_array:
                 # MQuAKE-CF 格式 - requested_rewrite 是数组
                 rewrite = record["requested_rewrite"][0]
+                subject = rewrite.get("subject", "")
+                prompt = rewrite.get("prompt", "")
+                if subject and prompt and "{}" in prompt:
+                    prompt_full = prompt.format(subject)
+                else:
+                    prompt_full = rewrite.get("prompt_full", "")
+                
+                target_new_str = rewrite.get("target_new", {}).get("str", "")
+                target_true_str = rewrite.get("target_true", {}).get("str", "")
+                fact_new_uns = rewrite.get("fact_new_uns", "")
+            elif is_wiki_update:
+                # WikiUpdate 格式 - requested_rewrite是对象包含question字段
+                rewrite = record["requested_rewrite"]
                 subject = rewrite.get("subject", "")
                 prompt = rewrite.get("prompt", "")
                 if subject and prompt and "{}" in prompt:
@@ -88,8 +104,15 @@ class CounterFactDataset(Dataset):
             portability_data = []
             portability_answer = target_new_str  # 默认使用target_new作为答案
             
+            # WikiUpdate 格式 - 使用question作为可移植性测试
+            if is_wiki_update and "question" in record["requested_rewrite"]:
+                question = record["requested_rewrite"]["question"]
+                if question:
+                    portability_data = [question]  # 单个问题转成列表
+                    if "answer_new" in record["requested_rewrite"]:
+                        portability_answer = record["requested_rewrite"]["answer_new"]
             # MQuAKE-CF 格式 - 使用questions作为可移植性测试
-            if "questions" in record and isinstance(record["questions"], list):
+            elif "questions" in record and isinstance(record["questions"], list):
                 portability_data = record["questions"]
                 if "new_answer" in record:
                     portability_answer = record["new_answer"]
@@ -106,19 +129,21 @@ class CounterFactDataset(Dataset):
                     portability_data = prompts
             elif has_rewrite_array and "paraphrase_prompts" in record["requested_rewrite"][0]:
                 portability_data = record["requested_rewrite"][0]["paraphrase_prompts"]
-            elif "requested_rewrite" in record and not has_rewrite_array and "paraphrase_prompts" in record["requested_rewrite"]:
+            elif "requested_rewrite" in record and not has_rewrite_array and not is_wiki_update and "paraphrase_prompts" in record["requested_rewrite"]:
                 portability_data = record["requested_rewrite"]["paraphrase_prompts"]
             
             # 处理局部性数据
             locality_data = []
             
-            # MQuAKE-CF 格式 - 从requested_rewrite[0]获取局部性数据
-            if has_rewrite_array and "unsfact_triplets_GPT" in record["requested_rewrite"][0]:
+            # WikiUpdate 和 MQuAKE-CF 格式 - 从requested_rewrite获取局部性数据
+            if is_wiki_update and "unsfact_triplets_GPT" in record["requested_rewrite"]:
+                locality_data = record["requested_rewrite"]["unsfact_triplets_GPT"]
+            elif has_rewrite_array and "unsfact_triplets_GPT" in record["requested_rewrite"][0]:
                 locality_data = record["requested_rewrite"][0]["unsfact_triplets_GPT"]
             # 其他格式的局部性数据
             elif "locality_data" in record:
                 locality_data = record["locality_data"]
-            elif "requested_rewrite" in record and not has_rewrite_array and "unsfact_triplets_GPT" in record["requested_rewrite"]:
+            elif "requested_rewrite" in record and not has_rewrite_array and not is_wiki_update and "unsfact_triplets_GPT" in record["requested_rewrite"]:
                 locality_data = record["requested_rewrite"]["unsfact_triplets_GPT"]
             elif "locality" in record and "Relation_Specificity" in record["locality"]:
                 locality_data = record["locality"]["Relation_Specificity"]
@@ -132,7 +157,7 @@ class CounterFactDataset(Dataset):
                 "descriptive_prompt": descriptive_prompt,
                 "descriptive_target": fact_new_uns,
                 "portability_data": portability_data,
-                "portability_answer": portability_answer,  # 新增字段，存储可移植性问题的答案
+                "portability_answer": portability_answer,  # 存储可移植性问题的答案
                 "locality_data": locality_data,
                 
                 # 添加KnowEdit格式的字段，方便与其他代码兼容
