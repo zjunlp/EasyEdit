@@ -40,7 +40,11 @@ class RePSHyperParams(HyperParams):
     low_rank_dimension: int = 1
     
     # === Steering Config ===
+<<<<<<< HEAD
     steering_factors: List[float] = field(default_factory=lambda: [0.0, 2.0])  
+=======
+    steering_factors: List[float] = field(default_factory=lambda: [2.0])  
+>>>>>>> 2a46a1c5 (Forward Still Bug)
     steering_prompt_type: str = "blend_in"
     substraction_type: str = "null_it_out"  # normal or null_it_out
 

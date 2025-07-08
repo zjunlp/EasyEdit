@@ -57,7 +57,10 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
     last_concept_id = state.get("last_concept_id", None) if state else None
     print(f"[WARNING] last concept_id processed: {last_concept_id}")
 
+<<<<<<< HEAD
     vec = None
+=======
+>>>>>>> 2a46a1c5 (Forward Still Bug)
     for concept_id, concept_groups in concept_grouped_data:
         concept_id = int(concept_id) 
 
@@ -121,7 +124,14 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
         benchmark_model.train(prepared_groups, **training_kwargs)
 
         # get the trained vectors
+<<<<<<< HEAD
         vec = benchmark_model.model.steer_vector.proj.weight.data.clone().cpu()
+=======
+        vectors = {}
+        for layer in args.layers:
+            vec = benchmark_model.model.steer_vector.proj.weight.data.clone().cpu()
+            vectors[f"layer_{layer}"] = vec
+>>>>>>> 2a46a1c5 (Forward Still Bug)
         
         # save the current state
         current_state = {'last_concept_id': concept_id}
@@ -131,8 +141,13 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
         if args.save_vectors:
             concept_dir = os.path.join(args.steer_vector_output_dir, f"concept_{concept}")
             os.makedirs(concept_dir, exist_ok=True)
+<<<<<<< HEAD
             torch.save(vec, os.path.join(concept_dir, f"concept_{concept}.pt"))
             # benchmark_model.save(concept_dir, model_name=f"{args.model_name_or_path}")
+=======
+            torch.save(vectors, os.path.join(concept_dir, f"layer_{args.layers}.pt"))
+            benchmark_model.save(concept_dir, model_name=f"{args.model_name_or_path}")
+>>>>>>> 2a46a1c5 (Forward Still Bug)
         
         # clean the memory
         del benchmark_model
@@ -143,5 +158,10 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
         del model
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+<<<<<<< HEAD
     if vec:
         return vec
+=======
+    
+    return vectors
+>>>>>>> 2a46a1c5 (Forward Still Bug)

@@ -192,7 +192,14 @@ def make_data_module(
     
     all_concept_ids, all_concept_input_ids = [], []
     
+<<<<<<< HEAD
     for item in dataset:
+=======
+    # 支持列表格式的数据
+    for item in dataset:
+        # 如果是DataFrame，item是(index, row)元组；如果是列表，item就是字典
+        # row = item[1] if isinstance(item, tuple) else item
+>>>>>>> 2a46a1c5 (Forward Still Bug)
         
         _concept, _input, _output = item["output_concept"], item["input"], item["output"]
         
@@ -399,6 +406,10 @@ def make_preference_data_module(
         all_data[f"{pair}_losing_labels"] = []
         all_data[f"{pair}_prompt_lengths"] = []
 
+<<<<<<< HEAD
+=======
+    # 支持列表格式的数据
+>>>>>>> 2a46a1c5 (Forward Still Bug)
     for item in dataset:        
         if f"{steering_prompt_type}_steered_input" not in item:
             input, winning_output, losing_output = item["question"], item["matching"], item["not_matching"]
@@ -438,6 +449,36 @@ def make_preference_data_module(
     )
     data_collator = PreferenceInterventionDataCollator(tokenizer=tokenizer, data_collator=data_collator_fn, preference_pairs=preference_pairs)
     
+<<<<<<< HEAD
+=======
+    # print("\n--- 数据集调试信息 ---")
+    # print(f"创建的 train_dataset 包含 {len(train_dataset)} 个样本。")
+    
+    # if len(train_dataset) > 0:
+    #     print("\n--- train_dataset 中的第一个样本 ---")
+    #     first_example = train_dataset[0]
+    #     for key, value in first_example.items():
+    #         if isinstance(value, torch.Tensor):
+    #             print(f"  {key}: 张量, 形状为 {value.shape}")
+    #         else:
+    #             print(f"  {key}: {value}")
+
+    #     print("\n--- data_collator 处理后的单样本批次 ---")
+    #     # To inspect the collator's output, we collate a single-item batch
+    #     collated_batch = data_collator([first_example])
+    #     for key, value in collated_batch.items():
+    #         if isinstance(value, torch.Tensor):
+    #             print(f"  {key}: 张量, 形状为 {value.shape}")
+    #             # For input_ids, let's decode them to see the text
+    #             if "input_ids" in key:
+    #                 # set skip_special_tokens=False to see all tokens including PAD, EOS, etc.
+    #                 decoded_text = tokenizer.decode(value[0], skip_special_tokens=False)
+    #                 print(f"    解码后的文本: \"{decoded_text}\"")
+    #         else:
+    #             print(f"  {key}: {value}")
+    # print("--- 调试信息结束 ---\n")
+    
+>>>>>>> 2a46a1c5 (Forward Still Bug)
     return dict(train_dataset=train_dataset, eval_dataset=None, data_collator=data_collator)
 
 

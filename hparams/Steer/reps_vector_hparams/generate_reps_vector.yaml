@@ -34,7 +34,11 @@ intervention_type: "addition" # clamping
 low_rank_dimension: 1
 
 # === Steering Config ===
+<<<<<<< HEAD
 steering_factors: [0.0, 2.0] # use_cmd_to_define
+=======
+steering_factors: [2.0] # use_cmd_to_define
+>>>>>>> 2a46a1c5 (Forward Still Bug)
 steering_prompt_type: "blend_in"
 substraction_type: "null_it_out" # normal or null_it_out
 

@@ -59,10 +59,68 @@ class BaseIntervention(torch.nn.Module):
     def forward(self, base, source, subspaces=None):
         pass
 
+<<<<<<< HEAD
 class ActivationAddition(BaseIntervention):
     """
     Unified activation addition intervention for steering vectors.
     Supports CAA, VectorPrompt, SAEFeature, and STA methods.
+=======
+class CAAIntervention(BaseIntervention):
+    """
+    对比激活添加（CAA）干预类
+    直接在激活上添加预计算的引导向量
+    """
+    def __init__(self, steering_vector, multiplier=1.0, **kwargs):
+        super().__init__(**kwargs)
+        self.steering_vector = steering_vector
+        self.multiplier = multiplier
+    
+    def forward(self, base, **kwargs):
+        """
+        Args:
+            base: 基础隐藏状态张量，形状为 (batch_size, seq_len, hidden_dim)
+        Returns:
+            torch.Tensor: 添加引导向量后的隐藏状态
+        """
+        # 将引导向量广播到所有位置
+        steering_addition = self.multiplier * self.steering_vector.unsqueeze(0).unsqueeze(0)  # (1, 1, hidden_dim)
+        return base + steering_addition
+    
+    def to(self, device):
+        super().to(device)
+        if isinstance(self.steering_vector, torch.Tensor):
+            self.steering_vector = self.steering_vector.to(device)
+        return self
+
+class VectorPromptIntervention(BaseIntervention):
+    """
+    向量提示干预类
+    """
+    def __init__(self, steering_vector, multiplier=1.0, **kwargs):
+        super().__init__(**kwargs)
+        self.steering_vector = steering_vector
+        self.multiplier = multiplier
+    
+    def forward(self, base, **kwargs):
+        """
+        Args:
+            base: 基础隐藏状态张量，形状为 (batch_size, seq_len, hidden_dim)
+        Returns:
+            torch.Tensor: 添加向量提示后的隐藏状态
+        """
+        steering_addition = self.multiplier * self.steering_vector.unsqueeze(0).unsqueeze(0)
+        return base + steering_addition
+    
+    def to(self, device):
+        super().to(device)
+        if isinstance(self.steering_vector, torch.Tensor):
+            self.steering_vector = self.steering_vector.to(device)
+        return self
+
+class SAEFeatureIntervention(BaseIntervention):
+    """
+    SAE特征干预类
+>>>>>>> 2a46a1c5 (Forward Still Bug)
     """
     def __init__(self, steering_vector, multiplier=1.0, **kwargs):
         super().__init__(**kwargs)
@@ -79,6 +137,27 @@ class ActivationAddition(BaseIntervention):
             self.steering_vector = self.steering_vector.to(device)
         return self
 
+<<<<<<< HEAD
+=======
+class STAIntervention(BaseIntervention):
+    """
+    STA干预类
+    """
+    def __init__(self, steering_vector, multiplier=1.0, **kwargs):
+        super().__init__(**kwargs)
+        self.steering_vector = steering_vector
+        self.multiplier = multiplier
+    
+    def forward(self, base, **kwargs):
+        steering_addition = self.multiplier * self.steering_vector.unsqueeze(0).unsqueeze(0)
+        return base + steering_addition
+    
+    def to(self, device):
+        super().to(device)
+        if isinstance(self.steering_vector, torch.Tensor):
+            self.steering_vector = self.steering_vector.to(device)
+        return self
+>>>>>>> 2a46a1c5 (Forward Still Bug)
 
 class RePSVectorIntervention(BaseIntervention, torch.nn.Module):
     """
@@ -120,6 +199,7 @@ class RePSVectorIntervention(BaseIntervention, torch.nn.Module):
             expanded_indices = None
          
         v = []
+<<<<<<< HEAD
         # for each batch sample, select the corresponding weight for the subspace
         if self.subspaces and "subspaces" in self.subspaces:
             for subspace in self.subspaces["subspaces"]:
@@ -151,6 +231,49 @@ class RePSVectorIntervention(BaseIntervention, torch.nn.Module):
             steering_vec = steering_vec * combined_steering_factor # bs, s, d
 
         modified_activations = activations_to_intervene + steering_vec
+=======
+        # build the preference vector according to the subspaces
+        if self.subspaces and "subspaces" in self.subspaces:
+            # if the subspaces are specified, select the corresponding weights for each subspace
+            for subspace in self.subspaces["subspaces"]:
+                v += [self.proj.weight[subspace]]
+        else:
+            # if the subspaces are not specified, use the first weight for each batch sample
+            for i in range(activations_to_intervene.shape[0]):
+                v += [self.proj.weight[0]]
+
+        # stack the preference vectors and adjust the dimension: (batch_size, hidden_dim, 1)
+        v = torch.stack(v, dim=0).unsqueeze(dim=-1) # bs, h, 1
+        # calculate the L2 norm of the vector: (batch_size, 1, 1)
+        v_norm = torch.norm(v, dim=1, keepdim=True) # bs, 1, 1
+        # calculate the latent representation: through batch matrix multiplication and ReLU activation
+        latent = torch.relu((torch.bmm(activations_to_intervene, v) + self.proj.bias).squeeze(dim=-1)) # bs, s, 1
+        # transpose the preference vector as the steering vector: (batch_size, 1, hidden_dim)
+        steering_vec = v.permute(0, 2, 1) # bs, 1, h
+        # apply dropout
+        steering_vec = self.dropout(steering_vec)
+
+        if self.subspaces and "steering_factor" in self.subspaces:
+            # get the steering factor and adjust the dimension: (batch_size, 1, 1)
+            steering_factor = self.subspaces["steering_factor"].unsqueeze(dim=-1).unsqueeze(dim=-1) # bs, 1, 1
+            # create the zero and non-zero masks, for different training modes
+            zero_mask = steering_factor == 0.0 # bs, 1, 1, 用于null-out训练
+            nonzero_mask = steering_factor != 0.0 # bs, 1, 1
+            # calculate the null-out steering factor: h - (h@v)/||v||^2 * v, the steering coefficient is (h@v)/||v||^2
+            null_it_out_steering_factor = -(latent.unsqueeze(dim=-1) / v_norm**2)*zero_mask # bs, s, 1 * bs, 1, 1 = bs, s, 1
+            # combine the steering factors
+            combined_steering_factor = null_it_out_steering_factor + (steering_factor + self.proj.bias*nonzero_mask) # bs, s, 1
+            # apply the dropout based on the positions
+            dropout_mask = torch.rand_like(combined_steering_factor.float()) > self.intervention_positions_dropout
+            combined_steering_factor *= dropout_mask
+            # apply the combined steering factor to the steering vector
+            steering_vec = steering_vec * combined_steering_factor # bs, s, d
+
+        # add the steering vector to the selected activations
+        modified_activations = activations_to_intervene + steering_vec
+
+        # if we have sliced the activations, scatter the modified activations back to the original tensor
+>>>>>>> 2a46a1c5 (Forward Still Bug)
         if self.intervention_locations is not None:
             output = base.scatter(1, expanded_indices, modified_activations)
         else:
@@ -160,6 +283,15 @@ class RePSVectorIntervention(BaseIntervention, torch.nn.Module):
             output=output.to(base.dtype),
             latent=[latent]
         )
+<<<<<<< HEAD
+=======
+    
+    def to(self, device):
+        super().to(device)
+        self.proj = self.proj.to(device)
+        self.dropout = self.dropout.to(device)
+        return self
+>>>>>>> 2a46a1c5 (Forward Still Bug)
         
 @dataclass
 class InterventionOutput(ModelOutput):

@@ -130,7 +130,11 @@ class PreferenceModelTrainer(ModelTrainer):
         g = torch.Generator()
         g.manual_seed(self.hparams.seed)
         train_dataloader = DataLoader(
+<<<<<<< HEAD
             data_module["train_dataset"], shuffle=True, # we shuffle for examples.
+=======
+            data_module["train_dataset"], shuffle=False, # we shuffle for examples.
+>>>>>>> 2a46a1c5 (Forward Still Bug)
             batch_size=self.hparams.batch_size, 
             collate_fn=data_module["data_collator"],
             generator=g)
