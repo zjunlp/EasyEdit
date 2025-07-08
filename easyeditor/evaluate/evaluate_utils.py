@@ -251,6 +251,18 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
                 do_sample=False,
                 use_cache=False,
             )
+            #888
+            
+            # 添加打印 - vanilla_generation分支
+            gen_output = tok.decode(gen_token[0][-len(target_new_tokens):])
+            print(f"\n----- 别名提示评估详情(vanilla_generation=True) -----")
+            print(f"提示: {prompt}")
+            print(f"目标: {target_new}")
+            print(f"模型输出: {gen_output}")
+            print(f"目标tokens: {target_new_tokens}")
+            print(f"输出tokens: {gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):]}")
+            print("--------------------------------------------\n")
+            #888
             if locality:
                 results.append(gen_token.detach().cpu().numpy().tolist()[0][-len(target_new_tokens):])
             else:
@@ -296,6 +308,22 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
         labels = prompt_target_tok['input_ids'].squeeze().detach().cpu().numpy().tolist()
         answers = slice_list(answers,prompt_len,left=True)
         labels = slice_list(labels,prompt_len,left=False)
+        
+        # 添加打印 - 普通评估分支
+        print(f"\n----- 别名提示评估详情(vanilla_generation=False) -----")
+        for i, (p, t, ans, lab) in enumerate(zip(prompts, targets, answers, labels)):
+            print(f"[样本{i}]")
+            print(f"提示: {p}")
+            print(f"目标: {t}")
+            # 解码预测输出
+            if isinstance(ans, list):
+                decoded_ans = tok.decode(ans)
+                print(f"模型预测(解码): {decoded_ans}")
+            else:
+                print(f"模型预测token: {ans}")
+            print("--------------------")
+        print("--------------------------------------------\n")
+        
         if locality:
             return answers if type(answers[0]) is list else [answers,]
         if isinstance(answers[0], list):

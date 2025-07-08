@@ -97,8 +97,8 @@ if __name__ == "__main__":
     # 提取基本编辑和描述性编辑字段
     basic_prompts = [data['prompt'] for data in datas]
     basic_targets = [data['target_new'] for data in datas]
-    descriptive_prompts = [data['descriptive_prompt'] for data in datas]
-    descriptive_targets = [data['descriptive_target'] for data in datas]
+    descriptive_prompts = [data.get('descriptive_prompt', '') for data in datas]
+    descriptive_targets = [data.get('descriptive_target', '') for data in datas]
     subjects = [data['subject'] for data in datas]
     
     # 处理可迁移性测试数据
@@ -106,7 +106,37 @@ if __name__ == "__main__":
     portability_Subject_Aliasing_ans = []
 
     for data in datas:
-        if data['portability_data'] and len(data['portability_data']) > 0:
+        # MQuAKE-CF 格式数据处理
+        if "questions" in data.__dict__ if hasattr(data, "__dict__") else "portability_data" in data:
+            temp_prompts = []
+            temp_answers = []
+            portability_data = data.get("portability_data", [])
+            portability_answer = data.get("portability_answer", data['target_new'])
+            
+            for question in portability_data:
+                if question and question.strip() != "":
+                    temp_prompts.append(question)
+                    temp_answers.append(portability_answer)
+            
+            # 只有当有有效提示时才添加
+            if temp_prompts:
+                portability_Subject_Aliasing_prompts.append(temp_prompts)
+                portability_Subject_Aliasing_ans.append(temp_answers)
+            else:
+                portability_Subject_Aliasing_prompts.append([])
+                portability_Subject_Aliasing_ans.append([])
+        # 优先使用KnowEdit格式的数据
+        elif data.get('portability_s'):
+            temp_prompts = []
+            temp_answers = []
+            for pr in data['portability_s']:
+                if pr and isinstance(pr, dict) and 'prompt' in pr and 'ground_truth' in pr:
+                    temp_prompts.append(pr['prompt'])
+                    temp_answers.append(pr['ground_truth'])
+            portability_Subject_Aliasing_prompts.append(temp_prompts)
+            portability_Subject_Aliasing_ans.append(temp_answers)
+        # 使用旧格式数据
+        elif data.get('portability_data') and len(data['portability_data']) > 0:
             temp_prompts = []
             temp_answers = []
             for pr in data['portability_data']:
@@ -129,7 +159,18 @@ if __name__ == "__main__":
     locality_Relation_Specificity_ans = []
     
     for data in datas:
-        if data['locality_data'] and len(data['locality_data']) > 0:
+        # 优先使用KnowEdit格式的数据
+        if data.get('locality_rs'):
+            temp_prompts = []
+            temp_answers = []
+            for pr in data['locality_rs']:
+                if pr and isinstance(pr, dict) and 'prompt' in pr and 'ground_truth' in pr:
+                    temp_prompts.append(pr['prompt'])
+                    temp_answers.append(pr['ground_truth'])
+            locality_Relation_Specificity_prompts.append(temp_prompts)
+            locality_Relation_Specificity_ans.append(temp_answers)
+        # 使用旧格式数据
+        elif data.get('locality_data') and len(data['locality_data']) > 0:
             temp_prompts = []
             temp_answers = []
             for item in data['locality_data']:
@@ -169,6 +210,80 @@ if __name__ == "__main__":
         }
     }
     
+    # 添加更多可移植性和局部性测试（与KnowEdit格式兼容）
+    # 添加可迁移性测试 - reasoning
+    portability_reasoning_prompts = []
+    portability_reasoning_ans = []
+    
+    for data in datas:
+        if data.get('portability_r'):
+            temp_prompts = []
+            temp_answers = []
+            for pr in data['portability_r']:
+                if pr and isinstance(pr, dict) and 'prompt' in pr and 'ground_truth' in pr:
+                    temp_prompts.append(pr['prompt'])
+                    temp_answers.append(pr['ground_truth'])
+            portability_reasoning_prompts.append(temp_prompts)
+            portability_reasoning_ans.append(temp_answers)
+        else:
+            portability_reasoning_prompts.append([])
+            portability_reasoning_ans.append([])
+            
+    # 添加可迁移性测试 - logical generalization
+    portability_logical_prompts = []
+    portability_logical_ans = []
+    
+    for data in datas:
+        if data.get('portability_l'):
+            temp_prompts = []
+            temp_answers = []
+            for pr in data['portability_l']:
+                if pr and isinstance(pr, dict) and 'prompt' in pr and 'ground_truth' in pr:
+                    temp_prompts.append(pr['prompt'])
+                    temp_answers.append(pr['ground_truth'])
+            portability_logical_prompts.append(temp_prompts)
+            portability_logical_ans.append(temp_answers)
+        else:
+            portability_logical_prompts.append([])
+            portability_logical_ans.append([])
+            
+    # 添加局部性测试 - forgetfulness
+    locality_forgetfulness_prompts = []
+    locality_forgetfulness_ans = []
+    
+    for data in datas:
+        if data.get('locality_f'):
+            temp_prompts = []
+            temp_answers = []
+            for pr in data['locality_f']:
+                if pr and isinstance(pr, dict) and 'prompt' in pr and 'ground_truth' in pr:
+                    temp_prompts.append(pr['prompt'])
+                    temp_answers.append(pr['ground_truth'])
+            locality_forgetfulness_prompts.append(temp_prompts)
+            locality_forgetfulness_ans.append(temp_answers)
+        else:
+            locality_forgetfulness_prompts.append([])
+            locality_forgetfulness_ans.append([])
+    
+    # 更新评测输入结构，添加更多测试类型
+    if any(len(prompts) > 0 for prompts in portability_reasoning_prompts):
+        portability_inputs['reasoning'] = {
+            'prompt': portability_reasoning_prompts,
+            'ground_truth': portability_reasoning_ans
+        }
+        
+    if any(len(prompts) > 0 for prompts in portability_logical_prompts):
+        portability_inputs['Logical_Generalization'] = {
+            'prompt': portability_logical_prompts,
+            'ground_truth': portability_logical_ans
+        }
+        
+    if any(len(prompts) > 0 for prompts in locality_forgetfulness_prompts):
+        locality_inputs['Forgetfulness'] = {
+            'prompt': locality_forgetfulness_prompts,
+            'ground_truth': locality_forgetfulness_ans
+        }
+    
     # 加载超参数
     hparams = editing_hparams.from_hparams(args.hparams_dir)
     args.pre_file = f"./{hparams.model_name.split('/')[-1]}_{args.datatype}_pre_edit.json"
@@ -193,18 +308,24 @@ if __name__ == "__main__":
     # 初始化编辑器
     editor = BaseEditor.from_hparams(hparams)
     
-    # 第一阶段：描述性编辑
-    _, edited_model, _ = editor.edit(
-        prompts=descriptive_prompts,
-        target_new=descriptive_targets,
-        subject=subjects,
-        keep_original_weight=True,
-        test_generation=False,  # 不进行评测
-    )
+    # 检查是否有描述性编辑数据
+    has_descriptive_data = all(desc and desc.strip() for desc in descriptive_prompts) and all(desc and desc.strip() for desc in descriptive_targets)
     
-    editor.model = edited_model
-    
+    if has_descriptive_data:
+        # 第一阶段：描述性编辑
+        print("执行描述性编辑阶段...")
+        _, edited_model, _ = editor.edit(
+            prompts=descriptive_prompts,
+            target_new=descriptive_targets,
+            subject=subjects,
+            keep_original_weight=True,
+            test_generation=False,  # 不进行评测
+        )
+        
+        editor.model = edited_model
+        
     # 第二阶段：基本编辑并评测
+    print("执行基本编辑阶段并评测...")
     metrics, final_model, _ = editor.edit(
         prompts=basic_prompts,
         target_new=basic_targets,
