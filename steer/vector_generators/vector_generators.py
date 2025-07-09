@@ -39,6 +39,9 @@ class BaseVectorGenerator:
                     print(f"Generating {key} vectors ...")
                     if alg_name in ['lm_steer', 'caa', 'vector_prompt', 'sta']:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name])
+                    elif alg_name == "loreft":
+                        vectors = None
+                        METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name])
                     else:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)
                     generated_vectors[dataset_name][key] = vectors

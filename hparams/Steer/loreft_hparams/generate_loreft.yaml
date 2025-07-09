@@ -1,0 +1,15 @@
+# Model related
+alg_name: loreft
+reft_layers:
+  - 5
+  - 10
+  - 15
+  - 20
+lr: 0.0009
+weight_decay: 0.00
+max_length: 512
+low_rank_dimension: 4
+n_epochs: 24
+batch_size: 1
+gradient_accumulation_steps: 2
+position: "f5+l5"
