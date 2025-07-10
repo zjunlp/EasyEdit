@@ -14,7 +14,6 @@ import numpy as np
 import os
 from transformers.modeling_attn_mask_utils import AttentionMaskConverter,_prepare_4d_causal_attention_mask
 from .unke_hparams import unkeHyperParams
-
 def compute_ks(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
@@ -56,6 +55,152 @@ def get_optimizer_params(model, encoder_lr, weight_decay=0.01):
         ]
         return optimizer_parameters
 
+
+
+
+def apply_unke_to_model(
+    model: AutoModelForCausalLM,
+    tok: AutoTokenizer,
+    hparams:unkeHyperParams,
+    batch_data:list,
+    ex_data:list):
+
+    preserve_params = []
+    for name, params in model.named_parameters():
+        #print(name)
+        splitted_name = name.split('.')
+        if len(splitted_name) >= 4 and str.isdigit(splitted_name[2]):
+            if int(splitted_name[2]) in hparams.layers:
+                preserve_params.append(name)
+    weights = {
+        param: nethook.get_parameter(
+            model, param)
+        for param in preserve_params
+    }
+    
+    weights_copy = {k: v.detach().clone() for k, v in weights.items()}
+
+
+
+
+    z_layer = hparams.layers[-1]
+    z_list = []
+    for data in batch_data:
+        
+        cur_z = compute_z(   
+            model,
+            tok,
+            data,
+            z_layer,
+            hparams,
+        )
+
+        z_list.append(cur_z)
+    zs = torch.stack(z_list, dim=0)#(bs,h_dim)
+    #print(zs.shape)
+    batch_question = [i['question'] for i in batch_data]
+    # Insert
+    for i, layer in enumerate(hparams.layers):
+        #print(f"\n\nLAYER {layer}\n")
+        contexts_tok = tok(batch_question, padding=True, return_tensors="pt").to(
+            next(model.parameters()).device
+        )
+        with torch.no_grad():
+            with nethook.Trace(
+                module=model,
+                layer=hparams.layer_module_tmp.format(layer),
+                retain_input=True,
+                retain_output=True,
+                detach=True,
+                clone=True,
+            ) as tr:
+                _ = model(**contexts_tok)
+                layer_in_ks = tr.input #(bs:seq:h_dim)
+                layer_out_ks = tr.output#(bs:seq:h_dim)
+        layer_out_ks = layer_out_ks[0] if type(layer_out_ks) is tuple else layer_out_ks
+        
+
+        cur_zs,idxs = compute_ks(model, tok,batch_question, hparams, z_layer)
+        
+        
+        targets = zs - cur_zs 
+        print("z error", torch.linalg.norm(targets, dim=0).mean())
+
+        ex_tok = tok(ex_data, padding=True, return_tensors="pt").to(
+            next(model.parameters()).device
+        )
+        
+        with torch.no_grad():
+            with nethook.Trace(
+                module=model,
+                layer=hparams.layer_module_tmp.format(layer),
+                retain_input=True,
+                retain_output=True,
+                detach=True,
+                clone=True,
+            ) as tr:
+                _ = model(**ex_tok)
+                stat_in = tr.input
+                stat_out = tr.output
+        stat_out = stat_out[0] if type(stat_out) is tuple else stat_out
+
+
+
+        resid = targets / (len(hparams.layers) - i)  # Distribute residual across layers(1,4096)
+
+        
+        criterion = nn.MSELoss()
+        
+        _layer = nethook.get_module(model, hparams.layer_module_tmp.format(layer))
+        
+        for n,m in _layer.named_parameters():
+            
+            m.requires_grad=True
+            
+        params = get_optimizer_params(_layer,hparams.lr)
+        
+        
+        optimizer = optim.AdamW(params,lr=hparams.lr,eps=1e-8,betas = (0.9,0.999))
+        
+        for i in range(len(idxs)):
+            
+            layer_out_ks[i,idxs[i]]+=resid[i]
+        
+        # get_qwen2_causal_mask
+        # llama2
+        if 'Llama3-8B-Instruct' in hparams.model_name:
+            input_causal_mask,input_position_ids,input_cache_position = get_causal_mask(layer_in_ks,contexts_tok['attention_mask'])
+            ex_causal_mask,ex_position_ids,ex_cache_position = get_causal_mask(stat_in,ex_tok['attention_mask'])
+        elif 'Qwen2.5-7B-Instruct' in hparams.model_name:
+            input_causal_mask,input_position_ids = get_qwen2_causal_mask(layer_in_ks,contexts_tok['attention_mask'])
+            ex_causal_mask,ex_position_ids = get_qwen2_causal_mask(stat_in,ex_tok['attention_mask'])
+        
+        
+        for step in range(hparams.optim_num_step):
+            #scheduler.step()
+            optimizer.zero_grad()
+            if 'Qwen2.5-7B-Instruct' in hparams.model_name:
+                loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids)[0], stat_out)+ criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids)[0], layer_out_ks)
+                # loss =  criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids)[0], layer_out_ks)
+            elif 'Llama3-8B-Instruct' in hparams.model_name:
+                loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids,cache_position = ex_cache_position)[0], stat_out)+ criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0], layer_out_ks)
+                # loss = criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0], layer_out_ks)
+                # loss = criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0][:,-1], layer_out_ks[:,-1])
+                # loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids,cache_position = ex_cache_position)[0], stat_out)+criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0][:,-1], layer_out_ks[:,-1])
+           
+            loss.backward(retain_graph=True)
+            optimizer.step()    
+            
+            # print('Step [{}/{}], Loss: {:.4f}, Layer:{}'.format(step+1, hparams.optim_num_step, loss.item(),layer))
+            # if loss.item() < 5e-5:
+            #     break
+
+        for x in [layer_in_ks, layer_out_ks,cur_zs, targets,stat_in,stat_out]:
+            x.cpu()
+            del x
+        torch.cuda.empty_cache()
+        
+    return weights_copy
 def get_qwen2_causal_mask(input_tensor,attention_mask,past_key_values_length = 0):
     device = input_tensor.device
     seq_length = input_tensor.shape[1]
@@ -109,200 +254,3 @@ def get_causal_mask(input_tensor,attention_mask):
     #causal_mask = AttentionMaskConverter._unmask_unattended(causal_mask, min_dtype)
     causal_mask.mul(~torch.all(causal_mask == min_dtype, dim=-1, keepdim=True))
     return causal_mask,position_ids,cache_position
-
-def apply_unke_to_model(
-    model: AutoModelForCausalLM,
-    tok: AutoTokenizer,
-    requests: List[Dict],
-    hparams: unkeHyperParams,
-    copy=False,
-    return_orig_weights=False,
-    cache_template: Optional[str] = None,
-    keep_original_weight=False,
-    **kwargs
-) -> Tuple[AutoModelForCausalLM, Dict[str, torch.Tensor]]:
-    """
-    Apply UnKE editing method to model, adapted for EasyEdit framework.
-    
-    Args:
-        model: The model to be edited
-        tok: Tokenizer
-        requests: List of editing requests in EasyEdit format
-        hparams: UnKE hyperparameters
-        copy: Whether to copy the model (EasyEdit compatibility)
-        return_orig_weights: Whether to return original weights (EasyEdit compatibility)
-        cache_template: Cache template (EasyEdit compatibility)
-        keep_original_weight: Whether to keep original weights (EasyEdit compatibility)
-        **kwargs: Additional arguments
-    
-    Returns:
-        Tuple of (edited_model, weights_copy)
-    """
-    
-    # ========== EasyEdit格式转换 ==========
-    # 将EasyEdit的requests格式转换为UnKE需要的batch_data和ex_data
-    batch_data = []
-    ex_data = []
-    
-    for request in requests:
-        # 构建UnKE格式的编辑数据
-        unke_request = {
-            "question": request["prompt"],
-            "answer": request["target_new"],
-        }
-        
-        # 如果有subject信息，也加入
-        if "subject" in request:
-            unke_request["subject"] = request["subject"]
-            
-        batch_data.append(unke_request)
-        
-        # 构建ex_data (用于保持原有知识的示例)
-        # 优先使用locality数据，如果没有则使用rephrase或原prompt
-        if "locality" in request and request["locality"]:
-            if isinstance(request["locality"], list):
-                ex_data.extend([item["prompt"] if isinstance(item, dict) else str(item) 
-                              for item in request["locality"]])
-            else:
-                ex_data.append(str(request["locality"]))
-        elif "rephrase" in request and request["rephrase"]:
-            ex_data.append(request["rephrase"])
-        else:
-            # 默认使用原始prompt作为保持知识的示例
-            ex_data.append(request["prompt"])
-    
-    # 确保ex_data和batch_data长度匹配
-    if len(ex_data) < len(batch_data):
-        # 如果ex_data不够，重复最后一个元素
-        while len(ex_data) < len(batch_data):
-            ex_data.append(ex_data[-1] if ex_data else batch_data[0]["question"])
-    elif len(ex_data) > len(batch_data):
-        # 如果ex_data太多，截断到合适长度
-        ex_data = ex_data[:len(batch_data)]
-    
-    preserve_params = []
-    for name, params in model.named_parameters():
-        #print(name)
-        splitted_name = name.split('.')
-        if len(splitted_name) >= 4 and str.isdigit(splitted_name[2]):
-            if int(splitted_name[2]) in hparams.layers:
-                preserve_params.append(name)
-    weights = {
-        param: nethook.get_parameter(
-            model, param)
-        for param in preserve_params
-    }
-    
-    weights_copy = {k: v.detach().clone() for k, v in weights.items()}
-
-    z_layer = hparams.layers[-1]
-    z_list = []
-    for data in batch_data:
-        
-        cur_z = compute_z(   
-            model,
-            tok,
-            data,
-            z_layer,
-            hparams,
-        )
-
-        z_list.append(cur_z)
-    zs = torch.stack(z_list, dim=0)#(bs,h_dim)
-    #print(zs.shape)
-    batch_question = [i['question'] for i in batch_data]
-    # Insert
-    for i, layer in enumerate(hparams.layers):
-        #print(f"\n\nLAYER {layer}\n")
-        contexts_tok = tok(batch_question, padding=True, return_tensors="pt").to(
-            next(model.parameters()).device
-        )
-        with torch.no_grad():
-            with nethook.Trace(
-                module=model,
-                layer=hparams.layer_module_tmp.format(layer),
-                retain_input=True,
-                retain_output=True,
-                detach=True,
-                clone=True,
-            ) as tr:
-                _ = model(**contexts_tok)
-                layer_in_ks = tr.input #(bs:seq:h_dim)
-                layer_out_ks = tr.output#(bs:seq:h_dim)
-        layer_out_ks = layer_out_ks[0] if type(layer_out_ks) is tuple else layer_out_ks
-    
-        cur_zs,idxs = compute_ks(model, tok,batch_question, hparams, z_layer)
-        
-        targets = zs - cur_zs 
-        print("z error", torch.linalg.norm(targets, dim=0).mean())
-
-        ex_tok = tok(ex_data, padding=True, return_tensors="pt").to(
-            next(model.parameters()).device
-        )
-        
-        with torch.no_grad():
-            with nethook.Trace(
-                module=model,
-                layer=hparams.layer_module_tmp.format(layer),
-                retain_input=True,
-                retain_output=True,
-                detach=True,
-                clone=True,
-            ) as tr:
-                _ = model(**ex_tok)
-                stat_in = tr.input
-                stat_out = tr.output
-        stat_out = stat_out[0] if type(stat_out) is tuple else stat_out
-
-        resid = targets / (len(hparams.layers) - i)  # Distribute residual across layers(1,4096)
-
-        criterion = nn.MSELoss()
-        
-        _layer = nethook.get_module(model, hparams.layer_module_tmp.format(layer))
-        
-        for n,m in _layer.named_parameters():
-            
-            m.requires_grad=True
-            
-        params = get_optimizer_params(_layer,hparams.lr)
-        
-        optimizer = optim.AdamW(params,lr=hparams.lr,eps=1e-8,betas = (0.9,0.999))
-        
-        for i in range(len(idxs)):
-            
-            layer_out_ks[i,idxs[i]]+=resid[i]
-        
-        # get_qwen2_causal_mask
-        # llama2
-        if hparams.model_name == 'Llama3-8B-Instruct':
-            input_causal_mask,input_position_ids,input_cache_position = get_causal_mask(layer_in_ks,contexts_tok['attention_mask'])
-            ex_causal_mask,ex_position_ids,ex_cache_position = get_causal_mask(stat_in,ex_tok['attention_mask'])
-        elif hparams.model_name == 'Qwen2.5-7B-Instruct':
-            input_causal_mask,input_position_ids = get_qwen2_causal_mask(layer_in_ks,contexts_tok['attention_mask'])
-            ex_causal_mask,ex_position_ids = get_qwen2_causal_mask(stat_in,ex_tok['attention_mask'])
-        
-        for step in range(hparams.optim_num_step):
-            #scheduler.step()
-            optimizer.zero_grad()
-            if hparams.model_name == 'Qwen2.5-7B-Instruct':
-                loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids)[0], stat_out)+ criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids)[0], layer_out_ks)
-                # loss =  criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids)[0], layer_out_ks)
-            elif hparams.model_name == 'Llama3-8B-Instruct':
-                loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids,cache_position = ex_cache_position)[0], stat_out)+ criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0], layer_out_ks)
-                # loss = criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0], layer_out_ks)
-                # loss = criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0][:,-1], layer_out_ks[:,-1])
-                # loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids,cache_position = ex_cache_position)[0], stat_out)+criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0][:,-1], layer_out_ks[:,-1])
-           
-            loss.backward(retain_graph=True)
-            optimizer.step()    
-            
-            # print('Step [{}/{}], Loss: {:.4f}, Layer:{}'.format(step+1, hparams.optim_num_step, loss.item(),layer))
-            # if loss.item() < 5e-5:
-            #     break
-
-        for x in [layer_in_ks, layer_out_ks,cur_zs, targets,stat_in,stat_out]:
-            x.cpu()
-            del x
-        torch.cuda.empty_cache()
-        
-    return model, weights_copy

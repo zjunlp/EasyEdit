@@ -21,5 +21,6 @@ from .dola import *
 from .deepedit_api import *
 from .defer import *
 from .unke import *
+from .unke_ARE import *
 from .ft_uns import *
 from .lora_uns import *
