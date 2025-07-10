@@ -5,7 +5,7 @@ from ..models.mend import MENDHyperParams, MendRewriteExecutor, MendMultimodalRe
 from ..models.ft import FTHyperParams, apply_ft_to_model
 from ..models.dinm import DINMHyperParams, apply_dinm_to_model
 from ..models.serac import SERACHparams, SeracRewriteExecutor, SeracMultimodalRewriteExecutor
-from ..dataset import ZsreDataset, CounterFactDataset, CaptionDataset, VQADataset, PersonalityDataset, SafetyDataset
+from ..dataset import ZsreDataset, AKEWDataset, CaptionDataset, VQADataset, PersonalityDataset, SafetyDataset
 from ..models.ike import IKEHyperParams, apply_ike_to_model, apply_ike_to_multimodal_model, apply_ike_to_per_model
 from ..models.ft_api import FTApiHyperParams, apply_ft_api_to_model
 from ..models.qlora import QLoRAHyperParams, apply_qlora_to_model
@@ -63,7 +63,7 @@ PER_ALG_DICT = {
 }
 
 DS_DICT = {
-    "cf": CounterFactDataset,
+    "akew": AKEWDataset,
     "zsre": ZsreDataset,
 }
 

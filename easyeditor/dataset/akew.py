@@ -11,7 +11,7 @@ from ..util.globals import *
 from ..trainer.utils import dict_to
 
 
-class CounterFactDataset(Dataset):
+class AKEWDataset(Dataset):
     def __init__(self, data_dir: str, size: typing.Optional[int] = None, config=None, *args, **kwargs):
         data_dir = Path(data_dir)
         

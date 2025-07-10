@@ -17,7 +17,7 @@ from easyeditor import (
 from easyeditor import BaseEditor
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
-from easyeditor.dataset.counterfact import CounterFactDataset
+from easyeditor.dataset.akew import AKEWDataset
 
 import argparse
 import numpy as np
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError
     
-    datas = CounterFactDataset(args.data_dir, size=args.ds_size)
+    datas = AKEWDataset(args.data_dir, size=args.ds_size)
     
     basic_prompts = [data['prompt'] for data in datas]
     basic_targets = [data['target_new'] for data in datas]
@@ -263,7 +263,7 @@ if __name__ == "__main__":
         pre_edit = None
         
     if args.editing_method == 'IKE':
-        train_ds = CounterFactDataset(args.train_data_path)
+        train_ds = AKEWDataset(args.train_data_path)
         sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
         encode_ike_facts(sentence_model, train_ds, hparams)
     elif args.editing_method == 'ICE':

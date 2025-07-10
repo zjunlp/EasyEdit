@@ -1,4 +1,4 @@
-from .counterfact import CounterFactDataset
+from .akew import AKEWDataset
 from .zsre import ZsreDataset
 from .coco_caption import CaptionDataset
 from .vqa import VQADataset
@@ -11,5 +11,4 @@ from .safety import SafetyDataset
 from .Cknowedit import CKnowEditDataset
 from .MQuAKE import MQuAKEDataset
 from .wikibigedit import WikiBigEditDataset
-from .counterfact import CounterFactDataset
 from .longform import LongFormDataset
