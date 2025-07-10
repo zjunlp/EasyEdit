@@ -5,3 +5,4 @@ from .sta import *
 from .sae_feature import *
 from .merge import *
 from .vector_generators import *
+from .reps import *

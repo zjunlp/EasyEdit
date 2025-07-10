@@ -28,6 +28,16 @@ EasyEdit2 provides four predefined dataset formats. You can use these or adapt y
 - **`choices`**: A list of candidate answer options.  
 - **`output`**: The correct answer.  
 
+### 5. AxBench DPO Format (For Training)
+This format is designed for Direct Preference Optimization (DPO) and includes rich metadata for each training example.
+- **`question`**: The input prompt.
+- **`matching`**: The preferred or "winning" response.
+- **`not_matching`**: The dispreferred or "losing" response.
+- **`output_concept`**: Describes the skill or concept targeted by the example.
+- **`concept_id`**: A unique identifier for the concept.
+- **`concept_genre`**: The broader genre or domain of the concept.
+- **`category`**: A specific category for the example.
+
 ## Adding Custom Datasets
 
 To add a custom dataset, follow this structure in the YAML file:

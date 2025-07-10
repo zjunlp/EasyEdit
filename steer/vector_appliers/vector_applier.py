@@ -71,7 +71,7 @@ class BaseVectorApplier:
         if 'pad_token_id' not in generation_params:
             generation_params['pad_token_id'] = self.tokenizer.eos_token_id
         for generation_data_name in generation_data_names:
-
+            os.makedirs(self.config.generation_output_dir, exist_ok=True)
             save_file_path = os.path.join(self.config.generation_output_dir, f"{generation_data_name}_results.json")
             if os.path.exists(save_file_path):  
                 print(f"\033[1;34mFile {save_file_path} already exists! The result will be overwritten!\033[0m")
