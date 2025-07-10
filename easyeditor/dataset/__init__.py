@@ -12,3 +12,4 @@ from .Cknowedit import CKnowEditDataset
 from .MQuAKE import MQuAKEDataset
 from .wikibigedit import WikiBigEditDataset
 from .counterfact import CounterFactDataset
+from .longform import LongFormDataset
