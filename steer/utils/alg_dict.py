@@ -4,7 +4,8 @@ from ..vector_generators import(
     VectorPromptHyperParams,
     CAAHyperParams,
     LmSteerHyperParams,
-    MergeVectorHyperParams
+    MergeVectorHyperParams,
+    RePSHyperParams
 )
 from ..vector_appliers import(
     ApplySaeFeatureHyperParams,
@@ -24,6 +25,7 @@ from ..vector_generators import (
     generate_sae_feature_vectors,
     generate_sta_vectors,
     generate_merge_vector,
+    generate_reps_vectors
 )
 from ..vector_appliers import (
      apply_lm_steer,
