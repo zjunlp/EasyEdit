@@ -7,7 +7,7 @@ model_class: Blip2OPT
 small_name: hugging_cache/opt-125m
 tokenizer_class: GPT2Tokenizer
 tokenizer_name: hugging_cache/opt-2.7b
-cls_name: distilbert-base-cased 
+cls_name: hugging_cache/distilbert-base-cased 
 cls_class: AutoModel 
 inner_params:
 - opt_model.model.decoder.layers.29.fc1.weight
@@ -75,7 +75,7 @@ results_dir: ./results
 # Multimodal
 exact_match: True
 qformer_checkpoint: hugging_cache/blip2_pretrained_opt2.7b.pth
-qformer_name_or_path: bert-base-uncased
+qformer_name_or_path: hugging_cache/bert-base-uncased
 state_dict_file: hugging_cache/eva_vit_g.pth
 
 # image

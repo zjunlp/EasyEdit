@@ -3,7 +3,7 @@ import types
 from statistics import mean
 
 from easyeditor import BaseEditor, MultimodalTrainer, MultimodalEditor
-from easyeditor import CaptionDataset, VQADataset
+from easyeditor import CaptionDataset, VQADataset, ComprehendEditDataset
 from easyeditor import MENDMultimodalTrainingHparams, SERACMultimodalTrainingHparams, IKEMultimodalHyperParams, MENDMultimodalHparams \
     , SERACMultimodalHparams, WISEMultimodalHyperParams, GraceHyperParams, LoRAMultimodalHyperParams
 from easyeditor import encode_ike_facts_multimodal
@@ -660,7 +660,40 @@ def test_IKE_Blip2OPT_VQA_debug():
     )
     
     print_result(metrics)
+
+
+DATASET_DICT = {
+    'vqa': VQADataset,
+    'comprehendedit': ComprehendEditDataset,
+}
+data_dir = {
+    'vqa': './MMEdit',
+    'comprehendedit': './ComprehendEdit',
+}
+def train_SERAC(model='blip2', dataset='vqa', train=True, topk=5):
+    hparams = SERACMultimodalTrainingHparams.from_hparams('EasyEdit/hparams/TRAINING/SERAC/{}.yaml'.format(model))
+    Dataset = DATASET_DICT[dataset.lower()]
+    print(f'Using datasets: {dataset.lower()}')
+
+    eval_ds = Dataset(data_dir[dataset.lower()], config=hparams, size=10, mode='test', topk=topk)
+    train_ds = Dataset(data_dir[dataset.lower()], config=hparams, size=10, mode='train', topk=-1) if train else eval_ds
     
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+
+    if train:
+        print('Start Training...')
+        trainer.run()
+    else:
+        print('Start Testing...')
+        # make sure hparams.archive is not null
+        # assert hparams.archive is not None
+        val_steps = len(eval_ds._data)+1
+        val_info = trainer.validate(log=True)
+        trainer.echo(val_steps, val_info, pretty=True)
     
 if __name__ == "__main__":
     
@@ -704,5 +737,7 @@ if __name__ == "__main__":
     # edit_IKE_Blip2OPT_VQA()
     # edit_MEND_Blip2OPT_VQA_debug()
     # edit_SERAC_Blip2OPT_VQA_debug()
-    edit_MEND_Blip2OPT_VQA()
+    # edit_MEND_Blip2OPT_VQA()
     # edit_SERAC_Blip2OPT_VQA()
+
+    train_SERAC(model='blip2', dataset='comprehendedit', train=True)
