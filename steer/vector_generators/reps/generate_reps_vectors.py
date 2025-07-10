@@ -154,5 +154,5 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-    if vec:
+    if vec is not None:
         return vec
