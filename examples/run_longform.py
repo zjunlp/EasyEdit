@@ -95,78 +95,92 @@ if __name__ == "__main__":
     datas = LongFormDataset(args.data_dir, size=args.ds_size)
     
     # 提取基本编辑字段
-    basic_prompts = [data['prompt_full'] for data in datas]
+    basic_prompts = [data['prompt'] for data in datas]
     basic_targets = [data['target_new'] for data in datas]
     subjects = [data['subject'] for data in datas]
     
-    # 处理可迁移性测试数据
-    portability_paraphrase_prompts = []
-    portability_paraphrase_ans = []
+    # 构建评测输入结构
+    portability_inputs = {}
+    locality_inputs = {}
     
-    portability_generation_prompts = []
-    portability_generation_ans = []
+    # 处理可迁移性测试数据 - Subject_Aliasing (使用portability_s或portability_data)
+    portability_Subject_Aliasing_prompts = []
+    portability_Subject_Aliasing_ans = []
 
     for data in datas:
-        # 处理 paraphrase_prompts
-        if "paraphrase_prompts" in data and len(data['paraphrase_prompts']) > 0:
-            temp_prompts = data['paraphrase_prompts']
-            temp_answers = [data['target_new']] * len(temp_prompts)
-            portability_paraphrase_prompts.append(temp_prompts)
-            portability_paraphrase_ans.append(temp_answers)
+        # 优先使用KnowEdit格式的数据 (portability_s)
+        if data.get('portability_s'):
+            temp_prompts = []
+            temp_answers = []
+            for pr in data['portability_s']:
+                if pr and isinstance(pr, dict) and 'prompt' in pr and 'ground_truth' in pr:
+                    temp_prompts.append(pr['prompt'])
+                    temp_answers.append(pr['ground_truth'])
+            portability_Subject_Aliasing_prompts.append(temp_prompts)
+            portability_Subject_Aliasing_ans.append(temp_answers)
+        # 使用统一格式处理portability_data
+        elif data.get('portability_data') and len(data['portability_data']) > 0:
+            temp_prompts = data['portability_data']
+            portability_answer = data.get('portability_answer', data['target_new'])
+            temp_answers = [portability_answer] * len(temp_prompts)
+            portability_Subject_Aliasing_prompts.append(temp_prompts)
+            portability_Subject_Aliasing_ans.append(temp_answers)
         else:
-            portability_paraphrase_prompts.append([])
-            portability_paraphrase_ans.append([])
-        
-        # 处理 generation_prompts
-        if "generation_prompts" in data and len(data['generation_prompts']) > 0:
-            temp_prompts = data['generation_prompts']
-            temp_answers = [data['target_new']] * len(temp_prompts)
-            portability_generation_prompts.append(temp_prompts)
-            portability_generation_ans.append(temp_answers)
-        else:
-            portability_generation_prompts.append([])
-            portability_generation_ans.append([])
+            portability_Subject_Aliasing_prompts.append([])
+            portability_Subject_Aliasing_ans.append([])
     
-    # 处理局部性测试数据
-    locality_neighborhood_prompts = []
-    locality_neighborhood_ans = []
+    # 只有存在迁移性数据时才添加到portability_inputs
+    if any(len(prompts) > 0 for prompts in portability_Subject_Aliasing_prompts):
+        portability_inputs['Subject_Aliasing'] = {
+            'prompt': portability_Subject_Aliasing_prompts,
+            'ground_truth': portability_Subject_Aliasing_ans
+        }
+    
+    # 处理局部性测试数据 - Relation_Specificity (使用locality_rs或locality_data)
+    locality_Relation_Specificity_prompts = []
+    locality_Relation_Specificity_ans = []
     
     for data in datas:
-        # 处理 neighborhood_prompts
-        if "neighborhood_prompts" in data and len(data['neighborhood_prompts']) > 0:
-            temp_prompts = data['neighborhood_prompts']
-            temp_answers = [data['target_true']] * len(temp_prompts)
-            locality_neighborhood_prompts.append(temp_prompts)
-            locality_neighborhood_ans.append(temp_answers)
+        # 优先使用KnowEdit格式的数据 (locality_rs)
+        if data.get('locality_rs'):
+            temp_prompts = []
+            temp_answers = []
+            for pr in data['locality_rs']:
+                if pr and isinstance(pr, dict) and 'prompt' in pr and 'ground_truth' in pr:
+                    temp_prompts.append(pr['prompt'])
+                    temp_answers.append(pr['ground_truth'])
+            locality_Relation_Specificity_prompts.append(temp_prompts)
+            locality_Relation_Specificity_ans.append(temp_answers)
+        # 使用统一格式处理locality_data
+        elif data.get('locality_data') and len(data['locality_data']) > 0:
+            temp_prompts = []
+            temp_answers = []
+            for item in data['locality_data']:
+                if isinstance(item, dict) and 'prompt' in item and 'target' in item:
+                    temp_prompts.append(item['prompt'])
+                    temp_answers.append(item['target'])
+            locality_Relation_Specificity_prompts.append(temp_prompts)
+            locality_Relation_Specificity_ans.append(temp_answers)
         else:
-            locality_neighborhood_prompts.append([])
-            locality_neighborhood_ans.append([])
+            locality_Relation_Specificity_prompts.append([])
+            locality_Relation_Specificity_ans.append([])
     
-    # 构建评测输入结构
-    portability_inputs = {
-        'Paraphrase_Prompts': {
-            'prompt': portability_paraphrase_prompts,
-            'ground_truth': portability_paraphrase_ans
-        },
-        'Generation_Prompts': {
-            'prompt': portability_generation_prompts,
-            'ground_truth': portability_generation_ans
+    # 只有存在局部性数据时才添加到locality_inputs
+    if any(len(prompts) > 0 for prompts in locality_Relation_Specificity_prompts):
+        locality_inputs['Relation_Specificity'] = {
+            'prompt': locality_Relation_Specificity_prompts,
+            'ground_truth': locality_Relation_Specificity_ans
         }
-    }
-    
-    locality_inputs = {
-        'Neighborhood_Prompts': {
-            'prompt': locality_neighborhood_prompts,
-            'ground_truth': locality_neighborhood_ans
-        }
-    }
     
     # 打印数据处理结果统计
     print(f"\n===== 数据处理结果 =====")
     print(f"基本提示数量: {len(basic_prompts)}")
-    print(f"可移植性测试 Paraphrase_Prompts: {sum(1 for prompts in portability_paraphrase_prompts if len(prompts) > 0)}/{len(portability_paraphrase_prompts)}")
-    print(f"可移植性测试 Generation_Prompts: {sum(1 for prompts in portability_generation_prompts if len(prompts) > 0)}/{len(portability_generation_prompts)}")
-    print(f"局部性测试 Neighborhood_Prompts: {sum(1 for prompts in locality_neighborhood_prompts if len(prompts) > 0)}/{len(locality_neighborhood_prompts)}")
+    
+    if 'Subject_Aliasing' in portability_inputs:
+        print(f"可迁移性测试 Subject_Aliasing: {sum(1 for prompts in portability_Subject_Aliasing_prompts if len(prompts) > 0)}/{len(portability_Subject_Aliasing_prompts)}")
+    
+    if 'Relation_Specificity' in locality_inputs:
+        print(f"局部性测试 Relation_Specificity: {sum(1 for prompts in locality_Relation_Specificity_prompts if len(prompts) > 0)}/{len(locality_Relation_Specificity_prompts)}")
     
     # 加载超参数
     hparams = editing_hparams.from_hparams(args.hparams_dir)

@@ -1,0 +1,121 @@
+[
+    {
+        "pre": {
+            "rewrite_acc": [
+                0.6666666666666666
+            ],
+            "locality": {
+                "Neighborhood_Prompts_output": [
+                    [
+                        30,
+                        30,
+                        9443
+                    ]
+                ]
+            },
+            "portability": {
+                "Paraphrase_Prompts_acc": [
+                    0.6666666666666666
+                ]
+            },
+            "fluency": {
+                "ngram_entropy": 6.209444842933044
+            }
+        }
+    },
+    {
+        "pre": {
+            "rewrite_acc": [
+                0.6666666666666666
+            ],
+            "locality": {
+                "Neighborhood_Prompts_output": [
+                    [
+                        428
+                    ]
+                ]
+            },
+            "portability": {
+                "Paraphrase_Prompts_acc": [
+                    0.6666666666666666
+                ]
+            },
+            "fluency": {
+                "ngram_entropy": 6.024179903413733
+            }
+        }
+    },
+    {
+        "pre": {
+            "rewrite_acc": [
+                0.0
+            ],
+            "locality": {
+                "Neighborhood_Prompts_output": [
+                    [
+                        30,
+                        7920,
+                        86,
+                        273,
+                        273
+                    ]
+                ]
+            },
+            "portability": {
+                "Paraphrase_Prompts_acc": [
+                    0.0
+                ]
+            },
+            "fluency": {
+                "ngram_entropy": 5.590684748375837
+            }
+        }
+    },
+    {
+        "pre": {
+            "rewrite_acc": [
+                0.5
+            ],
+            "locality": {
+                "Neighborhood_Prompts_output": [
+                    [
+                        30,
+                        257,
+                        14015,
+                        30,
+                        290,
+                        37,
+                        1,
+                        4176,
+                        290,
+                        465,
+                        13,
+                        366,
+                        13,
+                        6264,
+                        6264,
+                        340,
+                        287,
+                        262,
+                        4374,
+                        295,
+                        13407,
+                        287,
+                        3389,
+                        1248,
+                        11,
+                        1248
+                    ]
+                ]
+            },
+            "portability": {
+                "Paraphrase_Prompts_acc": [
+                    0.0
+                ]
+            },
+            "fluency": {
+                "ngram_entropy": 6.162777856976503
+            }
+        }
+    }
+]

@@ -56,58 +56,222 @@ class LongFormDataset(Dataset):
 
         data = []
         for i, record in enumerate(raw):
-            # 检查数据格式
-            if "requested_rewrite" not in record:
-                continue
-                
-            # 基本字段提取
-            rewrite = record["requested_rewrite"]
+            # 检查数据格式类型
+            is_new_format = "subject" in record and "src" in record
+            is_requested_rewrite_format = "requested_rewrite" in record
             
-            # 提取主体
-            subject = rewrite.get("subject", "")
-            
-            # 提取提示
-            prompt = rewrite.get("prompt", "")
-            if not prompt or not subject:
-                continue
-                
-            # 构建完整提示
-            if "{}" in prompt:
-                prompt_full = prompt.format(subject)
-            else:
-                prompt_full = prompt
-                
-            # 提取目标答案
-            target_new = rewrite.get("target_new", {}).get("str", "")
-            target_true = rewrite.get("target_true", {}).get("str", "")
-            
-            if not target_new or not target_true:
-                continue
-            
-            # 提取迁移性数据
-            paraphrase_prompts = record.get("paraphrase_prompts", [])
-            generation_prompts = record.get("generation_prompts", [])
-            
-            # 提取局部性数据
-            neighborhood_prompts = record.get("neighborhood_prompts", [])
-            
-            # 构建数据项
+            # 初始化数据项（使用统一的字段结构）
             data_item = {
-                "subject": subject,
-                "prompt": prompt,
-                "prompt_full": prompt_full,
-                "target_new": target_new,
-                "target_true": target_true,
-                "paraphrase_prompts": paraphrase_prompts,
-                "generation_prompts": generation_prompts,
-                "neighborhood_prompts": neighborhood_prompts
+                "subject": "",
+                "prompt": "",
+                "target_new": "",
+                "target_true": "",
+                # 使用与counterfact.py一致的命名：迁移性测试
+                "portability_data": [],
+                "portability_answer": "",
+                # 使用counterfact.py风格的KnowEdit格式字段 - 迁移性
+                "portability_s": None,  # Subject_Aliasing
+                "portability_r": None,  # Reasoning
+                "portability_l": None,  # Logical_Generalization
+                # 使用与counterfact.py一致的命名：局部性测试
+                "locality_data": [],
+                # 使用counterfact.py风格的KnowEdit格式字段 - 局部性
+                "locality_rs": None,    # Relation_Specificity
+                "locality_f": None      # Forgetfulness
             }
             
-            # 如果有coupled_prompts_and_properties字段，也加入数据项
+            if is_new_format:
+                # 新格式数据处理 - 包含subject和src字段
+                data_item["subject"] = record.get("subject", "")
+                data_item["prompt"] = record.get("src", "")
+                data_item["target_new"] = record.get("pred", "")
+                data_item["portability_answer"] = record.get("pred", "")  # 默认使用pred作为迁移性答案
+                
+                # 处理answers字段（可能是列表或字符串）
+                if "answers" in record:
+                    if isinstance(record["answers"], list):
+                        data_item["target_true"] = record["answers"][0] if record["answers"] else ""
+                    else:
+                        data_item["target_true"] = record["answers"]
+                
+                # 处理rephrase字段（迁移性测试）- 统一到portability_data
+                if "rephrase" in record:
+                    if isinstance(record["rephrase"], str):
+                        # 如果是字符串，可能包含"- "分隔的多个提示
+                        if record["rephrase"].startswith("- "):
+                            portability_prompts = record["rephrase"].split("- ")[1:]
+                        else:
+                            portability_prompts = [record["rephrase"]]
+                    elif isinstance(record["rephrase"], list):
+                        portability_prompts = record["rephrase"]
+                        
+                    # 构建portability_s格式 - 兼容KnowEdit格式
+                    data_item["portability_s"] = []
+                    for prompt in portability_prompts:
+                        data_item["portability_s"].append({
+                            "prompt": prompt,
+                            "ground_truth": data_item["target_new"]
+                        })
+                    
+                    # 也添加到portability_data
+                    data_item["portability_data"] = portability_prompts
+                
+                # 处理loc和loc_ans字段（局部性测试）- 统一到locality_data
+                if "loc" in record and record["loc"]:
+                    locality_prompt = record["loc"]
+                    locality_answer = record.get("loc_ans", data_item["target_true"])
+                    
+                    # 构建locality_rs格式 - 兼容KnowEdit格式
+                    data_item["locality_rs"] = [{
+                        "prompt": locality_prompt,
+                        "ground_truth": locality_answer
+                    }]
+                    
+                    # 也添加到locality_data
+                    data_item["locality_data"] = [{
+                        "prompt": locality_prompt,
+                        "subject": data_item["subject"],
+                        "target": locality_answer
+                    }]
+                
+            elif is_requested_rewrite_format:
+                # 原始格式数据处理
+                rewrite = record["requested_rewrite"]
+                
+                # 提取主体
+                data_item["subject"] = rewrite.get("subject", "")
+                
+                # 提取提示
+                prompt = rewrite.get("prompt", "")
+                if prompt and data_item["subject"] and "{}" in prompt:
+                    data_item["prompt"] = prompt.format(data_item["subject"])
+                else:
+                    data_item["prompt"] = rewrite.get("prompt_full", prompt)
+                
+                # 提取目标答案
+                data_item["target_new"] = rewrite.get("target_new", {}).get("str", "")
+                data_item["target_true"] = rewrite.get("target_true", {}).get("str", "")
+                data_item["portability_answer"] = data_item["target_new"]  # 默认使用target_new作为迁移性答案
+                
+                # 提取迁移性数据 - 统一到portability_data和portability_s
+                if "paraphrase_prompts" in record and record["paraphrase_prompts"]:
+                    paraphrase_prompts = record["paraphrase_prompts"]
+                    data_item["portability_data"] = paraphrase_prompts
+                    
+                    # 构建portability_s格式
+                    data_item["portability_s"] = []
+                    for prompt in paraphrase_prompts:
+                        data_item["portability_s"].append({
+                            "prompt": prompt,
+                            "ground_truth": data_item["target_new"]
+                        })
+                
+                # 提取局部性数据 - 统一到locality_data和locality_rs
+                if "neighborhood_prompts" in record and record["neighborhood_prompts"]:
+                    neighborhood_prompts = record["neighborhood_prompts"]
+                    
+                    # 构建locality_rs格式
+                    data_item["locality_rs"] = []
+                    data_item["locality_data"] = []
+                    
+                    for i, prompt in enumerate(neighborhood_prompts):
+                        answer = data_item["target_true"]
+                        data_item["locality_rs"].append({
+                            "prompt": prompt,
+                            "ground_truth": answer
+                        })
+                        data_item["locality_data"].append({
+                            "prompt": prompt,
+                            "subject": data_item["subject"],
+                            "target": answer
+                        })
+                
+                # 处理coupled_prompts_and_properties字段
+                if "coupled_prompts_and_properties" in record:
+                    data_item["coupled_prompts_and_properties"] = record["coupled_prompts_and_properties"]
+                
+            else:
+                # 其他格式，尝试从各种可能的字段中提取数据
+                data_item["subject"] = record.get("subject", "")
+                prompt = record.get("prompt", record.get("text", ""))
+                
+                if data_item["subject"] and prompt and "{}" in prompt:
+                    data_item["prompt"] = prompt.format(data_item["subject"])
+                else:
+                    data_item["prompt"] = record.get("prompt_full", prompt)
+                
+                data_item["target_new"] = record.get("target_new", record.get("pred", ""))
+                data_item["target_true"] = record.get("target_true", record.get("ground_truth", ""))
+                data_item["portability_answer"] = data_item["target_new"]  # 默认使用target_new作为迁移性答案
+                
+                # 从answers字段提取target_true（如果之前没设置）
+                if not data_item["target_true"] and "answers" in record:
+                    if isinstance(record["answers"], list) and record["answers"]:
+                        data_item["target_true"] = record["answers"][0]
+                    elif isinstance(record["answers"], str):
+                        data_item["target_true"] = record["answers"]
+                
+                # 处理迁移性数据 - 统一到portability_data和portability_s
+                portability_prompts = []
+                if "paraphrase_prompts" in record and record["paraphrase_prompts"]:
+                    portability_prompts = record["paraphrase_prompts"]
+                elif "rephrase" in record:
+                    if isinstance(record["rephrase"], str):
+                        if record["rephrase"].startswith("- "):
+                            portability_prompts = record["rephrase"].split("- ")[1:]
+                        else:
+                            portability_prompts = [record["rephrase"]]
+                    elif isinstance(record["rephrase"], list):
+                        portability_prompts = record["rephrase"]
+                
+                if portability_prompts:
+                    data_item["portability_data"] = portability_prompts
+                    # 构建portability_s格式
+                    data_item["portability_s"] = []
+                    for prompt in portability_prompts:
+                        data_item["portability_s"].append({
+                            "prompt": prompt,
+                            "ground_truth": data_item["target_new"]
+                        })
+                
+                # 处理局部性数据 - 统一到locality_data和locality_rs
+                locality_prompts = []
+                if "neighborhood_prompts" in record and record["neighborhood_prompts"]:
+                    locality_prompts = record["neighborhood_prompts"]
+                elif "loc" in record and record["loc"]:
+                    locality_prompts = [record["loc"]]
+                
+                if locality_prompts:
+                    # 构建locality_rs格式
+                    data_item["locality_rs"] = []
+                    data_item["locality_data"] = []
+                    
+                    for i, prompt in enumerate(locality_prompts):
+                        answer = ""
+                        if "neighborhood_answers" in record and len(record["neighborhood_answers"]) > i:
+                            answer = record["neighborhood_answers"][i]
+                        elif "loc_ans" in record and i == 0:  # 只对第一个loc使用loc_ans
+                            answer = record["loc_ans"]
+                        else:
+                            answer = data_item["target_true"]
+                        
+                        data_item["locality_rs"].append({
+                            "prompt": prompt,
+                            "ground_truth": answer
+                        })
+                        data_item["locality_data"].append({
+                            "prompt": prompt,
+                            "subject": data_item["subject"],
+                            "target": answer
+                        })
+            
+            # 处理coupled_prompts_and_properties字段（如果存在）
             if "coupled_prompts_and_properties" in record:
                 data_item["coupled_prompts_and_properties"] = record["coupled_prompts_and_properties"]
             
-            data.append(data_item)
+            # 只有在数据项包含必要字段时才添加
+            if data_item["subject"] and data_item["prompt"] and data_item["target_new"]:
+                data.append(data_item)
 
         if size is not None:
             data = data[:size]
@@ -118,13 +282,13 @@ class LongFormDataset(Dataset):
         print(f"总样本数: {len(data)}")
         
         # 检查样本数据
-        has_paraphrase = sum(1 for item in data if item['paraphrase_prompts'] and len(item['paraphrase_prompts']) > 0)
-        has_generation = sum(1 for item in data if item['generation_prompts'] and len(item['generation_prompts']) > 0)
-        has_neighborhood = sum(1 for item in data if item['neighborhood_prompts'] and len(item['neighborhood_prompts']) > 0)
+        has_portability = sum(1 for item in data if item['portability_data'] and len(item['portability_data']) > 0)
+        has_portability_s = sum(1 for item in data if item['portability_s'] and len(item['portability_s']) > 0)
+        has_locality = sum(1 for item in data if item['locality_data'] and len(item['locality_data']) > 0)
+        has_locality_rs = sum(1 for item in data if item['locality_rs'] and len(item['locality_rs']) > 0)
         
-        print(f"有paraphrase_prompts的样本数: {has_paraphrase}")
-        print(f"有generation_prompts的样本数: {has_generation}")
-        print(f"有neighborhood_prompts的样本数: {has_neighborhood}")
+        print(f"有迁移性数据的样本数: {has_portability}")
+        print(f"有局部性数据的样本数: {has_locality}")
         
         # 打印部分样本示例
         if len(data) > 0:
@@ -132,17 +296,16 @@ class LongFormDataset(Dataset):
             sample = data[0]
             print(f"Subject: {sample['subject']}")
             print(f"Prompt: {sample['prompt']}")
-            print(f"Prompt Full: {sample['prompt_full']}")
             print(f"Target New: {sample['target_new']}")
             print(f"Target True: {sample['target_true']}")
-            print(f"Paraphrase Prompts条数: {len(sample['paraphrase_prompts']) if sample['paraphrase_prompts'] else 0}")
-            print(f"Generation Prompts条数: {len(sample['generation_prompts']) if sample['generation_prompts'] else 0}")
-            print(f"Neighborhood Prompts条数: {len(sample['neighborhood_prompts']) if sample['neighborhood_prompts'] else 0}")
+            print(f"Portability Data条数: {len(sample['portability_data']) if sample['portability_data'] else 0}")
+            print(f"Locality Data条数: {len(sample['locality_data']) if sample['locality_data'] else 0}")
             
-            if has_paraphrase > 0 and sample['paraphrase_prompts']:
-                print(f"Paraphrase Prompts示例: {sample['paraphrase_prompts'][:1]}")
-            if has_neighborhood > 0 and sample['neighborhood_prompts']:
-                print(f"Neighborhood Prompts示例: {sample['neighborhood_prompts'][:1]}")
+            if has_portability > 0 and sample['portability_data']:
+                print(f"Portability Data示例: {sample['portability_data'][:1]}")
+                print(f"Portability Answer: {sample['portability_answer']}")
+            if has_locality > 0 and sample['locality_data']:
+                print(f"Locality Data示例: {sample['locality_data'][0]['prompt'] if sample['locality_data'] else ''}")
 
     def __getitem__(self, item):
         return self._data[item]
