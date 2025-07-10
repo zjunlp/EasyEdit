@@ -11,3 +11,5 @@ from .safety import SafetyDataset
 from .Cknowedit import CKnowEditDataset
 from .MQuAKE import MQuAKEDataset
 from .wikibigedit import WikiBigEditDataset
+from .AKEW_both import AKEWUnifiedDataset
+from .LEME import LongFormEditDataset
