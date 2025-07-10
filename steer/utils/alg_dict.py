@@ -10,6 +10,7 @@ from ..vector_appliers import(
     ApplySaeFeatureHyperParams,
     ApplySTAHyperParams,
     ApplyCAAHyperParams,
+    ApplyRepsHyperParams,
     ApplyVectorPromptHyperParams,
     ApplyLmSteerHyperParams,
     ApplyPromptHyperParams,
@@ -27,6 +28,7 @@ from ..vector_generators import (
 from ..vector_appliers import (
      apply_lm_steer,
      apply_caa,
+     apply_reps,
      apply_vector_prompt,
      apply_sae_feature,
      apply_sta,
@@ -52,7 +54,8 @@ HYPERPARAMS_CLASS_DICT = {
     'vector_prompt': {'train': VectorPromptHyperParams, 'apply': ApplyVectorPromptHyperParams},
     'caa': {'train': CAAHyperParams, 'apply': ApplyCAAHyperParams},
     'prompt': {'apply': ApplyPromptHyperParams},
-    'merge_vector': {'train': MergeVectorHyperParams, 'apply': ApplyMergeVectorHyperParams}
+    'merge_vector': {'train': MergeVectorHyperParams, 'apply': ApplyMergeVectorHyperParams},
+    'reps_vector':{'train': RePSHyperParams, 'apply': ApplyRepsHyperParams}
 }
 
 METHODS_CLASS_DICT = {
@@ -62,5 +65,6 @@ METHODS_CLASS_DICT = {
     'sae_feature': {'train': generate_sae_feature_vectors, 'apply': apply_sae_feature},
     'sta': {'train': generate_sta_vectors, 'apply': apply_sta},
     'prompt': {'apply': apply_prompt},
-    'merge_vector': {'train': generate_merge_vector, 'apply': apply_merge_vector}
+    'merge_vector': {'train': generate_merge_vector, 'apply': apply_merge_vector},
+    'reps_vector': {'train': generate_reps_vectors, 'apply': apply_reps}
 }

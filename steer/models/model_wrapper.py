@@ -118,6 +118,9 @@ class BlockOutputWrapper(t.nn.Module):
                 t.norm(last_token_activations) * t.norm(self.calc_dot_product_with)
             )
             self.dot_products.append((top_token, dot_product.cpu().item()))
+            
+            
+        # Activation Addition
         if self.add_activations_dict:
             augmented_output = output[0]
             for activations in self.add_activations_dict.values():
@@ -129,6 +132,23 @@ class BlockOutputWrapper(t.nn.Module):
                         position_ids=position_ids,
                         from_pos=self.from_position,
                     )
+            output = (augmented_output,) + output[1:]
+        
+        # Intervention
+        if self.intervention_dict:
+            augmented_output = output[0]
+            for method_name, intervention in self.intervention_dict.items():
+                if intervention is not None:
+                    # call the forward method of the intervention class
+                    intervention_result = intervention.forward(augmented_output, **kwargs)
+                    
+                    # handle different types of return values
+                    if hasattr(intervention_result, 'output'):
+                        # for the case that the intervention class returns InterventionOutput
+                        augmented_output = intervention_result.output
+                    else:
+                        # for the case that the intervention class returns a tensor
+                        augmented_output = intervention_result
             output = (augmented_output,) + output[1:]
 
         if not self.save_internal_decodings:
@@ -159,8 +179,12 @@ class BlockOutputWrapper(t.nn.Module):
     def add(self, activations, method_name="default"):
         """
         store activations for different methods
+        store activations for different methods
         """
         self.add_activations_dict[method_name] = activations
+    
+    def set_intervention(self, intervention, method_name):
+        self.intervention_dict[method_name] = intervention
 
     def reset(self, method_name="all"):
         """
@@ -168,8 +192,14 @@ class BlockOutputWrapper(t.nn.Module):
         """
         if method_name == "all":
             self.add_activations_dict.clear()
-        elif method_name in self.add_activations_dict:
-            del self.add_activations_dict[method_name]
+            self.intervention_dict.clear()
+        elif method_name == "reps":
+            # RePS uses the new intervention class
+            if method_name in self.intervention_dict:
+                del self.intervention_dict[method_name]
+        else:
+            if method_name in self.add_activations_dict:
+                del self.add_activations_dict[method_name]
         
         self.activations = None
         # self.block.self_attn.activations = None
@@ -217,10 +247,6 @@ class BaseModelWrapper:
         if override_model_weights_path is not None:
             self.model.load_state_dict(t.load(override_model_weights_path), device=self.device)
 
-        # for i, layer in enumerate(self.model.model.layers):
-        #     self.model.model.layers[i] = BlockOutputWrapper(
-        #         layer, self.model.lm_head, self.model.model.norm, self.tokenizer, i, self.hparams.model_name_or_path
-        #     )
         ### Customize layers and outputs for specific models
         self._adapt_model_layers()
 
@@ -270,6 +296,12 @@ class BaseModelWrapper:
             self.model.model.module.layers[layer].add(activations, method_name)
         else:
             self.model.model.layers[layer].add(activations, method_name)
+    
+    def set_intervention(self, layer, intervention, method_name):
+        if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):
+            self.model.model.module.layers[layer].set_intervention(intervention, method_name)
+        else:
+            self.model.model.layers[layer].set_intervention(intervention, method_name)
 
     def set_calc_dot_product_with(self, layer, vector):
         self.model.model.layers[layer].calc_dot_product_with = vector
@@ -506,6 +538,12 @@ class GPTWrapper(BaseModelWrapper):
             self.model.transformer.module.h[layer].add(activations, method_name)
         else:
             self.model.transformer.h[layer].add(activations, method_name)
+    
+    def set_intervention(self, layer, intervention, method_name):
+        if isinstance(self.model.transformer, Hack_no_grad):
+            self.model.transformer.module.h[layer].set_intervention(intervention, method_name)
+        else:
+            self.model.transformer.h[layer].set_intervention(intervention, method_name)
 
     def set_calc_dot_product_with(self, layer, vector):
         self.model.transformer.h[layer].calc_dot_product_with = vector
