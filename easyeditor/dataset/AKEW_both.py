@@ -195,7 +195,7 @@ class AKEWUnifiedDataset(Dataset):
         }
 
     def _process_counterfact_unstructured(self, record, case_id):
-        if self.model_name == 'Llama3-8B-Instruct':
+        if 'Llama3-8B-Instruct' in self.model_name:
             return {
                 "id": case_id,
                 "question": get_llama_without_answer(record["requested_rewrite"]["prompt_full"]),
@@ -204,7 +204,7 @@ class AKEWUnifiedDataset(Dataset):
                 "sub_question": get_list_llama_without_answer([q["prompt"].format(q["subject"]) for q in record["requested_rewrite"]["unsfact_triplets_GPT"]][:5], False),
                 "sub_answer": [q["target"] for q in record["requested_rewrite"]["unsfact_triplets_GPT"]][:5]
             }
-        elif self.model_name == 'Qwen2.5-7B-Instruct':
+        elif 'Qwen2.5-7B-Instruct' in self.model_name:
             return {
                 "id": case_id,
                 "question": get_qwen_without_answer(record["requested_rewrite"]["prompt_full"]),
@@ -226,7 +226,7 @@ class AKEWUnifiedDataset(Dataset):
     def _process_mquake_unstructured(self, record, case_id):
         rewrite = record["requested_rewrite"][0]
         prompt = rewrite["prompt"].format(rewrite["subject"]) + "?"
-        if self.model_name == 'Llama3-8B-Instruct':
+        if 'Llama3-8B-Instruct' in self.model_name:
             return {
                 "id": case_id,
                 "question": get_llama_without_answer(prompt),
@@ -235,7 +235,7 @@ class AKEWUnifiedDataset(Dataset):
                 "sub_question": get_list_llama_without_answer([q["prompt"].format(q["subject"]) for q in record["requested_rewrite"][0]["unsfact_triplets_GPT"]][:5], False),
                 "sub_answer": [q["target"] for q in record["requested_rewrite"][0]["unsfact_triplets_GPT"]][:5]
             }
-        elif self.model_name == 'Qwen2.5-7B-Instruct':
+        elif 'Qwen2.5-7B-Instruct' in self.model_name:
             return {
                 "id": case_id,
                 "question": get_qwen_without_answer(prompt),
@@ -255,7 +255,7 @@ class AKEWUnifiedDataset(Dataset):
             }
 
     def _process_unke_unstructured(self, record, case_id):
-        if self.model_name == 'Llama3-8B-Instruct':
+        if 'Llama3-8B-Instruct' in self.model_name:
             return {
                 "id": case_id,
                 "question": get_llama_without_answer(record["question"]),
@@ -264,7 +264,7 @@ class AKEWUnifiedDataset(Dataset):
                 "sub_question": get_list_llama_without_answer(record.get("sub_question", []), False),
                 "sub_answer": record.get("sub_answer", [])
             }
-        elif self.model_name == 'Qwen2.5-7B-Instruct':
+        elif 'Qwen2.5-7B-Instruct' in self.model_name:
             return {
                 "id": case_id,
                 "question": get_qwen_without_answer(record["question"]),
@@ -287,7 +287,7 @@ class AKEWUnifiedDataset(Dataset):
         rewrite = record["requested_rewrite"]
         prompt = rewrite["prompt"].format(rewrite["subject"]) + "?"
         
-        if self.model_name == 'Llama3-8B-Instruct':
+        if 'Llama3-8B-Instruct' in self.model_name:
             return {
                 "id": case_id,
                 "question": get_llama_without_answer(prompt),
@@ -296,7 +296,7 @@ class AKEWUnifiedDataset(Dataset):
                 "sub_question": get_list_llama_without_answer([q["prompt"].format(q["subject"]) for q in record["requested_rewrite"]["unsfact_triplets_GPT"]][:5], False),
                 "sub_answer": [q["target"] for q in record["requested_rewrite"]["unsfact_triplets_GPT"]][:5]
             }
-        elif self.model_name == 'Qwen2.5-7B-Instruct':
+        elif 'Qwen2.5-7B-Instruct' in self.model_name:
             return {
                 "id": case_id,
                 "question": get_qwen_without_answer(prompt),

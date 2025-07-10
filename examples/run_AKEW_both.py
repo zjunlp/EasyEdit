@@ -24,6 +24,7 @@ from easyeditor import BaseEditor
 from easyeditor import AKEWUnifiedDataset  
 from easyeditor.evaluate.evaluate_uns import eval_akew_unstructured
 from easyeditor.models.unke import unkeHyperParams, apply_unke_to_model
+from easyeditor.models.unke_ARE import unkeAREHyperParams, apply_unke_ARE_to_model
 from easyeditor.models.lora import LoRAHyperParams, apply_lora_to_model
 from easyeditor.models.lora_uns import LoRA_uns_HyperParams, apply_lora_uns_to_model
 from easyeditor.models.ft import FTHyperParams, apply_ft_to_model
@@ -42,8 +43,10 @@ STRUCTURED_ALG_DICT = {
 
 UNSTRUCTURED_ALG_DICT = {
     "unke": (unkeHyperParams, apply_unke_to_model),
+    "unke_ARE": (unkeAREHyperParams, apply_unke_ARE_to_model),
     "LoRA_uns": (LoRA_uns_HyperParams, apply_lora_uns_to_model),
     "FT_uns": (FT_uns_HyperParams, apply_ft_uns_to_model),
+    
 }
 
 def get_llama_without_answer(que):
@@ -188,15 +191,15 @@ def run_unstructured_editing(args):
         size=args.ds_size,
         use_unstructured_data=True
     )
-    
+     
     with open(Path(args.data_dir)/"alpaca_data.json", 'r', encoding='utf-8') as json_file:
         ex_datas = json.load(json_file)
-    if hparams.model_name == 'Llama3-8B-Instruct':
+    if 'Llama3-8B-Instruct' in hparams.model_name:
         ex_datas = [get_llama_without_answer(i['instruction']+i['input'])+i['output'] for i in ex_datas]
-    elif hparams.model_name == 'Qwen2.5-7B-Instruct':
+    elif 'Qwen2.5-7B-Instruct' in hparams.model_name:
         ex_datas = [get_qwen_without_answer(i['instruction']+i['input'])+i['output'] for i in ex_datas]
     tokenizer = AutoTokenizer.from_pretrained(hparams.model_name, padding_side='left')
-    if hparams.model_name == 'Llama3-8B-Instruct':
+    if 'Llama3-8B-Instruct' in hparams.model_name:
         tokenizer.pad_token_id = tok.eos_token_id
     
     batch_size = args.batch_size
@@ -210,8 +213,8 @@ def run_unstructured_editing(args):
         random_elements = random.sample(ex_datas, 20)
         # case_result_template = str(run_dir / "{}_edits-case_{}.json")
        
-        ex_args = dict(ex_data=random_elements) if "unke" in args.editing_method else dict()
- 
+        ex_args = dict(ex_data = random_elements) if any(alg in args.editing_method for alg in ["unke", "unke_ARE"]) else dict()
+        
         start = time.time()
         if args.editing_method == "LoRA_uns":
             edited_model, weights_copy = apply_algo(model, tok, hparams, batch, **ex_args)
@@ -257,9 +260,9 @@ def run_unstructured_editing(args):
                 data['original_prediction'] = output[0]
                 if args.data_type in ['unke','counterfact','mquake','wikiupdate']:
                     data['para_prediction'] = output[1]
-                if hparams.model_name == 'Llama3-8B-Instruct':
+                if 'Llama3-8B-Instruct' in hparams.model_name:
                     data['answer'] = data['answer'][:-len('<|eot_id|>')]
-                elif hparams.model_name == 'Qwen2.5-7B-Instruct':
+                elif 'Qwen2.5-7B-Instruct' in hparams.model_name:
                     data['answer'] = data['answer'][:-len('<|im_end|>')]
             if args.data_type in ['unke','counterfact','mquake','wikiupdate']:
                 for data in batch:
@@ -310,9 +313,9 @@ def run_unstructured_editing(args):
             data['original_prediction'] = output[0]
             if args.data_type in ['unke','counterfact','wikiupdate','mquake']:
                 data['para_prediction'] = output[1]
-            if hparams.model_name == 'Llama3-8B-Instruct':
+            if 'Llama3-8B-Instruct' in hparams.model_name:
                 data['answer'] = data['answer'][:-len('<|eot_id|>')]
-            elif hparams.model_name == 'Qwen2.5-7B-Instruct':
+            elif 'Qwen2.5-7B-Instruct' in hparams.model_name:
                 data['answer'] = data['answer'][:-len('<|im_end|>')]
         if args.data_type in ['unke','counterfact','mquake','wikiupdate']:
             for data in ds:

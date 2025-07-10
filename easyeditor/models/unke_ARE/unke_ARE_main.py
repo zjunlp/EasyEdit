@@ -1,7 +1,6 @@
 import copy
 import torch
 import torch.nn as nn
-from typing import List, Dict, Optional, Tuple
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from .compute_z import compute_z
 from torch.optim.lr_scheduler import CosineAnnealingLR
@@ -13,16 +12,18 @@ import argparse
 import numpy as np
 import os
 from transformers.modeling_attn_mask_utils import AttentionMaskConverter,_prepare_4d_causal_attention_mask
-from .unke_hparams import unkeHyperParams
+from .unke_ARE_hparams import unkeAREHyperParams
 def compute_ks(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
     batch_data: list,
-    hparams: unkeHyperParams,
+    hparams: unkeAREHyperParams,
     layer: int,
+    idxs_dict:dict,
 ):
     input_ids = tok(batch_data, padding=True,return_tensors="pt").to("cuda")
-    idxs = [i.sum()-1 for i in input_ids['attention_mask']]
+    zs_out_dict = {}
+
     with torch.no_grad():
         with nethook.Trace(
             module=model,
@@ -36,13 +37,12 @@ def compute_ks(
                 #layer_in_ks = tr.input #(bs:seq:h_dim)
                 zs_out = tr.output#(bs:seq:h_dim)
     zs_out = zs_out[0] if type(zs_out) is tuple else zs_out
-    zs_out_list=[]
-    for i in range(len(zs_out)):
-        zs_out_list.append(zs_out[i,idxs[i]])
-    zs_out =torch.stack(zs_out_list,dim=0)
-
-
-    return zs_out,idxs
+    for k, idxs in idxs_dict.items():
+        zs_out_list = []
+        for idx in idxs:
+            zs_out_list.append(zs_out[k,idx])
+        zs_out_dict[k] = zs_out_list
+    return zs_out_dict
 
 def get_optimizer_params(model, encoder_lr, weight_decay=0.01):
         param_optimizer = list(model.named_parameters())
@@ -58,10 +58,10 @@ def get_optimizer_params(model, encoder_lr, weight_decay=0.01):
 
 
 
-def apply_unke_to_model(
+def apply_unke_ARE_to_model(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
-    hparams:unkeHyperParams,
+    hparams:unkeAREHyperParams,
     batch_data:list,
     ex_data:list):
 
@@ -84,25 +84,27 @@ def apply_unke_to_model(
 
 
     z_layer = hparams.layers[-1]
-    z_list = []
-    for data in batch_data:
+    zs_dict = {}
+    idxs_dict = {}
+    for k, data in enumerate(batch_data):
         
-        cur_z = compute_z(   
+        idxs_list, target_list = compute_z(   
             model,
             tok,
             data,
             z_layer,
             hparams,
         )
-
-        z_list.append(cur_z)
-    zs = torch.stack(z_list, dim=0)#(bs,h_dim)
-    #print(zs.shape)
-    batch_question = [i['question'] for i in batch_data]
+        idxs_dict[k] = idxs_list
+        zs_dict[k] = target_list
+    batch_question_ans = [
+        i['question'] + i['answer'] for i in batch_data
+    ]
+    
     # Insert
     for i, layer in enumerate(hparams.layers):
         #print(f"\n\nLAYER {layer}\n")
-        contexts_tok = tok(batch_question, padding=True, return_tensors="pt").to(
+        contexts_tok = tok(batch_question_ans, padding=True, return_tensors="pt").to(
             next(model.parameters()).device
         )
         with torch.no_grad():
@@ -120,11 +122,12 @@ def apply_unke_to_model(
         layer_out_ks = layer_out_ks[0] if type(layer_out_ks) is tuple else layer_out_ks
         
 
-        cur_zs,idxs = compute_ks(model, tok,batch_question, hparams, z_layer)
-        
-        
-        targets = zs - cur_zs 
-        print("z error", torch.linalg.norm(targets, dim=0).mean())
+        cur_zs_dict = compute_ks(model, tok,batch_question_ans, hparams, z_layer, idxs_dict)
+        targets_dict = {}
+        for k, cur_zs_list in cur_zs_dict.items():
+            zs_list = zs_dict[k]
+            targets_list = [(a - b)/(len(hparams.layers) - i) for a, b in zip(zs_list, cur_zs_list)]
+            targets_dict[k] = targets_list
 
         ex_tok = tok(ex_data, padding=True, return_tensors="pt").to(
             next(model.parameters()).device
@@ -146,7 +149,7 @@ def apply_unke_to_model(
 
 
 
-        resid = targets / (len(hparams.layers) - i)  # Distribute residual across layers(1,4096)
+        #resid = targets / (len(hparams.layers) - i)  # Distribute residual across layers(1,4096)
 
         
         criterion = nn.MSELoss()
@@ -162,9 +165,10 @@ def apply_unke_to_model(
         
         optimizer = optim.AdamW(params,lr=hparams.lr,eps=1e-8,betas = (0.9,0.999))
         
-        for i in range(len(idxs)):
-            
-            layer_out_ks[i,idxs[i]]+=resid[i]
+        for k, idxs_list in idxs_dict.items():
+            for j, idx in enumerate(idxs_list):
+                resid = targets_dict[k][j]
+                layer_out_ks[k,idx]+=resid
         
         # get_qwen2_causal_mask
         # llama2
@@ -195,7 +199,7 @@ def apply_unke_to_model(
             # if loss.item() < 5e-5:
             #     break
 
-        for x in [layer_in_ks, layer_out_ks,cur_zs, targets,stat_in,stat_out]:
+        for x in [layer_in_ks, layer_out_ks,stat_in,stat_out]:
             x.cpu()
             del x
         torch.cuda.empty_cache()
