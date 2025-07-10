@@ -1,11 +1,4 @@
-<<<<<<< HEAD
 alg_name: reps_vector
 layers: [24] 
 multipliers: [1.0] 
 concepts: "programming constructs and data structures in code snippets"  
-=======
-# Model related
-alg_name: reps_vector
-layers: [20]
-multipliers: [1.0]
->>>>>>> 2a46a1c5 (Forward Still Bug)

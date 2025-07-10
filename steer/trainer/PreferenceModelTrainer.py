@@ -358,7 +358,6 @@ class PreferenceModelTrainer(ModelTrainer):
                         "lr %.6f || loss %.6f || steer acc %.6f" % (
                             curr_lr, loss, metrics.get('rewards_train/steer_accuracies', 0.0))
                     )
-
                     curr_step += 1
 
         progress_bar.close()
