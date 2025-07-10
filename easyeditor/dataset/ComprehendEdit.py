@@ -61,7 +61,8 @@ class ComprehendEditDataset(BaseDataset):
                        'tallyqa': "Question: {} Answer with a number. Short answer:",
                        'vsr': "Question: Is this description true or false? Description: {} Short answer:",
                        'textvqa': "Question: {} Short answer:",
-                       'mathvista': "{} Short answer:"}
+                       'mathvista': "{} Short answer:",
+                       'other': "{} "}
 
         self.annotation = [json.loads(q) for q in open(os.path.join(data_dir,'ComprehendEdit_{}.json'.format(self.mode)), "r")][0]
 

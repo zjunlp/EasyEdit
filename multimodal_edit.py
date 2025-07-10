@@ -675,8 +675,8 @@ def train_SERAC(model='blip2', dataset='vqa', train=True, topk=5):
     Dataset = DATASET_DICT[dataset.lower()]
     print(f'Using datasets: {dataset.lower()}')
 
-    eval_ds = Dataset(data_dir[dataset.lower()], config=hparams, mode='test', topk=topk)
-    train_ds = Dataset(data_dir[dataset.lower()], config=hparams, mode='train', topk=-1) if train else eval_ds
+    eval_ds = Dataset(data_dir[dataset.lower()], config=hparams, size=10, mode='test', topk=topk)
+    train_ds = Dataset(data_dir[dataset.lower()], config=hparams, size=10, mode='train', topk=-1) if train else eval_ds
     
     trainer = MultimodalTrainer(
         config=hparams,
