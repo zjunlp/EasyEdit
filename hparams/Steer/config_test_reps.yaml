@@ -17,7 +17,6 @@ save_vectors: True
 steer_vector_output_dirs: 
  - vectors/gemma-2-2b-it/
 
-<<<<<<< HEAD
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
 apply_steer_hparam_paths:
@@ -37,31 +36,4 @@ generation_params:
   max_new_tokens: 25   
   temperature: 0.9     
   do_sample: true  
-=======
-# # Apply Vector 
-# # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
-# apply_steer_hparam_paths:
-#  - hparams/Steer/caa_hparams/apply_caa.yaml
-# steer_vector_load_dir: 
-#  - vectors/gemma-2-9b/toxicity/caa_vector
-
-# # Generation
-# # Supported multiple files generation based on `generation_data`.
-# # You can choose dataset here, e.g., `- realtoxicityprompts`. 
-# # Details of the dataset can be found in `hparams/Steer/dataset_format.yaml`.
-# generation_data: 
-#  - realtoxicityprompts 
-# generation_data_size: null  # If set to null, it will use the full dataset.
-# generation_output_dir: generation/gemma-2-9b/realtoxicityprompts/caa
-# num_responses: 1
-# steer_from_end_position: false
-
-# generate_orig_output: true
-# # Model generation parameters - must match Hugging Face parameter names
-# # See: https://huggingface.co/docs/transformers/main_classes/text_generation
-# generation_params:
-#   max_new_tokens: 25   
-#   temperature: 0.9     
-#   do_sample: true  
->>>>>>> 2a46a1c5 (Forward Still Bug)
 

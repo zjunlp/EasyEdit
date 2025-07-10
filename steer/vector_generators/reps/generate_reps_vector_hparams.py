@@ -3,7 +3,7 @@ from typing import List
 from ...utils import HyperParams
 from dataclasses import dataclass, field
 
-<<<<<<< HEAD
+
 @dataclass
 class RePSHyperParams(HyperParams):
     # === Basic Config ===
@@ -41,51 +41,10 @@ class RePSHyperParams(HyperParams):
     low_rank_dimension: int = 1
     
     # === Steering Config ===
-<<<<<<< HEAD
     steering_factors: List[float] = field(default_factory=lambda: [0.0, 2.0])  
-=======
-    steering_factors: List[float] = field(default_factory=lambda: [2.0])  
->>>>>>> 2a46a1c5 (Forward Still Bug)
     steering_prompt_type: str = "blend_in"
     substraction_type: str = "null_it_out"  # normal or null_it_out
 
-=======
-
-
-@dataclass
-class RePSHyperParams(HyperParams):
-    # Method (with predefined values)
-    alg_name: str = 'reps'
-    layers: List[int] = field(default_factory=lambda: list(range(32)))
-    steer_train_dataset: str = "safeedit"
-    steer_vector_output_dir: str = "../"
-    save_vectors: bool = True
-    
-    batch_size: int = 6  # the actual batch size also needs to multiply with |preference_pairs|
-    gradient_accumulation_steps: int = 1
-    n_epochs: int = 18
-    lr: float = 0.08
-    weight_decay: float = 0.00
-    low_rank_dimension: int = 1
-    intervention_positions: str = "all"
-    intervention_type: str = "addition"  # clamping
-    # binarize_dataset: false
-    train_on_negative: bool = True
-    exclude_bos: bool = True
-    loss_type: str = "scaled_simpo"
-    beta: float = 1.0
-    gemma: float = 0.0
-    simpo_scaler: float = 1.0
-    label_smoothing: float = 0.0
-    dropout: float = 0.1
-    intervention_positions_dropout: float = 0.0
-    steering_factors: List[float] = field(default_factory=lambda: [2.0])  # use_cmd_to_define
-    preference_pairs: List[str] = field(default_factory=lambda: ["orig_add", "orig_sub"])  # use_cmd_to_define
-    steering_prompt_type: str = "blend_in"
-    substraction_type: str = "null_it_out"  # normal or null_it_out
-
-
->>>>>>> ab3202ed (New RePS related configuration files and model trainers have been added)
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 
@@ -96,10 +55,7 @@ class RePSHyperParams(HyperParams):
             config = yaml.safe_load(stream)
             config = super().construct_float_from_scientific_notation(config)
 
-<<<<<<< HEAD
+
         assert (config and config['alg_name'] == 'reps') or print(f'RePSHyperParams can not load from {hparams_name_or_path}, ' f'alg_name is {config["alg_name"]} ')
-=======
-        assert (config and config['alg_name'] == 'reps') or print(f'RePSHyperParams can not load from {hparams_name_or_path}, '
-                                                f'alg_name is {config["alg_name"]} ')
->>>>>>> ab3202ed (New RePS related configuration files and model trainers have been added)
+
         return cls(**config)
