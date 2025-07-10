@@ -203,15 +203,7 @@ def compute_portability_quality(
             portability_correct = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, ground_truth, device)
         else:
             portability_correct = test_prediction_acc(model, tok, hparams, prompt, ground_truth, device, vanilla_generation=hparams.alg_name=='GRACE')
-    #888
-    # 添加打印语句，显示别名提示及模型输出
-    print("\n===== 别名提示(Portability)评估结果 =====")
-    print(f"提示类型: {portability_key}")
-    print(f"提示内容: {prompt}")
-    print(f"期望答案: {ground_truth}")
-    print(f"模型输出: {portability_correct}")
-    print("=====================================\n")
-    #888
+   
     ret = {
         f"{portability_key}_acc": portability_correct
     }
