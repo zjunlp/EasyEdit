@@ -72,16 +72,6 @@ class MultimodalTrainer(BaseTrainer):
                 post_edit_logits = post_edit_outputs
                 post_batch_labels = batch["edit_outer"]["labels"]
 
-            # rephrase image
-            post_image_edit_outputs = edited_model(batch["edit_outer_image"])
-            
-            if not isinstance(post_image_edit_outputs, torch.Tensor):
-                post_image_edit_logits = post_image_edit_outputs.logits
-                post_image_batch_labels = post_image_edit_outputs.labels
-            else:
-                post_image_edit_logits = post_image_edit_outputs
-                post_image_batch_labels = batch["edit_outer_image"]["labels"]
-                
             inner_edit_outputs = edited_model(batch["edit_inner"])
             
             if not isinstance(inner_edit_outputs, torch.Tensor):
@@ -90,6 +80,19 @@ class MultimodalTrainer(BaseTrainer):
             else:
                 inner_edit_logits = inner_edit_outputs
                 inner_batch_labels = batch["edit_inner"]["labels"]
+
+            # rephrase image
+            if self.train_set.__class__.__name__ == "ComprehendEditDataset":
+                post_image_edit_logits = inner_edit_logits
+                post_image_batch_labels = inner_batch_labels
+            else:
+                post_image_edit_outputs = edited_model(batch["edit_outer_image"])
+                if not isinstance(post_image_edit_outputs, torch.Tensor):
+                    post_image_edit_logits = post_image_edit_outputs.logits
+                    post_image_batch_labels = post_image_edit_outputs.labels
+                else:
+                    post_image_edit_logits = post_image_edit_outputs
+                    post_image_batch_labels = batch["edit_outer_image"]["labels"]
 
             l_edit = self.model.edit_loss_fn(self.config, post_edit_logits, post_batch_labels, multimodal=True)["nll"]
             l_image_edit = self.model.edit_loss_fn(self.config, post_image_edit_logits, post_image_batch_labels, multimodal=True)["nll"]          

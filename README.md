@@ -586,11 +586,12 @@ data
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
 | E-IC | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Image Captioning_ |
 | E-VQA | [[Google Drive]](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link) | [[BaiduNetDisk]](https://pan.baidu.com/s/1g9nMv-5BJmztxYU-BWRdvg?pwd=ik5c) | dataset for editing _Visual Question Answering_ |
+| ComprehendEdit | [[Google Drive]](https://drive.google.com/file/d/1zG4NrQDWdd5TvzfGIkFC2FQ66Me42aZZ/view?usp=sharing) | [[BaiduNetDisk]](https://pan.baidu.com/s/1rbYqiD4WYKDKy723lGJw1A?pwd=r6fi) | dataset for editing _Visual Question Answering_ |
 
 - All **images** used in **E-IC** and **E-VQA** are available for download at [Google Drive](https://drive.google.com/file/d/1fQzJBFkok5kFZT6QUuT-HCuYKk2Vb93O/view)
 - For **locality**, it is the same as factual editing in order to measure whether unrelated facts retain their outputs.
 - For **multimodal locality**, it assesses the impact of editing on the visual module, which is similar to regular **locality**.
-
+- The details of the impact of editing on other in-domain samples are in [ComprehendEdit](https://github.com/yaohui120/ComprehendEdit/tree/main).
 <details><summary> <b> dataset description </b> </summary>
 
 ```text
