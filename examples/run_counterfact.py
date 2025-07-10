@@ -27,7 +27,6 @@ def eval(result_path):
         
         with open(result_path,'r') as file:
             datas=json.load(file)
-        #data_rome_counterfact['post'].keys()  dict_keys(['rewrite_acc', 'locality', 'portability'])
         Edit_Succ_list=[data_rome_counterfact['post']['rewrite_acc'][0] for data_rome_counterfact in datas]
         Edit_Succ=sum(Edit_Succ_list)/len(Edit_Succ_list)*100
         print('Edit_Succ:',Edit_Succ)
@@ -91,22 +90,18 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError
     
-    # 加载数据集
     datas = CounterFactDataset(args.data_dir, size=args.ds_size)
     
-    # 提取基本编辑和描述性编辑字段
     basic_prompts = [data['prompt'] for data in datas]
     basic_targets = [data['target_new'] for data in datas]
     descriptive_prompts = [data.get('descriptive_prompt', '') for data in datas]
     descriptive_targets = [data.get('descriptive_target', '') for data in datas]
     subjects = [data['subject'] for data in datas]
     
-    # 处理可迁移性测试数据
     portability_Subject_Aliasing_prompts = []
     portability_Subject_Aliasing_ans = []
 
     for data in datas:
-        # 统一处理可移植性数据 - 适用于MQuAKE-CF和WikiUpdate
         if "portability_data" in data and len(data['portability_data']) > 0:
             temp_prompts = []
             temp_answers = []
@@ -118,14 +113,12 @@ if __name__ == "__main__":
                     temp_prompts.append(question)
                     temp_answers.append(portability_answer)
             
-            # 只有当有有效提示时才添加
             if temp_prompts:
                 portability_Subject_Aliasing_prompts.append(temp_prompts)
                 portability_Subject_Aliasing_ans.append(temp_answers)
             else:
                 portability_Subject_Aliasing_prompts.append([])
                 portability_Subject_Aliasing_ans.append([])
-        # 优先使用KnowEdit格式的数据
         elif data.get('portability_s'):
             temp_prompts = []
             temp_answers = []
@@ -139,12 +132,10 @@ if __name__ == "__main__":
             portability_Subject_Aliasing_prompts.append([])
             portability_Subject_Aliasing_ans.append([])
     
-    # 处理局部性测试数据
     locality_Relation_Specificity_prompts = []
     locality_Relation_Specificity_ans = []
     
     for data in datas:
-        # 优先使用KnowEdit格式的数据
         if data.get('locality_rs'):
             temp_prompts = []
             temp_answers = []
@@ -154,7 +145,6 @@ if __name__ == "__main__":
                     temp_answers.append(pr['ground_truth'])
             locality_Relation_Specificity_prompts.append(temp_prompts)
             locality_Relation_Specificity_ans.append(temp_answers)
-        # 使用统一格式处理locality_data (适用于MQuAKE-CF和WikiUpdate)
         elif data.get('locality_data') and len(data['locality_data']) > 0:
             temp_prompts = []
             temp_answers = []
@@ -169,7 +159,6 @@ if __name__ == "__main__":
                     except Exception as e:
                         print(f"警告：格式化提示时出错: {e}")
                         continue
-            # 只有当有有效提示时才添加
             if temp_prompts:
                 locality_Relation_Specificity_prompts.append(temp_prompts)
                 locality_Relation_Specificity_ans.append(temp_answers)
@@ -180,7 +169,6 @@ if __name__ == "__main__":
             locality_Relation_Specificity_prompts.append([])
             locality_Relation_Specificity_ans.append([])
     
-    # 构建评测输入结构
     portability_inputs = {
         'Subject_Aliasing': {
             'prompt': portability_Subject_Aliasing_prompts,
@@ -195,8 +183,6 @@ if __name__ == "__main__":
         }
     }
     
-    # 添加更多可移植性和局部性测试（与KnowEdit格式兼容）
-    # 添加可迁移性测试 - reasoning
     portability_reasoning_prompts = []
     portability_reasoning_ans = []
     
@@ -214,7 +200,6 @@ if __name__ == "__main__":
             portability_reasoning_prompts.append([])
             portability_reasoning_ans.append([])
             
-    # 添加可迁移性测试 - logical generalization
     portability_logical_prompts = []
     portability_logical_ans = []
     
@@ -232,7 +217,6 @@ if __name__ == "__main__":
             portability_logical_prompts.append([])
             portability_logical_ans.append([])
             
-    # 添加局部性测试 - forgetfulness
     locality_forgetfulness_prompts = []
     locality_forgetfulness_ans = []
     
@@ -250,7 +234,6 @@ if __name__ == "__main__":
             locality_forgetfulness_prompts.append([])
             locality_forgetfulness_ans.append([])
     
-    # 更新评测输入结构，添加更多测试类型
     if any(len(prompts) > 0 for prompts in portability_reasoning_prompts):
         portability_inputs['reasoning'] = {
             'prompt': portability_reasoning_prompts,
@@ -269,13 +252,7 @@ if __name__ == "__main__":
             'ground_truth': locality_forgetfulness_ans
         }
     
-    # 打印数据处理结果统计
-    print(f"\n===== 数据处理结果 =====")
-    print(f"基本提示数量: {len(basic_prompts)}")
-    print(f"可移植性测试 Subject_Aliasing: {sum(1 for prompts in portability_Subject_Aliasing_prompts if len(prompts) > 0)}/{len(portability_Subject_Aliasing_prompts)}")
-    print(f"局部性测试 Relation_Specificity: {sum(1 for prompts in locality_Relation_Specificity_prompts if len(prompts) > 0)}/{len(locality_Relation_Specificity_prompts)}")
-    
-    # 加载超参数
+
     hparams = editing_hparams.from_hparams(args.hparams_dir)
     args.pre_file = f"./{hparams.model_name.split('/')[-1]}_{args.datatype}_pre_edit.json"
     print(args.pre_file)
@@ -285,7 +262,6 @@ if __name__ == "__main__":
     else:
         pre_edit = None
         
-    # 处理特定编辑方法
     if args.editing_method == 'IKE':
         train_ds = CounterFactDataset(args.train_data_path)
         sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
@@ -296,26 +272,22 @@ if __name__ == "__main__":
     else:
         train_ds = None
     
-    # 初始化编辑器
     editor = BaseEditor.from_hparams(hparams)
     
-    # 检查是否有描述性编辑数据
     has_descriptive_data = all(desc and desc.strip() for desc in descriptive_prompts) and all(desc and desc.strip() for desc in descriptive_targets)
     
     if has_descriptive_data:
-        # 第一阶段：描述性编辑
         print("执行描述性编辑阶段...")
         _, edited_model, _ = editor.edit(
             prompts=descriptive_prompts,
             target_new=descriptive_targets,
             subject=subjects,
             keep_original_weight=True,
-            test_generation=False,  # 不进行评测
+            test_generation=False,
         )
         
         editor.model = edited_model
         
-    # 第二阶段：基本编辑并评测
     print("执行基本编辑阶段并评测...")
     metrics, final_model, _ = editor.edit(
         prompts=basic_prompts,
@@ -325,12 +297,11 @@ if __name__ == "__main__":
         portability_inputs=portability_inputs,
         pre_file=args.pre_file,
         pre_edit=pre_edit,
-        test_generation=True,  # 执行评测
+        test_generation=True,
         train_ds=train_ds
     )
     
 
-    # 保存和评估结果
     if not os.path.exists(args.metrics_save_dir):
         os.makedirs(args.metrics_save_dir)
     result_path = os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datatype}_{hparams.model_name.split("/")[-1]}_results.json')

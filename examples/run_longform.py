@@ -27,7 +27,6 @@ def eval(result_path):
         
         with open(result_path,'r') as file:
             datas=json.load(file)
-        #data_rome_counterfact['post'].keys()  dict_keys(['rewrite_acc', 'locality', 'portability'])
         Edit_Succ_list=[data_rome_counterfact['post']['rewrite_acc'][0] for data_rome_counterfact in datas]
         Edit_Succ=sum(Edit_Succ_list)/len(Edit_Succ_list)*100
         print('Edit_Succ:',Edit_Succ)
@@ -91,24 +90,19 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError
     
-    # 加载数据集
     datas = LongFormDataset(args.data_dir, size=args.ds_size)
     
-    # 提取基本编辑字段
     basic_prompts = [data['prompt'] for data in datas]
     basic_targets = [data['target_new'] for data in datas]
     subjects = [data['subject'] for data in datas]
     
-    # 构建评测输入结构
     portability_inputs = {}
     locality_inputs = {}
     
-    # 处理可迁移性测试数据 - Subject_Aliasing (使用portability_s或portability_data)
     portability_Subject_Aliasing_prompts = []
     portability_Subject_Aliasing_ans = []
 
     for data in datas:
-        # 优先使用KnowEdit格式的数据 (portability_s)
         if data.get('portability_s'):
             temp_prompts = []
             temp_answers = []
@@ -118,7 +112,6 @@ if __name__ == "__main__":
                     temp_answers.append(pr['ground_truth'])
             portability_Subject_Aliasing_prompts.append(temp_prompts)
             portability_Subject_Aliasing_ans.append(temp_answers)
-        # 使用统一格式处理portability_data
         elif data.get('portability_data') and len(data['portability_data']) > 0:
             temp_prompts = data['portability_data']
             portability_answer = data.get('portability_answer', data['target_new'])
@@ -129,19 +122,16 @@ if __name__ == "__main__":
             portability_Subject_Aliasing_prompts.append([])
             portability_Subject_Aliasing_ans.append([])
     
-    # 只有存在迁移性数据时才添加到portability_inputs
     if any(len(prompts) > 0 for prompts in portability_Subject_Aliasing_prompts):
         portability_inputs['Subject_Aliasing'] = {
             'prompt': portability_Subject_Aliasing_prompts,
             'ground_truth': portability_Subject_Aliasing_ans
         }
     
-    # 处理局部性测试数据 - Relation_Specificity (使用locality_rs或locality_data)
     locality_Relation_Specificity_prompts = []
     locality_Relation_Specificity_ans = []
     
     for data in datas:
-        # 优先使用KnowEdit格式的数据 (locality_rs)
         if data.get('locality_rs'):
             temp_prompts = []
             temp_answers = []
@@ -151,7 +141,6 @@ if __name__ == "__main__":
                     temp_answers.append(pr['ground_truth'])
             locality_Relation_Specificity_prompts.append(temp_prompts)
             locality_Relation_Specificity_ans.append(temp_answers)
-        # 使用统一格式处理locality_data
         elif data.get('locality_data') and len(data['locality_data']) > 0:
             temp_prompts = []
             temp_answers = []
@@ -165,24 +154,13 @@ if __name__ == "__main__":
             locality_Relation_Specificity_prompts.append([])
             locality_Relation_Specificity_ans.append([])
     
-    # 只有存在局部性数据时才添加到locality_inputs
     if any(len(prompts) > 0 for prompts in locality_Relation_Specificity_prompts):
         locality_inputs['Relation_Specificity'] = {
             'prompt': locality_Relation_Specificity_prompts,
             'ground_truth': locality_Relation_Specificity_ans
         }
     
-    # 打印数据处理结果统计
-    print(f"\n===== 数据处理结果 =====")
-    print(f"基本提示数量: {len(basic_prompts)}")
-    
-    if 'Subject_Aliasing' in portability_inputs:
-        print(f"可迁移性测试 Subject_Aliasing: {sum(1 for prompts in portability_Subject_Aliasing_prompts if len(prompts) > 0)}/{len(portability_Subject_Aliasing_prompts)}")
-    
-    if 'Relation_Specificity' in locality_inputs:
-        print(f"局部性测试 Relation_Specificity: {sum(1 for prompts in locality_Relation_Specificity_prompts if len(prompts) > 0)}/{len(locality_Relation_Specificity_prompts)}")
-    
-    # 加载超参数
+
     hparams = editing_hparams.from_hparams(args.hparams_dir)
     args.pre_file = f"./{hparams.model_name.split('/')[-1]}_{args.datatype}_pre_edit.json"
     print(args.pre_file)
@@ -192,7 +170,6 @@ if __name__ == "__main__":
     else:
         pre_edit = None
         
-    # 处理特定编辑方法
     if args.editing_method == 'IKE':
         train_ds = LongFormDataset(args.train_data_path)
         sentence_model = SentenceTransformer(hparams.sentence_model_name).to(f'cuda:{hparams.device}')
@@ -203,10 +180,8 @@ if __name__ == "__main__":
     else:
         train_ds = None
     
-    # 初始化编辑器
     editor = BaseEditor.from_hparams(hparams)
     
-    # 执行编辑并评测
     metrics, final_model, _ = editor.edit(
         prompts=basic_prompts,
         target_new=basic_targets,
@@ -219,7 +194,6 @@ if __name__ == "__main__":
         train_ds=train_ds
     )
 
-    # 保存和评估结果
     if not os.path.exists(args.metrics_save_dir):
         os.makedirs(args.metrics_save_dir)
     result_path = os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datatype}_{hparams.model_name.split("/")[-1]}_results.json')

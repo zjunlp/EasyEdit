@@ -12,10 +12,6 @@ from ..trainer.utils import dict_to
 
 
 class LongFormDataset(Dataset):
-    """
-    Dataset for LongForm data format which includes coupled entities.
-    """
-
     def __init__(self, data_dir: str, size: typing.Optional[int] = None, config=None, *args, **kwargs):
         data_dir = Path(data_dir)
         
@@ -26,7 +22,6 @@ class LongFormDataset(Dataset):
         else:
             self.max_length = 40
 
-        # For Meta Training
         if config is not None and hasattr(config, 'tokenizer_name'):
             tok_name = (
                 config.tokenizer_name
@@ -50,54 +45,43 @@ class LongFormDataset(Dataset):
                 tokenizer.unk_token='<|endoftext|>'
             self.tok = tokenizer
 
-        # 加载数据文件
         with open(data_dir, "r") as f:
             raw = json.load(f)
 
         data = []
         for i, record in enumerate(raw):
-            # 检查数据格式类型
             is_new_format = "subject" in record and "src" in record
             is_requested_rewrite_format = "requested_rewrite" in record
             
-            # 初始化数据项（使用统一的字段结构）
             data_item = {
                 "subject": "",
                 "prompt": "",
                 "target_new": "",
                 "target_true": "",
-                # 使用与counterfact.py一致的命名：迁移性测试
                 "portability_data": [],
                 "portability_answer": "",
-                # 使用counterfact.py风格的KnowEdit格式字段 - 迁移性
-                "portability_s": None,  # Subject_Aliasing
-                "portability_r": None,  # Reasoning
-                "portability_l": None,  # Logical_Generalization
-                # 使用与counterfact.py一致的命名：局部性测试
+                "portability_s": None,
+                "portability_r": None,
+                "portability_l": None,
                 "locality_data": [],
-                # 使用counterfact.py风格的KnowEdit格式字段 - 局部性
-                "locality_rs": None,    # Relation_Specificity
-                "locality_f": None      # Forgetfulness
+                "locality_rs": None,
+                "locality_f": None
             }
             
             if is_new_format:
-                # 新格式数据处理 - 包含subject和src字段
                 data_item["subject"] = record.get("subject", "")
                 data_item["prompt"] = record.get("src", "")
                 data_item["target_new"] = record.get("pred", "")
-                data_item["portability_answer"] = record.get("pred", "")  # 默认使用pred作为迁移性答案
+                data_item["portability_answer"] = record.get("pred", "")
                 
-                # 处理answers字段（可能是列表或字符串）
                 if "answers" in record:
                     if isinstance(record["answers"], list):
                         data_item["target_true"] = record["answers"][0] if record["answers"] else ""
                     else:
                         data_item["target_true"] = record["answers"]
                 
-                # 处理rephrase字段（迁移性测试）- 统一到portability_data
                 if "rephrase" in record:
                     if isinstance(record["rephrase"], str):
-                        # 如果是字符串，可能包含"- "分隔的多个提示
                         if record["rephrase"].startswith("- "):
                             portability_prompts = record["rephrase"].split("- ")[1:]
                         else:
@@ -105,7 +89,6 @@ class LongFormDataset(Dataset):
                     elif isinstance(record["rephrase"], list):
                         portability_prompts = record["rephrase"]
                         
-                    # 构建portability_s格式 - 兼容KnowEdit格式
                     data_item["portability_s"] = []
                     for prompt in portability_prompts:
                         data_item["portability_s"].append({
@@ -113,21 +96,17 @@ class LongFormDataset(Dataset):
                             "ground_truth": data_item["target_new"]
                         })
                     
-                    # 也添加到portability_data
                     data_item["portability_data"] = portability_prompts
                 
-                # 处理loc和loc_ans字段（局部性测试）- 统一到locality_data
                 if "loc" in record and record["loc"]:
                     locality_prompt = record["loc"]
                     locality_answer = record.get("loc_ans", data_item["target_true"])
                     
-                    # 构建locality_rs格式 - 兼容KnowEdit格式
                     data_item["locality_rs"] = [{
                         "prompt": locality_prompt,
                         "ground_truth": locality_answer
                     }]
                     
-                    # 也添加到locality_data
                     data_item["locality_data"] = [{
                         "prompt": locality_prompt,
                         "subject": data_item["subject"],
@@ -135,30 +114,24 @@ class LongFormDataset(Dataset):
                     }]
                 
             elif is_requested_rewrite_format:
-                # 原始格式数据处理
                 rewrite = record["requested_rewrite"]
                 
-                # 提取主体
                 data_item["subject"] = rewrite.get("subject", "")
                 
-                # 提取提示
                 prompt = rewrite.get("prompt", "")
                 if prompt and data_item["subject"] and "{}" in prompt:
                     data_item["prompt"] = prompt.format(data_item["subject"])
                 else:
                     data_item["prompt"] = rewrite.get("prompt_full", prompt)
                 
-                # 提取目标答案
                 data_item["target_new"] = rewrite.get("target_new", {}).get("str", "")
                 data_item["target_true"] = rewrite.get("target_true", {}).get("str", "")
-                data_item["portability_answer"] = data_item["target_new"]  # 默认使用target_new作为迁移性答案
+                data_item["portability_answer"] = data_item["target_new"]
                 
-                # 提取迁移性数据 - 统一到portability_data和portability_s
                 if "paraphrase_prompts" in record and record["paraphrase_prompts"]:
                     paraphrase_prompts = record["paraphrase_prompts"]
                     data_item["portability_data"] = paraphrase_prompts
                     
-                    # 构建portability_s格式
                     data_item["portability_s"] = []
                     for prompt in paraphrase_prompts:
                         data_item["portability_s"].append({
@@ -166,11 +139,9 @@ class LongFormDataset(Dataset):
                             "ground_truth": data_item["target_new"]
                         })
                 
-                # 提取局部性数据 - 统一到locality_data和locality_rs
                 if "neighborhood_prompts" in record and record["neighborhood_prompts"]:
                     neighborhood_prompts = record["neighborhood_prompts"]
                     
-                    # 构建locality_rs格式
                     data_item["locality_rs"] = []
                     data_item["locality_data"] = []
                     
@@ -186,12 +157,10 @@ class LongFormDataset(Dataset):
                             "target": answer
                         })
                 
-                # 处理coupled_prompts_and_properties字段
                 if "coupled_prompts_and_properties" in record:
                     data_item["coupled_prompts_and_properties"] = record["coupled_prompts_and_properties"]
                 
             else:
-                # 其他格式，尝试从各种可能的字段中提取数据
                 data_item["subject"] = record.get("subject", "")
                 prompt = record.get("prompt", record.get("text", ""))
                 
@@ -202,16 +171,14 @@ class LongFormDataset(Dataset):
                 
                 data_item["target_new"] = record.get("target_new", record.get("pred", ""))
                 data_item["target_true"] = record.get("target_true", record.get("ground_truth", ""))
-                data_item["portability_answer"] = data_item["target_new"]  # 默认使用target_new作为迁移性答案
+                data_item["portability_answer"] = data_item["target_new"]
                 
-                # 从answers字段提取target_true（如果之前没设置）
                 if not data_item["target_true"] and "answers" in record:
                     if isinstance(record["answers"], list) and record["answers"]:
                         data_item["target_true"] = record["answers"][0]
                     elif isinstance(record["answers"], str):
                         data_item["target_true"] = record["answers"]
                 
-                # 处理迁移性数据 - 统一到portability_data和portability_s
                 portability_prompts = []
                 if "paraphrase_prompts" in record and record["paraphrase_prompts"]:
                     portability_prompts = record["paraphrase_prompts"]
@@ -226,7 +193,6 @@ class LongFormDataset(Dataset):
                 
                 if portability_prompts:
                     data_item["portability_data"] = portability_prompts
-                    # 构建portability_s格式
                     data_item["portability_s"] = []
                     for prompt in portability_prompts:
                         data_item["portability_s"].append({
@@ -234,7 +200,6 @@ class LongFormDataset(Dataset):
                             "ground_truth": data_item["target_new"]
                         })
                 
-                # 处理局部性数据 - 统一到locality_data和locality_rs
                 locality_prompts = []
                 if "neighborhood_prompts" in record and record["neighborhood_prompts"]:
                     locality_prompts = record["neighborhood_prompts"]
@@ -242,7 +207,6 @@ class LongFormDataset(Dataset):
                     locality_prompts = [record["loc"]]
                 
                 if locality_prompts:
-                    # 构建locality_rs格式
                     data_item["locality_rs"] = []
                     data_item["locality_data"] = []
                     
@@ -250,7 +214,7 @@ class LongFormDataset(Dataset):
                         answer = ""
                         if "neighborhood_answers" in record and len(record["neighborhood_answers"]) > i:
                             answer = record["neighborhood_answers"][i]
-                        elif "loc_ans" in record and i == 0:  # 只对第一个loc使用loc_ans
+                        elif "loc_ans" in record and i == 0:
                             answer = record["loc_ans"]
                         else:
                             answer = data_item["target_true"]
@@ -265,11 +229,9 @@ class LongFormDataset(Dataset):
                             "target": answer
                         })
             
-            # 处理coupled_prompts_and_properties字段（如果存在）
             if "coupled_prompts_and_properties" in record:
                 data_item["coupled_prompts_and_properties"] = record["coupled_prompts_and_properties"]
             
-            # 只有在数据项包含必要字段时才添加
             if data_item["subject"] and data_item["prompt"] and data_item["target_new"]:
                 data.append(data_item)
 
@@ -277,11 +239,9 @@ class LongFormDataset(Dataset):
             data = data[:size]
         self._data = data
 
-        # 打印统计信息用于调试
         print(f"\n===== 数据集统计 =====")
         print(f"总样本数: {len(data)}")
         
-        # 检查样本数据
         has_portability = sum(1 for item in data if item['portability_data'] and len(item['portability_data']) > 0)
         has_portability_s = sum(1 for item in data if item['portability_s'] and len(item['portability_s']) > 0)
         has_locality = sum(1 for item in data if item['locality_data'] and len(item['locality_data']) > 0)
@@ -290,7 +250,6 @@ class LongFormDataset(Dataset):
         print(f"有迁移性数据的样本数: {has_portability}")
         print(f"有局部性数据的样本数: {has_locality}")
         
-        # 打印部分样本示例
         if len(data) > 0:
             print("\n===== 样本示例 =====")
             sample = data[0]

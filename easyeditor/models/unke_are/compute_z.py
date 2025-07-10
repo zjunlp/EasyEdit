@@ -14,12 +14,7 @@ def compute_z(
     layer: int,
     hparams: UnkeAREHyperParams,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """
-    Computes the value (right) vector for the rank-1 update.
-    Runs a simple optimization procedure.
-    """
 
-    # Get model parameters (bs:seq:h_dim) -> (bs:seq:vocab_size)
     lm_w, ln_f = (
         nethook.get_parameter(model, f"{hparams.lm_head_module}.weight").T,
         nethook.get_module(model, hparams.ln_f_module),
@@ -29,7 +24,6 @@ def compute_z(
     except LookupError as _:
         lm_b = next(model.parameters()).new_zeros(model.config.vocab_size)
 
-    # Tokenize target into list of int token IDs
     target_ids = tok(data["answer"], return_tensors="pt").to(f"cuda:{hparams.device}")[
         "input_ids"
     ][0]  
@@ -107,15 +101,12 @@ def compute_z(
 
             return cur_out
 
-        # Optimizer
         opt = torch.optim.Adam([delta], lr=hparams.v_lr)
         nethook.set_requires_grad(False, model)  
 
-        # Execute optimization
         for it in range(hparams.v_num_grad_steps):
             opt.zero_grad()
 
-            # Forward propagation
             with nethook.TraceDict(
                 module=model,
                 layers=[
@@ -128,7 +119,6 @@ def compute_z(
             ) as tr:
                 logits = model(input_ids).logits
                 
-            # Compute loss on rewriting targets
             output = tr[hparams.layer_module_tmp.format(loss_layer)].output[0]  
             if output.shape[1] != rewriting_targets.shape[1]:
                 output = torch.transpose(output, 0, 1)
@@ -142,14 +132,12 @@ def compute_z(
             ).squeeze(2)
             mask = (rewriting_targets != -100).float()
 
-            # Aggregate total losses
             nll_loss_each = -(loss * mask.to(loss.device)).sum(1) / current_target_ids.size(0)
             nll_loss = nll_loss_each.mean()
             
             weight_decay = hparams.v_weight_decay * (
                 torch.norm(delta) / torch.norm(target_init) ** 2
             )
-            # weight_decay = hparams.v_weight_decay * torch.norm(delta) ** 2
             loss = nll_loss + weight_decay.to(nll_loss.device)
             
             if loss < 5e-3:
@@ -158,11 +146,9 @@ def compute_z(
             if it == hparams.v_num_grad_steps - 1:
                 break
 
-            # Backpropagate
             loss.backward()
             opt.step()
 
-            # Project within L2 ball
             max_norm = hparams.clamp_norm_factor * target_init.norm()
             if delta.norm() > max_norm:
                 with torch.no_grad():

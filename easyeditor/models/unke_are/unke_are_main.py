@@ -56,21 +56,17 @@ def get_optimizer_params(model, encoder_lr, weight_decay=0.01):
         return optimizer_parameters
 
 def get_qwen2_causal_mask(input_tensor, attention_mask, past_key_values_length=0):
-    # 获取输入序列的长度
     batch_size, seq_length = attention_mask.shape
     device = input_tensor.device
     dtype = input_tensor.dtype
 
-    # 创建position_ids
     position_ids = attention_mask.long().cumsum(-1) - 1
     position_ids.masked_fill_(attention_mask == 0, 1)
     position_ids = position_ids[:, past_key_values_length:]
 
-    # 创建因果attention mask
     if past_key_values_length == 0:
         past_key_values_length = 0
     
-    # 使用attention_mask创建4D因果掩码
     attention_mask_2d = attention_mask
     attention_mask_4d = _prepare_4d_causal_attention_mask(
         attention_mask_2d,
@@ -82,23 +78,18 @@ def get_qwen2_causal_mask(input_tensor, attention_mask, past_key_values_length=0
     return attention_mask_4d, position_ids
 
 def get_causal_mask(input_tensor, attention_mask):
-    # 获取输入序列的长度
     batch_size, seq_length = attention_mask.shape
     device = input_tensor.device
     dtype = input_tensor.dtype
 
-    # 创建position_ids
     position_ids = attention_mask.long().cumsum(-1) - 1
     position_ids.masked_fill_(attention_mask == 0, 1)
 
-    # 创建因果attention mask
-    # 使用attention_mask创建4D因果掩码
     attention_mask_2d = attention_mask
     attention_mask_4d = AttentionMaskConverter._make_causal_mask(
         attention_mask_2d.shape, device=device, dtype=dtype
     )
     
-    # Llama3特有的缓存位置信息
     cache_position = torch.arange(seq_length, device=device).unsqueeze(0).repeat(batch_size, 1)
     
     return attention_mask_4d, position_ids, cache_position
@@ -113,30 +104,12 @@ def apply_unke_are_to_model(
     keep_original_weight=False,
     **kwargs
 ):
-    """
-    Apply UNKE-ARE editing to a model for a batch of requests.
-    
-    Args:
-        model: The model to edit
-        tok: The tokenizer
-        requests: A list of editing requests
-        hparams: Hyperparameters for UNKE-ARE
-        copy: Whether to copy the model before editing
-        return_orig_weights: Whether to return the original weights
-        keep_original_weight: Whether to keep the original weights
-        
-    Returns:
-        The edited model and (optionally) a copy of the original weights
-    """
-    # Make a copy of the model if requested
     if copy:
         model = copy_module.deepcopy(model)
     
-    # Verify we're editing a valid model
     assert requests[0]['prompt'] is not None, "Request must include a prompt"
     assert requests[0]['target_new'] is not None, "Request must include a target_new"
     
-    # First, collect all necessary data
     batch_data = []
     for request in requests:
         data_instance = {
@@ -145,16 +118,12 @@ def apply_unke_are_to_model(
         }
         batch_data.append(data_instance)
     
-    # Generate example data for training stability
     if hasattr(hparams, 'ex_data_num') and hparams.ex_data_num > 0:
         ex_data = []
-        # Generate some random prompts for stability
-        # In a real application, these could be pulled from a dataset
         for _ in range(hparams.ex_data_num):
             random_text = tok.decode(torch.randint(1000, 30000, (20,)), skip_special_tokens=True)
             ex_data.append(random_text)
     else:
-        # Use default stability examples
         ex_data = [
             "The capital of France is Paris.",
             "Water boils at 100 degrees Celsius.",
@@ -163,7 +132,6 @@ def apply_unke_are_to_model(
     
     LOG.info(f"Applying UNKE-ARE to {len(batch_data)} requests")
     
-    # Store original parameters for layers we'll be modifying
     preserve_params = []
     for name, params in model.named_parameters():
         splitted_name = name.split('.')
@@ -179,7 +147,6 @@ def apply_unke_are_to_model(
     
     weights_copy = {k: v.detach().clone() for k, v in weights.items()} if return_orig_weights else {}
     
-    # Compute z values for each request
     z_layer = hparams.layers[-1]
     zs_dict = {}
     idxs_dict = {}
@@ -198,7 +165,6 @@ def apply_unke_are_to_model(
         i['question'] + i['answer'] for i in batch_data
     ]
     
-    # Apply edits layer by layer
     for i, layer in enumerate(hparams.layers):
         contexts_tok = tok(batch_question_ans, padding=True, return_tensors="pt").to(
             f"cuda:{hparams.device}"
@@ -219,7 +185,6 @@ def apply_unke_are_to_model(
         
         layer_out_ks = layer_out_ks[0] if type(layer_out_ks) is tuple else layer_out_ks
         
-        # Compute current z values and targets
         cur_zs_dict = compute_ks(model, tok, batch_question_ans, hparams, z_layer, idxs_dict)
         targets_dict = {}
         for k, cur_zs_list in cur_zs_dict.items():
@@ -227,7 +192,6 @@ def apply_unke_are_to_model(
             targets_list = [(a - b)/(len(hparams.layers) - i) for a, b in zip(zs_list, cur_zs_list)]
             targets_dict[k] = targets_list
 
-        # Get example data for stability
         ex_tok = tok(ex_data, padding=True, return_tensors="pt").to(
             f"cuda:{hparams.device}"
         )
@@ -247,7 +211,6 @@ def apply_unke_are_to_model(
         
         stat_out = stat_out[0] if type(stat_out) is tuple else stat_out
         
-        # Setup optimization
         criterion = nn.MSELoss()
         _layer = nethook.get_module(model, hparams.layer_module_tmp.format(layer))
         
@@ -257,13 +220,11 @@ def apply_unke_are_to_model(
         params = get_optimizer_params(_layer, hparams.lr)
         optimizer = optim.AdamW(params, lr=hparams.lr, eps=1e-8, betas=(0.9, 0.999))
         
-        # Add residuals to outputs
         for k, idxs_list in idxs_dict.items():
             for j, idx in enumerate(idxs_list):
                 resid = targets_dict[k][j]
                 layer_out_ks[k, idx] += resid
         
-        # Get appropriate attention masks based on model type
         if 'llama' in hparams.model_name.lower():
             input_causal_mask, input_position_ids, input_cache_position = get_causal_mask(layer_in_ks, contexts_tok['attention_mask'])
             ex_causal_mask, ex_position_ids, ex_cache_position = get_causal_mask(stat_in, ex_tok['attention_mask'])
@@ -271,7 +232,6 @@ def apply_unke_are_to_model(
             input_causal_mask, input_position_ids = get_qwen2_causal_mask(layer_in_ks, contexts_tok['attention_mask'])
             ex_causal_mask, ex_position_ids = get_qwen2_causal_mask(stat_in, ex_tok['attention_mask'])
         else:
-            # Default case for other models
             input_causal_mask = contexts_tok['attention_mask']
             input_position_ids = None
             ex_causal_mask = ex_tok['attention_mask']
@@ -279,7 +239,6 @@ def apply_unke_are_to_model(
             input_cache_position = None
             ex_cache_position = None
         
-        # Train the layer
         for step in range(hparams.optim_num_step):
             optimizer.zero_grad()
             
@@ -290,7 +249,6 @@ def apply_unke_are_to_model(
                 loss = criterion(_layer(stat_in, attention_mask=ex_causal_mask, position_ids=ex_position_ids, cache_position=ex_cache_position)[0], stat_out) + \
                        criterion(_layer(layer_in_ks, attention_mask=input_causal_mask, position_ids=input_position_ids, cache_position=input_cache_position)[0], layer_out_ks)
             else:
-                # Default case for other models
                 output_ex = _layer(stat_in)
                 output_ex = output_ex[0] if isinstance(output_ex, tuple) else output_ex
                 
@@ -307,5 +265,4 @@ def apply_unke_are_to_model(
                 
         LOG.info(f"UNKE-ARE Layer {layer} training completed with final loss: {loss.item():.6f}")
     
-    # Return the model and (optionally) the original weights
     return model, weights_copy 

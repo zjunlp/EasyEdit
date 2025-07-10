@@ -7,7 +7,6 @@ import yaml
 
 @dataclass
 class UnkeAREHyperParams(HyperParams):
-    # Method
     model_name: str
     layers: List[int]
     layer_selection: Literal["all", "random"]
@@ -23,7 +22,6 @@ class UnkeAREHyperParams(HyperParams):
     optim_num_step: int
     ex_data_num: int
     
-    # Module templates
     rewrite_module_tmp: str
     layer_module_tmp: str
     mlp_module_tmp: str
@@ -33,7 +31,6 @@ class UnkeAREHyperParams(HyperParams):
     window_size: int
     overlap: int
 
-    # EasyEdit required params
     device: int
     alg_name: str
     batch_size: int = 1
