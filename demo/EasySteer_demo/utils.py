@@ -234,7 +234,7 @@ def pretrained_vector(steer_vector, steer_strength, progress=gr.Progress()):
             steer_model, _ = get_model(apply_hparams)
             
         progress(0.4, desc="Preparing steer vector...")
-        vector_dir = "/mnt/20t/xuhaoming/EasySteer-simplify/demo/EasySteer/demo_vector"
+        vector_dir = "demo/EasySteer/demo_vector"
         if steer_vector == "Personality":
             vector_path = vector_dir + "/personality/personality.pt"
         elif steer_vector == "Sentiment":
