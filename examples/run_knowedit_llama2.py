@@ -12,7 +12,8 @@ from easyeditor import (
     ROMEHyperParams, 
     LoRAHyperParams,
     MENDHyperParams,
-    SERACHparams
+    SERACHparams,
+    UnkeAREHyperParams
     )
 from easyeditor import BaseEditor
 from easyeditor.models.ike import encode_ike_facts
@@ -89,6 +90,8 @@ if __name__ == "__main__":
         editing_hparams = SERACHparams
     elif args.editing_method == 'MEND':
         editing_hparams = MENDHyperParams
+    elif args.editing_method == 'UNKE-ARE':
+        editing_hparams = UnkeAREHyperParams
     else:
         raise NotImplementedError
     

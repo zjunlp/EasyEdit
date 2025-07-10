@@ -1,0 +1,31 @@
+alg_name: UNKE-ARE
+model_name: meta-llama/Llama-2-7b-hf
+device: 0
+
+# Method Hyperparameters
+layers: [5, 6, 7, 8, 9]
+layer_selection: all
+fact_token: last
+lr: 5e-4
+v_num_grad_steps: 50
+v_lr: 5e-1
+v_loss_layer: 31
+v_weight_decay: 0.5
+clamp_norm_factor: 4
+optim_num_step: 20
+ex_data_num: 3
+window_size: 10
+overlap: 3
+
+# Module templates
+rewrite_module_tmp: "model.layers.{}.mlp"
+layer_module_tmp: "model.layers.{}"
+mlp_module_tmp: "model.layers.{}.mlp"
+attn_module_tmp: "model.layers.{}.self_attn"
+ln_f_module: "model.norm"
+lm_head_module: "lm_head"
+
+# Model parameters
+batch_size: 1
+max_length: 40
+model_parallel: false 

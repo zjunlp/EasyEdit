@@ -2,106 +2,75 @@
     {
         "pre": {
             "rewrite_acc": [
+                0.8333333333333334
+            ],
+            "locality": {
+                "Relation_Specificity_output": [
+                    [
+                        6439,
+                        12,
+                        565,
+                        1990,
+                        260
+                    ]
+                ]
+            },
+            "portability": {
+                "Subject_Aliasing_acc": [
+                    0.6666666666666666
+                ],
+                "reasoning_acc": [
+                    0.5
+                ]
+            },
+            "fluency": {
+                "ngram_entropy": 3.952434135840554
+            }
+        }
+    },
+    {
+        "pre": {
+            "rewrite_acc": [
+                0.16666666666666666
+            ],
+            "locality": {
+                "Relation_Specificity_output": [
+                    [
+                        6439
+                    ]
+                ],
+                "Forgetfulness_output": [
+                    [
+                        407,
+                        286,
+                        262
+                    ]
+                ]
+            },
+            "portability": {
+                "Subject_Aliasing_acc": [
+                    0.16666666666666666
+                ]
+            },
+            "fluency": {
+                "ngram_entropy": 6.301496530413857
+            }
+        }
+    },
+    {
+        "pre": {
+            "rewrite_acc": [
                 0.0
             ],
             "locality": {
                 "Relation_Specificity_output": [
                     [
-                        262,
-                        27874,
-                        290
-                    ],
+                        6439
+                    ]
+                ],
+                "Forgetfulness_output": [
                     [
-                        262
-                    ],
-                    [
-                        27874,
-                        1578,
-                        13,
-                        50,
-                        13,
-                        1181,
-                        286,
-                        9486
-                    ],
-                    [
-                        262,
-                        30043,
-                        290
-                    ],
-                    [
-                        262,
-                        198,
-                        309,
-                        11
-                    ],
-                    [
-                        262,
-                        1989,
-                        311,
-                        1989
-                    ],
-                    [
-                        262,
-                        25371,
-                        34,
-                        526,
-                        262,
-                        1903,
-                        678,
-                        400,
-                        526
-                    ],
-                    [
-                        286,
-                        1088,
-                        640,
-                        286,
-                        27874,
                         257
-                    ],
-                    [
-                        287,
-                        287,
-                        422,
-                        422,
-                        422,
-                        465
-                    ],
-                    [
-                        467,
-                        262,
-                        2635,
-                        290,
-                        257,
-                        355,
-                        262,
-                        995,
-                        1829
-                    ],
-                    [
-                        2291,
-                        3294,
-                        3294,
-                        284,
-                        290
-                    ],
-                    [
-                        262
-                    ],
-                    [
-                        351
-                    ],
-                    [
-                        351
-                    ],
-                    [
-                        262
-                    ],
-                    [
-                        379,
-                        9121,
-                        9121
                     ]
                 ]
             },
@@ -111,7 +80,55 @@
                 ]
             },
             "fluency": {
-                "ngram_entropy": 6.373499377339234
+                "ngram_entropy": 4.832942514673717
+            }
+        }
+    },
+    {
+        "pre": {
+            "rewrite_acc": [
+                0.0
+            ],
+            "locality": {
+                "Relation_Specificity_output": [
+                    [
+                        407,
+                        5652
+                    ]
+                ]
+            },
+            "portability": {
+                "Subject_Aliasing_acc": [
+                    0.0
+                ]
+            },
+            "fluency": {
+                "ngram_entropy": 6.240159388058796
+            }
+        }
+    },
+    {
+        "pre": {
+            "rewrite_acc": [
+                0.3333333333333333
+            ],
+            "locality": {
+                "Relation_Specificity_output": [
+                    [
+                        257
+                    ]
+                ]
+            },
+            "portability": {
+                "Subject_Aliasing_acc": [
+                    0.3333333333333333
+                ],
+                "reasoning_acc": [
+                    0.3333333333333333
+                ]
+            },
+            "fluency": {
+                "ngram_entropy": 6.392375656044697
             }
         }
     }

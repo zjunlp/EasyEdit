@@ -16,6 +16,7 @@ from easyeditor import (
     WISEHyperParams,
     BaseEditor,
     summary_metrics,
+    UnkeAREHyperParams
 )
 
 
@@ -53,6 +54,8 @@ if __name__ == "__main__":
         editing_hparams = WISEHyperParams
     elif args.editing_method == 'AlphaEdit':
         editing_hparams = AlphaEditHyperParams
+    elif args.editing_method == 'UNKE_ARE':
+        editing_hparams = UnkeAREHyperParams
     else:
         raise NotImplementedError
 

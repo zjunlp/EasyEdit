@@ -270,11 +270,18 @@ class BaseEditor:
                 if 'locality' in chunk_metrics[i]['post'].keys():
                     for locality_key in request['locality'].keys():
                         locality_result = []
-                        if hasattr(self.hparams, 'evaluation_type') and self.hparams.evaluation_type == "LLM-judge":
+                        if hasattr(self.hparams, 'evaluation_type'):
                             locality_result.append(float(chunk_metrics[i]['post']['locality'][f'{locality_key}_output']==chunk_metrics[i]['pre']['locality'][f'{locality_key}_output']))
                         else:
                             for ans, label in zip(chunk_metrics[i]['post']['locality'][f'{locality_key}_output'], chunk_metrics[i]['pre']['locality'][f'{locality_key}_output']):
-                                locality_result.append(np.mean(np.equal(ans, label)))
+                                if isinstance(ans, (list, np.ndarray)) and isinstance(label, (list, np.ndarray)):
+                                    min_len = min(len(ans), len(label))
+                                    if min_len > 0:
+                                        locality_result.append(np.mean(np.equal(ans[:min_len], label[:min_len])))
+                                    else:
+                                        locality_result.append(0.0)
+                                else:
+                                    locality_result.append(float(ans == label))
                         chunk_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
                         chunk_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
                     chunk_metrics[i]['pre'].pop('locality')
@@ -373,7 +380,14 @@ class BaseEditor:
                             locality_result.append(float(all_metrics[idx]['post']['locality'][f'{locality_key}_output']==all_metrics[idx]['pre']['locality'][f'{locality_key}_output']))
                         else:
                             for ans, label in zip(all_metrics[idx]['post']['locality'][f'{locality_key}_output'], all_metrics[idx]['pre']['locality'][f'{locality_key}_output']):
-                                locality_result.append(np.mean(np.equal(ans, label)))
+                                if isinstance(ans, (list, np.ndarray)) and isinstance(label, (list, np.ndarray)):
+                                    min_len = min(len(ans), len(label))
+                                    if min_len > 0:
+                                        locality_result.append(np.mean(np.equal(ans[:min_len], label[:min_len])))
+                                    else:
+                                        locality_result.append(0.0)
+                                else:
+                                    locality_result.append(float(ans == label))
                         all_metrics[idx]['post']['locality'][f'{locality_key}_acc'] = locality_result
                         all_metrics[idx]['post']['locality'].pop(f'{locality_key}_output')
                     all_metrics[idx]['pre'].pop('locality')

@@ -18,8 +18,9 @@ from ..models.r_rome import R_ROMEHyperParams, apply_r_rome_to_model
 from ..models.emmet import EMMETHyperParams, apply_emmet_to_model
 from ..models.alphaedit import AlphaEditHyperParams, apply_AlphaEdit_to_model
 from ..models.core import COREHyperParams, apply_core_to_model
-from .. models.deepedit_api import DeepEditApiHyperParams, apply_deepedit_api_to_model
+from ..models.deepedit_api import DeepEditApiHyperParams, apply_deepedit_api_to_model
 from ..models.dpo import DPOHyperParams, apply_dpo_to_model
+from ..models.unke_are import UnkeAREHyperParams, apply_unke_are_to_model
 
 ALG_DICT = {
     'ROME': apply_rome_to_model,
@@ -42,7 +43,8 @@ ALG_DICT = {
     "EMMET": apply_emmet_to_model,
     "AlphaEdit": apply_AlphaEdit_to_model,
     "CORE": apply_core_to_model,
-    "DeepEdit-Api": apply_deepedit_api_to_model
+    "DeepEdit-Api": apply_deepedit_api_to_model,
+    "UNKE-ARE": apply_unke_are_to_model
 }
 
 ALG_MULTIMODAL_DICT = {
