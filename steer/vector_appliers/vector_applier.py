@@ -39,8 +39,7 @@ class BaseVectorApplier:
                 if alg_name == 'prompt':
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
                 elif alg_name == "loreft":
-                    reft_model, model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name])
-                    self.reft_model = reft_model
+                    model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name])
                 elif vectors is None or vectors.get(alg_name) is None:
                     assert hparams_dict[alg_name].steer_vector_load_dir is not None, f"Steer vector load path {hparams_dict[alg_name].steer_vector_load_dir} does not exist !"
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
@@ -93,39 +92,35 @@ class BaseVectorApplier:
                 generation_data_size = -1
             dataset = datasets[generation_data_name][:generation_data_size] if generation_data_size > 0 else datasets[generation_data_name]
             num_responses = self.config.get('num_responses', 1)
-            # judge method type
-            if self.hparams_dict.get('loreft') is not None:
-                preds,orig_preds,complete_output = self.loreft_generate(dataset, num_responses)
-            else:
-                for item in tqdm(dataset, desc=f"Evaluating dataset {generation_data_name}"):
-                    if not item.get('input'):
-                        continue
-                    current_preds = []
-                    current_output = []
-                    input_text = self._process_input_text(item['input'])
-                    inputs = self.tokenizer(input_text, return_tensors="pt", add_special_tokens = not self.config.use_chat_template).to(self.device)
+            for item in tqdm(dataset, desc=f"Evaluating dataset {generation_data_name}"):
+                if not item.get('input'):
+                    continue
+                current_preds = []
+                current_output = []
+                input_text = self._process_input_text(item['input'])
+                inputs = self.tokenizer(input_text, return_tensors="pt", add_special_tokens = not self.config.use_chat_template).to(self.device)
 
-                    for j in range(num_responses):
-                        if num_responses > 1:
-                            set_seed(j)
-                        with torch.no_grad():
-                            if self.config.get('steer_from_end_position', False):
-                                instr_pos = self.find_instruction_end_postion(inputs['input_ids'][0])
-                                print("Steering from end position:", instr_pos)
-                                self.model.set_from_positions(instr_pos)  
-                            output = self.model.model.generate(**inputs, **generation_params)
-                            current_output.append(self.tokenizer.decode(output[0], skip_special_tokens=False))
-                            output=output[0][inputs['input_ids'].shape[1]:]
-                            text = self.tokenizer.decode(output, skip_special_tokens=True)
-                            current_preds.append(text)
-                    preds.append(current_preds)
-                    complete_output.append(current_output)
-
-                    if self.config.get('generate_orig_output', False):
-                        output = self.model.ori_generate(**inputs, **generation_params)
+                for j in range(num_responses):
+                    if num_responses > 1:
+                        set_seed(j)
+                    with torch.no_grad():
+                        if self.config.get('steer_from_end_position', False):
+                            instr_pos = self.find_instruction_end_postion(inputs['input_ids'][0])
+                            print("Steering from end position:", instr_pos)
+                            self.model.set_from_positions(instr_pos)  
+                        output = self.model.model.generate(**inputs, **generation_params)
+                        current_output.append(self.tokenizer.decode(output[0], skip_special_tokens=False))
                         output=output[0][inputs['input_ids'].shape[1]:]
                         text = self.tokenizer.decode(output, skip_special_tokens=True)
-                        orig_preds.append([text])
+                        current_preds.append(text)
+                preds.append(current_preds)
+                complete_output.append(current_output)
+
+                if self.config.get('generate_orig_output', False):
+                    output = self.model.ori_generate(**inputs, **generation_params)
+                    output=output[0][inputs['input_ids'].shape[1]:]
+                    text = self.tokenizer.decode(output, skip_special_tokens=True)
+                    orig_preds.append([text])
             formatted_results = self._format_result(dataset, orig_preds=orig_preds,preds=preds, complete_output=complete_output)
             if save_results:
                 self.save_results(formatted_results, generation_data_name)
@@ -173,127 +168,3 @@ class BaseVectorApplier:
         start_pos = tokens.size(0) - 1
         return start_pos
     
-
-    def loreft_generate(self,dataset,num_responses):
-        import pyreft
-        import transformers
-        from  torch.utils.data import DataLoader
-        import datasets
-        from .loreft.apply_loreft_intervention import InterventionEvalDataCollator
-        from ..datasets.loreft_data import load_reft_eval_data
-        def make_eval_data_module(
-                tokenizer:transformers.PreTrainedTokenizer,
-                model,df,positions="all",
-                num_interventions = 1,
-                nonstop = True,
-                share_weights = True,
-                max_length = 512
-        ):
-            all_base_input_ids, all_intervention_locations = [], []
-            for row in df:
-                base_prompt = row["input"]
-                base_prompt_ids = tokenizer(
-                    base_prompt, max_length=max_length, truncation=True, return_tensors="pt")["input_ids"][0]
-                base_prompt_length = len(base_prompt_ids)
-                if positions == "all_prompt":
-                    intervention_locations = torch.tensor([[i for i in range(base_prompt_length)]])
-                else:
-                    first_n, last_n = pyreft.parse_positions(positions)
-                    intervention_locations = pyreft.get_intervention_locations(
-                        last_position=base_prompt_length, 
-                        first_n=first_n, 
-                        last_n=last_n,
-                        pad_mode="first",
-                        num_interventions=num_interventions,
-                        share_weights=share_weights,
-                    )
-                all_base_input_ids.append(base_prompt_ids)
-                all_intervention_locations.append(intervention_locations)     
-            eval_dataset = datasets.Dataset.from_dict({
-                "input_ids": all_base_input_ids,
-                "intervention_locations": all_intervention_locations,
-            })
-            eval_dataset.set_format(
-                type='torch', columns=[
-                    'input_ids', 'intervention_locations',])
-            data_collator_fn = transformers.DefaultDataCollator(
-                return_tensors="pt"
-            )
-            data_collator = InterventionEvalDataCollator(tokenizer=tokenizer, data_collator=data_collator_fn)
-            return dict(train_dataset=None, eval_dataset=eval_dataset, data_collator=data_collator)
-        hparams = self.hparams_dict["loreft"]
-        eval_dataset = load_reft_eval_data(dataset,None, self.tokenizer,"You are a helpful assistant.", use_chat_template=True)
-        batch_size = 1 # it will be something wrong if it is not 1
-        eval_output_length = hparams.max_length
-        temperature = hparams.temperature if hasattr(hparams, "temperature") else 1.0
-        reft_layers = hparams.reft_layers
-        number_of_interventions = len(reft_layers)
-        position = "l1" if not hasattr(hparams,"position") else hparams.position
-        data_module = make_eval_data_module(
-            tokenizer=self.tokenizer,
-            model=self.model.model,
-            df=eval_dataset,
-            positions=position,
-            num_interventions=number_of_interventions,
-            nonstop=True,
-            share_weights=True,
-            max_length=hparams.max_length
-        )
-        eval_dataloader = DataLoader(
-            data_module["eval_dataset"],shuffle=False,
-            batch_size=batch_size,
-            collate_fn = data_module["data_collator"],
-        )
-        self.reft_model.set_device("cuda")
-        result_generations = []
-        result_origins = []
-        result_complete = []
-        for j in range(num_responses):
-            all_generations = []
-            all_origins = []
-            all_complete = []
-            for i, bactch in enumerate(eval_dataloader):
-                inputs = {k: v.to(self.device) for k, v in bactch.items()}
-                if "intervention_locations" in inputs:
-                    if inputs["intervention_locations"].dim() == 3:
-                        unit_locations={"sources->base": (
-                            None,
-                            inputs["intervention_locations"].permute(1, 0, 2).tolist()
-                        )}
-                    else:
-                        # this is dummy for lora only baseline
-                        unit_locations={"sources->base": (None, 0)}
-                origin_outputs, intervention_outputs = self.reft_model.generate(
-                    {"input_ids": inputs["input_ids"], "attention_mask": inputs["attention_mask"]}, 
-                    unit_locations=unit_locations, intervene_on_prompt=True, 
-                    subspaces=[{"idx":[0]}] * number_of_interventions,
-                    max_new_tokens=eval_output_length, do_sample=True, 
-                    temperature=temperature,output_original_output = True
-                )
-                # Decode and print only the generated text without prompt tokens
-                input_lengths = [len(input_ids) for input_ids in inputs["input_ids"]]
-                generated_texts = [
-                    self.tokenizer.decode(generation[input_length:], skip_special_tokens=True)
-                    for generation, input_length in zip(intervention_outputs, input_lengths)
-                ]
-                origin_texts = [
-                    self.tokenizer.decode(generation[input_length:], skip_special_tokens=True)
-                    for generation, input_length in zip(origin_outputs, input_lengths)
-                ]
-                complete_output = [
-                    self.tokenizer.decode(generation, skip_special_tokens=False)
-                    for generation in intervention_outputs
-                ]
-                all_generations += generated_texts
-                all_origins += origin_texts
-                all_complete += complete_output
-            for idx in range(len(all_generations)):
-                if j == 0:
-                    result_generations.append([all_generations[idx]])
-                    result_origins.append([all_origins[idx]])
-                    result_complete.append([all_complete[idx]])
-                else:
-                    result_generations[idx].append(all_generations[idx])
-                    result_origins[idx].append(all_origins[idx])
-                    result_complete[idx].append(all_complete[idx])
-        return result_generations, result_origins, result_complete
