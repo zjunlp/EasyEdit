@@ -57,11 +57,9 @@ HYPERPARAMS_CLASS_DICT = {
     'caa': {'train': CAAHyperParams, 'apply': ApplyCAAHyperParams},
     'prompt': {'apply': ApplyPromptHyperParams},
     'merge_vector': {'train': MergeVectorHyperParams, 'apply': ApplyMergeVectorHyperParams},
-<<<<<<< HEAD
+
     'reps_vector':{'train': RePSHyperParams, 'apply': ApplyRepsHyperParams}
-=======
-    'reps_vector':{'train': RePSHyperParams, 'apply': None}
->>>>>>> 2a46a1c5 (Forward Still Bug)
+
 }
 
 METHODS_CLASS_DICT = {
@@ -72,9 +70,5 @@ METHODS_CLASS_DICT = {
     'sta': {'train': generate_sta_vectors, 'apply': apply_sta},
     'prompt': {'apply': apply_prompt},
     'merge_vector': {'train': generate_merge_vector, 'apply': apply_merge_vector},
-<<<<<<< HEAD
     'reps_vector': {'train': generate_reps_vectors, 'apply': apply_reps}
-=======
-    'reps_vector': {'train': generate_reps_vectors, 'apply': None}
->>>>>>> 2a46a1c5 (Forward Still Bug)
 }

@@ -119,12 +119,9 @@ class BlockOutputWrapper(t.nn.Module):
             )
             self.dot_products.append((top_token, dot_product.cpu().item()))
             
-            
-<<<<<<< HEAD
+
         # Activation Addition
-=======
-        # 应用传统的激活添加干预（caa、vector_prompt等）
->>>>>>> 2a46a1c5 (Forward Still Bug)
+
         if self.add_activations_dict:
             augmented_output = output[0]
             for activations in self.add_activations_dict.values():
@@ -137,17 +134,14 @@ class BlockOutputWrapper(t.nn.Module):
                         from_pos=self.from_position,
                     )
             output = (augmented_output,) + output[1:]
-        
-<<<<<<< HEAD
+
         # Intervention
-=======
-        # 应用新的干预类方法（主要用于 RePS）
->>>>>>> 2a46a1c5 (Forward Still Bug)
+
         if self.intervention_dict:
             augmented_output = output[0]
             for method_name, intervention in self.intervention_dict.items():
                 if intervention is not None:
-<<<<<<< HEAD
+
                     # call the forward method of the intervention class
                     intervention_result = intervention.forward(augmented_output, **kwargs)
                     
@@ -157,17 +151,7 @@ class BlockOutputWrapper(t.nn.Module):
                         augmented_output = intervention_result.output
                     else:
                         # for the case that the intervention class returns a tensor
-=======
-                    # 调用干预类的forward方法
-                    intervention_result = intervention.forward(augmented_output, **kwargs)
-                    
-                    # 处理不同类型的返回值
-                    if hasattr(intervention_result, 'output'):
-                        # 对于RePSVectorIntervention等返回InterventionOutput的情况
-                        augmented_output = intervention_result.output
-                    else:
-                        # 对于简单返回tensor的情况
->>>>>>> 2a46a1c5 (Forward Still Bug)
+
                         augmented_output = intervention_result
             output = (augmented_output,) + output[1:]
 
@@ -198,26 +182,13 @@ class BlockOutputWrapper(t.nn.Module):
 
     def add(self, activations, method_name="default"):
         """
-<<<<<<< HEAD
         store activations for different methods
-        store activations for different methods
-=======
-        store activations for different methods (传统方式)
->>>>>>> 2a46a1c5 (Forward Still Bug)
+
         """
         self.add_activations_dict[method_name] = activations
     
     def set_intervention(self, intervention, method_name):
-<<<<<<< HEAD
-=======
-        """
-        设置干预实例（新的干预类方式，主要用于 RePS）
-        
-        Args:
-            intervention: 干预类实例
-            method_name: 方法名称
-        """
->>>>>>> 2a46a1c5 (Forward Still Bug)
+
         self.intervention_dict[method_name] = intervention
 
     def reset(self, method_name="all"):
@@ -228,18 +199,11 @@ class BlockOutputWrapper(t.nn.Module):
             self.add_activations_dict.clear()
             self.intervention_dict.clear()
         elif method_name == "reps":
-<<<<<<< HEAD
             # RePS uses the new intervention class
             if method_name in self.intervention_dict:
                 del self.intervention_dict[method_name]
         else:
-=======
-            # RePS 使用新的干预类方式
-            if method_name in self.intervention_dict:
-                del self.intervention_dict[method_name]
-        else:
-            # 其他方法使用传统的激活添加方式
->>>>>>> 2a46a1c5 (Forward Still Bug)
+
             if method_name in self.add_activations_dict:
                 del self.add_activations_dict[method_name]
         
@@ -343,17 +307,7 @@ class BaseModelWrapper:
             self.model.model.layers[layer].add(activations, method_name)
     
     def set_intervention(self, layer, intervention, method_name):
-<<<<<<< HEAD
-=======
-        """
-        设置干预实例到指定层（新的干预类方式，主要用于 RePS）
-        
-        Args:
-            layer: 层索引
-            intervention: 干预类实例
-            method_name: 方法名称
-        """
->>>>>>> 2a46a1c5 (Forward Still Bug)
+
         if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):
             self.model.model.module.layers[layer].set_intervention(intervention, method_name)
         else:
@@ -597,17 +551,6 @@ class GPTWrapper(BaseModelWrapper):
             self.model.transformer.h[layer].add(activations, method_name)
     
     def set_intervention(self, layer, intervention, method_name):
-<<<<<<< HEAD
-=======
-        """
-        设置干预实例到指定层（新的干预类方式，主要用于 RePS）
-        
-        Args:
-            layer: 层索引
-            intervention: 干预类实例
-            method_name: 方法名称
-        """
->>>>>>> 2a46a1c5 (Forward Still Bug)
         if isinstance(self.model.transformer, Hack_no_grad):
             self.model.transformer.module.h[layer].set_intervention(intervention, method_name)
         else:
