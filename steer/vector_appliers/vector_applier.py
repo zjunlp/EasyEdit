@@ -18,12 +18,17 @@ class BaseVectorApplier:
         self.model = None
         self.tokenizer = None
         self.device = None
+        # for loreft generation
+        self.reft_model = None
         
     def _load_model(self):
         if self.model is None:
             from ..models import get_model
             self.model, self.tokenizer = get_model(self.config)
             self.device = self.model.device
+    def reset_loreft(self):
+        if self.hparams_dict.get('loreft') is not None:
+            self.reft_model = None
     
     def apply_steering(self, hparams_dict, model=None, vectors=None):
         from ..utils.alg_dict import METHODS_CLASS_DICT  
@@ -33,6 +38,8 @@ class BaseVectorApplier:
                 # print(f"Applying {alg_name} vectors to model ...")
                 if alg_name == 'prompt':
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
+                elif alg_name == "loreft":
+                    model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name])
                 elif vectors is None or vectors.get(alg_name) is None:
                     assert hparams_dict[alg_name].steer_vector_load_dir is not None, f"Steer vector load path {hparams_dict[alg_name].steer_vector_load_dir} does not exist !"
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
@@ -84,7 +91,7 @@ class BaseVectorApplier:
             if generation_data_size is None:
                 generation_data_size = -1
             dataset = datasets[generation_data_name][:generation_data_size] if generation_data_size > 0 else datasets[generation_data_name]
-                
+            num_responses = self.config.get('num_responses', 1)
             for item in tqdm(dataset, desc=f"Evaluating dataset {generation_data_name}"):
                 if not item.get('input'):
                     continue
@@ -92,8 +99,7 @@ class BaseVectorApplier:
                 current_output = []
                 input_text = self._process_input_text(item['input'])
                 inputs = self.tokenizer(input_text, return_tensors="pt", add_special_tokens = not self.config.use_chat_template).to(self.device)
-                
-                num_responses = self.config.get('num_responses', 1)
+
                 for j in range(num_responses):
                     if num_responses > 1:
                         set_seed(j)
@@ -115,7 +121,6 @@ class BaseVectorApplier:
                     output=output[0][inputs['input_ids'].shape[1]:]
                     text = self.tokenizer.decode(output, skip_special_tokens=True)
                     orig_preds.append([text])
-
             formatted_results = self._format_result(dataset, orig_preds=orig_preds,preds=preds, complete_output=complete_output)
             if save_results:
                 self.save_results(formatted_results, generation_data_name)

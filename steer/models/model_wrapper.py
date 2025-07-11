@@ -120,15 +120,21 @@ class BlockOutputWrapper(t.nn.Module):
             self.dot_products.append((top_token, dot_product.cpu().item()))
         if self.add_activations_dict:
             augmented_output = output[0]
-            for activations in self.add_activations_dict.values():
-                if activations is not None:
-                    position_ids = kwargs.get("position_ids", None)
-                    augmented_output = add_vector_from_position(
-                        matrix=augmented_output,
-                        vector=activations,
-                        position_ids=position_ids,
-                        from_pos=self.from_position,
-                    )
+            method_names = self.add_activations_dict.keys()
+            if "loreft" in method_names:
+                intervention_cls = self.add_activations_dict["loreft"].get("intervention_cls", None)
+                if intervention_cls is not None:
+                    augmented_output = intervention_cls.forward(augmented_output)
+            else:
+                for activations in self.add_activations_dict.values():
+                    if activations is not None:
+                        position_ids = kwargs.get("position_ids", None)
+                        augmented_output = add_vector_from_position(
+                            matrix=augmented_output,
+                            vector=activations,
+                            position_ids=position_ids,
+                            from_pos=self.from_position,
+                        )
             output = (augmented_output,) + output[1:]
 
         if not self.save_internal_decodings:
