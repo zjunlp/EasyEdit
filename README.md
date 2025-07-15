@@ -29,6 +29,8 @@
 <p align="left">
 ✨ <strong><a href="https://ribbon-muskox-3ac.notion.site/EasyEdit1-0-213e624c1c2680318840d9abbdaa83c5" style="text-decoration: none; "> EasyEdit Beginner's Guide </a></strong> officially published! <br>
  We have written a detailed beginner's guide for EasyEdit, specifically tailored for newcomers to the fields of knowledge editing and model editing. By reading this manual, you can quickly understand and start using EasyEdit.
+✨ EasyEdit blog published!
+We have also published a blog post titled ["Take Control of What Your LLM Knows and Does — with the EasyEdit Tool Series"](https://huggingface.co/blog/xzwnlp/easyedit), where you can learn more about how EasyEdit empowers you to control and edit your LLM’s knowledge and behavior.
   &nbsp;
 </p>
 
