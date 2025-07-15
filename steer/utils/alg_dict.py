@@ -4,7 +4,8 @@ from ..vector_generators import(
     VectorPromptHyperParams,
     CAAHyperParams,
     LmSteerHyperParams,
-    MergeVectorHyperParams
+    MergeVectorHyperParams,
+    LoReFTHyperParams
 )
 from ..vector_appliers import(
     ApplySaeFeatureHyperParams,
@@ -14,6 +15,7 @@ from ..vector_appliers import(
     ApplyLmSteerHyperParams,
     ApplyPromptHyperParams,
     ApplyMergeVectorHyperParams,
+    ApplyLoReFTHyperParams
 )
 
 from ..vector_generators import (
@@ -23,6 +25,7 @@ from ..vector_generators import (
     generate_sae_feature_vectors,
     generate_sta_vectors,
     generate_merge_vector,
+    generate_LoReFT_vectors
 )
 from ..vector_appliers import (
      apply_lm_steer,
@@ -32,6 +35,7 @@ from ..vector_appliers import (
      apply_sta,
      apply_prompt,
      apply_merge_vector,
+     apply_loreft
 )
 import torch
 DTYPES_DICT ={
@@ -52,7 +56,8 @@ HYPERPARAMS_CLASS_DICT = {
     'vector_prompt': {'train': VectorPromptHyperParams, 'apply': ApplyVectorPromptHyperParams},
     'caa': {'train': CAAHyperParams, 'apply': ApplyCAAHyperParams},
     'prompt': {'apply': ApplyPromptHyperParams},
-    'merge_vector': {'train': MergeVectorHyperParams, 'apply': ApplyMergeVectorHyperParams}
+    'merge_vector': {'train': MergeVectorHyperParams, 'apply': ApplyMergeVectorHyperParams},
+    'loreft':{'train':LoReFTHyperParams,'apply':ApplyLoReFTHyperParams}
 }
 
 METHODS_CLASS_DICT = {
@@ -62,5 +67,6 @@ METHODS_CLASS_DICT = {
     'sae_feature': {'train': generate_sae_feature_vectors, 'apply': apply_sae_feature},
     'sta': {'train': generate_sta_vectors, 'apply': apply_sta},
     'prompt': {'apply': apply_prompt},
-    'merge_vector': {'train': generate_merge_vector, 'apply': apply_merge_vector}
+    'merge_vector': {'train': generate_merge_vector, 'apply': apply_merge_vector},
+    'loreft':{'train':generate_LoReFT_vectors,'apply': apply_loreft}
 }
