@@ -171,7 +171,7 @@ def apply_ike_to_per_model(request, loc_request, tokenizer, device):
             truncation=True,
         ).items()
     }
-        
+
     for key in ["outer_pre", "outer_edit", "loc_pre", "loc_edit"]:
         value = edit_toks[f"{key}_input_ids"]
         mask = [([True] * value.shape[-1])] * value.shape[0]
