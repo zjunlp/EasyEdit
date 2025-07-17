@@ -138,8 +138,8 @@ class RePSVectorIntervention(BaseIntervention, torch.nn.Module):
         steering_vec = v.permute(0, 2, 1) # bs, 1, h
         steering_vec = self.dropout(steering_vec)
 
-        if self.subspaces and "steering_factor" in self.subspaces:
-            steering_factor = self.subspaces["steering_factor"].unsqueeze(dim=-1).unsqueeze(dim=-1) # bs, 1, 1
+        if self.subspaces and self.subspaces[0]["steering_factor"] is not None:
+            steering_factor = self.subspaces[0]["steering_factor"].unsqueeze(dim=-1).unsqueeze(dim=-1) # bs, 1, 1
             # create the zero and non-zero masks, for different training modes
             zero_mask = steering_factor == 0.0 # bs, 1, 1
             nonzero_mask = steering_factor != 0.0 # bs, 1, 1
@@ -155,6 +155,7 @@ class RePSVectorIntervention(BaseIntervention, torch.nn.Module):
         modified_activations = activations_to_intervene + steering_vec
 
         if self.intervention_locations is not None:
+            modified_activations = modified_activations.to(base.dtype)
             output = base.scatter(1, expanded_indices, modified_activations)
         else:
             output = modified_activations

@@ -36,6 +36,11 @@ class RepsVectorTrainer(PreferenceModelTrainer):
         
         self.preference_pairs = kwargs.get("preference_pairs", ["orig_add"])
         
+        # set the model to eval mode and freeze the parameters
+        self.model.model.eval()
+        for param in self.model.model.parameters():
+            param.requires_grad = False
+        
         for layer in self.layers:
             intervention_copy = self.model.steer_vector  # all layers share the same intervention instance
             self.model.set_intervention(layer, intervention_copy, "reps")

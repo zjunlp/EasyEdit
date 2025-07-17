@@ -15,7 +15,7 @@ preference_pairs: ["orig_add", "orig_sub"] # use_cmd_to_define
 # === Training Config ===
 batch_size: 1 # the actual batch size also needs to multiply with |preference_pairs|
 beta: 1.0
-dropout: 0.1
+dropout: 0.0
 gemma: 0.0
 gradient_accumulation_steps: 1
 label_smoothing: 0.0
@@ -34,7 +34,7 @@ intervention_type: "addition" # clamping
 low_rank_dimension: 1
 
 # === Steering Config ===
-steering_factors: [0.0, 2.0] # use_cmd_to_define
+steering_factors: [2.0] # use_cmd_to_define
 steering_prompt_type: "blend_in"
 substraction_type: "null_it_out" # normal or null_it_out
 

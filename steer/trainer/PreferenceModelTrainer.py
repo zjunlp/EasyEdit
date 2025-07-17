@@ -257,7 +257,7 @@ class PreferenceModelTrainer(ModelTrainer):
                     if hasattr(self.model, "steer_vector"):
                         # remove the intervention
                         self.model.reset("reps")
-
+                        
                         # forward propagation without intervention
                         ref_outputs = self.model.model(
                             input_ids=minibatch_inputs["input_ids"],
@@ -274,7 +274,6 @@ class PreferenceModelTrainer(ModelTrainer):
                     # calculate the loss
                     policy_outputs_orig_logps = _get_batch_logps(policy_outputs_orig.logits, minibatch_inputs["labels"], average_log_prob=False)
                     ref_logps = _get_batch_logps(ref_outputs.logits, minibatch_inputs["labels"], average_log_prob=False)
-                    
                     # split the logps into winning and losing parts
 
                     minibatch_size_actual = minibatch_inputs["input_ids"].shape[0]

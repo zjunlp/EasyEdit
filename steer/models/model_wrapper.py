@@ -242,8 +242,8 @@ class BaseModelWrapper:
             self.model_name_or_path,
             padding_side="right" if "gemma" in self.model_name_or_path else "left",
         )
-        self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        # self.tokenizer.pad_token = self.tokenizer.eos_token
+        # self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name_or_path,
