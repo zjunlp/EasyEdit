@@ -1,0 +1,18 @@
+{    
+    "device": 0,
+    "model_name": "/data1/xubuqiang/Qwen2.5-7B-Instruct",
+    "lora_type": "lora",  
+    "rank": 8,
+    "lora_alpha": 32,
+    "layers": [],
+    "kl_factor": 0,
+    "norm_constraint": false,
+    "lora_dropout": 0.1,
+    "target_modules": ["q_proj", "v_proj"],
+    "num_steps": 60,
+    "batch_size": 1,
+    "max_length": 128,
+    "lr": 5e-3,
+    "weight_decay": 0.0,
+    "model_parallel": "False"
+}
