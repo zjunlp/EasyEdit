@@ -1,6 +1,17 @@
 from typing import Optional
 from transformers import AutoTokenizer
 
+# 不支持system prompt的模型列表
+NO_SYSTEM_PROMPT_MODELS = {'gemma', 'gemma-2', 'codegemma'}
+
+def model_supports_system_prompt(model_name_or_path: str) -> bool:
+    """检查模型是否支持system prompt"""
+    model_name_lower = model_name_or_path.lower()
+    for no_system_model in NO_SYSTEM_PROMPT_MODELS:
+        if no_system_model in model_name_lower:
+            return False
+    return True
+
 def build_model_input(
     user_input: str,
     tokenizer: AutoTokenizer,
@@ -32,10 +43,11 @@ def build_model_input(
         messages = []
 
         input_content = ''
-        if system_prompt and system_prompt != '' and 'gemma' not in tokenizer.name_or_path.lower():  
+        if system_prompt and system_prompt != '' and model_supports_system_prompt(tokenizer.name_or_path):  
             messages.append({"role": "system", "content": system_prompt})
         else:
-            input_content += f"{system_prompt} "
+            if system_prompt:
+                input_content += f"{system_prompt} "
         input_content += f"{user_input}"
         if suffix:
             input_content += f" {suffix}"

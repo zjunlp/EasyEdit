@@ -28,7 +28,7 @@ def generate_lm_steer_delta(hparams:LmSteerHyperParams, dataset, model = None):
         shuffle=True)  #
     data_iter = iter(dataloader)
     
-    model.replace_final_layer(hparams)  # Ensure this is below the data reshuffle
+    model.replace_final_layer(hparams) 
     model.model.to(device)  
 
     # TRAIN, generate delta

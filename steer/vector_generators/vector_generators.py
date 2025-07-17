@@ -1,6 +1,8 @@
 from omegaconf import DictConfig
 import os
 
+REQUIRED_DATASET_METHODS=['lm_steer', 'caa', 'vector_prompt', 'sta', 'reps_vector']
+
 class BaseVectorGenerator:
     """Base vector generator for all methods"""
 
@@ -37,7 +39,7 @@ class BaseVectorGenerator:
                         print('\033[1;34mVectors save path already exists! The vector will be overwritten!\033[0m')
                     
                     print(f"Generating {key} vectors ...")
-                    if alg_name in ['lm_steer', 'caa', 'vector_prompt', 'sta']:
+                    if alg_name in REQUIRED_DATASET_METHODS:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name])
                     else:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)

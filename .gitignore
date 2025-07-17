@@ -17,3 +17,7 @@ delta.txt
 **/.hydra/
 **/.gradio/
 **/temp/
+**/*_test_reps*
+*test_reps
+*test_reps.*
+steering_test_reps.py
