@@ -1,11 +1,11 @@
 from typing import Optional
 from transformers import AutoTokenizer
 
-# 不支持system prompt的模型列表
+# Models that do not support system prompts
 NO_SYSTEM_PROMPT_MODELS = {'gemma', 'gemma-2', 'codegemma'}
 
 def model_supports_system_prompt(model_name_or_path: str) -> bool:
-    """检查模型是否支持system prompt"""
+    """Check if the model supports system prompts"""
     model_name_lower = model_name_or_path.lower()
     for no_system_model in NO_SYSTEM_PROMPT_MODELS:
         if no_system_model in model_name_lower:
