@@ -236,9 +236,9 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
 
         if is_multi_concept:
             # After processing all concepts, return the vectors dict
-            all_vectors[layer] = vectors_dict
+            all_vectors[f"layer_{layer}"] = vectors_dict
         else:
-            all_vectors[layer] = vec
+            all_vectors[f"layer_{layer}"] = vec
 
     if del_model:
         model.model.to('cpu')
