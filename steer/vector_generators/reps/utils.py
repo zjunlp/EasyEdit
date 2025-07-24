@@ -41,7 +41,7 @@ def get_suffix_length(tokenizer):
 def prepare_groups(
     prepared_groups, concept, tokenizer, 
     use_chat_template, model_name_or_path, 
-    max_num_of_examples=None, steering_prompt_type="prepend",
+    max_num_of_examples=None, steering_prompt_type="prepend", is_select_category=False,
     ):
     
     suffix_length, suffix_str = get_suffix_length(tokenizer)
@@ -51,7 +51,7 @@ def prepare_groups(
     sample_item = prepared_groups[0] if prepared_groups else {}
     is_axbench_format = "output_concept" in sample_item and "category" in sample_item
     
-    if is_axbench_format:
+    if is_select_category and is_axbench_format:
         # For axbench datasets, filter by output_concept and category
         positive_data = [item for item in prepared_groups 
                         if item.get("output_concept") == concept and item.get("category") == "positive"]
@@ -105,22 +105,22 @@ def prepare_groups(
         return all_data
 
 
-def load_state(dump_dir):
+def load_state(dump_dir, state_file=STATE_FILE):
     """
     Load the state from a file if it exists.
     """
-    state_path = os.path.join(dump_dir, STATE_FILE)
+    state_path = os.path.join(dump_dir, state_file)
     if os.path.exists(state_path):
         with open(state_path, "rb") as f:
             return pickle.load(f)
     return None
 
 
-def save_state(dump_dir, state):
+def save_state(dump_dir, state, state_file=STATE_FILE):
     dump_dir = Path(dump_dir)
     dump_dir.mkdir(parents=True, exist_ok=True)
     # Save state
-    state_path = os.path.join(dump_dir, STATE_FILE)
+    state_path = os.path.join(dump_dir, state_file)
     with open(state_path, "wb") as f:
         pickle.dump(state, f)
 

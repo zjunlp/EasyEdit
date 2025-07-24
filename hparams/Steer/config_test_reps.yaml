@@ -1,6 +1,5 @@
 # General 
-model_name_or_path: ../hugging_cache/gemma-2-2b-it
-# model_name_or_path: ../hugging_cache/llama-7b
+model_name_or_path: ../hugging_cache/llama-7b
 torch_dtype: bfloat16
 device: cuda:0
 seed: 42
@@ -22,7 +21,7 @@ steer_vector_output_dirs:
 apply_steer_hparam_paths:
  - hparams/Steer/reps_vector_hparams/apply_reps_vector.yaml
 steer_vector_load_dir: 
- - vectors/gemma-2-2b-it/axbench/
+ - vectors/gemma-2-2b-it/axbench/reps_vector
 
 
 num_responses: 1

@@ -13,7 +13,7 @@ class ApplyRepsHyperParams(HyperParams):
     
     # Vector loading related
     steer_vector_load_dir: str = None  # Base directory for vectors
-    concept: str = "programming constructs and data structures in code snippets"  # Single concept
+    concept_id: int = 0  # Single concept
     
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

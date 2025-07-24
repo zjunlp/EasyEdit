@@ -33,22 +33,30 @@ def apply_reps(hparams: ApplyRepsHyperParams, pipline=None, vector=None):
     
     layers = hparams.layers
     multipliers = hparams.multipliers
-    concept = hparams.concept
+    concept_id = hparams.concept_id
     
     for layer, multiplier in zip(layers, multipliers):
-        print(f"Layer {layer}, Concept: {concept}")
+        print(f"Layer {layer}, Concept: {concept_id}")
 
         if vector is not None:
-            steering_vector = vector[f'concept_{concept}'].to(device)
+            steering_vector = vector[f'layer_{layer}'].to("cpu")
             print(f"Steering vector: User input vector for layer_{layer}")
         else:
             vector_path = os.path.join(
-                hparams.steer_vector_load_dir,'concept_'+concept, f"concept_{concept}.pt"
+                hparams.steer_vector_load_dir, f"layer_{layer}.pt"
             )
-            steering_vector = torch.load(vector_path,map_location=device)
-            print("Steering vector path: ",vector_path)
+            steering_vector = torch.load(vector_path, map_location="cpu")
+            print("Steering vector path: ", vector_path)
         # print(f"Multiplier {multiplier}")
-
+        if steering_vector.shape[0] != 1:
+            if concept_id < steering_vector.shape[0]:
+                steering_vector = steering_vector[concept_id].unsqueeze(0)
+            else:
+                raise ValueError(f"Concept ID {concept_id} exceeds the number of vectors available: {steering_vector.shape[0]}")
+        
+        print(f"Steering vector shape: {steering_vector.shape}")
+        steering_vector = steering_vector.to(device)
+        
         model.set_add_activations(
             layer, multiplier * steering_vector, method_name="reps"
         )

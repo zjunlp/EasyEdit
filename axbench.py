@@ -5,18 +5,19 @@ import random
 from steer.datasets.dataset_loader import DatasetLoader
 from steer.vector_generators.vector_generators import BaseVectorGenerator
 from steer.vector_appliers.vector_applier import BaseVectorApplier
-from collections import defaultdict
 from steer.evaluate.evaluate import Evaluator
 import os
+
 def load_axbench_datasets() -> list:
     print(f"Loading 500 concepts from axbench...")
     dataset_loader = DatasetLoader()
     train_data = dataset_loader.load_file('axbench', 'train')
     
-    concept_grouped_data = defaultdict(list)
-    for item in train_data:
-        concept_grouped_data[item['concept_id']].append(item)
-        
+    # train_data is now a list of tuples: [(concept_id, concept_data_list), ...]
+    concept_grouped_data = {}
+    for concept_id, concept_data_list in train_data:
+        concept_grouped_data[concept_id] = concept_data_list
+
     eval_data = dataset_loader.load_file('axbench', 'generation')  # The Apacha-Eval dataset
     return concept_grouped_data, eval_data
 
@@ -34,8 +35,10 @@ def main(top_cfg: DictConfig):
     
     eval_args = {"mode": 'direct', "save_results": False, "eval_methods": ["llm"], "llm_model": "gpt-4o-mini-2024-07-18" , 'save_path': top_cfg.generation_output_dir}
     evaluator = Evaluator(**eval_args)
-    
-    for i, concept_train_data in enumerate(train_datasets.values()):
+
+    for i, concept_train_data in train_datasets.items():
+        if i >= 2:
+            continue
         print(f"Processing concept {i} with {len(concept_train_data)} items")
         train_dataset_for_concept = {
             f'axbench_concept_{i}': concept_train_data
@@ -77,37 +80,37 @@ def main(top_cfg: DictConfig):
     with open(generation_file_path, "w", encoding="utf-8") as f:
         json.dump(all_generation_results, f, indent=2, ensure_ascii=False)
     
-    print("Evaluating all generation results...")
-    all_average_scores = 0
-    for concept_info in all_generation_results:
-        concept_id = concept_info['concept_id']
-        concept_name = concept_info['concept_name']
-        generated_results = concept_info['generated_results']
+    # print("Evaluating all generation results...")
+    # all_average_scores = 0
+    # for concept_info in all_generation_results:
+    #     concept_id = concept_info['concept_id']
+    #     concept_name = concept_info['concept_name']
+    #     generated_results = concept_info['generated_results']
         
-        eval_results = evaluator.evaluate_from_direct(
-            generated_results, 
-            f"axbench_eval_{concept_id}", 
-            concept=concept_name
-        )
-        all_average_scores += eval_results['mean_aggregated_rating']
-        all_evaluation_results.append({
-            f'axbench_concept_{concept_id}': eval_results
-        })
+    #     eval_results = evaluator.evaluate_from_direct(
+    #         generated_results, 
+    #         f"axbench_eval_{concept_id}", 
+    #         concept=concept_name
+    #     )
+    #     all_average_scores += eval_results['mean_aggregated_rating']
+    #     all_evaluation_results.append({
+    #         f'axbench_concept_{concept_id}': eval_results
+    #     })
         
-        print(f"Evaluated concept {concept_id}: {concept_name}")
+    #     print(f"Evaluated concept {concept_id}: {concept_name}")
     
     
-    evaluation_save_results={
-        'all_average_scores': all_average_scores/len(all_generation_results),
-        'all_evaluation_results': all_evaluation_results
-    }
+    # evaluation_save_results={
+    #     'all_average_scores': all_average_scores/len(all_generation_results),
+    #     'all_evaluation_results': all_evaluation_results
+    # }
         
-    evaluation_file_path = f"{eval_args['save_path']}/all_evaluation_results.json"
-    os.makedirs(os.path.dirname(evaluation_file_path), exist_ok=True)
-    with open(evaluation_file_path, "w", encoding="utf-8") as f: 
-        json.dump(evaluation_save_results, f, indent=2, ensure_ascii=False)
+    # evaluation_file_path = f"{eval_args['save_path']}/all_evaluation_results.json"
+    # os.makedirs(os.path.dirname(evaluation_file_path), exist_ok=True)
+    # with open(evaluation_file_path, "w", encoding="utf-8") as f: 
+    #     json.dump(evaluation_save_results, f, indent=2, ensure_ascii=False)
     
-    print(f"All results saved to files: {generation_file_path} and {evaluation_file_path}")
+    # print(f"All results saved to files: {generation_file_path} and {evaluation_file_path}")
 
 if __name__ == '__main__':
     main()
