@@ -1,5 +1,5 @@
 # General 
-model_name_or_path: ../models/gemma-2-2b-it
+model_name_or_path: ../hugging_cache/gemma-2-2b-it
 # model_name_or_path: ../hugging_cache/llama-7b
 torch_dtype: bfloat16
 device: cuda:0
@@ -27,7 +27,7 @@ steer_vector_load_dir:
 
 num_responses: 1
 steer_from_end_position: false
-generation_output_dir: generation/gemma-2-2b-it/hello/reps
+generation_output_dir: generation/gemma-2-2b-it/axbench/reps
 generation_data_size: 10
 generate_orig_output: true
 # Model generation parameters - must match Hugging Face parameter names

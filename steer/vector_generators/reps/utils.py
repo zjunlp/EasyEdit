@@ -33,8 +33,6 @@ def get_prefix_length(tokenizer, common_prefix=None):
         message_b = [{"role": "user", "content": "2"}]
         tokens_a = tokenizer.apply_chat_template(message_a, tokenize=True)
         tokens_b = tokenizer.apply_chat_template(message_b, tokenize=True)
-        print("Detecting sequence a:", tokens_a)
-        print("Detecting sequence b:", tokens_b)
         prefix_length = 0
         for i, (ta, tb) in enumerate(zip(tokens_a, tokens_b)):
             if ta != tb:
@@ -72,7 +70,7 @@ def prepare_groups(
                     if item.get("output_concept") == concept and item.get("category") == "positive"]
 
     # limit the number of examples
-    if max_num_of_examples:
+    if max_num_of_examples and max_num_of_examples >= 0:
         positive_data = positive_data[:max_num_of_examples // 2]
     
     all_data = positive_data
