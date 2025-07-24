@@ -78,7 +78,9 @@ EasyEdit2 enables precise control over various model behaviors, including **safe
 - **[Steering Target Atoms (STA)](https://arxiv.org/abs/2505.20322)**:
   STA extends CAA by incorporating Sparse Autoencoders (SAEs) to refine the steering vectors for better model control.
 - **Vector Prompt**:
-  Vector Prompt extends prompt-based steering by transforming prompts into steering vectors
+  Vector Prompt extends prompt-based steering by transforming prompts into steering vectors.
+- **[Reference-free Preference Steering (RePS)](https://arxiv.org/abs/2505.20809)**:
+  RePS steers language models with a reference-free, bidirectional preference objective that jointly promotes and suppresses concepts in the representations.
 
 
 ### :bookmark_tabs: Prompt-Based Methods 
