@@ -8,6 +8,7 @@ exclude_bos: true
 max_concepts: 1
 max_num_of_examples: null
 preference_pairs: ["orig_add", "orig_sub"] # use_cmd_to_define
+output_length: 512
 
 # === Training Config ===
 batch_size: 2 # the actual batch size also needs to multiply with |preference_pairs|

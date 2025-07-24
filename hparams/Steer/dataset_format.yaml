@@ -38,8 +38,8 @@ train:
       label: 'label'
 
   axbench:
-    # file_path: ./data/axbench/prod_9b_l20_v1/generate/dpo_train_data.parquet
-    file_path: /disk3/xzwnlp/iclr-steer/axbench/axbench/demo/generate/dpo_train_data.parquet
+    file_path: ./data/axbench/prod_9b_l20_v1/generate/dpo_train_data.parquet
+    multi_concept: true
     field_names:
       question: 'input'
       matching: 'winning_output'

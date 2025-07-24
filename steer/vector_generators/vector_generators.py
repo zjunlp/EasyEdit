@@ -40,7 +40,7 @@ class BaseVectorGenerator:
                     
                     print(f"Generating {key} vectors ...")
                     if alg_name in REQUIRED_DATASET_METHODS:
-                        vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name])
+                        vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name], dataset_name=dataset_name)
                     else:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)
                     generated_vectors[dataset_name][key] = vectors

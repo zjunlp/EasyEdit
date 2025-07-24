@@ -1,10 +1,5 @@
 import sys
 
-
-
-
-
-
 sys.path.append("../../")
 sys.path.append("../")
 sys.path.append("./")
@@ -25,7 +20,7 @@ HUGGINGFACE_TOKEN = os.getenv("HF_TOKEN")
 
 
 
-def generate_caa_vectors(hparams:CAAHyperParams, dataset, model = None):
+def generate_caa_vectors(hparams:CAAHyperParams, dataset, model = None, dataset_name = None):
     from ...models.get_model import get_model
     from ...datasets.caa_data import get_tokens_for_caa
     # Whether to delete the model after the function

@@ -5,27 +5,8 @@ from pathlib import Path
 from steer.utils.templates import model_supports_system_prompt
 STATE_FILE = "train_state.pkl"
 
-def get_grouped_data_by_concept_id(dataset):
-    # Group data by concept_id
-    concept_groups = {}
-
-    # Group records by concept_id
-    for record in dataset:
-        concept_id = record['concept_id']
-        if concept_id >= 0:
-            if concept_id not in concept_groups:
-                concept_groups[concept_id] = []
-            concept_groups[concept_id].append(record)
-    
-    # Get sorted concept_ids and create list of tuples
-    concept_ids = sorted(concept_groups.keys())
-    grouped_data = []
-    
-    for concept_id in concept_ids:
-        # print(f"Processing concept_id {concept_id}")
-        grouped_data.append((concept_id, concept_groups[concept_id]))
-    
-    return grouped_data
+# get_grouped_data_by_concept_id function has been moved to 
+# steer/datasets/dataset_loader.py for better organization
 
 def get_prefix_length(tokenizer, common_prefix=None):
     if common_prefix is None:
@@ -66,8 +47,18 @@ def prepare_groups(
     suffix_length, suffix_str = get_suffix_length(tokenizer)
     print(f"Suffix length for {model_name_or_path}: {suffix_length}, Suffix string: {suffix_str}")
 
-    positive_data = [item for item in prepared_groups 
-                    if item.get("output_concept") == concept and item.get("category") == "positive"]
+    # Check if this is axbench dataset (has output_concept and category fields)
+    sample_item = prepared_groups[0] if prepared_groups else {}
+    is_axbench_format = "output_concept" in sample_item and "category" in sample_item
+    
+    if is_axbench_format:
+        # For axbench datasets, filter by output_concept and category
+        positive_data = [item for item in prepared_groups 
+                        if item.get("output_concept") == concept and item.get("category") == "positive"]
+    else:
+        # For other datasets (safe_edit, toxicity, etc.), use all data
+        positive_data = prepared_groups
+        print(f"[INFO] Using all {len(positive_data)} items for non-axbench dataset")
 
     # limit the number of examples
     if max_num_of_examples and max_num_of_examples >= 0:

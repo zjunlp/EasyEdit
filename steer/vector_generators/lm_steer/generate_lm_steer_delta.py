@@ -8,7 +8,7 @@ from transformers import AutoTokenizer
 from .lm_steer_helper import RunningMean
 from .generate_lm_steer_hparam import LmSteerHyperParams
 
-def generate_lm_steer_delta(hparams:LmSteerHyperParams, dataset, model = None):
+def generate_lm_steer_delta(hparams:LmSteerHyperParams, dataset, model = None, dataset_name = None):
     from ...models.get_model import get_model
     from ...datasets import load_lm_steer_dataset
     

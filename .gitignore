@@ -7,7 +7,7 @@ examples/wiki_recent
 .vscode
 logs
 results
-output
+outputs
 scripts
 vectors
 **/.cache/
@@ -20,4 +20,3 @@ delta.txt
 **/*_test_reps*
 *test_reps
 *test_reps.*
-steering_test_reps.py

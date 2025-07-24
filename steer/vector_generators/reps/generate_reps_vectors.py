@@ -1,27 +1,50 @@
 import os
 import argparse
 import torch
+import json
 from tqdm import tqdm
 from .generate_reps_vector_hparams import RePSHyperParams
-from .utils import get_grouped_data_by_concept_id, get_prefix_length, load_state, prepare_groups, save_state
+from .utils import get_prefix_length, load_state, prepare_groups, save_state
 from steer.trainer.RepsVectorTrainer import RepsVectorTrainer
 
 
-def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
+def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_name = None):
+    """
+    Generate RePS vectors from dataset.
+    
+    Args:
+        args: RePS hyperparameters
+        dataset: Either List[Dict] (single concept) or List[Tuple] (multi concept grouped data)
+        model: Pre-loaded model (optional)
+    
+    Returns:
+        Generated vector tensor (single concept) or vector dict (multi concept)
+    """
     from ...models.get_model import get_model
+    
+    # Determine dataset type by checking data structure
+    if isinstance(dataset, list) and len(dataset) > 0 and isinstance(dataset[0], tuple):
+        # Multi-concept dataset: List[Tuple[concept_id, concept_data]]
+        concept_grouped_data = dataset
+        print(f"[INFO] Processing multi-concept dataset with {len(concept_grouped_data)} concepts")
+        is_multi_concept = True
+    elif isinstance(dataset, list):
+        # Single-concept dataset: List[Dict] - convert to grouped format for uniform processing
+        dataset_name = "single_concept" if dataset_name is None else dataset_name
+        concept_grouped_data = [(dataset_name, dataset)]
+        print(f"[INFO] Processing single-concept dataset with {len(dataset)} items")
+        is_multi_concept = False
+    else:
+        raise ValueError(f"Unsupported dataset format: {type(dataset)}")
+    
     # Whether to delete the model after the function
     del_model = True
 
-    # Load grouped data by concept_id, key is concept_id, value is da
-    concept_grouped_data = get_grouped_data_by_concept_id(dataset)
-
     
-    
-    print(f"[INFO] Total number of concept df loaded: {len(concept_grouped_data)}")
+    print(f"[INFO] Total number of concepts loaded: {len(concept_grouped_data)}")
     if args.max_concepts:
         print(f"[WARNING] Only processing {args.max_concepts} concepts")
         concept_grouped_data = concept_grouped_data[:args.max_concepts]
-
 
     if model is None:
         model, tokenizer = get_model(args)
@@ -36,7 +59,8 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
         print(f"[WARNING] Using bfloat16 for model {args.model_name_or_path}")
         
     model.tokenizer.padding_side = "right"
-    model.tokenizer.model_max_length = 512
+    if args.output_length and args.output_length > 0:
+        model.tokenizer.model_max_length = args.output_length
 
     model.model = model.model.eval()
     model.model.to(args.device)
@@ -64,19 +88,38 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
     last_concept_id = state.get("last_concept_id", None) if state else None
     print(f"[WARNING] last concept_id processed: {last_concept_id}")
 
+    # For multi-concept datasets, store all vectors and their concept info
+    vectors_dict = {} if is_multi_concept else None
+    concept_info_dict = {} if is_multi_concept else None  # Store concept descriptions
     vec = None
-    for concept_id, concept_groups in concept_grouped_data:
-        concept_id = int(concept_id) 
+    
+    for concept_key, concept_groups in concept_grouped_data:
+        # Handle both numeric concept_id and string dataset names
+        if is_multi_concept:
+            # For multi-concept datasets, try to convert concept_key to int
+            concept_id = int(concept_key)
+            concept_key_str = str(concept_key)
+        else:
+            concept_id = 0  # Default for single-concept datasets
+            concept_key_str = str(concept_key)
 
-        # if the concept has been processed, skip it
-        if last_concept_id is not None and concept_id <= last_concept_id:
+        # if the concept has been processed, skip it (only for multi-concept datasets)
+        if is_multi_concept and last_concept_id is not None and concept_id <= last_concept_id:
             print(f"[WARNING] Skip concept_id {concept_id}, because it has been processed")
             continue
         
-        print(f"[WARNING] Start to train RePS for concept_id {concept_id}")
+        print(f"[INFO] Start to train RePS for concept: {concept_key_str}")
 
-        concept = concept_groups[0]["concept"]
-        print(f"[WARNING] Using concept '{concept}' to train RePS")
+        # Get concept name
+        if is_multi_concept:
+            concept = concept_groups[0].get("concept", concept_groups[0].get("output_concept", str(concept_key)))
+            concept_info_dict[concept_id] = concept
+        else:
+            concept = concept_key_str
+        print(f"[INFO] Using concept '{concept}' to train RePS")
+        
+        # Store concept info for multi-concept datasets
+        
         
         # Init the trainer
         benchmark_model = RepsVectorTrainer(
@@ -131,17 +174,59 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
         # get the trained vectors
         vec = benchmark_model.model.steer_vector.proj.weight.data.clone().cpu()
 
+        # Store vector for multi-concept datasets
+        if is_multi_concept:
+            vectors_dict[concept_id] = vec
         
-        # save the current state
-        current_state = {'last_concept_id': concept_id}
-        save_state(args.steer_vector_output_dir, current_state)
-        
-        # save the vectors and the model
+        # save the vectors immediately after training each concept
         if args.save_vectors:
-            concept_dir = os.path.join(args.steer_vector_output_dir, f"concept_{concept}")
-            os.makedirs(concept_dir, exist_ok=True)
-            torch.save(vec, os.path.join(concept_dir, f"concept_{concept}.pt"))
-            # benchmark_model.save(concept_dir, model_name=f"{args.model_name_or_path}")
+            output_dir = os.path.join(
+                args.steer_vector_output_dir, "reps_vector"
+            )
+            os.makedirs(output_dir, exist_ok=True)
+            
+            if is_multi_concept:
+                current_state = {'last_concept_id': concept_id}
+                save_state(args.steer_vector_output_dir, current_state)
+                
+                # For multi-concept datasets, append to the same pt file
+                vector_filename = f"layer_{args.layers[0]}.pt"
+                vector_filepath = os.path.join(output_dir, vector_filename)
+                
+                # Load existing vectors if file exists, otherwise create new list
+                if os.path.exists(vector_filepath):
+                    existing_vectors = torch.load(vector_filepath)
+                    # Convert to list if it's a tensor
+                    if isinstance(existing_vectors, torch.Tensor):
+                        existing_vectors = [existing_vectors[i] for i in range(existing_vectors.shape[0])]
+                    elif not isinstance(existing_vectors, list):
+                        existing_vectors = [existing_vectors]
+                else:
+                    existing_vectors = []
+                
+                # Append new vector
+                existing_vectors.append(vec)
+                
+                # Save updated vectors as stacked tensor
+                combined_vectors = torch.stack(existing_vectors, dim=0)
+                torch.save(combined_vectors, vector_filepath)
+                
+                # Also save/append metadata for this concept
+                metadata = {
+                    "concept_id": concept_id,
+                    "concept": concept,  # Use the concept name we got earlier
+                    "ref": f"vector_index_{len(existing_vectors)-1}"  # Index in the stacked tensor
+                }
+                
+                metadata_file = os.path.join(output_dir, "metadata.jsonl")
+                with open(metadata_file, 'a', encoding='utf-8') as f:
+                    f.write(json.dumps(metadata) + '\n')
+                
+                print(f"[INFO] Saved vector for concept {concept_id} to {vector_filename} (total: {len(existing_vectors)} vectors)")
+            else:
+                # For single-concept datasets, use original filename
+                torch.save(vec, os.path.join(output_dir, f"layer_{args.layers[0]}.pt"))
+                print(f"[INFO] Saved single-concept vector to layer_{args.layers[0]}.pt")
 
         
         # clean the memory
@@ -154,5 +239,9 @@ def generate_reps_vectors(args:RePSHyperParams, dataset, model = None):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-    if vec is not None:
+    # Return appropriate result based on dataset type
+    if is_multi_concept:
+        return vectors_dict
+    else:
+        # For single-concept datasets, return the single vector
         return vec

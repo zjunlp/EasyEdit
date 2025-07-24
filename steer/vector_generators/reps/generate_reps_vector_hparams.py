@@ -15,10 +15,11 @@ class RePSHyperParams(HyperParams):
     # === Dataset Config ===
     exclude_bos: bool = True
     max_concepts: int = 500
-    max_num_of_examples: int = 10000
+    max_num_of_examples: int = None
     steer_train_dataset: str = "safeedit"
     preference_pairs: List[str] = field(default_factory=lambda: ["orig_add", "orig_sub"]) 
-    
+    output_length: int = None  # The length of the output sequence for the model to generate
+
     # === Training Config ===
     batch_size: int = 6  # the actual batch size also needs to multiply with |preference_pairs|
     beta: float = 1.0
@@ -41,7 +42,7 @@ class RePSHyperParams(HyperParams):
     low_rank_dimension: int = 1
     
     # === Steering Config ===
-    steering_factors: List[float] = field(default_factory=lambda: [0.0, 2.0])  
+    steering_factors: List[float] = field(default_factory=lambda: [2.0, 4.0, 6.0, 8.0, 10.0])  
     steering_prompt_type: str = "blend_in"
     substraction_type: str = "null_it_out"  # normal or null_it_out
 
