@@ -535,6 +535,16 @@ export BASE_URL = "https://api.example.com/v1"  # Optional, if needed
 python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
 
+**Axbench Evaluation**
+AxBench Evaluation
+We currently provide preliminary support for AxBench-like evaluation, which can be run with:
+```bash
+python axbench.py
+```
+Due to differences in implementation, some details may vary, and we will continue to refine and align this in future updates.
+
+
+
 ## Acknowledgments
 
 Our sincerest thanks are extended to [CAA](https://github.com/nrimsky/CAA), [LM-Steer](https://github.com/Glaciohound/LM-Steer), and [AxBench](https://github.com/stanfordnlp/axbench) for their invaluable contributions to our project. We have integrated parts of their source code into our work, and for this, we are deeply appreciative.  
