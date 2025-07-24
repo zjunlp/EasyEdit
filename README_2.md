@@ -536,7 +536,7 @@ python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_r
 ```
 
 **Axbench Evaluation**
-AxBench Evaluation
+
 We currently provide preliminary support for AxBench-like evaluation, which can be run with:
 ```bash
 python axbench.py
