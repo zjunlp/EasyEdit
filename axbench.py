@@ -1,4 +1,6 @@
 import json
+
+import pandas as pd
 import hydra
 from omegaconf import DictConfig
 import random
@@ -54,8 +56,11 @@ def main(top_cfg: DictConfig):
         vector_applier.apply_vectors(vectors)   # Different from axbench, the steering factor is fixed for each concept
         
         # Randomly sample 10 items from apacha-eval
-        sampled_eval_data = random.sample(eval_datasets, 10)
-        
+        eval_datasets_df = pd.DataFrame(eval_datasets)
+        sampled_eval_data = eval_datasets_df.sample(10, random_state=int(i))["input"].tolist()
+        sampled_eval_data = sampled_eval_data.to_dict('records')
+        # sampled_eval_data = random.sample(eval_datasets, 10)
+
         # Generate results using the vector applier
         generated_results = vector_applier.generate(
            {
