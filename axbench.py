@@ -57,7 +57,7 @@ def main(top_cfg: DictConfig):
         
         # Randomly sample 10 items from apacha-eval
         eval_datasets_df = pd.DataFrame(eval_datasets)
-        sampled_eval_data = eval_datasets_df.sample(10, random_state=int(i))["input"].tolist()
+        sampled_eval_data = eval_datasets_df.sample(10, random_state=int(i))
         sampled_eval_data = sampled_eval_data.to_dict('records')
         # sampled_eval_data = random.sample(eval_datasets, 10)
 
