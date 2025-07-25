@@ -411,7 +411,7 @@ def halluedit_standard_edit_and_evaluate(
     editing_method: str,
     hparams_dir: str,
     data_path: str,
-    eval_model_id: str = '/disk1/xuhaoming/models/llama3-8B-Instruct',
+    eval_model_id: str = '/models/llama3-8B-Instruct',
     data_size: int = None,
     results_dir: str = './results',
     multi_turn: str = 'sure' 
