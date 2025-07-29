@@ -102,14 +102,15 @@ def eval_akew_structured(result_path, dataset_type):
 
 def run_structured_editing(args):
     print("Running structured data editing...")
-    
+    if args.data_type.lower() == "unke":
+        raise ValueError("UnKE dataset only supports unstructured processing. Please add --use_unstructured_data flag.")
     editing_hparams = STRUCTURED_ALG_DICT[args.editing_method]
     
     datas = AKEWUnifiedDataset(
         args.data_dir, 
         dataset_type=args.data_type,
         size=args.ds_size,
-        use_unstructured_data=False  # 使用结构化数据
+        use_unstructured_data=False 
     )
     
     prompts=[data['prompt'] for data in datas]
@@ -349,7 +350,7 @@ if __name__ == "__main__":
     parser.add_argument('--editing_method', required=True, type=str)
     parser.add_argument('--hparams_dir', required=True, type=str)
     parser.add_argument('--data_dir', required=True, type=str)
-    parser.add_argument('--data_type', required=True, type=str, choices=['wikiupdate', 'counterfact', 'mquake'])
+    parser.add_argument('--data_type', required=True, type=str, choices=['wikiupdate', 'counterfact', 'mquake','unke'])
     parser.add_argument('--ds_size', default=None, type=int)
     parser.add_argument('--metrics_save_dir', default='./output', type=str)
     parser.add_argument('--sequential_edit', action="store_true")
