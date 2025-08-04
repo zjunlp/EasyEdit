@@ -39,8 +39,8 @@ def main(top_cfg: DictConfig):
     evaluator = Evaluator(**eval_args)
 
     for i, concept_train_data in train_datasets.items():
-        if i >= 2:
-            continue
+        # if i >= 2:
+            # continue
         print(f"Processing concept {i} with {len(concept_train_data)} items")
         train_dataset_for_concept = {
             f'axbench_concept_{i}': concept_train_data
