@@ -144,9 +144,14 @@ def get_tokens_for_vector_prompt(dataset, tokenizer, hparams):
     pos_tokens_list, neg_tokens_list = [], []
     for i in range(len(dataset)):
         prompt = dataset[i].get('prompt', hparams.prompt).strip()
-        input = ' ' + dataset[i].get('input', '').strip() if dataset[i].get('input') != None else ''
-        # input = input.strip()    
-        output = ' ' + dataset[i].get('output', '').strip()
+        # input = ' ' + dataset[i].get('input', '').strip() if dataset[i].get('input') != None else ''
+        # input = input.strip() 
+        input = ' ' + dataset[i].get('question', '').strip() if dataset[i].get('input') != None else ''
+        
+        # output = ' ' + dataset[i].get('output', '').strip()
+        output_chosen = ' ' + dataset[i].get('matching', '').strip()
+        output_rejected = ' ' + dataset[i].get('not_matching', '').strip()
+
         
         
         input_with_prompt = prompt + input
@@ -155,9 +160,9 @@ def get_tokens_for_vector_prompt(dataset, tokenizer, hparams):
         add_special_tokens = False if hparams.use_chat_template else True
 
 
-        pos_tokens = tokenizer.encode(input_chosen + output, return_tensors="pt", add_special_tokens=add_special_tokens)
+        pos_tokens = tokenizer.encode(input_chosen + output_chosen, return_tensors="pt", add_special_tokens=add_special_tokens)
         input_chosen_tokens = tokenizer.encode(input_chosen, return_tensors="pt", add_special_tokens=add_special_tokens)   
-        neg_tokens = tokenizer.encode(input_rejected + output, return_tensors="pt", add_special_tokens=add_special_tokens)
+        neg_tokens = tokenizer.encode(input_rejected + output_rejected, return_tensors="pt", add_special_tokens=add_special_tokens)
         input_rejected_tokens = tokenizer.encode(input_rejected, return_tensors="pt", add_special_tokens=add_special_tokens)
 
         pos_tokens_list.append({
