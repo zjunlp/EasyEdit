@@ -2,15 +2,15 @@ import copy
 import torch as t
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoProcessor
 
-from easysteer.utils.alg_dict import DTYPES_DICT
-from easysteer.vector_appliers.lm_steer.apply_lm_steer_hparam import ApplyLmSteerHyperParams
-from easysteer.models.utils import add_vector_from_position # find_instruction_end_postion
+from steer.utils.alg_dict import DTYPES_DICT
+from steer.vector_appliers.lm_steer.apply_lm_steer_hparam import ApplyLmSteerHyperParams
+from steer.models.utils import add_vector_from_position # find_instruction_end_postion
 from typing import Optional
 
 
-from easysteer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyperParams
-from easysteer.utils.hparams import HyperParams
-from easysteer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
+from steer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyperParams
+from steer.utils.hparams import HyperParams
+from steer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
 
 from PIL import Image
 import os
@@ -68,18 +68,20 @@ class BlockOutputWrapper(t.nn.Module):
         # self.model_type=model_name_or_path.lower()
         if 'gpt' in model_name_or_path.lower():
             self.model_type = 'gpt'
-        elif 'llama' in model_name_or_path.lower() or 'llava' in model_name_or_path.lower():
+        elif 'llama' in model_name_or_path.lower():
             self.model_type = 'llama'
         elif 'gemma' in model_name_or_path.lower():
             self.model_type = 'gemma'
         elif 'qwen' in model_name_or_path.lower():
             self.model_type = 'qwen'
- 
+        elif 'llava' in model_name_or_path.lower():
+            self.model_type = 'llava'
+
         if self.model_type in ['gpt']:
             self.block.attn = AttnWrapper(self.block.attn)
             self.block.mlp = MLPWrapper(self.block.mlp)
             self.post_attention_layernorm=self.block.ln_2
-        elif self.model_type in ['llama', 'gemma', 'qwen']:
+        elif self.model_type in ['llama', 'gemma', 'qwen', 'llava']:
             self.block.self_attn = AttnWrapper(self.block.self_attn)
             self.block.mlp = MLPWrapper(self.block.mlp)
             self.post_attention_layernorm=self.block.post_attention_layernorm
