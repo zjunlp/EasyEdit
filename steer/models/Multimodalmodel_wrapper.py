@@ -142,7 +142,7 @@ class BlockOutputWrapper(t.nn.Module):
         # Self-attention unembedded
         if self.model_type in ['gpt']:
             attn_output = self.block.attn.activations
-        if self.model_type in ['llama', 'gemma', 'qwen']:
+        if self.model_type in ['llama', 'gemma', 'qwen', 'llava']:
             attn_output = self.block.self_attn.activations
         
         self.attn_out_unembedded = self.unembed_matrix(self.norm(attn_output))
@@ -152,7 +152,7 @@ class BlockOutputWrapper(t.nn.Module):
         self.intermediate_resid_unembedded = self.unembed_matrix(self.norm(attn_output))
 
         # MLP unembedded
-        if self.model_type in ['llama', 'gemma', 'qwen', 'gpt'] :
+        if self.model_type in ['llama', 'gemma', 'qwen', 'gpt', 'llava']:
             mlp_output = self.block.mlp(self.post_attention_layernorm(attn_output))
         self.mlp_out_unembedded = self.unembed_matrix(self.norm(mlp_output))
 
@@ -177,7 +177,7 @@ class BlockOutputWrapper(t.nn.Module):
         # self.block.self_attn.activations = None
         if self.model_type in ['gpt']:
             self.block.attn.activations = None
-        if self.model_type in ['llama', 'gemma', 'qwen']:
+        if self.model_type in ['llama', 'gemma', 'qwen', 'llava']:
             self.block.self_attn.activations = None
         self.from_position = None
         self.calc_dot_product_with = None
