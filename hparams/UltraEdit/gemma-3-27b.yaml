@@ -1,0 +1,46 @@
+alg_name: "ULTRAEDIT"
+device: 0
+
+model_name: your/path/gemma-3-27b-it
+model_class: AutoModelForCausalLM
+tokenizer_class: AutoTokenizer
+tokenizer_name: your/path/gemma-3-27b-it
+inner_params:
+#wikibigedit ultraeditbench
+- language_model.model.layers.52.mlp.gate_proj
+- language_model.model.layers.53.mlp.gate_proj
+- language_model.model.layers.54.mlp.gate_proj
+- language_model.model.layers.55.mlp.gate_proj
+- language_model.model.layers.56.mlp.gate_proj
+- language_model.model.layers.57.mlp.gate_proj
+- language_model.model.layers.58.mlp.gate_proj
+- language_model.model.layers.59.mlp.gate_proj
+- language_model.model.layers.60.mlp.gate_proj
+- language_model.model.layers.52.mlp.up_proj
+- language_model.model.layers.53.mlp.up_proj
+- language_model.model.layers.54.mlp.up_proj
+- language_model.model.layers.55.mlp.up_proj
+- language_model.model.layers.56.mlp.up_proj
+- language_model.model.layers.57.mlp.up_proj
+- language_model.model.layers.58.mlp.up_proj
+- language_model.model.layers.59.mlp.up_proj
+- language_model.model.layers.60.mlp.up_proj
+
+# Method
+alg: UltraEdit
+dropout: 0.0
+no_grad_layers: null
+
+lr: 1e-6
+token: mask
+
+batch_size: 100
+batch_size_once: 10
+editor_batch_size: 1024
+silent: False
+half: true
+
+model_parallel: false
+
+# Output
+results_dir: ./results

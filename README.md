@@ -8,7 +8,7 @@
 ![](https://img.shields.io/badge/PRs-Welcome-red)
 
 ---
-
+ 
 <p align="center">
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">QuickStart</a> •
@@ -78,6 +78,7 @@ We have also published a blog post titled "[Take Control of What Your LLM Knows 
 
 ## 🔔News
 - 2025-07-24, 🚀🚀the EasyEdit has added three new unstructured long-form knowledge editing datasets [AKEW](https://arxiv.org/abs/2402.18909), [LEME](https://arxiv.org/pdf/2402.09394) and [UNKE](https://arxiv.org/abs/2405.15349). In addition, EasyEdit also incorporated two of the currently most popular unstructured editing methods [UNKE](https://arxiv.org/abs/2405.15349) and [AnyEdit](https://arxiv.org/abs/2502.05628). EasyEdit2 also supports the representation steering method [RePS](https://arxiv.org/abs/2505.20809) and provides initial support for [AxBench-style evaluation](https://arxiv.org/abs/2501.17148).
+- 2025-06-07, 👑 [UltraEdit](https://github.com/XiaojieGu/UltraEdit) has arrived — powered by a lifelong normalization strategy that continuously updates feature statistics across turns, it can edit 20K samples on a 7B model in just 5 minutes and scales stably to millions !
 - 2025-06-05, 🌟🌟the EasyEdit has added a new model editing algorithm [CORE](https://arxiv.org/abs/2505.23026), designed to strengthen context robustness by minimizing context-sensitive variance in hidden states of the model for edited knowledge. 
 - 2025-05-28, 🌟🌟the EasyEdit has added a new model editing algorithm [NAMET](https://arxiv.org/abs/2505.11876), which introduces noise during memory extraction via a one-line modification to MEMIT. Thanks to [@ybdai7](https://github.com/ybdai7) for contribution!
 - 2025-05-15, 🚀🚀We released a new blog [Reflection on Knowledge Editing: Charting the Next Steps](https://fish-sorrel-a54.notion.site/Reflection-on-Knowledge-Editing-Charting-the-Next-Steps-1e6ca8e41f3a8098bd14c85ac1db8da6) discussing the next step for knowledge editing research.
@@ -324,6 +325,7 @@ You can choose different editing methods according to your specific needs. GPT s
 | [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) | |✅ |✅  | ✅ |  |  |✅ | |
 | Defer | | ✅ |✅  |  |  |  | | ✅ |
 | [AlphaEdit](https://github.com/zjunlp/EasyEdit/blob/main/easyeditor/models/alphaedit/README.md) | |✅ |✅  |  |  |  | | |
+| [UltraEdit](https://github.com/guangxuc42/update-UltraEdit/blob/main/examples/UltraEdit.md) | |✅ |✅  |  |  |  |✅ | ✅ |
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
 
@@ -1183,6 +1185,7 @@ We thank all the contributors to this project, more contributors are welcome!
 #### Other Related Projects
 
 - [AlphaEdit](https://github.com/jianghoucheng/AlphaEdit)
+- [UltraEdit](https://github.com/XiaojieGu/UltraEdit)
 - [ROME](https://github.com/kmeng01/rome)
 - [FastEdit](https://github.com/hiyouga/FastEdit)
 - [GRACE](https://github.com/Thartvigsen/GRACE)
