@@ -51,6 +51,7 @@ def apply_AlphaEdit_to_model(
     # Calculate the null-space projection matrix P
     # Please ensure that you have downloaded "null_space_project.pt" to the easyedit folder beforehand, or get the P by following calculation
     if not os.path.exists(hparams.P_loc):
+        print(os.path.abspath(hparams.P_loc))
         print(f"The null-space projection matrix P does not exist and now calculate.")
         W_out = nethook.get_parameter(model, f"{hparams.rewrite_module_tmp.format(hparams.layers[-1])}.weight")
         if "llama" in hparams.model_name.lower() or "gpt-j-6b" in hparams.model_name.lower():
@@ -70,7 +71,7 @@ def apply_AlphaEdit_to_model(
     # If this is the first calculation (i.e., cache_c_new == false), then initialize cache_c first
     if not cache_c_new:
         W_out = nethook.get_parameter(model, f"{hparams.rewrite_module_tmp.format(hparams.layers[-1])}.weight")
-        if "llama" in hparams.model_name.lower() or "gpt-j-6b" in hparams.model_name.lower():
+        if "llama" in hparams.model_name.lower() or "qwen" in hparams.model_name.lower():
             cache_c = torch.zeros((len(hparams.layers), W_out.shape[1], W_out.shape[1]), device="cpu")
         elif "gpt2-xl" in hparams.model_name.lower():
             cache_c = torch.zeros((len(hparams.layers), W_out.shape[0], W_out.shape[0]), device="cpu")

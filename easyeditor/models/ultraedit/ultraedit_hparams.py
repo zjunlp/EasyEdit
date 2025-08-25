@@ -26,14 +26,14 @@ class UltraEditHyperParams(HyperParams):
     batch_size_once: int
     editor_batch_size: int
     silent: bool
+    # Output
+    results_dir: str
     max_length: int = 40
 
     half: Optional[bool] = False
     model_parallel: bool = False
 
 
-    # Output
-    results_dir: str
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
