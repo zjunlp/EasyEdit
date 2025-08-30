@@ -73,12 +73,12 @@ def main(top_cfg: DictConfig):
     print(vectors)
     for dataset in vectors.keys():
         print(f"Applying  {dataset} vectors to model ...")
-        vector_applier.apply_vectors(vectors[dataset])
+        vector_applier.multimodal_apply_vectors(vectors[dataset])
 
     # vector_applier.apply_vectors()
 
     # Result Generation
-    vector_applier.generate(generation_datasets)
+    vector_applier.multimodal_generate(generation_datasets)
 
     # Resets the model to its initial state, clearing any modifications.
     vector_applier.model.reset_all()
