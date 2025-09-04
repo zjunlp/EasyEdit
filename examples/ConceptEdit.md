@@ -113,7 +113,7 @@ Given that the generation task in LLMs can be time-consuming, if you wish to per
 3. With these adjustments, proceed to re-execute STEP 1.
 4. To convert the generated sentences into a **Json** file for evaluating with GPT-4, execute the following command:
 ```shell
-python examples/transform_check_concept.py --method ROME --model gptj --module inter
+python examples/conceptedit_transform_check.py --method FT --model llama2chat --module intra
 ```
 
 
