@@ -77,6 +77,7 @@ We have also published a blog post titled "[Take Control of What Your LLM Knows 
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- 2025-09-10, 🎉🎉 [EasyEdit2 Paper](https://arxiv.org/abs/2504.15133) has been accepted by the EMNLP 2025 System Demonstration Track.
 - 2025-07-24, 🚀🚀the EasyEdit has added three new unstructured long-form knowledge editing datasets [AKEW](https://arxiv.org/abs/2402.18909), [LEME](https://arxiv.org/pdf/2402.09394) and [UNKE](https://arxiv.org/abs/2405.15349). In addition, EasyEdit also incorporated two of the currently most popular unstructured editing methods [UNKE](https://arxiv.org/abs/2405.15349) and [AnyEdit](https://arxiv.org/abs/2502.05628). EasyEdit2 also supports the representation steering method [RePS](https://arxiv.org/abs/2505.20809) and provides initial support for [AxBench-style evaluation](https://arxiv.org/abs/2501.17148).
 - 2025-06-07, 👑 [UltraEdit](https://github.com/XiaojieGu/UltraEdit) has arrived — powered by a lifelong normalization strategy that continuously updates feature statistics across turns, it can edit 20K samples on a 7B model in just 5 minutes and scales stably to millions !
 - 2025-06-05, 🌟🌟the EasyEdit has added a new model editing algorithm [CORE](https://arxiv.org/abs/2505.23026), designed to strengthen context robustness by minimizing context-sensitive variance in hidden states of the model for edited knowledge. 
