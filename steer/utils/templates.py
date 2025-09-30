@@ -71,32 +71,32 @@ def build_multimodal_model_input(
     suffix: Optional[str] = None,
 ) -> str:
     """
-    构建多模态模型输入
-    
+    Build a multimodal model input
+
     Args:
-        messages: 消息列表，每个消息包含role和content
-        processor: 处理器
-        system_prompt: 系统提示词
-        use_chat_template: 是否使用聊天模板
-        model_output: 模型输出
-        suffix: 后缀
-    
+        messages: A list of messages, each containing a role and content
+        processor: The processor
+        system_prompt: The system prompt
+        use_chat_template: Whether to use the chat template
+        model_output: The model output
+        suffix: The suffix
+
     Returns:
-        处理后的文本
+        The processed text
     """
     
     if use_chat_template == False:
-        # 如果不使用聊天模板，直接拼接文本
+        # If you do not use a chat template, directly concatenate text
         user_content = ''
         if system_prompt:
             user_content = f"{system_prompt} "
-        
-        # 从messages中提取文本内容
+
+        # Extract text content from messages
         for message in messages:
             if message['role'] == 'user':
                 content = message['content']
                 if isinstance(content, list):
-                    # 处理多模态内容（文本+图像）
+                    # Process multimodal content (text + image)
                     text_parts = []
                     for item in content:
                         if item['type'] == 'text':
@@ -113,20 +113,20 @@ def build_multimodal_model_input(
         return user_content
     else:
         assert processor.chat_template is not None, "Processor does not support apply_chat_template"
-        
-        # 构建消息列表
+
+        # Build the message list
         final_messages = []
-        
-        # 添加系统消息
+
+        # Add system message
         if system_prompt and system_prompt != '' and model_supports_system_prompt(processor.name_or_path):
             final_messages.append({"role": "system", "content": system_prompt})
-        
-        # 添加用户和助手消息
+
+        # Add user and assistant messages
         for message in messages:
             if message['role'] in ['user', 'assistant']:
                 final_messages.append(message)
-        
-        # 添加后缀到最后一个用户消息
+
+        # Add suffix to last user message
         if suffix and final_messages:
             last_user_msg = None
             for msg in reversed(final_messages):
@@ -136,7 +136,7 @@ def build_multimodal_model_input(
             if last_user_msg:
                 content = last_user_msg['content']
                 if isinstance(content, list):
-                    # 对于多模态内容，在文本部分添加后缀
+                    # For multimodal content, add a suffix to the text portion 
                     for item in content:
                         if item['type'] == 'text':
                             item['text'] += f" {suffix}"
@@ -144,7 +144,7 @@ def build_multimodal_model_input(
                 else:
                     last_user_msg['content'] = f"{content} {suffix}"
         
-        # 添加模型输出
+        # Adding Model Output
         if model_output is not None:
             final_messages.append({"role": "assistant", "content": model_output})
 

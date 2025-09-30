@@ -5,17 +5,17 @@ import torch
 
 def process_multimodal_item(item: Dict[str, Any]) -> Dict[str, Any]:
     """
-    处理多模态数据项，统一格式
+    Handle multimodal data items and unify the format
     """
     processed_item = {}
     
-    # 处理文本输入
+    # Processing text input
     if 'text' in item:
         processed_item['text'] = item['text']
     elif 'input' in item and isinstance(item['input'], str):
         processed_item['text'] = item['input']
     
-    # 处理图像输入
+    # Processing image input
     if 'image' in item:
         image_path = item['image']
         if isinstance(image_path, str):
@@ -26,13 +26,13 @@ def process_multimodal_item(item: Dict[str, Any]) -> Dict[str, Any]:
         elif isinstance(image_path, Image.Image):
             processed_item['image'] = image_path
     
-    # 处理标签/目标
+    # Processing Tags/Targets
     if 'label' in item:
         processed_item['target'] = item['label']
     elif 'target' in item:
         processed_item['target'] = item['target']
     
-    # 处理其他字段
+    # Processing other fields
     for key in ['prompt', 'reference_response', 'question', 'answer']:
         if key in item:
             processed_item[key] = item[key]
@@ -41,7 +41,7 @@ def process_multimodal_item(item: Dict[str, Any]) -> Dict[str, Any]:
 
 def convert_to_multimodal_format(item: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
-    将数据项转换为多模态格式（列表形式）
+    Convert data items into a multimodal format (list form)
     """
     multimodal_segments = []
     
@@ -61,13 +61,13 @@ def convert_to_multimodal_format(item: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 def validate_multimodal_dataset(dataset: List[Dict[str, Any]]) -> bool:
     """
-    验证多模态数据集格式是否正确
+    Verify that the multimodal dataset format is correct
     """
     if not dataset:
         return False
     
     for item in dataset:
-        # 检查是否至少包含文本或图像
+        # Checks if contains at least text or image
         has_text = any(key in item for key in ['text', 'input', 'prompt', 'question'])
         has_image = 'image' in item
         
@@ -79,7 +79,7 @@ def validate_multimodal_dataset(dataset: List[Dict[str, Any]]) -> bool:
 
 def prepare_multimodal_batch(batch: List[Dict[str, Any]], processor=None):
     """
-    准备多模态批次数据
+    Preparing multimodal batch data
     """
     if processor is None:
         return batch
@@ -94,7 +94,7 @@ def prepare_multimodal_batch(batch: List[Dict[str, Any]], processor=None):
 
 def get_multimodal_input_type(item: Dict[str, Any]) -> str:
     """
-    获取多模态输入类型
+    Get the multimodal input type
     """
     has_text = any(key in item for key in ['text', 'input', 'prompt', 'question'])
     has_image = 'image' in item

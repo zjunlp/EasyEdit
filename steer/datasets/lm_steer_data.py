@@ -56,7 +56,7 @@ def load_multimodal_contrastive_data(train_data, subset, processor, system_promp
     pos_data = [{"text": item["matching"], "label": 1} for item in train_data]
     neg_data = [{"text": item["not_matching"], "label": -1} for item in train_data]
     
-    # 处理图像数据
+    # Processing image data
     if "image" in train_data[0]:
         pos_data = [{"text": item["matching"], "image": item.get("image") if isinstance(item.get("image"),Image.Image) else Image.open(item.get("image")), "label": 1} for item in train_data]
         neg_data = [{"text": item["not_matching"], "image": item.get("image") if isinstance(item.get("image"),Image.Image) else Image.open(item.get("image")), "label": -1} for item in train_data]
@@ -72,7 +72,7 @@ def load_multimodal_contrastive_data(train_data, subset, processor, system_promp
         if type(_datum['text']) != str:
             _datum['text'] = str(_datum['text'])
         
-        # 构建对话消息
+        # Constructing a conversation message
         if "question" in train_data[0]:
             if "image" in train_data[0]:
                 conversation = [
@@ -100,7 +100,7 @@ def load_multimodal_labed_data(train_data, processor, system_prompt = None, use_
     max_label = max(labels)
     dataset = []
     
-    # 处理图像数据
+    # Processing image data
     has_image = "image" in train_data[0] if train_data else False
     if has_image:
         train_data = [{"text": item["text"], "image": item.get("image") if isinstance(item.get("image"),Image.Image) else Image.open(item.get("image")), "label": item["label"]} for item in train_data]
@@ -109,12 +109,12 @@ def load_multimodal_labed_data(train_data, processor, system_prompt = None, use_
         mapped_label = (int(item['label']) - min_label) / (max_label - min_label) * 2 - 1
         if type(item['text']) != str:
             item['text'] = str(item['text'])
-        
-        # 构建对话消息
+
+        # Constructing a conversation message
         if has_image:
             conversation = [
                 {"role": "user", "content": [{"type": "text", "text": item['text']}, {"type": "image"}]},
-                {"role": "assistant", "content": ""}  # 对于labeled data，assistant内容为空
+                {"role": "assistant", "content": ""}  # For labeled data, the assistant content is empty
             ]
         else:
             conversation = [
@@ -122,8 +122,8 @@ def load_multimodal_labed_data(train_data, processor, system_prompt = None, use_
             ]
         
         processed_text = build_multimodal_model_input(conversation, processor, system_prompt, use_chat_template)
-        
-        # 处理图像数据
+
+        # Processing image data
         dataset_item = {'text': processed_text, 'label': mapped_label}
         if has_image:
             dataset_item['image'] = item['image']

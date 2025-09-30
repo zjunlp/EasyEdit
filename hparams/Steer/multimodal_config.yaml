@@ -1,15 +1,15 @@
-# 多模态Steering配置文件示例
+# Multimodal Steering Configuration File Example
 defaults:
   - _self_
 
-# 模型配置
-model_name_or_path: "llava-hf/llava-1.5-7b-hf"  # 多模态模型路径
+# Model Configuration
+model_name_or_path: "llava-hf/llava-1.5-7b-hf"  # Multimodal model path
 device: "cuda"
 torch_dtype: "bfloat16"
 use_chat_template: true
 system_prompt: "You are a helpful assistant."
 
-# 生成参数
+# Model generation parameters - must match Hugging Face parameter names
 generation_params:
   max_new_tokens: 512
   temperature: 0.7
@@ -18,16 +18,14 @@ generation_params:
   pad_token_id: 2
   eos_token_id: 2
 
-# 数据配置
-generation_data_size: null  # null表示使用全部数据
+# Generation
+generation_data_size: null  # If set to null, it will use the full dataset.
 num_responses: 1
 generate_orig_output: false
 steer_from_end_position: false
-
-# 输出配置
 generation_output_dir: "outputs/multimodal_generation"
 
-# 向量生成配置
+# Generate Vector 
 vector_generation:
   lm_steer:
     alg_name: "lm_steer"
@@ -59,20 +57,8 @@ vector_generation:
     max_num_of_examples: 100
     use_chat_template: true
 
-  vector_prompt:
-    alg_name: "vector_prompt"
-    seed: 42
-    save_vectors: true
-    steer_vector_output_dir: "vectors/multimodal"
-    model_name_or_path: "llava-hf/llava-1.5-7b-hf"
-    device: "cuda"
-    torch_dtype: "bfloat16"
-    layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
-    multipliers: [1.0] * 32
-    max_num_of_examples: 100
-    use_chat_template: true
 
-# 向量应用配置
+# Apply Vector 
 vector_application:
   lm_steer:
     alg_name: "lm_steer"
@@ -92,16 +78,6 @@ vector_application:
     alg_name: "caa"
     seed: 42
     steer_vector_load_dir: "vectors/multimodal/reasoning/caa_vector"
-    model_name_or_path: "llava-hf/llava-1.5-7b-hf"
-    device: "cuda"
-    torch_dtype: "bfloat16"
-    layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
-    multipliers: [1.0] * 32
-
-  vector_prompt:
-    alg_name: "vector_prompt"
-    seed: 42
-    steer_vector_load_dir: "vectors/multimodal/reasoning/vector_prompt_vector"
     model_name_or_path: "llava-hf/llava-1.5-7b-hf"
     device: "cuda"
     torch_dtype: "bfloat16"

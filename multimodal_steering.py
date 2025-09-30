@@ -29,13 +29,13 @@ def main(top_cfg: DictConfig):
         ]
     }
     
-    # 验证多模态数据集格式
+    # Verify the multimodal dataset format
     for dataset_name, dataset in train_datasets.items():
         if not validate_multimodal_dataset(dataset):
             print(f"Warning: Dataset {dataset_name} format validation failed!")
         else:
             print(f"Dataset {dataset_name} format validation passed!")
-            # 显示数据集类型统计
+            # Displays statistics for dataset types
             input_types = [get_multimodal_input_type(item) for item in dataset]
             type_counts = {}
             for input_type in input_types:

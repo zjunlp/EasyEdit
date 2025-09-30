@@ -61,7 +61,7 @@ class BaseVectorApplier:
             self.model = self.apply_steering(self.hparams_dict, self.model, vectors)
             self.tokenizer = self.model.tokenizer
             self.device = self.model.device
-            # 对于多模态模型，设置processor
+            # For multimodal models, set processor
             if hasattr(self.model, 'processor'):
                 self.processor = self.model.processor
         if self.model is None:
@@ -79,25 +79,25 @@ class BaseVectorApplier:
 
     def _process_multimodal_input(self, item) -> dict:
         """
-        处理多模态输入（文本+图像）
-        
+        Handles multimodal input (text + image)
+
         Args:
-            item: 包含input和可能的image的数据项
-            
+            item: A data item containing the input and possibly an image
+
         Returns:
-            处理后的输入字典，包含input_ids, attention_mask等
+            A dictionary of processed inputs, including input_ids, attention_mask, etc
         """
         input_text = item.get('input', '')
         image = item.get('image', None)
         
-        # 如果有基础提示词，添加到输入文本
+        # If there is a basic prompt word, add it to the input text
         if hasattr(self.model, 'prompt'):
             base_prompt = self.model.prompt
             input_text = f"{base_prompt} {input_text}"
         
-        # 构建多模态输入
+        # Building multimodal input
         if image is not None:
-            # 有图像的情况：构建多模态对话
+            # With images: Building multimodal dialogues
             from steer.utils.templates import build_multimodal_model_input
             conversation = [
                 {"role": "user", "content": [{"type": "text", "text": input_text}, {"type": "image"}]}
@@ -109,7 +109,7 @@ class BaseVectorApplier:
                 self.config.use_chat_template
             )
             
-            # 使用processor处理多模态输入
+            # Using processors to handle multimodal input
             inputs = self.processor(
                 text=processed_text,
                 images=image,
@@ -119,7 +119,7 @@ class BaseVectorApplier:
                 max_length=self.config.max_length,
             ).to(self.device)
         else:
-            # 只有文本的情况：使用普通文本处理
+            # Only text: use normal text processing
             from steer.utils.templates import build_multimodal_model_input
             conversation = [
                 {"role": "user", "content": [{"type": "text", "text": input_text}]}
@@ -131,7 +131,7 @@ class BaseVectorApplier:
                 self.config.use_chat_template
             )
             
-            # 使用processor处理多模态输入
+            # Using processors to handle multimodal input
             inputs = self.processor(
                 text=processed_text,
                 return_tensors="pt",
@@ -234,7 +234,7 @@ class BaseVectorApplier:
                 current_preds = []
                 current_output = []
                 
-                # 处理多模态输入
+                # Processing multimodal input
                 inputs = self._process_multimodal_input(item)
                 
                 num_responses = self.config.get('num_responses', 1)

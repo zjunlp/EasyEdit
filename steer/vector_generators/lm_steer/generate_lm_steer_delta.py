@@ -177,9 +177,9 @@ def multimodal_generate_lm_steer_delta(hparams:LmSteerHyperParams, dataset, mode
         batch_text = batch["text"]
         batch_image = batch.get("image", None)
         
-        # 处理多模态输入
+        # Processing multimodal input
         if batch_image is not None and hasattr(model, 'process_input'):
-            # 多模态处理：文本+图像
+            # With images: Building multimodal dialogues
             processed_inputs = []
             for i in range(len(batch_text)):
                 processed = processor(
@@ -191,8 +191,8 @@ def multimodal_generate_lm_steer_delta(hparams:LmSteerHyperParams, dataset, mode
                     max_length=hparams.max_length,
                 )
                 processed_inputs.append(processed)
-            
-            # 合并batch数据 - 处理可能的padding问题
+
+            # Merge batch data - handle potential padding issues
             max_length = max(p['input_ids'].shape[1] for p in processed_inputs)
             padded_input_ids = []
             padded_attention_mask = []
@@ -201,7 +201,7 @@ def multimodal_generate_lm_steer_delta(hparams:LmSteerHyperParams, dataset, mode
             for p in processed_inputs:
                 current_length = p['input_ids'].shape[1]
                 if current_length < max_length:
-                    # 需要padding
+                    # Need padding
                     pad_length = max_length - current_length
                     padded_ids = torch.cat([p['input_ids'], torch.zeros(1, pad_length, dtype=p['input_ids'].dtype)], dim=1)
                     padded_mask = torch.cat([p['attention_mask'], torch.zeros(1, pad_length, dtype=p['attention_mask'].dtype)], dim=1)
@@ -211,32 +211,32 @@ def multimodal_generate_lm_steer_delta(hparams:LmSteerHyperParams, dataset, mode
                 
                 padded_input_ids.append(padded_ids.squeeze(0))
                 padded_attention_mask.append(padded_mask.squeeze(0))
-                
-                # 处理图像数据
+
+                # Processing image data
                 if 'pixel_values' in p:
                     pixel_values.append(p['pixel_values'].squeeze(0))
             
             input_ids = torch.stack(padded_input_ids).to(device)
             attention_mask = torch.stack(padded_attention_mask).to(device)
-            
-            # 处理图像数据
+
+            # Processing image data
             if pixel_values:
                 pixel_values = torch.stack(pixel_values).to(device)
         else:
-            # 纯文本处理
+            # Only text: use normal text processing
             tokenized = tokenizer(batch_text, padding=True,
                             max_length=hparams.max_length, truncation=True, add_special_tokens=not hparams.use_chat_template)
             input_ids = torch.LongTensor(tokenized["input_ids"]).to(device)
             attention_mask = torch.LongTensor(tokenized["attention_mask"]).to(device)
         
-        # 准备模型输入
+        # Preparing model input
         model_inputs = {
             'input_ids': input_ids,
             'attention_mask': attention_mask,
             'labels': input_ids
         }
         
-        # 如果是多模态输入，添加图像数据
+        # If it is multimodal input, add image data
         if batch_image is not None and hasattr(model, 'process_input') and 'pixel_values' in locals() and len(pixel_values) > 0:
             model_inputs['pixel_values'] = pixel_values
         
