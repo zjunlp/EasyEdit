@@ -3,11 +3,11 @@
 archive: ./results/models/MEND/Qwen2.5-7B
 alg_name: "MEND"
 device: 0
-model_name: "/disk1/xuhaoming/Models/Qwen2.5-7B"
+model_name: "./hugging_cache/Qwen2.5-7B"
 
 model_class: AutoModelForCausalLM
 tokenizer_class: AutoTokenizer
-tokenizer_name: "/disk1/xuhaoming/Models/Qwen2.5-7B"
+tokenizer_name: "./hugging_cache/Qwen2.5-7B"
 model_parallel: false
 inner_params:
 - model.layers.25.mlp.gate_proj.weight

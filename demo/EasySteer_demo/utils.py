@@ -5,7 +5,7 @@ from steer.models import get_model
 from steer.vector_generators.sae_feature.sae_utils import load_sae_from_dir, load_gemma_2_sae
 from steer.vector_generators.sae_feature.generate_sae_feature_vectors import get_sae_config
 from demo_hparams import get_train_hparams, get_apply_hparams, common_config, sae_config
-from steer.utils import METHODS_CLASS_DICT, set_seed, DTYPES_DICT,HyperParams, build_model_input
+from steer.utils import METHODS_CLASS_DICT, set_seed,HyperParams, build_model_input
 import torch
 import gradio as gr
 import uuid
@@ -234,7 +234,7 @@ def pretrained_vector(steer_vector, steer_strength, progress=gr.Progress()):
             steer_model, _ = get_model(apply_hparams)
             
         progress(0.4, desc="Preparing steer vector...")
-        vector_dir = "/mnt/20t/xuhaoming/EasySteer-simplify/demo/EasySteer/demo_vector"
+        vector_dir = "demo/EasySteer/demo_vector"
         if steer_vector == "Personality":
             vector_path = vector_dir + "/personality/personality.pt"
         elif steer_vector == "Sentiment":

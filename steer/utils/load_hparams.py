@@ -11,7 +11,8 @@ def load_generate_vector_hparams(top_cfg):
         assert os.path.exists(hparam_path), f"Hparam path {hparam_path} does not exist !"
         method_hparams = OmegaConf.load(hparam_path)
         alg_name = method_hparams['alg_name']
-        hparams_dict_key = f"{alg_name}_{i}"
+        hparams_dict_key = f"{alg_name}"
+        # hparams_dict_key = f"{alg_name}_{i}"
         combined_hparams = {**method_hparams, **top_cfg}
         selected_hparams_class = HYPERPARAMS_CLASS_DICT[alg_name]['train']
         intersect_keys = set(selected_hparams_class.__dataclass_fields__) & set(combined_hparams.keys())

@@ -7,7 +7,7 @@ examples/wiki_recent
 .vscode
 logs
 results
-output
+outputs
 scripts
 vectors
 **/.cache/
@@ -17,3 +17,6 @@ delta.txt
 **/.hydra/
 **/.gradio/
 **/temp/
+**/*_test_reps*
+*test_reps
+*test_reps.*

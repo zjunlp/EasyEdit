@@ -70,22 +70,32 @@ EasyEdit2 enables precise control over various model behaviors, including **safe
 ## :wrench: Implements Methods
 ### :wave: Activation-based Methods
 - [**Contrastive Activation Addition(CAA)**](https://arxiv.org/abs/2312.06681):
-  CAA steers language models by generating steering vectors, which compute activation differences between positive and negative example pairs.
+  CAA steers language models by generating steering vectors, which compute activation differences between positive and negative example pairs. <br>
+  > **Code:** [Generator↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_generators/caa) &nbsp;|&nbsp; [Applier↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_appliers/caa).
 - [**LM-Steer**](https://arxiv.org/abs/2305.12798):
-  LM-Steer applies a lightweight linear transformation to output embeddings to modify the model's behavior
+  LM-Steer applies a lightweight linear transformation to output embeddings to modify the model's behavior. <br>
+  > **Code:** [Generator↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_generators/lm_steer) &nbsp;|&nbsp; [Applier↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_appliers/lm_steer).
 - [**SAE Feature Steering**](https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html):
-  SAE leverages features extracted from Sparse Autoencoders (SAEs), enabling users to select SAE features associated with specific concepts and apply them as steering vectors.
+  SAE leverages features extracted from Sparse Autoencoders (SAEs), enabling users to select SAE features associated with specific concepts and apply them as steering vectors. <br>
+  > **Code:** [Generator↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_generators/sae_feature) &nbsp;|&nbsp; [Applier↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_appliers/sae_feature).
 - **[Steering Target Atoms (STA)](https://arxiv.org/abs/2505.20322)**:
-  STA extends CAA by incorporating Sparse Autoencoders (SAEs) to refine the steering vectors for better model control.
+  STA extends CAA by incorporating Sparse Autoencoders (SAEs) to refine the steering vectors for better model control. <br>
+  > **Code:** [Generator↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_generators/sta) &nbsp;|&nbsp; [Applier↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_appliers/sta).
+- **[Reference-free Preference Steering (RePS)](https://arxiv.org/abs/2505.20809)**:
+  RePS steers language models with a reference-free, bidirectional preference objective that jointly promotes and suppresses concepts in the representations. <br>
+  > **Code:** [Generator↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_generators/reps) &nbsp;|&nbsp; [Applier↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_appliers/reps).
 - **Vector Prompt**:
-  Vector Prompt extends prompt-based steering by transforming prompts into steering vectors
+  Vector Prompt extends prompt-based steering by transforming prompts into steering vectors. <br>
+  > **Code:** [Generator↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_generators/vector_prompt) &nbsp;|&nbsp; [Applier↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_appliers/vector_prompt).
 
 
 ### :bookmark_tabs: Prompt-Based Methods 
-- **manually designed prompts**:
-  The user manually creates specific prompts, allowing for direct control over the steering process by tailoring the input to the desired output.
-- [**automated prompt generation**](https://arxiv.org/abs/2501.17148):
-  The user supplies a concept, and the model autonomously generates relevant steering prompts based on the provided concept.
+- **Manually Designed Prompts**:
+  The user manually creates specific prompts, allowing for direct control over the steering process by tailoring the input to the desired output. <br>
+  > **Code:** [Applier↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_appliers/prompt).
+- [**Automated Prompt Generation**](https://arxiv.org/abs/2501.17148):
+  The user supplies a concept, and the model autonomously generates relevant steering prompts based on the provided concept. <br>
+  > **Code:** [Applier↗](https://github.com/zjunlp/EasyEdit/tree/main/steer/vector_appliers/prompt).
 
 
 ### :clock12: Decoding-based Methods 
@@ -532,6 +542,16 @@ export BASE_URL = "https://api.example.com/v1"  # Optional, if needed
 ```bash
 python steer/evaluate/evaluate.py --generation_dataset_path results/my_dataset_results.json --eval_methods ppl distinctness safety --model_name_or_path meta-llama/Llama-2-7b-chat-hf
 ```
+
+**Axbench Evaluation**
+
+We currently provide preliminary support for AxBench-like evaluation, which can be run with:
+```bash
+python axbench.py
+```
+Due to differences in implementation, some details may vary, and we will continue to refine and align this in future updates.
+
+
 
 ## Acknowledgments
 

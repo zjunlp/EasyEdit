@@ -99,7 +99,7 @@ def act_and_fre(act_data,
     
     return result
 
-def generate_sta_vectors(hparams:STAHyperParams, dataset, model = None):
+def generate_sta_vectors(hparams:STAHyperParams, dataset, model = None, dataset_name = None):
     from ...models.get_model import get_model
     from ...datasets.caa_data import get_tokens_for_caa
     

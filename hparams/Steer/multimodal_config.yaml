@@ -1,0 +1,85 @@
+# Multimodal Steering Configuration File Example
+defaults:
+  - _self_
+
+# Model Configuration
+model_name_or_path: "llava-hf/llava-1.5-7b-hf"  # Multimodal model path
+device: "cuda"
+torch_dtype: "bfloat16"
+use_chat_template: true
+system_prompt: "You are a helpful assistant."
+
+# Model generation parameters - must match Hugging Face parameter names
+generation_params:
+  max_new_tokens: 512
+  temperature: 0.7
+  top_p: 0.9
+  do_sample: true
+  pad_token_id: 2
+  eos_token_id: 2
+
+# Generation
+generation_data_size: null  # If set to null, it will use the full dataset.
+num_responses: 1
+generate_orig_output: false
+steer_from_end_position: false
+generation_output_dir: "outputs/multimodal_generation"
+
+# Generate Vector 
+vector_generation:
+  lm_steer:
+    alg_name: "lm_steer"
+    seed: 42
+    save_vectors: true
+    steer_vector_output_dir: "vectors/multimodal"
+    model_name_or_path: "llava-hf/llava-1.5-7b-hf"
+    device: "cuda"
+    torch_dtype: "bfloat16"
+    adapted_component: "final_layer"
+    adaptor_class: "multiply"
+    num_steers: 1
+    rank: 1
+    epsilon: 0.1
+    init_var: 0.1
+    max_num_of_examples: 100
+    use_chat_template: true
+
+  caa:
+    alg_name: "caa"
+    seed: 42
+    save_vectors: true
+    steer_vector_output_dir: "vectors/multimodal"
+    model_name_or_path: "llava-hf/llava-1.5-7b-hf"
+    device: "cuda"
+    torch_dtype: "bfloat16"
+    layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    multipliers: [1.0] * 32
+    max_num_of_examples: 100
+    use_chat_template: true
+
+
+# Apply Vector 
+vector_application:
+  lm_steer:
+    alg_name: "lm_steer"
+    seed: 42
+    steer_vector_load_dir: "vectors/multimodal/reasoning/lm_steer_vector"
+    model_name_or_path: "llava-hf/llava-1.5-7b-hf"
+    device: "cuda"
+    torch_dtype: "bfloat16"
+    adapted_component: "final_layer"
+    adaptor_class: "multiply"
+    num_steers: 1
+    rank: 1
+    epsilon: 0.1
+    init_var: 0.1
+
+  caa:
+    alg_name: "caa"
+    seed: 42
+    steer_vector_load_dir: "vectors/multimodal/reasoning/caa_vector"
+    model_name_or_path: "llava-hf/llava-1.5-7b-hf"
+    device: "cuda"
+    torch_dtype: "bfloat16"
+    layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    multipliers: [1.0] * 32

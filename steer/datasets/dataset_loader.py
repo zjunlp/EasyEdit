@@ -1,7 +1,7 @@
 import yaml
 import json
 import pandas as pd
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Any, Optional, List, Union, Tuple
 from datasets import load_dataset
 import os
 
@@ -46,12 +46,40 @@ D: {}
 Answer:
 """
 
+
+def get_grouped_data_by_concept_id(dataset):
+    """
+    Group data by concept_id for multi-concept datasets like AxBench.
+    Moved from steer/vector_generators/reps/utils.py
+    """
+    # Group data by concept_id
+    concept_groups = {}
+
+    # Group records by concept_id
+    for record in dataset:
+        concept_id = record['concept_id']
+        if concept_id >= 0:
+            if concept_id not in concept_groups:
+                concept_groups[concept_id] = []
+            concept_groups[concept_id].append(record)
+    
+    # Get sorted concept_ids and create list of tuples
+    concept_ids = sorted(concept_groups.keys())
+    grouped_data = []
+    
+    for concept_id in concept_ids:
+        # print(f"Processing concept_id {concept_id}")
+        grouped_data.append((concept_id, concept_groups[concept_id]))
+    
+    return grouped_data
+
+
 class DatasetLoader:
     def __init__(self, config_path: str = "hparams/Steer/dataset_format.yaml"):
         with open(config_path, 'r') as f:
             self.format_config = yaml.safe_load(f)
             
-    def load_file(self, dataset_name = None, split = None) -> Union[Dict, List[Dict]]:
+    def load_file(self, dataset_name = None, split = None) -> Union[Dict, List[Dict], List[Tuple]]:
         
         dataset_config = self.format_config[split][dataset_name]
         if 'hf_path' in dataset_config and dataset_config['hf_path'] is not None:
@@ -81,6 +109,14 @@ class DatasetLoader:
             self.format_single_item(item, dataset_name, split)
             for item in raw_data
         ]
+        
+        # Check if this is a multi-concept dataset
+        is_multi_concept = dataset_config.get('multi_concept', False)
+        if is_multi_concept:
+            print(f"[INFO] Dataset {dataset_name} is multi-concept, grouping by concept_id")
+            grouped_data = get_grouped_data_by_concept_id(formatted_data)
+            print(f"[INFO] Grouped into {len(grouped_data)} concepts")
+            return grouped_data
         
         return formatted_data
 
@@ -179,8 +215,16 @@ def prepare_train_dataset(hparams):
     dataset = {}
     for dataset_name in dataset_names:
         loader = DatasetLoader()
-        loaded_dataset  = loader.load_file(dataset_name, split='train')
-        dataset[dataset_name] = loaded_dataset 
+        loaded_dataset = loader.load_file(dataset_name, split='train')
+        
+        # Direct assignment - type is determined by data structure
+        # List[Tuple] = multi_concept, List[Dict] = single_concept
+        if isinstance(loaded_dataset, list) and len(loaded_dataset) > 0 and isinstance(loaded_dataset[0], tuple):
+            print(f"[INFO] Dataset {dataset_name} loaded as multi-concept data with {len(loaded_dataset)} concepts")
+        else:
+            print(f"[INFO] Dataset {dataset_name} loaded as single-concept data with {len(loaded_dataset)} items")
+        
+        dataset[dataset_name] = loaded_dataset
     return dataset
 
 if __name__=='__main__':

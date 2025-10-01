@@ -14,6 +14,7 @@ class BatchEditor(Enum):
     DPO = "DPO"
     EMMET = "EMMET"
     ALPHAEDIT = "AlphaEdit"
+    ULTRAEDIT = "ULTRAEDIT"
     CORE = "CORE"
 
 
@@ -29,6 +30,7 @@ class BatchEditor(Enum):
             or alg_name == BatchEditor.QLoRA.value \
             or alg_name == BatchEditor.LoRA.value \
             or alg_name == BatchEditor.DPO.value \
+            or alg_name == BatchEditor.ULTRAEDIT.value \
             or alg_name == BatchEditor.EMMET.value \
             or alg_name == BatchEditor.ALPHAEDIT.value \
             or alg_name == BatchEditor.CORE.value

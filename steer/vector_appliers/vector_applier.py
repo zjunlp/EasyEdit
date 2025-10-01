@@ -24,7 +24,11 @@ class BaseVectorApplier:
             from ..models import get_model
             self.model, self.tokenizer = get_model(self.config)
             self.device = self.model.device
-    
+    def _multimodal_load_model(self):
+        if self.model is None:
+            from ..models import Multimodal_get_model
+            self.model, self.tokenizer, self.processor = Multimodal_get_model(self.config)
+            self.device = self.model.device
     def apply_steering(self, hparams_dict, model=None, vectors=None):
         from ..utils.alg_dict import METHODS_CLASS_DICT  
         for alg_name in hparams_dict.keys():
@@ -52,7 +56,17 @@ class BaseVectorApplier:
         if self.model is None:
             self._load_model()
         self.model.model.eval()
-
+    def multimodal_apply_vectors(self, vectors=None):
+        if self.hparams_dict:
+            self.model = self.apply_steering(self.hparams_dict, self.model, vectors)
+            self.tokenizer = self.model.tokenizer
+            self.device = self.model.device
+            # For multimodal models, set processor
+            if hasattr(self.model, 'processor'):
+                self.processor = self.model.processor
+        if self.model is None:
+            self._multimodal_load_model()
+        self.model.model.eval()
     def _process_input_text(self, input_text: str) -> str:
         if hasattr(self.model, 'prompt'):
             base_prompt = self.model.prompt
@@ -63,6 +77,71 @@ class BaseVectorApplier:
             
         return input_text
 
+    def _process_multimodal_input(self, item) -> dict:
+        """
+        Handles multimodal input (text + image)
+
+        Args:
+            item: A data item containing the input and possibly an image
+
+        Returns:
+            A dictionary of processed inputs, including input_ids, attention_mask, etc
+        """
+        input_text = item.get('input', '')
+        image = item.get('image', None)
+        
+        # If there is a basic prompt word, add it to the input text
+        if hasattr(self.model, 'prompt'):
+            base_prompt = self.model.prompt
+            input_text = f"{base_prompt} {input_text}"
+        
+        # Building multimodal input
+        if image is not None:
+            # With images: Building multimodal dialogues
+            from steer.utils.templates import build_multimodal_model_input
+            conversation = [
+                {"role": "user", "content": [{"type": "text", "text": input_text}, {"type": "image"}]}
+            ]
+            processed_text = build_multimodal_model_input(
+                conversation, 
+                self.processor, 
+                self.config.system_prompt, 
+                self.config.use_chat_template
+            )
+            
+            # Using processors to handle multimodal input
+            inputs = self.processor(
+                text=processed_text,
+                images=image,
+                return_tensors="pt",
+                padding="longest",
+                truncation=True,
+                max_length=self.config.max_length,
+            ).to(self.device)
+        else:
+            # Only text: use normal text processing
+            from steer.utils.templates import build_multimodal_model_input
+            conversation = [
+                {"role": "user", "content": [{"type": "text", "text": input_text}]}
+            ]
+            processed_text = build_multimodal_model_input(
+                conversation, 
+                self.processor, 
+                self.config.system_prompt, 
+                self.config.use_chat_template
+            )
+            
+            # Using processors to handle multimodal input
+            inputs = self.processor(
+                text=processed_text,
+                return_tensors="pt",
+                padding="longest",
+                truncation=True,
+                max_length=self.config.max_length,
+            ).to(self.device)
+        
+        return inputs
+
     def generate(self, datasets, save_results=True, **kwargs):
         # Use kwargs parameters if provided, otherwise use parameters from config
         generation_params = dict(kwargs) if kwargs else dict(self.config.generation_params)
@@ -71,7 +150,7 @@ class BaseVectorApplier:
         if 'pad_token_id' not in generation_params:
             generation_params['pad_token_id'] = self.tokenizer.eos_token_id
         for generation_data_name in generation_data_names:
-
+            os.makedirs(self.config.generation_output_dir, exist_ok=True)
             save_file_path = os.path.join(self.config.generation_output_dir, f"{generation_data_name}_results.json")
             if os.path.exists(save_file_path):  
                 print(f"\033[1;34mFile {save_file_path} already exists! The result will be overwritten!\033[0m")
@@ -127,6 +206,72 @@ class BaseVectorApplier:
         print(f"----- Steered Output-----\n{item['pred']}\n")
 
         return formatted_results
+    def multimodal_generate(self, datasets, save_results=True, **kwargs):
+        # Use kwargs parameters if provided, otherwise use parameters from config
+        generation_params = dict(kwargs) if kwargs else dict(self.config.generation_params)
+        generation_data_names = list(datasets.keys())
+        # Set pad_token_id to eos_token_id if not already set in generation_params
+        if 'pad_token_id' not in generation_params:
+            generation_params['pad_token_id'] = self.processor.tokenizer.eos_token_id
+        for generation_data_name in generation_data_names:
+            os.makedirs(self.config.generation_output_dir, exist_ok=True)
+            save_file_path = os.path.join(self.config.generation_output_dir, f"{generation_data_name}_results.json")
+            if os.path.exists(save_file_path):  
+                print(f"\033[1;34mFile {save_file_path} already exists! The result will be overwritten!\033[0m")
+
+            orig_preds = []
+
+            preds = []
+            complete_output=[]
+            generation_data_size = self.config['generation_data_size']
+            if generation_data_size is None:
+                generation_data_size = -1
+            dataset = datasets[generation_data_name][:generation_data_size] if generation_data_size > 0 else datasets[generation_data_name]
+                
+            for item in tqdm(dataset, desc=f"Evaluating dataset {generation_data_name}"):
+                if not item.get('input'):
+                    continue
+                current_preds = []
+                current_output = []
+                
+                # Processing multimodal input
+                inputs = self._process_multimodal_input(item)
+                
+                num_responses = self.config.get('num_responses', 1)
+                for j in range(num_responses):
+                    if num_responses > 1:
+                        set_seed(j)
+                    with torch.no_grad():
+                        if self.config.get('steer_from_end_position', False):
+                            instr_pos = self.find_instruction_end_postion(inputs['input_ids'][0])
+                            print("Steering from end position:", instr_pos)
+                            self.model.set_from_positions(instr_pos)  
+                        output = self.model.model.generate(**inputs, **generation_params)
+                        current_output.append(self.processor.decode(output[0], skip_special_tokens=False))
+                        output=output[0][inputs['input_ids'].shape[1]:]
+                        text = self.processor.decode(output, skip_special_tokens=True)
+                        current_preds.append(text)
+                preds.append(current_preds)
+                complete_output.append(current_output)
+
+                if self.config.get('generate_orig_output', False):
+                    output = self.model.ori_generate(**inputs, **generation_params)
+                    output=output[0][inputs['input_ids'].shape[1]:]
+                    text = self.processor.decode(output, skip_special_tokens=True)
+                    orig_preds.append([text])
+
+            formatted_results = self._format_result(dataset, orig_preds=orig_preds,preds=preds, complete_output=complete_output)
+            if save_results:
+                self.save_results(formatted_results, generation_data_name)
+        item = formatted_results[0]
+        print(f"\n===== {generation_data_name} Results =====\n")
+        print(f"----- Input -----\n{item['input']}\n")
+        if self.config.get('generate_orig_output', False):
+            print(f"----- Orig Output-----\n{item['orig_pred']}\n")
+        print(f"----- Steered Output-----\n{item['pred']}\n")
+
+        return formatted_results
+    
     
     
     def save_results(self, results, dataset_name):

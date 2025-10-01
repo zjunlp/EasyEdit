@@ -1,22 +1,25 @@
 import json
+
+import pandas as pd
 import hydra
 from omegaconf import DictConfig
 import random
 from steer.datasets.dataset_loader import DatasetLoader
 from steer.vector_generators.vector_generators import BaseVectorGenerator
 from steer.vector_appliers.vector_applier import BaseVectorApplier
-from collections import defaultdict
 from steer.evaluate.evaluate import Evaluator
 import os
+
 def load_axbench_datasets() -> list:
     print(f"Loading 500 concepts from axbench...")
     dataset_loader = DatasetLoader()
     train_data = dataset_loader.load_file('axbench', 'train')
     
-    concept_grouped_data = defaultdict(list)
-    for item in train_data:
-        concept_grouped_data[item['concept_id']].append(item)
-        
+    # train_data is now a list of tuples: [(concept_id, concept_data_list), ...]
+    concept_grouped_data = {}
+    for concept_id, concept_data_list in train_data:
+        concept_grouped_data[concept_id] = concept_data_list
+
     eval_data = dataset_loader.load_file('axbench', 'generation')  # The Apacha-Eval dataset
     return concept_grouped_data, eval_data
 
@@ -34,8 +37,10 @@ def main(top_cfg: DictConfig):
     
     eval_args = {"mode": 'direct', "save_results": False, "eval_methods": ["llm"], "llm_model": "gpt-4o-mini-2024-07-18" , 'save_path': top_cfg.generation_output_dir}
     evaluator = Evaluator(**eval_args)
-    
-    for i, concept_train_data in enumerate(train_datasets.values()):
+
+    for i, concept_train_data in train_datasets.items():
+        # if i >= 2:
+            # continue
         print(f"Processing concept {i} with {len(concept_train_data)} items")
         train_dataset_for_concept = {
             f'axbench_concept_{i}': concept_train_data
@@ -51,8 +56,11 @@ def main(top_cfg: DictConfig):
         vector_applier.apply_vectors(vectors)   # Different from axbench, the steering factor is fixed for each concept
         
         # Randomly sample 10 items from apacha-eval
-        sampled_eval_data = random.sample(eval_datasets, 10)
-        
+        eval_datasets_df = pd.DataFrame(eval_datasets)
+        sampled_eval_data = eval_datasets_df.sample(10, random_state=int(i))
+        sampled_eval_data = sampled_eval_data.to_dict('records')
+        # sampled_eval_data = random.sample(eval_datasets, 10)
+
         # Generate results using the vector applier
         generated_results = vector_applier.generate(
            {

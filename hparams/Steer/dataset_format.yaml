@@ -39,6 +39,7 @@ train:
 
   axbench:
     file_path: ./data/axbench/prod_9b_l20_v1/generate/dpo_train_data.parquet
+    multi_concept: true
     field_names:
       question: 'input'
       matching: 'winning_output'
@@ -46,6 +47,8 @@ train:
       output_concept: 'output_concept'
       concept_id: 'concept_id'
       concept: 'output_concept'
+      concept_genre: 'concept_genre'
+      category: 'category'
 
   merge:
     file_path: null

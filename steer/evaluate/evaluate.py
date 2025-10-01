@@ -33,7 +33,7 @@ from steer.evaluate.prompt_templates import (
 )
 
 API_KEY = os.environ.get('API_KEY') 
-BASE_URL = os.environ.get('BASE_URL', 'https://api.gpt.ge/v1/')
+BASE_URL = os.environ.get('BASE_URL')
 openai.default_headers = {"x-foo": "true"}
 
 

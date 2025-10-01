@@ -38,7 +38,7 @@ def prepare_input(tokenizer, prompts, device="cuda"):
     return input_tokens
 
 
-def generate_vector_prompt_vectors(hparams:VectorPromptHyperParams,dataset, model = None):
+def generate_vector_prompt_vectors(hparams:VectorPromptHyperParams, dataset, model = None, dataset_name = None):
     
 
     from ...models.get_model import get_model
