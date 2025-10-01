@@ -1,0 +1,11 @@
+alg_name: "SimIE"
+model_name: "./hugging_cache/Llama-3-8B"
+device: 0
+base_method: "ROME"
+lamHyper: 10000.0      
+init_model: true      
+solver: "LU"         
+fast: false
+model_parallel: false       
+fp16: false
+max_length: 40
