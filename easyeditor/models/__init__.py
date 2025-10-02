@@ -25,3 +25,4 @@ from .unke_ARE import *
 from .ft_uns import *
 from .lora_uns import *
 from .ultraedit import *
+from .simie import *
