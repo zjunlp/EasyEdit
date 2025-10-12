@@ -27,8 +27,10 @@ def apply_vector_prompt(hparams: ApplyVectorPromptHyperParams,pipline=None,vecto
     from ...models.get_model import get_model
     device = hparams.device
     if pipline is None:
-
-        model, _ = get_model(hparams)
+        if getattr(hparams, 'vllm_enable', False):
+            model, VLLM_model = get_model(hparams)
+        else:
+            model, tokenizer = get_model(hparams)
     else:
         model = pipline
     print('Apply vector_prompt to model: {}'.format(hparams.model_name_or_path))
@@ -54,7 +56,10 @@ def apply_vector_prompt(hparams: ApplyVectorPromptHyperParams,pipline=None,vecto
         model.set_add_activations(
             layer, multiplier * steering_vector, method_name="vector_prompt"
         )
-    return model
+    if hparams.vllm_enable:
+        return model, VLLM_model
+    else:
+        return model, tokenizer
 
 # def eval_caa(hparams: ApplyCAAHyperParams):
 #     dataset = GenerationDataset()

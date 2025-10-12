@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, List
 import yaml
-from ...utils import HyperParams
+from ...utils.hparams import HyperParams
 
 @dataclass
 class ApplyPromptHyperParams(HyperParams):

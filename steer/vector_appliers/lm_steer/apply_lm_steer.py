@@ -5,8 +5,11 @@ from .apply_lm_steer_hparam import ApplyLmSteerHyperParams
 def apply_lm_steer(hparams: ApplyLmSteerHyperParams,pipline=None, vector=None):
     from ...models.get_model import get_model
     device = hparams.device
-    if pipline is None:  #model has not been initialized
-        model, _ = get_model(hparams)
+    if pipline is None:
+        if getattr(hparams, 'vllm_enable', False):
+            model, VLLM_model = get_model(hparams)
+        else:
+            model, tokenizer = get_model(hparams)
     else:
         model = pipline
    
@@ -29,13 +32,19 @@ def apply_lm_steer(hparams: ApplyLmSteerHyperParams,pipline=None, vector=None):
                 if hparams.steer_values is not None else None)
     model.steer.set_value(steer_values[None])
     
-    return model
+    if hparams.vllm_enable:
+        return model, VLLM_model
+    else:
+        return model, tokenizer
 
 def apply_multimodal_lm_steer(hparams: ApplyLmSteerHyperParams,pipline=None, vector=None):
     from ...models.Multimodal_get_model import get_model
     device = hparams.device
-    if pipline is None:  #model has not been initialized
-        model, _ = get_model(hparams)
+    if pipline is None:
+        if getattr(hparams, 'vllm_enable', False):
+            model, VLLM_model = get_model(hparams)
+        else:
+            model, tokenizer = get_model(hparams)
     else:
         model = pipline
    
@@ -58,7 +67,10 @@ def apply_multimodal_lm_steer(hparams: ApplyLmSteerHyperParams,pipline=None, vec
                 if hparams.steer_values is not None else None)
     model.steer.set_value(steer_values[None])
     
-    return model
+    if hparams.vllm_enable:
+        return model, VLLM_model
+    else:
+        return model, tokenizer
     
 
 

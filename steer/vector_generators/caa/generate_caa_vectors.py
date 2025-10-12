@@ -22,12 +22,16 @@ HUGGINGFACE_TOKEN = os.getenv("HF_TOKEN")
 
 def generate_caa_vectors(hparams:CAAHyperParams, dataset, model = None, dataset_name = None):
     from ...models.get_model import get_model
-    from ...datasets.caa_data import get_tokens_for_caa
+    from ...datasets.caa_data import get_tokens_for_caa, get_inputs_for_caa_vllm
     # Whether to delete the model after the function
     del_model = True
     args = hparams
+    
     if model is None:
-        model, tokenizer = get_model(hparams)
+        if hparams.vllm_enable == False:
+            model, tokenizer = get_model(hparams)
+        else:
+            model, vllm_model = get_model(hparams)
     else:
         del_model = False
         model, tokenizer = model, model.tokenizer
@@ -36,40 +40,95 @@ def generate_caa_vectors(hparams:CAAHyperParams, dataset, model = None, dataset_
     pos_activations = dict([(layer, []) for layer in args.layers])
     neg_activations = dict([(layer, []) for layer in args.layers])
 
-
-    pos_tokens_list, neg_tokens_list = get_tokens_for_caa(dataset, tokenizer, hparams)
-
-    for p_tokens_dict, n_tokens_dict in tqdm(
-        zip(pos_tokens_list, neg_tokens_list),
-        total=len(pos_tokens_list),
-        desc="Processing prompts",
-    ):
-        p_tokens = p_tokens_dict["pos_tokens"]
-        n_tokens = n_tokens_dict["neg_tokens"]
-        ques_tokens_len = p_tokens_dict["ques_tokens_len"]
-        model.reset_all()
-        model.get_logits(p_tokens)
-
-        for layer in args.layers:
-            p_activations = model.get_last_activations(layer)
-            # mean the activation over all answer tokens
-            if args.multiple_choice == True:
-                p_activations = p_activations[0, -2, :].detach().cpu()
-            else:
-                p_activations = p_activations[0, ques_tokens_len:, :].mean(0).detach().cpu()
-            pos_activations[layer].append(p_activations)
-
-        model.reset_all()
-        model.get_logits(n_tokens)
+    if hparams.vllm_enable == False:
+        pos_tokens_list, neg_tokens_list = get_tokens_for_caa(dataset, tokenizer, hparams)
         
-        ques_tokens_len = n_tokens_dict["ques_tokens_len"]
-        for layer in args.layers:
-            n_activations = model.get_last_activations(layer)
-            if args.multiple_choice == True:
-                n_activations = n_activations[0, -2, :].detach().cpu()
-            else:
-                n_activations = n_activations[0, ques_tokens_len:, :].mean(0).detach().cpu()
-            neg_activations[layer].append(n_activations)
+        for p_tokens_dict, n_tokens_dict in tqdm(
+            zip(pos_tokens_list, neg_tokens_list),
+            total=len(pos_tokens_list),
+            desc="Processing prompts",
+        ):
+            p_tokens = p_tokens_dict["pos_tokens"]
+            n_tokens = n_tokens_dict["neg_tokens"]
+            ques_tokens_len = p_tokens_dict["ques_tokens_len"]
+            
+            model.reset_all()
+            model.get_logits(p_tokens)
+            
+            for layer in args.layers:
+                p_activations = model.get_last_activations(layer)
+                # mean the activation over all answer tokens
+                if args.multiple_choice == True:
+                    p_activations = p_activations[0, -2, :].detach().cpu()
+                else:
+                    p_activations = p_activations[0, ques_tokens_len:, :].mean(0).detach().cpu()
+                pos_activations[layer].append(p_activations)
+              
+            model.reset_all()
+            model.get_logits(n_tokens)
+            ques_tokens_len = n_tokens_dict["ques_tokens_len"]
+            for layer in args.layers:
+                n_activations = model.get_last_activations(layer)
+                if args.multiple_choice == True:
+                    n_activations = n_activations[0, -2, :].detach().cpu()
+                else:
+                    n_activations = n_activations[0, ques_tokens_len:, :].mean(0).detach().cpu()
+                neg_activations[layer].append(n_activations)
+    else:
+        # 获取vLLM的tokenizer
+        tokenizer = vllm_model.llm_engine.tokenizer
+        pos_inputs, neg_inputs, pos_tokens_list, neg_tokens_list = get_inputs_for_caa_vllm(dataset, tokenizer, hparams)
+        
+        for pos_input, neg_input, p_tokens_dict, n_tokens_dict in tqdm(
+            zip(pos_inputs, neg_inputs, pos_tokens_list, neg_tokens_list),
+            total=len(pos_inputs),
+            desc="Processing prompts",
+        ):
+            # 从tokens_dict中获取tokens和input
+            p_tokens = p_tokens_dict["pos_tokens"]
+            n_tokens = n_tokens_dict["neg_tokens"]
+            
+            # 按照get_tokens_for_caa的方式获取ques_tokens_len
+            ques_tokens_len = p_tokens_dict["ques_tokens_len"]
+
+            model.reset_all()
+            try:
+                # 使用SamplingParams包装参数
+                from vllm import SamplingParams
+                sampling_params = SamplingParams(max_tokens=1)
+                vllm_model.generate([pos_input], sampling_params)
+            except Exception as e:
+                print(f"Error getting pos_logits: {e}")      
+                
+            #import pdb; pdb.set_trace()
+            
+            for layer in args.layers:
+                p_activations = model.get_last_activations(layer)
+                p_activations = p_activations.unsqueeze(0)
+                if args.multiple_choice == True:
+                    p_activations = p_activations[0, -2, :].detach().cpu()
+                else:
+                    p_activations = p_activations[0, ques_tokens_len:, :].mean(0).detach().cpu()
+                pos_activations[layer].append(p_activations)
+     
+            model.reset_all()
+            try:
+                from vllm import SamplingParams
+                sampling_params = SamplingParams(max_tokens=1)
+                vllm_model.generate([neg_input], sampling_params)
+            except Exception as e:
+                print(f"Error getting neg_logits: {e}")
+                neg_logits = None
+            
+            for layer in args.layers:
+                n_activations = model.get_last_activations(layer)
+                n_activations = n_activations.unsqueeze(0)
+                if args.multiple_choice == True:
+                    n_activations = n_activations[0, -2, :].detach().cpu()
+                else:
+                    n_activations = n_activations[0, ques_tokens_len:, :].mean(0).detach().cpu()
+                neg_activations[layer].append(n_activations)
+
             
     if hparams.save_vectors is True:
         if args.multiple_choice == True:

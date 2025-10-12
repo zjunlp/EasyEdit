@@ -1,6 +1,6 @@
 import yaml
 from typing import List
-from ...utils import HyperParams
+from ...utils.hparams import HyperParams
 from dataclasses import dataclass, field
 
 

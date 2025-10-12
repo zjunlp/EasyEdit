@@ -111,11 +111,11 @@ def get_tokens_for_caa(dataset, tokenizer, hparams):
     ques = ''
     for i in range(len(dataset)):
         if hparams.multiple_choice == True:
-            ques = dataset[i].get('question', '')
+            ques = str(dataset[i].get('question', ''))
             chosen = "\nAnswer: " + str("" if pd.isna(dataset[i]['matching']) else dataset[i]['matching'])
             rejected = "\nAnswer: " + str("" if pd.isna(dataset[i]['not_matching'] ) else dataset[i]['not_matching'] )
         else:
-            ques = dataset[i].get('question', '')
+            ques = str(dataset[i].get('question', ''))
             chosen = " " + str("" if pd.isna(dataset[i]['matching']) else dataset[i]['matching'])
             rejected = " " + str("" if pd.isna(dataset[i]['not_matching'] ) else dataset[i]['not_matching'] )
     
@@ -125,7 +125,7 @@ def get_tokens_for_caa(dataset, tokenizer, hparams):
         ques_tokens = tokenizer.encode(ques, return_tensors="pt",add_special_tokens=add_special_tokens)
         pos_tokens = tokenizer.encode(ques + chosen, return_tensors="pt", add_special_tokens=add_special_tokens)
         neg_tokens = tokenizer.encode(ques + rejected, return_tensors="pt", add_special_tokens=add_special_tokens)
-    
+        
         pos_tokens_list.append({
             "pos_tokens": pos_tokens.to(hparams.device),
             "ques_tokens_len": ques_tokens.shape[1],
@@ -139,6 +139,52 @@ def get_tokens_for_caa(dataset, tokenizer, hparams):
         })
 
     return pos_tokens_list, neg_tokens_list
+
+def get_inputs_for_caa_vllm(dataset, tokenizer, hparams):
+    pos_inputs_list, neg_inputs_list = [], []
+    pos_tokens_list, neg_tokens_list = [], []
+    ques = ''
+    
+    for i in range(len(dataset)):
+        if hparams.multiple_choice == True:
+            ques = str(dataset[i].get('question', ''))
+            chosen = "\nAnswer: " + str("" if pd.isna(dataset[i]['matching']) else dataset[i]['matching'])
+            rejected = "\nAnswer: " + str("" if pd.isna(dataset[i]['not_matching'] ) else dataset[i]['not_matching'] )
+        else:
+            ques = str(dataset[i].get('question', ''))
+            chosen = " " + str("" if pd.isna(dataset[i]['matching']) else dataset[i]['matching'])
+            rejected = " " + str("" if pd.isna(dataset[i]['not_matching'] ) else dataset[i]['not_matching'] )
+
+        ques_processed = build_model_input(ques, tokenizer, hparams.system_prompt, hparams.use_chat_template)
+        
+        pos_input = ques_processed + chosen
+        neg_input = ques_processed + rejected
+        
+        add_special_tokens = False if hparams.use_chat_template else True
+        
+        ques_tokens = tokenizer.encode(ques_processed)
+        pos_tokens = tokenizer.encode(pos_input)
+        neg_tokens = tokenizer.encode(neg_input)
+        
+        import torch
+        ques_tokens = torch.tensor(ques_tokens).unsqueeze(0)  # [1, seq_len]
+        pos_tokens = torch.tensor(pos_tokens).unsqueeze(0)    # [1, seq_len]
+        neg_tokens = torch.tensor(neg_tokens).unsqueeze(0)    # [1, seq_len]
+        
+        pos_inputs_list.append(pos_input)
+        neg_inputs_list.append(neg_input)
+        pos_tokens_list.append({
+            "pos_tokens": pos_tokens.to(hparams.device),
+            "ques_tokens_len": ques_tokens.shape[1],
+            "pos_answer_len": pos_tokens.shape[1] - ques_tokens.shape[1],
+        })
+        neg_tokens_list.append({
+            "neg_tokens": neg_tokens.to(hparams.device),
+            "ques_tokens_len": ques_tokens.shape[1],
+            "neg_answer_len": neg_tokens.shape[1] - ques_tokens.shape[1],
+        })
+    
+    return pos_inputs_list, neg_inputs_list, pos_tokens_list, neg_tokens_list
 
 def get_tokens_for_vector_prompt(dataset, tokenizer, hparams):
     pos_tokens_list, neg_tokens_list = [], []

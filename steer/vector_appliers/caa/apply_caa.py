@@ -20,11 +20,14 @@ def reset_caa_layers(model, layers):
         else:
             raise NotImplementedError("Failed to reset CAA activations")
 
-def apply_caa(hparams: ApplyCAAHyperParams,pipline=None, vector=None):
+def apply_caa(hparams: ApplyCAAHyperParams, pipline=None, vector=None):
     from ...models.get_model import get_model
     device = hparams.device
     if pipline is None:
-        model, _ = get_model(hparams)
+        if getattr(hparams, 'vllm_enable', False):
+            model, VLLM_model = get_model(hparams)
+        else:
+            model, tokenizer = get_model(hparams)
     else:
         model = pipline
     print('Apply CAA to model: {}'.format(hparams.model_name_or_path))
@@ -50,7 +53,11 @@ def apply_caa(hparams: ApplyCAAHyperParams,pipline=None, vector=None):
         model.set_add_activations(
             layer, multiplier * steering_vector, method_name="caa"
         )
-    return model
+        
+    if hparams.vllm_enable:
+        return model, VLLM_model
+    else:
+        return model, tokenizer
 
 # def eval_caa(hparams: ApplyCAAHyperParams):
 #     dataset = GenerationDataset()

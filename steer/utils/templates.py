@@ -21,7 +21,7 @@ def build_model_input(
     suffix: Optional[str] = None,
 ) -> str:
    
-
+    
     user_input = user_input.strip()
     if model_output:
         model_output = model_output.strip()

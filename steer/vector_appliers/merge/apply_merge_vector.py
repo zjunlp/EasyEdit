@@ -24,7 +24,10 @@ def apply_merge_vector(hparams: ApplyMergeVectorHyperParams,pipline=None, vector
     from ...models.get_model import get_model
     device = hparams.device
     if pipline is None:
-        model, _ = get_model(hparams)
+        if getattr(hparams, 'vllm_enable', False):
+            model, VLLM_model = get_model(hparams)
+        else:
+            model, tokenizer = get_model(hparams)
     else:
         model = pipline
     print('Apply MergeVector to model: {}'.format(hparams.model_name_or_path))
@@ -51,7 +54,10 @@ def apply_merge_vector(hparams: ApplyMergeVectorHyperParams,pipline=None, vector
         model.set_add_activations(
             layer, multiplier * steering_vector, method_name="merge_vector"
         )
-    return model
+    if hparams.vllm_enable:
+        return model, VLLM_model
+    else:
+        return model, tokenizer
 
 # def eval_merge_vector(hparams: ApplyMergeVectorHyperParams):
 #     dataset = GenerationDataset()

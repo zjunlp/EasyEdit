@@ -1,7 +1,7 @@
 import yaml
 from dataclasses import dataclass
 from typing import List
-from ...utils import HyperParams
+from ...utils.hparams import HyperParams
 
 
 @dataclass

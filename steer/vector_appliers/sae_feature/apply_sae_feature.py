@@ -28,7 +28,10 @@ def apply_sae_feature(hparams: ApplySaeFeatureHyperParams,pipline=None,vector=No
     from ...models.get_model import get_model
     device = hparams.device
     if pipline is None:
-        model, _ = get_model(hparams)
+        if getattr(hparams, 'vllm_enable', False):
+            model, VLLM_model = get_model(hparams)
+        else:
+            model, tokenizer = get_model(hparams)
     else:
         model = pipline
     print('Apply SaeFeature to model: {}'.format(hparams.model_name_or_path))
@@ -55,4 +58,8 @@ def apply_sae_feature(hparams: ApplySaeFeatureHyperParams,pipline=None,vector=No
         model.set_add_activations(
             layer, multiplier * steering_vector, method_name="sae_feature"
         )
-    return model
+        
+    if hparams.vllm_enable:
+        return model, VLLM_model
+    else:
+        return model, tokenizer

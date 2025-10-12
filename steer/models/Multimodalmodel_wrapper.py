@@ -2,14 +2,14 @@ import copy
 import torch as t
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoProcessor
 
-from steer.utils.alg_dict import DTYPES_DICT
+from ..vector_appliers.utils.alg_dict import DTYPES_DICT
 from steer.vector_appliers.lm_steer.apply_lm_steer_hparam import ApplyLmSteerHyperParams
 from steer.models.utils import add_vector_from_position # find_instruction_end_postion
 from typing import Optional
 
 
 from steer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyperParams
-from steer.utils.hparams import HyperParams
+from ..vector_appliers.utils.hparams import HyperParams
 from steer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
 
 from PIL import Image
@@ -420,7 +420,7 @@ class LlavaOVWrapper(BaseModelWrapper):
             self.model_name_or_path,
             torch_dtype=self.torch_dtype,
         )
-        self.max_length = 2048  # 设置默认最大长度
+        self.max_length = 2048 
     
     def process_input(self, input):# input for llava-ov is a list of dicts, each dict has type and content
         question = None
