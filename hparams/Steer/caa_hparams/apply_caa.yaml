@@ -2,3 +2,4 @@
 alg_name: caa
 layers: [20]
 multipliers: [1.0]
+vllm_enable: false

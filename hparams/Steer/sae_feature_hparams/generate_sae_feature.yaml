@@ -8,7 +8,6 @@ sae_id: layer_24/width_16k/canonical
 position_ids: [0, 1, 2]
 strengths: [0.1, 0.5, 1.0]
 
-# Notes:  
 # 1. If sae_path is set, the model loads locally, and release/sae_id can be omitted.  
 # 2. If sae_path is empty, release and sae_id must be provided for remote loading.  
 # 3. For feature queries or descriptions, release and sae_id are always required, even if sae_path is set.  

@@ -2,3 +2,4 @@
 alg_name: sae_feature
 layers: [24]
 multipliers: [1.0]
+vllm_enable: false

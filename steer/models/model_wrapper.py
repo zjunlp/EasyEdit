@@ -8,9 +8,16 @@ from typing import Optional
 
 
 from steer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyperParams
-from steer.utils.hparams import HyperParams
+from ..utils.hparams import HyperParams
 from steer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
 
+# from vllm import LLM as VLLM_model
+try:
+    from vllm import LLM
+    VLLM_AVAILABLE = True
+except ImportError:
+    VLLM_model = None
+    VLLM_AVAILABLE = False
 
 class AttnWrapper(t.nn.Module):
     """
@@ -86,7 +93,6 @@ class BlockOutputWrapper(t.nn.Module):
             # Raise an error if model_type is not supported
             raise ValueError(f"Unsupported model type: {self.model_type}")
  
-
         self.attn_out_unembedded = None
         self.intermediate_resid_unembedded = None
         self.mlp_out_unembedded = None
@@ -104,10 +110,21 @@ class BlockOutputWrapper(t.nn.Module):
         self.dot_products = []
 
         self.layer_id = layer_id
+    
+
+    def __getattr__(self, name):
+        """Delegate attribute access to the base layer"""
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.block, name)
 
     def forward(self, *args, **kwargs):
         output = self.block(*args, **kwargs)
         self.activations = output[0]
+
+        if self.activations.dim() == 2:
+            self.activations = self.activations.unsqueeze(0)
             
         if self.calc_dot_product_with is not None:
             last_token_activations = self.activations[0, -1, :]
@@ -226,10 +243,10 @@ class BaseModelWrapper:
         model_name_or_path: Optional[str] = None,
         use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
-        hparams:HyperParams=None,
+        hparams:HyperParams=None
     ):
         
-        from steer.utils.alg_dict import DTYPES_DICT
+        from ..utils.alg_dict import DTYPES_DICT
         
         self.hparams = hparams    #initialize hyperparams
         self.use_chat = use_chat
@@ -237,33 +254,68 @@ class BaseModelWrapper:
         self.torch_dtype = DTYPES_DICT.get(torch_dtype, t.float32)
         self.use_cache = use_cache
         self.model_name_or_path = model_name_or_path
-
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_name_or_path,
-            padding_side="right" if "gemma" in self.model_name_or_path else "left",
-        )
-        # self.tokenizer.pad_token = self.tokenizer.eos_token
-        # self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
-
-        self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_name_or_path,
-            torch_dtype=self.torch_dtype,
-            device_map=self.device,
-            use_cache=self.use_cache
-        )
         
+        if hparams.vllm_enable and hparams.vllm_enable != "False":
+            self.VLLM_model = LLM(
+                model=self.model_name_or_path,
+                #enable_steer_vector=True,
+                enforce_eager=True,
+                tensor_parallel_size=1,
+                dtype=self.torch_dtype,
+            )
+            self.tokenizer = self.VLLM_model.get_tokenizer()
+            self.model = self.extract_vllm_model()
+        else:
+            self.VLLM_model = None
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.model_name_or_path,
+                    padding_side="right" if "gemma" in self.model_name_or_path else "left",
+                )
+            # self.tokenizer.pad_token = self.tokenizer.eos_token
+            # self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_name_or_path,
+                torch_dtype=self.torch_dtype,
+                device_map=self.device,
+                use_cache=self.use_cache
+            )
         if override_model_weights_path is not None:
             self.model.load_state_dict(t.load(override_model_weights_path), device=self.device)
 
         ### Customize layers and outputs for specific models
         self._adapt_model_layers()
+    
+    def extract_vllm_model(self):
+        """Extract PyTorch model from vLLM LLM instance"""
+        try:
+            # Try vLLM v1 structure first
+            if hasattr(self.VLLM_model, 'llm_engine') and hasattr(self.VLLM_model.llm_engine, 'model_executor'):
+                model_executor = self.VLLM_model.llm_engine.model_executor
+                if hasattr(model_executor, 'driver_worker'):
+                    model = model_executor.driver_worker.model_runner.model
+                else:
+                    model = getattr(model_executor, 'model', None)
+                if model is not None:
+                    return model
+            # Try direct model access
+            if hasattr(self.VLLM_model, 'model'):
+                return self.VLLM_model.model, None
+            raise ValueError("Could not extract model from vLLM instance")
+        except Exception as e:
+            raise RuntimeError(f"Failed to extract model from vLLM instance: {str(e)}")
 
     def _adapt_model_layers(self):
         """Override this method in subclasses for model-specific layer adaptations."""
-        for i, layer in enumerate(self.model.model.layers):
-            self.model.model.layers[i] = BlockOutputWrapper(
-                layer, self.model.lm_head, self.model.model.norm, self.tokenizer, i, self.model_name_or_path
-            )
+        if self.VLLM_model is not None and self.VLLM_model != "False":
+            for i, layer in enumerate(self.model.model.layers):
+                self.model.model.layers[i] = BlockOutputWrapper(
+                    layer, None, self.model.model.norm, self.tokenizer, i, self.model_name_or_path
+                )
+        else:
+            for i, layer in enumerate(self.model.model.layers):
+                self.model.model.layers[i] = BlockOutputWrapper(
+                    layer, self.model.lm_head, self.model.model.norm, self.tokenizer, i, self.model_name_or_path
+                )
 
     def replace_final_layer(self, hparams):
         
@@ -359,8 +411,6 @@ class BaseModelWrapper:
                 delattr(self, 'prompt')
         else:
             raise ValueError(f"Method {method_name} not supported to reset")
-            
-            
 
     def print_decoded_activations(self, decoded_activations, label, topk=10):
         data = self.get_activation_data(decoded_activations, topk)[0]
@@ -374,7 +424,11 @@ class BaseModelWrapper:
         return list(zip(tokens, probs_percent)), list(zip(tokens, values.tolist()))
 
     def get_logits(self,tokens):
-        logits = self.model(tokens).logits
+        if self.VLLM_model is not None:
+            from vllm import SamplingParams
+            logits = self.VLLM_model.generate(prompt_token_ids=tokens.tolist(), sampling_params=SamplingParams(max_tokens=1))
+        else:
+            logits = self.model(tokens).logits
         return logits
     
     def ori_generate(self, input_ids, **kwargs):
@@ -423,7 +477,6 @@ class BaseModelWrapper:
         
         return output
         
-
 class LlamaWrapper(BaseModelWrapper):
     def __init__(
         self,
@@ -433,7 +486,7 @@ class LlamaWrapper(BaseModelWrapper):
         model_name_or_path: Optional[str] = None,
         use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
-        hparams:HyperParams=None,
+        hparams:HyperParams=None
     ):
         super().__init__(
             torch_dtype, 
@@ -442,7 +495,8 @@ class LlamaWrapper(BaseModelWrapper):
             model_name_or_path,
             use_cache,
             override_model_weights_path, 
-            hparams)
+            hparams,
+            )
 
 class GemmaWrapper(BaseModelWrapper):
     def __init__(
@@ -463,7 +517,8 @@ class GemmaWrapper(BaseModelWrapper):
             model_name_or_path,
             use_cache,
             override_model_weights_path, 
-            hparams)
+            hparams
+            )
 
 class QwenWrapper(BaseModelWrapper):
     def __init__(
@@ -483,7 +538,8 @@ class QwenWrapper(BaseModelWrapper):
             model_name_or_path,
             use_cache,
             override_model_weights_path, 
-            hparams)
+            hparams
+            )
 
 class GPTWrapper(BaseModelWrapper):
     def __init__(
@@ -503,12 +559,19 @@ class GPTWrapper(BaseModelWrapper):
             model_name_or_path,
             use_cache,
             override_model_weights_path, 
-            hparams)
+            hparams
+            )
 
 
     def _adapt_model_layers(self):
-        for i, layer in enumerate(self.model.transformer.h):
-            self.model.transformer.h[i] = BlockOutputWrapper(
+        if self.VLLM_model is not None:
+            for i, layer in enumerate(self.model.transformer.h):
+                self.model.transformer.h[i] = BlockOutputWrapper(
+                    layer, None, self.model.transformer.ln_f, self.tokenizer, i, self.model_name_or_path
+                )
+        else:
+            for i, layer in enumerate(self.model.transformer.h):
+                self.model.transformer.h[i] = BlockOutputWrapper(
                 layer, self.model.lm_head, self.model.transformer.ln_f, self.tokenizer, i, self.model_name_or_path
             )
 

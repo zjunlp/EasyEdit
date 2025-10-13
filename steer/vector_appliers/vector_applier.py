@@ -30,7 +30,7 @@ class BaseVectorApplier:
             self.model, self.tokenizer, self.processor = Multimodal_get_model(self.config)
             self.device = self.model.device
     def apply_steering(self, hparams_dict, model=None, vectors=None):
-        from ..utils.alg_dict import METHODS_CLASS_DICT  
+        from ..utils.alg_dict import METHODS_CLASS_DICT
         for alg_name in hparams_dict.keys():
             if alg_name in METHODS_CLASS_DICT:
                 set_seed(hparams_dict[alg_name].seed)
@@ -44,18 +44,17 @@ class BaseVectorApplier:
                     model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name],  model, vectors[alg_name])
                 print(f"Applying {alg_name} vectors or prompt to model successfully !\n")
             else:
-                return NotImplementedError(f"Method {alg_name} not implemented !")
- 
+                return NotImplementedError(f"Method {alg_name} not implemented !")\
+        
         return model
-
     def apply_vectors(self, vectors=None):
         if self.hparams_dict:
-            self.model = self.apply_steering(self.hparams_dict, self.model, vectors)
+            self.model= self.apply_steering(self.hparams_dict, self.model, vectors)
             self.tokenizer = self.model.tokenizer
             self.device = self.model.device
         if self.model is None:
             self._load_model()
-        self.model.model.eval()
+        self.model.model.eval() 
     def multimodal_apply_vectors(self, vectors=None):
         if self.hparams_dict:
             self.model = self.apply_steering(self.hparams_dict, self.model, vectors)
@@ -67,6 +66,7 @@ class BaseVectorApplier:
         if self.model is None:
             self._multimodal_load_model()
         self.model.model.eval()
+
     def _process_input_text(self, input_text: str) -> str:
         if hasattr(self.model, 'prompt'):
             base_prompt = self.model.prompt
@@ -147,65 +147,124 @@ class BaseVectorApplier:
         generation_params = dict(kwargs) if kwargs else dict(self.config.generation_params)
         generation_data_names = list(datasets.keys())
         # Set pad_token_id to eos_token_id if not already set in generation_params
-        if 'pad_token_id' not in generation_params:
-            generation_params['pad_token_id'] = self.tokenizer.eos_token_id
         for generation_data_name in generation_data_names:
             os.makedirs(self.config.generation_output_dir, exist_ok=True)
             save_file_path = os.path.join(self.config.generation_output_dir, f"{generation_data_name}_results.json")
             if os.path.exists(save_file_path):  
                 print(f"\033[1;34mFile {save_file_path} already exists! The result will be overwritten!\033[0m")
-
             orig_preds = []
-
             preds = []
             complete_output=[]
             generation_data_size = self.config['generation_data_size']
             if generation_data_size is None:
                 generation_data_size = -1
             dataset = datasets[generation_data_name][:generation_data_size] if generation_data_size > 0 else datasets[generation_data_name]
-                
-            for item in tqdm(dataset, desc=f"Evaluating dataset {generation_data_name}"):
-                if not item.get('input'):
-                    continue
-                current_preds = []
-                current_output = []
-                input_text = self._process_input_text(item['input'])
-                inputs = self.tokenizer(input_text, return_tensors="pt", add_special_tokens = not self.config.use_chat_template).to(self.device)
-                
+            
+            if self.model.VLLM_model is not None:
+                from vllm import SamplingParams
+                vllm_sampling_params = SamplingParams(**convert_generation_params_to_vllm(generation_params))
                 num_responses = self.config.get('num_responses', 1)
-                for j in range(num_responses):
-                    if num_responses > 1:
-                        set_seed(j)
-                    with torch.no_grad():
-                        if self.config.get('steer_from_end_position', False):
-                            instr_pos = self.find_instruction_end_postion(inputs['input_ids'][0])
-                            print("Steering from end position:", instr_pos)
-                            self.model.set_from_positions(instr_pos)  
-                        output = self.model.model.generate(**inputs, **generation_params)
-                        current_output.append(self.tokenizer.decode(output[0], skip_special_tokens=False))
+
+                if self.config.get('steer_from_end_position', False):
+                    print("[Warning] steer_from_end_position not supported in vLLM mode.")
+                
+                if 'pad_token_id' not in generation_params:
+                    generation_params['pad_token_id'] = self.tokenizer.eos_token_id
+
+                input_batch = []
+                valid_indices = [] 
+                
+                for idx, item in enumerate(tqdm(dataset, desc=f"Preprocessing dataset {generation_data_name}")):
+                    if not item.get('input'):
+                        continue
+                    
+                    input_text = self._process_input_text(item['input'])
+                    input_ids = self.tokenizer(input_text, return_tensors="pt", add_special_tokens = not self.config.use_chat_template).to(self.device)
+                    #import pdb; pdb.set_trace()
+                    for j in range(num_responses):
+                        input_batch.append(input_ids['input_ids'][0].tolist())
+                        valid_indices.append(idx)
+
+                if not input_batch:
+                    print(f"No valid inputs found in dataset {generation_data_name}")
+                    continue
+
+                if num_responses > 1:
+                    set_seed(42)
+            
+                outputs = self.model.VLLM_model.generate(
+                    prompt_token_ids= input_batch,
+                    sampling_params= vllm_sampling_params
+                )
+
+                current_item_outputs = {}  # {item_idx: [responses]}
+                
+                for i, output in enumerate(outputs):
+                    item_idx = valid_indices[i]
+                    text = output.outputs[0].text.strip()
+                    
+                    if item_idx not in current_item_outputs:
+                        current_item_outputs[item_idx] = []
+                    current_item_outputs[item_idx].append(text)
+
+                for idx, item in enumerate(dataset):
+                    if not item.get('input'):
+                        continue
+                    
+                    if idx in current_item_outputs:
+                        current_output = current_item_outputs[idx]
+                        current_preds = current_output.copy()
+                    else:
+                        current_output = []
+                        current_preds = []
+                    
+                    preds.append(current_preds)
+                    complete_output.append(current_output)
+            else:
+                if 'pad_token_id' not in generation_params:
+                    generation_params['pad_token_id'] = self.tokenizer.eos_tcoken_id
+                for item in tqdm(dataset, desc=f"Evaluating dataset {generation_data_name}"):
+                    if not item.get('input'):
+                        continue
+                    current_preds = []
+                    current_output = []
+                    input_text = self._process_input_text(item['input'])
+                    inputs = self.tokenizer(input_text, return_tensors="pt", add_special_tokens = not self.config.use_chat_template).to(self.device)
+                    num_responses = self.config.get('num_responses', 1)
+                    for j in range(num_responses):
+                        if num_responses > 1:
+                            set_seed(j)
+                        with torch.no_grad():
+                            if self.config.get('steer_from_end_position', False):
+                                instr_pos = self.find_instruction_end_postion(inputs['input_ids'][0])
+                                print("Steering from end position:", instr_pos)
+                                self.model.set_from_positions(instr_pos)  
+                            output = self.model.model.generate(**inputs, **generation_params)
+                            current_output.append(self.tokenizer.decode(output[0], skip_special_tokens=False))
+                            output=output[0][inputs['input_ids'].shape[1]:]
+                            text = self.tokenizer.decode(output, skip_special_tokens=True)
+                            current_preds.append(text)
+                    preds.append(current_preds)
+                    complete_output.append(current_output)
+
+                    if self.config.get('generate_orig_output', False):
+                        output = self.model.ori_generate(**inputs, **generation_params)
                         output=output[0][inputs['input_ids'].shape[1]:]
                         text = self.tokenizer.decode(output, skip_special_tokens=True)
-                        current_preds.append(text)
-                preds.append(current_preds)
-                complete_output.append(current_output)
-
-                if self.config.get('generate_orig_output', False):
-                    output = self.model.ori_generate(**inputs, **generation_params)
-                    output=output[0][inputs['input_ids'].shape[1]:]
-                    text = self.tokenizer.decode(output, skip_special_tokens=True)
-                    orig_preds.append([text])
-
+                        orig_preds.append([text])
             formatted_results = self._format_result(dataset, orig_preds=orig_preds,preds=preds, complete_output=complete_output)
             if save_results:
-                self.save_results(formatted_results, generation_data_name)
-        item = formatted_results[0]
-        print(f"\n===== {generation_data_name} Results =====\n")
-        print(f"----- Input -----\n{item['input']}\n")
-        if self.config.get('generate_orig_output', False):
-            print(f"----- Orig Output-----\n{item['orig_pred']}\n")
-        print(f"----- Steered Output-----\n{item['pred']}\n")
+                    self.save_results(formatted_results, generation_data_name)
+            item = formatted_results[0]
+
+            print(f"\n===== {generation_data_name} Results =====\n")
+            print(f"----- Input -----\n{item['input']}\n")
+            if self.config.get('generate_orig_output', False):
+                print(f"----- Orig Output-----\n{item['orig_pred']}\n")
+            print(f"----- Steered Output-----\n{item['pred']}\n")
 
         return formatted_results
+
     def multimodal_generate(self, datasets, save_results=True, **kwargs):
         # Use kwargs parameters if provided, otherwise use parameters from config
         generation_params = dict(kwargs) if kwargs else dict(self.config.generation_params)
@@ -272,8 +331,6 @@ class BaseVectorApplier:
 
         return formatted_results
     
-    
-    
     def save_results(self, results, dataset_name):
         os.makedirs(self.config.generation_output_dir, exist_ok=True)
         
@@ -308,3 +365,15 @@ class BaseVectorApplier:
         start_pos = tokens.size(0) - 1
         return start_pos
     
+def convert_generation_params_to_vllm(generation_params):
+        return {
+        "temperature": generation_params.get("temperature", 1.0),
+        "top_p": generation_params.get("top_p", 1.0),
+        "max_tokens": generation_params.get("max_new_tokens", 100), 
+        "top_k": generation_params.get("top_k", -1),
+        "presence_penalty": generation_params.get("presence_penalty", 0.0),
+        "frequency_penalty": generation_params.get("frequency_penalty", 0.0),
+        "stop": generation_params.get("stop", None),
+        "stop_token_ids": generation_params.get("stop_token_ids", None),
+        "seed": generation_params.get("seed", 42),
+        }

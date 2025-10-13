@@ -1,4 +1,5 @@
 alg_name: merge_vector
 layers: [17]
 multipliers: [1.0]
+vllm_enable: false
 
