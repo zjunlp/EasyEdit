@@ -1,6 +1,6 @@
 alg_name: caa
 layers: [20]
 multiple_choice: false
-
+save_activations: True # set to True to save the activations of the model
 
 

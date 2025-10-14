@@ -7,7 +7,6 @@ torch_dtype: bfloat16
 device: cuda:0
 seed: 42
 use_chat_template: True
-save_activations: True # set to True to save the activations of the model
 system_prompt: ''  # Adds a system prompt to all method inputs, except for `vector_prompt`, which uses both with and without this prompt to convert it into a vector.
 
 # Generate Vector 

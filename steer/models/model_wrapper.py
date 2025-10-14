@@ -96,7 +96,7 @@ class BlockOutputWrapper(t.nn.Module):
         self.mlp_out_unembedded = None
         self.block_out_unembedded = None
 
-        self.save_activations = False
+        self.save_activations = True
         self.activations = None
         self.add_activations_dict = {}  # use dict to store activations for different methods
         self.intervention_dict = {}  # use dict to store intervention instances for RePS and future methods

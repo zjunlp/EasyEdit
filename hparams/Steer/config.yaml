@@ -35,10 +35,22 @@ num_responses: 1
 steer_from_end_position: false
 
 generate_orig_output: true
-# Model generation parameters - must match Hugging Face parameter names
-# See: https://huggingface.co/docs/transformers/main_classes/text_generation
+
+# Model generation parameters - must match Hugging Face parameter names or the vLLM parameter names
+# for huggingface generation, see: https://huggingface.co/docs/transformers/main_classes/text_generation
+# for vLLM generation, see: https://docs.vllm.com.cn/en/latest/api/inference_params.html
+# generation_params:
+  #max_new_tokens: 100
+  #do_sample: true
+  #temperature: 0.9 
+  #top_p: 0.9
+  #max_tokens: 100 #openai-like parameter for vLLM，if not set, it will be the same as max_new_tokens
+
 generation_params:
   max_new_tokens: 25   
   temperature: 0.9     
   do_sample: true  
+
+# set to true for vLLM generation
+vllm_enable: true
 

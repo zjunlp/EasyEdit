@@ -20,6 +20,7 @@ subset: null
 dummy_steer: 1
 training_steer: 0
 low_resource_mode: null
+save_activations: True # set to True to save the activations of the model
 
 
 

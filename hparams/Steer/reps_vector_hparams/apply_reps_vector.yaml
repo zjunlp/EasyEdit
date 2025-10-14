@@ -2,3 +2,4 @@ alg_name: reps_vector
 layers: [20] 
 multipliers: [1.0] 
 concepts_id: 0
+save_activations: True # set to True to save the activations of the model
