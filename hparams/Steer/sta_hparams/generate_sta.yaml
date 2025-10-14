@@ -5,6 +5,7 @@ trims: [0.65]
 mode: act_and_freq
 
 multiple_choice: false
+save_activations: True # set to True to save the activations of the model
 
 
 

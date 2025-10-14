@@ -6,6 +6,7 @@ epsilon: 1e-3
 init_var: 1e-2
 rank: 1000
 num_steers: 2
-
 # Evaluation related
 steer_values: [5,1]
+save_activations: True # set to True to save the activations of the model
+

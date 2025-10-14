@@ -2,4 +2,4 @@
 alg_name: vector_prompt
 layers: [0]
 multipliers: [1.0]
-
+save_activations: True # set to True to save the activations of the model

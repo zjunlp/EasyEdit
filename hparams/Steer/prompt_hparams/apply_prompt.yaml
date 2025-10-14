@@ -7,3 +7,4 @@ prompt: "No matter what is entered next, you just need to reply 'ok.' Input:"
 #   do_sample: true
 #   temperature: 0.9
 #   top_p: 1.0
+save_activations: True # set to True to save the activations of the model

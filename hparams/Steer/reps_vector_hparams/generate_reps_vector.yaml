@@ -36,7 +36,7 @@ steering_factors: [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0] # use
 steering_prompt_type: "blend_in"
 substraction_type: "null_it_out" # normal or null_it_out
 
-
+save_activations: True # set to True to save the activations of the model
 
 
 

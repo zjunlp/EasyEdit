@@ -2,3 +2,4 @@
 alg_name: sta
 layers: [20]
 multipliers: [1.0]
+save_activations: True # set to True to save the activations of the model

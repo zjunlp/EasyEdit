@@ -3,7 +3,7 @@ model_name_or_path: ../DeepSeek-R1-Distill-Llama-8B
 # model_name_or_path: ../hugging_cache/Qwen2-1.5B
 # model_name_or_path: ../hugging_cache/Llama-2-7b-chat-hf
 # model_name_or_path: ../hugging_cache/gpt2
-torch_dtype: bf16
+torch_dtype: bfloat16
 device: cuda:0
 seed: 42
 use_chat_template: True
