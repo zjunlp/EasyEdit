@@ -9,7 +9,7 @@ def get_model(hparams):
     device = hparams.device if hasattr(hparams, "device") else "cuda" if t.cuda.is_available() else "cpu"
     model_name_or_path = hparams.model_name_or_path if hasattr(hparams, "model_name_or_path") else None
     override_model_weights_path = hparams.override_model_weights_path if hasattr(hparams, "override_model_weights_path") else None
- 
+
     if 'llama' in hparams.model_name_or_path.lower():
 
         model = LlamaWrapper( 
@@ -19,7 +19,7 @@ def get_model(hparams):
             model_name_or_path=model_name_or_path,
             use_cache=use_cache,
             override_model_weights_path=override_model_weights_path,
-            hparams=hparams
+            hparams=hparams,
             )
         return model, model.tokenizer
     
@@ -32,7 +32,7 @@ def get_model(hparams):
             model_name_or_path=model_name_or_path,
             use_cache=use_cache,
             override_model_weights_path=override_model_weights_path,
-            hparams=hparams
+            hparams=hparams,
             )
         return model, model.tokenizer
     
@@ -45,7 +45,7 @@ def get_model(hparams):
             model_name_or_path=model_name_or_path,
             use_cache=use_cache,
             override_model_weights_path=override_model_weights_path,
-            hparams=hparams
+            hparams=hparams,
             )
         return model, model.tokenizer
     
@@ -58,11 +58,10 @@ def get_model(hparams):
             model_name_or_path=model_name_or_path,
             use_cache=use_cache,
             override_model_weights_path=override_model_weights_path,
-            hparams=hparams
+            hparams=hparams,
             )
         return model, model.tokenizer
     
     else:
         raise ValueError(f"model_name_or_path {hparams.model_name_or_path} not supported")
-    
 

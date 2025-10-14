@@ -8,15 +8,13 @@ from typing import Optional
 
 
 from steer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyperParams
-from ..utils.hparams import HyperParams
+from steer.utils.hparams import HyperParams
 from steer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
 
-# from vllm import LLM as VLLM_model
 try:
     from vllm import LLM
     VLLM_AVAILABLE = True
 except ImportError:
-    VLLM_model = None
     VLLM_AVAILABLE = False
 
 class AttnWrapper(t.nn.Module):
@@ -98,6 +96,7 @@ class BlockOutputWrapper(t.nn.Module):
         self.mlp_out_unembedded = None
         self.block_out_unembedded = None
 
+        self.save_activations = False
         self.activations = None
         self.add_activations_dict = {}  # use dict to store activations for different methods
         self.intervention_dict = {}  # use dict to store intervention instances for RePS and future methods
@@ -120,11 +119,13 @@ class BlockOutputWrapper(t.nn.Module):
             return getattr(self.block, name)
 
     def forward(self, *args, **kwargs):
-        output = self.block(*args, **kwargs)
-        self.activations = output[0]
 
-        if self.activations.dim() == 2:
-            self.activations = self.activations.unsqueeze(0)
+        output = self.block(*args, **kwargs)
+
+        if self.save_activations:
+            self.activations = output[0]
+            if self.activations.dim() == 2:
+                self.activations = self.activations.unsqueeze(0)
             
         if self.calc_dot_product_with is not None:
             last_token_activations = self.activations[0, -1, :]
@@ -234,6 +235,9 @@ class BlockOutputWrapper(t.nn.Module):
         self.calc_dot_product_with = None
         self.dot_products = []
 
+    def set_save_activations(self, value: bool):
+        pass
+
 class BaseModelWrapper:
     def __init__(
         self,
@@ -243,7 +247,7 @@ class BaseModelWrapper:
         model_name_or_path: Optional[str] = None,
         use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
-        hparams:HyperParams=None
+        hparams:HyperParams=None,
     ):
         
         from ..utils.alg_dict import DTYPES_DICT
@@ -255,7 +259,7 @@ class BaseModelWrapper:
         self.use_cache = use_cache
         self.model_name_or_path = model_name_or_path
         
-        if hparams.vllm_enable and hparams.vllm_enable != "False":
+        if hparams.vllm_enable and VLLM_AVAILABLE:
             self.VLLM_model = LLM(
                 model=self.model_name_or_path,
                 #enable_steer_vector=True,
@@ -306,7 +310,7 @@ class BaseModelWrapper:
 
     def _adapt_model_layers(self):
         """Override this method in subclasses for model-specific layer adaptations."""
-        if self.VLLM_model is not None and self.VLLM_model != "False":
+        if self.VLLM_model is not None and VLLM_AVAILABLE:
             for i, layer in enumerate(self.model.model.layers):
                 self.model.model.layers[i] = BlockOutputWrapper(
                     layer, None, self.model.model.norm, self.tokenizer, i, self.model_name_or_path
@@ -316,6 +320,7 @@ class BaseModelWrapper:
                 self.model.model.layers[i] = BlockOutputWrapper(
                     layer, self.model.lm_head, self.model.model.norm, self.tokenizer, i, self.model_name_or_path
                 )
+        self.set_save_activations(self.hparams.save_activations)
 
     def replace_final_layer(self, hparams):
         
@@ -368,6 +373,10 @@ class BaseModelWrapper:
     def set_calc_dot_product_with(self, layer, vector):
         self.model.model.layers[layer].calc_dot_product_with = vector
 
+    def set_save_activations(self, value: bool):
+        for layer in self.model.model.layers:
+            layer.save_activations = value
+
     def get_dot_products(self, layer):
         return self.model.model.layers[layer].dot_products
 
@@ -392,7 +401,7 @@ class BaseModelWrapper:
         if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):
             self.model.model = self.model.model.module
         for param in self.model.parameters():
-            param.requires_grad_(True)  
+            param.requires_grad_(True) 
             
     def reset(self, method_name):
         method_name = method_name.lower()
@@ -486,7 +495,7 @@ class LlamaWrapper(BaseModelWrapper):
         model_name_or_path: Optional[str] = None,
         use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
-        hparams:HyperParams=None
+        hparams:HyperParams=None,
     ):
         super().__init__(
             torch_dtype, 
@@ -507,7 +516,7 @@ class GemmaWrapper(BaseModelWrapper):
         model_name_or_path: Optional[str] = None,
         use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
-        hparams:HyperParams=None
+        hparams:HyperParams=None,
     ):
 
         super().__init__(
@@ -517,7 +526,7 @@ class GemmaWrapper(BaseModelWrapper):
             model_name_or_path,
             use_cache,
             override_model_weights_path, 
-            hparams
+            hparams,
             )
 
 class QwenWrapper(BaseModelWrapper):
@@ -529,7 +538,7 @@ class QwenWrapper(BaseModelWrapper):
         model_name_or_path: Optional[str] = None,
         use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
-        hparams:HyperParams=None
+        hparams:HyperParams=None,
     ):
         super().__init__(
             torch_dtype, 
@@ -538,7 +547,7 @@ class QwenWrapper(BaseModelWrapper):
             model_name_or_path,
             use_cache,
             override_model_weights_path, 
-            hparams
+            hparams,
             )
 
 class GPTWrapper(BaseModelWrapper):
@@ -550,7 +559,7 @@ class GPTWrapper(BaseModelWrapper):
         model_name_or_path: Optional[str] = None,
         use_cache: bool = True,
         override_model_weights_path: Optional[str] = None,
-        hparams:HyperParams=None
+        hparams:HyperParams=None,
     ):
         super().__init__(
             torch_dtype, 
@@ -559,7 +568,7 @@ class GPTWrapper(BaseModelWrapper):
             model_name_or_path,
             use_cache,
             override_model_weights_path, 
-            hparams
+            hparams,
             )
 
 

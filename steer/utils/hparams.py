@@ -17,6 +17,7 @@ class HyperParams:
     use_cache: bool=True
     generate_orig_output: bool = False
     vllm_enable: bool = False
+    save_activations: bool = False
     @classmethod
     def from_json(cls, fpath):
         with open(fpath, "r") as f:

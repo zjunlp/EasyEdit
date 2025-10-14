@@ -5,7 +5,7 @@ device: cuda:0
 seed: 42
 use_chat_template: false 
 system_prompt: ''  # Adds a system prompt to all method inputs, except for `vector_prompt`, which uses both with and without this prompt to convert it into a vector.
-
+save_activations: false # set to True to save the activations of the model
 # Apply Vector 
 # The `apply_steer_hparam_paths` and `steer_vector_load_dir` are corresponding line by line.
 apply_steer_hparam_paths:
@@ -25,8 +25,20 @@ num_responses: 1
 steer_from_end_position: false
 generate_orig_output: true
 
-generation_params:  
+# for vLLM generation, following parameters in (https://docs.vllm.com.cn/en/latest/api/inference_params.html) are supported
+# for huggingface generation, following parameters in (https://huggingface.co/docs/transformers/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate) are also supported
+# generation_params:
+  #max_new_tokens: 100
+  #do_sample: true
+  #temperature: 0.9 
+  #top_p: 0.9
+  #max_tokens: 100 #openai-like parameter for vLLM，if not set, it will be the same as max_new_tokens
+generation_params: 
   max_new_tokens: 100
   do_sample: true
   temperature: 0.9
   top_p: 1.0
+  max_tokens: 100
+
+# set to true for vLLM generation
+vllm_enable: true

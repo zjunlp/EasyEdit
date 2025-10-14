@@ -162,9 +162,19 @@ class BaseVectorApplier:
             
             if self.model.VLLM_model is not None:
                 from vllm import SamplingParams
-                vllm_sampling_params = SamplingParams(**convert_generation_params_to_vllm(generation_params))
+                vllm_sampling_params = SamplingParams(
+                    temperature=generation_params.get("temperature", 1.0),
+                    top_p=generation_params.get("top_p", 1.0),
+                    max_tokens= generation_params.get("max_tokens", generation_params.get("max_new_tokens", 100)) if "max_tokens" in generation_params else generation_params.get("max_new_tokens", 100),
+                    top_k=generation_params.get("top_k", -1),
+                    presence_penalty=generation_params.get("presence_penalty", 0.0),
+                    frequency_penalty=generation_params.get("frequency_penalty", 0.0),
+                )
                 num_responses = self.config.get('num_responses', 1)
-
+                for j in range(num_responses):
+                    if num_responses > 1:
+                        set_seed(j)
+                        
                 if self.config.get('steer_from_end_position', False):
                     print("[Warning] steer_from_end_position not supported in vLLM mode.")
                 
@@ -174,27 +184,18 @@ class BaseVectorApplier:
                 input_batch = []
                 valid_indices = [] 
                 
-                for idx, item in enumerate(tqdm(dataset, desc=f"Preprocessing dataset {generation_data_name}")):
+                for idx, item in enumerate(dataset):
                     if not item.get('input'):
                         continue
                     
                     input_text = self._process_input_text(item['input'])
-                    input_ids = self.tokenizer(input_text, return_tensors="pt", add_special_tokens = not self.config.use_chat_template).to(self.device)
-                    #import pdb; pdb.set_trace()
                     for j in range(num_responses):
-                        input_batch.append(input_ids['input_ids'][0].tolist())
+                        input_batch.append(input_text)
                         valid_indices.append(idx)
-
-                if not input_batch:
-                    print(f"No valid inputs found in dataset {generation_data_name}")
-                    continue
-
-                if num_responses > 1:
-                    set_seed(42)
             
                 outputs = self.model.VLLM_model.generate(
-                    prompt_token_ids= input_batch,
-                    sampling_params= vllm_sampling_params
+                    prompts= input_batch,
+                    sampling_params = vllm_sampling_params
                 )
 
                 current_item_outputs = {}  # {item_idx: [responses]}
@@ -222,7 +223,7 @@ class BaseVectorApplier:
                     complete_output.append(current_output)
             else:
                 if 'pad_token_id' not in generation_params:
-                    generation_params['pad_token_id'] = self.tokenizer.eos_tcoken_id
+                    generation_params['pad_token_id'] = self.tokenizer.eos_token_id
                 for item in tqdm(dataset, desc=f"Evaluating dataset {generation_data_name}"):
                     if not item.get('input'):
                         continue
@@ -365,15 +366,3 @@ class BaseVectorApplier:
         start_pos = tokens.size(0) - 1
         return start_pos
     
-def convert_generation_params_to_vllm(generation_params):
-        return {
-        "temperature": generation_params.get("temperature", 1.0),
-        "top_p": generation_params.get("top_p", 1.0),
-        "max_tokens": generation_params.get("max_new_tokens", 100), 
-        "top_k": generation_params.get("top_k", -1),
-        "presence_penalty": generation_params.get("presence_penalty", 0.0),
-        "frequency_penalty": generation_params.get("frequency_penalty", 0.0),
-        "stop": generation_params.get("stop", None),
-        "stop_token_ids": generation_params.get("stop_token_ids", None),
-        "seed": generation_params.get("seed", 42),
-        }
