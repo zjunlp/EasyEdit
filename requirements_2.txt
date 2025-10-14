@@ -1,5 +1,7 @@
+google-api-python-client==2.184.0
 ipykernel==6.27.1
 plot==0.6.5
+nbformat==5.10.4
 gradio==5.20.1
 datasets==2.21.0
 numpy==1.26.4
@@ -11,3 +13,5 @@ torchvision==0.22.1
 transformers==4.57.0
 vllm==0.10.0
 hydra-core==1.3.2
+autoawq==0.2.9
+openai==1.90.0
