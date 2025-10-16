@@ -1,4 +1,5 @@
 import copy
+import os
 import torch as t
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -10,6 +11,8 @@ from typing import Optional
 from steer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyperParams
 from steer.utils.hparams import HyperParams
 from steer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
+
+os.environ['VLLM_USE_V1'] = '0'
 
 try:
     from vllm import LLM
@@ -485,7 +488,54 @@ class BaseModelWrapper:
                 self.steer.steer_values = saved_steer_values
         
         return output
+    
+    def ori_vllm_generate(self, input_batch, vllm_sampling_params):
+        # Save activation dictionaries
+        saved_activations = {}
+        if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):
+            model_layers = self.model.model.module.layers
+        else:
+            model_layers = self.model.model.layers
+            
+        for i, layer in enumerate(model_layers):
+            if hasattr(layer, 'add_activations_dict') and layer.add_activations_dict:
+                saved_dict = {}
+                for key, value in layer.add_activations_dict.items():
+                    if isinstance(value, t.Tensor):
+                        saved_dict[key] = value.clone().detach()
+                    else:
+                        try:
+                            saved_dict[key] = copy.deepcopy(value)
+                        except:
+                            saved_dict[key] = value
+                
+                saved_activations[i] = saved_dict
+                layer.add_activations_dict = {}
         
+        # Save steer value if exists
+        saved_steer_values = t.zeros(1)
+        if hasattr(self, 'steer') and hasattr(self.steer, 'steer_values'):
+            saved_steer_values = self.steer.steer_values
+            self.steer.steer_values = t.zeros(1)
+        
+        # Generate text
+        try:
+            output = self.VLLM_model.generate(
+                prompts=input_batch,
+                sampling_params=vllm_sampling_params
+            )
+            
+        finally:
+            # Restore activation dictionaries
+            for i, activations_dict in saved_activations.items():
+                model_layers[i].add_activations_dict = activations_dict
+            
+            # Restore steer value
+            if saved_steer_values is not None and hasattr(self, 'steer'):
+                self.steer.steer_values = saved_steer_values
+        
+        return output
+    
 class LlamaWrapper(BaseModelWrapper):
     def __init__(
         self,

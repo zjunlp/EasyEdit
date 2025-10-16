@@ -218,9 +218,35 @@ class BaseVectorApplier:
                     else:
                         current_output = []
                         current_preds = []
-                    
+                
                     preds.append(current_preds)
                     complete_output.append(current_output)
+
+                if self.config.get('generate_orig_output', False):
+                    outputs = self.model.ori_vllm_generate(input_batch, vllm_sampling_params)
+                    current_item_outputs = {}  # {item_idx: [responses]}
+                    
+                    for i, output in enumerate(outputs):
+                        item_idx = valid_indices[i]
+                        text = output.outputs[0].text.strip()
+                        
+                        if item_idx not in current_item_outputs:
+                            current_item_outputs[item_idx] = []
+                        current_item_outputs[item_idx].append(text)
+
+                    for idx, item in enumerate(dataset):
+                        if not item.get('input'):
+                            continue
+                        
+                        if idx in current_item_outputs:
+                            current_output = current_item_outputs[idx]
+                            current_preds = current_output.copy()
+                        else:
+                            current_output = []
+                            current_preds = []
+                            
+                        orig_preds.append(current_preds)
+                    
             else:
                 if 'pad_token_id' not in generation_params:
                     generation_params['pad_token_id'] = self.tokenizer.eos_token_id

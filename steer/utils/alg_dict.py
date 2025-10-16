@@ -72,3 +72,5 @@ METHODS_CLASS_DICT = {
     'merge_vector': {'train': generate_merge_vector, 'apply': apply_merge_vector},
     'reps_vector': {'train': generate_reps_vectors, 'apply': apply_reps}
 }
+
+VLLM_SUPPORTED_METHODS = ['caa']

@@ -52,5 +52,5 @@ generation_params:
   do_sample: true  
 
 # set to true for vLLM generation
-vllm_enable: true
+vllm_enable: false
 
