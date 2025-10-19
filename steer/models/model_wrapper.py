@@ -631,8 +631,8 @@ class GPTWrapper(BaseModelWrapper):
         else:
             for i, layer in enumerate(self.model.transformer.h):
                 self.model.transformer.h[i] = BlockOutputWrapper(
-                layer, self.model.lm_head, self.model.transformer.ln_f, self.tokenizer, i, self.model_name_or_path
-            )
+                    layer, self.model.lm_head, self.model.transformer.ln_f, self.tokenizer, i, self.model_name_or_path
+                )
 
     def replace_final_layer(self,hparams):
         embed_dim = self.model.lm_head.weight.shape[1]
@@ -666,7 +666,6 @@ class GPTWrapper(BaseModelWrapper):
         return self.model.transformer.h[layer].activations
 
     def set_add_activations(self, layer, activations, method_name="default"):
-        """设置传统的激活添加（用于 caa、vector_prompt 等）"""
         if isinstance(self.model.transformer, Hack_no_grad):  #if the model is wrapped by Hack_no_grad, then the layers are in the module
             self.model.transformer.module.h[layer].add(activations, method_name)
         else:
@@ -760,4 +759,5 @@ class GPTWrapper(BaseModelWrapper):
             if saved_steer_value is not None and hasattr(self, 'steer'):
                 self.steer.steer_value = saved_steer_value
         
+
         return output
