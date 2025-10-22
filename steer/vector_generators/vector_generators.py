@@ -20,7 +20,7 @@ class BaseVectorGenerator:
     def generate_vectors(self, datasets = None,):
         
         from ..utils.seed import set_seed
-        from ..utils.alg_dict import METHODS_CLASS_DICT
+        from ..utils.alg_dict import METHODS_CLASS_DICT,VLLM_SUPPORTED_METHODS
         # generate_steering_vector(self.hparams_dict,dataset)
         assert datasets is not None, "Please provide datasets!"
         generated_vectors = {}
@@ -40,6 +40,8 @@ class BaseVectorGenerator:
                     
                     print(f"Generating {key} vectors ...")
                     if alg_name in REQUIRED_DATASET_METHODS:
+                        if alg_name not in VLLM_SUPPORTED_METHODS:
+                            hparams.vllm_enable = False
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name], dataset_name=dataset_name)
                     else:
                         vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)

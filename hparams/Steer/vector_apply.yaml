@@ -42,4 +42,3 @@ generation_params:
 
 # set to true for vLLM generation
 vllm_enable: false
-
