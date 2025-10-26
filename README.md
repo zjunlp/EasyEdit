@@ -77,7 +77,7 @@ We have also published a blog post titled "[Take Control of What Your LLM Knows 
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
-- 2025-10-12, ⚡ LightMem is released — a lightweight and efficient memory framework empowering LLMs and AI agents with long-term memory capabilities!
+- 2025-10-12, ⚡ [LightMem](https://github.com/zjunlp/LightMem) is released — a lightweight and efficient memory framework empowering LLMs and AI agents with long-term memory capabilities!
 - 2025-10-02, 👑 [SimIE](https://openreview.net/pdf?id=VdEG08ZJCH) has arrived — a general framework for lifelong model editing, which restores the strong performance of parameter-modifying methods from standard model editing in a lifelong context!
 - 2025-09-10, 🎉🎉 [EasyEdit2 Paper](https://arxiv.org/abs/2504.15133) has been accepted by the EMNLP 2025 System Demonstration Track.
 - 2025-07-24, 🚀🚀the EasyEdit has added three new unstructured long-form knowledge editing datasets [AKEW](https://arxiv.org/abs/2402.18909), [LEME](https://arxiv.org/pdf/2402.09394) and [UNKE](https://arxiv.org/abs/2405.15349). In addition, EasyEdit also incorporated two of the currently most popular unstructured editing methods [UNKE](https://arxiv.org/abs/2405.15349) and [AnyEdit](https://arxiv.org/abs/2502.05628). EasyEdit2 also supports the representation steering method [RePS](https://arxiv.org/abs/2505.20809) and provides initial support for [AxBench-style evaluation](https://arxiv.org/abs/2501.17148).
