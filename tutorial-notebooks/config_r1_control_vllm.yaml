@@ -36,5 +36,6 @@ generation_params:
   max_new_tokens: 500    
   temperature: 0.6 
 
+# set to true for vLLM generation
 vllm_enable: true
 

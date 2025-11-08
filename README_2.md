@@ -149,13 +149,6 @@ Explore practical examples of using CAA in different scenarios:
 Now EasyEdit2 supports inference acceleration with vLLM!
 - **vLLM Support**: generate and apply steering vector using vLLM.
 
-###vLLM Supported Method
-You can choose to use vLLM to accelerate the generate or apply stages of different editing methods. EasyEdit2 provides acceleration for the following stages.
-| **Method** |  | CAA  | RePS | LM-Steer | STA | SAE Feature | Vector Prompt |
-| :-------: | :-------: | :-------: |  :-------: |  :-------: |  :-------: | 
-| Generate Vector |  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Apply Vector |  | ✅ |  |  |  |  |  |
-
 📌 **Coming Soon**: More scenarios & methods!
 
 
@@ -167,6 +160,13 @@ You can choose to use vLLM to accelerate the generate or apply stages of differe
 
 | **vLLM Suporrt** | vLLM|
 |   _Steering with vLLM_ | [vLLM](tutorial-notebooks/EasyEdit2_Example_vLLM.ipynb) |  
+
+#### 🔥 vLLM Supported Method
+You can choose to use vLLM to accelerate the generate or apply stages of different editing methods. EasyEdit2 provides acceleration for the following stages.
+| **Method** |  | CAA  | RePS | LM-Steer | STA | SAE Feature | Vector Prompt |
+| :-------: | :-------: | :-------: |  :-------: |  :-------: |  :-------: | 
+| Generate Vector |  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Apply Vector |  | ✅ |  |  |  |  |  |
 
 #### 🌐 Gradio Demo
 You can also experience the steering functionality in the [gradio demo](demo/EasySteer_demo/app.py).
