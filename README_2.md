@@ -146,7 +146,15 @@ Explore practical examples of using CAA in different scenarios:
 - **Language Features**: seamless language conversion.
 - **Sentiment**: from no sensation to positive emotional transformation.
 
+Now EasyEdit2 supports inference acceleration with vLLM!
+- **vLLM Support**: generate and apply steering vector using vLLM.
 
+###vLLM Supported Method
+You can choose to use vLLM to accelerate the generate or apply stages of different editing methods. EasyEdit2 provides acceleration for the following stages.
+| **Method** |  | CAA  | RePS | LM-Steer | STA | SAE Feature | Vector Prompt |
+| :-------: | :-------: | :-------: |  :-------: |  :-------: |  :-------: | 
+| Generate Vector |  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Apply Vector |  | ✅ |  |  |  |  |  |
 
 📌 **Coming Soon**: More scenarios & methods!
 
@@ -156,6 +164,9 @@ Explore practical examples of using CAA in different scenarios:
 |   _Reasoning Pattern_ | [r1-control](tutorial-notebooks/EasyEdit2_Example_CAA_r1_control.ipynb)         |
 |   _Language Feature_ | [translate](tutorial-notebooks/EasyEdit2_Example_CAA_translate.ipynb)        |
 |   _Sentiment_ | [sentiment conversion](tutorial-notebooks/EasyEdit2_Example_CAA_sentiment.ipynb)        |
+
+| **vLLM Suporrt** | vLLM|
+|   _Steering with vLLM_ | [vLLM](tutorial-notebooks/EasyEdit2_Example_vLLM.ipynb) |  
 
 #### 🌐 Gradio Demo
 You can also experience the steering functionality in the [gradio demo](demo/EasySteer_demo/app.py).
@@ -314,14 +325,19 @@ num_responses: 1
 steer_from_end_position: false
 ```
 
-Note that you can configure text generation parameters here, as long as the field names match those expected by Hugging Face (see [Hugging Face Text Generation Docs](https://huggingface.co/docs/transformers/main_classes/text_generation)).
+Note that you can configure text generation parameters here, as long as the field names match those expected by Hugging Face or vLLM (see [Hugging Face Text Generation Docs](https://huggingface.co/docs/transformers/main_classes/text_generation) and [vLLM Inference Param Docs](https://docs.vllm.com.cn/en/latest/api/inference_params.html)).
 
 ```yaml
- # Model generation parameters - must match Hugging Face parameter names
+ # Model generation parameters - must match Hugging Face or vLLM parameter names
 generation_params:
   max_new_tokens: 100    
   temperature: 0.9 
   do_sample: True
+```
+
+```yaml
+# Set to true for vLLM generation
+vllm_enable: True
 ```
 
 Finally, pass these parameters to `BaseVectorApplier` to apply the steer vectors to the model.
