@@ -11,7 +11,7 @@ import os
 
 import torch
 import torch.distributed as dist
-import timm.models as timm_hub
+import timm.models.hub as timm_hub
 
 
 def setup_for_distributed(is_master):
