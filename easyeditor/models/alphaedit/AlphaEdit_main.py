@@ -32,6 +32,7 @@ def apply_AlphaEdit_to_model(
     return_orig_weights=False,
     cache_template: Optional[str] = None,
     keep_original_weight=False,
+    reset_cache=False,
     **kwargs
 ) -> Dict[str, Tuple[torch.Tensor]]:
   #-> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
@@ -39,10 +40,15 @@ def apply_AlphaEdit_to_model(
     Returns a model with the desired changes.
     :param copy: If true, will preserve the original model while creating a new one to edit.
         Note that you are responsible for deallocating the new model's memory to avoid leaks.
+    :param reset_cache: If true, will reset cache_c_new to False, forcing re-initialization of cache_c.
     :return: (1) the updated model, (2) an original copy of the weights that changed
     """
 
     global P, P_loaded, cache_c, cache_c_new
+    
+    # Reset cache if requested
+    if reset_cache:
+        cache_c_new = False
 
     weights_copy = {}
     if copy:
