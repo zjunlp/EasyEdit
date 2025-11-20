@@ -2,18 +2,20 @@ import torch as t
 import matplotlib.pyplot as plt
 
 def add_vector_from_position(matrix, vector, position_ids, from_pos=None):
+    orig_dtype = matrix.dtype
+
     if position_ids is None:
-        mask = t.ones_like(matrix)
+        mask = t.ones_like(matrix, dtype=orig_dtype)
     else:
         from_id = from_pos
         if from_id is None:
             from_id = position_ids.min().item() - 1
 
-        mask = position_ids >= from_id
-        mask = mask.unsqueeze(-1)
+        mask = position_ids >= from_id     # [seq]
+        mask = mask.unsqueeze(-1)          # [seq,1]
 
-    matrix += mask.float() * vector
-    return matrix
+    matrix = matrix.float() + mask.float() * vector.float()
+    return matrix.to(orig_dtype)
 
 
 # def find_last_subtensor_position(tensor, sub_tensor):

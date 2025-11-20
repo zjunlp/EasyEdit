@@ -125,6 +125,10 @@ class BlockOutputWrapper(t.nn.Module):
 
         output = self.block(*args, **kwargs)
 
+        original_is_tuple = isinstance(output, tuple)
+        if not original_is_tuple:
+            output = (output,)
+
         if self.save_activations:
             self.activations = output[0]
             if self.activations.dim() == 2:
@@ -177,7 +181,7 @@ class BlockOutputWrapper(t.nn.Module):
             output = (augmented_output,) + output[1:]
 
         if not self.save_internal_decodings:
-            return output
+            return output if original_is_tuple else output[0]
 
         # Whole block unembedded
         self.block_output_unembedded = self.unembed_matrix(self.norm(output[0]))
@@ -199,7 +203,7 @@ class BlockOutputWrapper(t.nn.Module):
             mlp_output = self.block.mlp(self.post_attention_layernorm(attn_output))
         self.mlp_out_unembedded = self.unembed_matrix(self.norm(mlp_output))
 
-        return output
+        return output if original_is_tuple else output[0]
 
     def add(self, activations, method_name="default"):
         """
