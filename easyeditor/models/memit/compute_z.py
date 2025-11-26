@@ -95,12 +95,15 @@ def compute_z(
             if target_init is None:
                 print("Recording initial value of v*")
                 # Initial value is recorded for the clean sentence
-                target_init = cur_out[0][0, lookup_idxs[0]].detach().clone()
+                if cur_out[0].shape[0] == input_tok['input_ids'].shape[1]:
+                    target_init = cur_out[0][lookup_idxs[0], 0].detach().clone()
+                else:
+                    target_init = cur_out[0][0, lookup_idxs[0]].detach().clone()
 
             # Add intervened delta
             for i, idx in enumerate(lookup_idxs):
-
-                if len(lookup_idxs)!=len(cur_out[0]):
+                
+                if cur_out[0].shape[0] == input_tok['input_ids'].shape[1]:
                     cur_out[0][idx, i, :] += delta
                 else:
                     cur_out[0][i, idx, :] += delta
