@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Tuple
 from copy import deepcopy
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from .WISE import WISE, WISEMultimodal
-from .utils import tokenize, multimodal_tokenize, get_context_templates
+from .utils import tokenize, multimodal_tokenize, get_context_templates, blip2_multimodal_tokenize
 from .wise_hparams import WISEHyperParams
 WISEload = True
 def apply_wise_to_model(
@@ -62,8 +62,9 @@ def apply_wise_to_multimodal_model(
         print(
             f"[{request['prompt']}] -> [{request['target']}]"
         )
-
-    multimodal_inputs, text_tokens, ans_token_len, act_mask, deact_mask = multimodal_tokenize(requests, processor=tok, device=device, context_templates=None, hparams=hparams)
+    if hparams.model_name == "blip2" or hparams.model_name == "minigpt4":
+        multimodal_inputs, text_tokens, ans_token_len, act_mask, deact_mask = blip2_multimodal_tokenize(requests, processor=tok, device=device, context_templates=None, hparams=hparams)
+    else: multimodal_inputs, text_tokens, ans_token_len, act_mask, deact_mask = multimodal_tokenize(requests, processor=tok, device=device, context_templates=None, hparams=hparams)
     editor.edit(config=hparams, multimodal_inputs=multimodal_inputs, ans_token_len=ans_token_len, text_tokens=text_tokens, act_mask=act_mask, deact_mask=deact_mask)
     weights_copy = editor.reset_layer
     return editor, weights_copy

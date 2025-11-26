@@ -32,6 +32,8 @@ def euc(query, key, config, act_mask=None, infer=False):
 
     act_fn = ACT2FN[config.hidden_act]
     l2_norm = torch.norm(act_fn(key) - act_fn(query), dim=-1)
+    if l2_norm.dim() == 1:
+        l2_norm = l2_norm.unsqueeze(0)
     if infer and l2_norm.size(1) > 100:
         topk = torch.topk(l2_norm, k=1, largest=True)
         return topk.values.mean()
@@ -74,7 +76,20 @@ class WISE(torch.nn.Module):
         self.layer_name = self.layer.rsplit(".", 1)[-1]
         adapter_layer = getattr(self.edit_module, self.layer_name)
 
-        if type(adapter_layer) is not WISEAdapter:
+        # if the condition below is True, then it is single-edit
+        if not config.sequential_edit:
+        # if type(adapter_layer) is not WISEAdapter:
+            # 如果 adapter_layer 已经是 WISEAdapter，提取其原始层
+            if type(adapter_layer) is WISEAdapter:
+                # 使用 original_layer 作为基础层（这是保存的原始层副本）
+                base_layer = adapter_layer.original_layer
+            else:
+                base_layer = adapter_layer
+            
+            setattr(self.edit_module, self.layer_name, WISEAdapter(config, base_layer, transpose=transpose))
+            self.original_layer = copy.deepcopy(base_layer)
+            print(f"New weights successfully inserted into {layer}")
+        elif type(adapter_layer) is not WISEAdapter:
             setattr(self.edit_module, self.layer_name, WISEAdapter(config, adapter_layer, transpose=transpose))
             self.original_layer = copy.deepcopy(adapter_layer)
             print(f"New weights successfully inserted into {layer}")
@@ -84,16 +99,27 @@ class WISE(torch.nn.Module):
         gc.collect()
 
     # Forward
-    def __call__(self, **kwargs):
+    def __call__(self, *args, **kwargs):
         if not self.config.retrieve:
-            if hasattr(self.get_adapter_layer(), 'editing') and not self.get_adapter_layer().editing:
-                # final merge
-                if not self.get_adapter_layer().original_layer.weight.equal(self.get_adapter_layer().new_weight) and self.get_adapter_layer().editing_total_cnt >= self.config.save_freq:
-                    self.get_adapter_layer().memory_weight.append(self.get_adapter_layer().new_weight)
-                if len(self.get_adapter_layer().memory_weight) > 0 and self.get_adapter_layer().editing_total_cnt >= self.config.save_freq:
-                    print('length of memory is ', len(self.get_adapter_layer().memory_weight), '!!!!!!')
-                    self.get_adapter_layer().merge_weight()
-        return self.model(**kwargs)
+            adapter = self.get_adapter_layer()
+            if hasattr(adapter, 'editing') and not adapter.editing:
+                if (not adapter.original_layer.weight.equal(adapter.new_weight)
+                        and adapter.editing_total_cnt >= self.config.save_freq):
+                    adapter.memory_weight.append(adapter.new_weight)
+
+                if len(adapter.memory_weight) > 0 and adapter.editing_total_cnt >= self.config.save_freq:
+                    print('length of memory is ', len(adapter.memory_weight), '!!!!!!')
+                    adapter.merge_weight()
+        # 1. 如果用户传入 model(batch)
+        if len(args) == 1 and isinstance(args[0], dict):
+            return self.model(args[0])
+        # 2. 如果用户传入 model(batch=batch)
+        elif "batch" in kwargs and isinstance(kwargs["batch"], dict):
+            batch = kwargs.pop("batch")
+            return self.model(**batch, **kwargs)
+        # 3. 普通 HuggingFace 风格，如 model(input_ids=..., pixel_values=...)
+        else:
+            return self.model(**kwargs)
 
     def reset_layer(self):
         layer = getattr(self.edit_module, self.layer_name)
@@ -257,7 +283,14 @@ class WISE(torch.nn.Module):
         else:
             k = 1
         total_loss = []
+        if self.config.model_name == "blip2":
+            original_layer_output = original_layer_output.reshape(2, -1, original_layer_output.size(-1))
+            new_weight_layer_output = new_weight_layer_output.reshape(2, -1, new_weight_layer_output.size(-1))
         len_temp = original_layer_output.shape[0] / k - 1
+        # if len_temp == 0:
+        #     len_temp = 1
+        # print(len_temp)
+        # print(act_mask)
         for i,act_mk in enumerate(act_mask):
             if act_mk is not None:
                 in_scope_dist = euc(original_layer_output[int(i*len_temp):int((i+1)*len_temp), ...], new_weight_layer_output[int(i*len_temp):int((i+1)*len_temp), ...], config,
@@ -270,7 +303,8 @@ class WISE(torch.nn.Module):
                     out_scope_dist = euc(original_layer_output[int(i-k):, ...], new_weight_layer_output[int(i-k):, ...], config)
                 else:
                     out_scope_dist = euc(original_layer_output[int(i-k):int(i+1-k), ...], new_weight_layer_output[int(i-k):int(i+1-k), ...], config)
-
+                # print("in_scope_dist: ", in_scope_dist)
+                # print("out_scope_dist: ", out_scope_dist)
             loss = out_scope_dist.view(-1,1) - in_scope_dist + config.gamma
             loss2 = out_scope_dist - config.alpha
             loss3 = config.beta - in_scope_dist
@@ -539,8 +573,12 @@ class WISEMultimodal(WISE):
             ft_loss = self._cal_ft_loss(multimodal_inputs, text_tokens, last_prompt_token_loc, ans_token_len)
 
             act_loss = super()._cal_activation_loss(super().get_adapter_layer().original_layer_output, super().get_adapter_layer().new_weight_layer_output,
-                                                  config=config, act_mask=act_mask, deact_mask=deact_mask)
+                                                    config=config, act_mask=act_mask, deact_mask=deact_mask)
             loss = ft_loss + act_loss.to(ft_loss.device)
+            # if self.config.model_name == "blip2":
+            #     print(self.model.generate(multimodal_inputs[0]))
+            # elif self.config.model_name == "minigpt4":
+            #     print(self.model.predict_answers(multimodal_inputs))
 
             if loss_meter.stop():
                 super().get_adapter_layer().save_editing_activation()  # add last gradient
@@ -632,10 +670,17 @@ class WISEMultimodal(WISE):
         if k != 1:
             raise AssertionError("Not support Batch Edit")
         
-        bs = text_tokens["input_ids"].shape[0] - k
-        logits = self.model(**multimodal_inputs).logits
-        shift_logits = logits[:-k, :-1, :].contiguous()
-        shift_labels = multimodal_inputs['input_ids'][:-k, 1:].contiguous()
+        if self.config.model_name == "blip2" or self.config.model_name == "minigpt4":
+            logits = self.model(multimodal_inputs).logits
+            labels = text_tokens["labels"]
+            shift_labels = labels[:, 1:].contiguous()
+            shift_logits = logits[:-k, :-1, :].contiguous()
+            bs = text_tokens["labels"].shape[0]
+        else: 
+            logits = self.model(**multimodal_inputs).logits
+            shift_labels = multimodal_inputs['input_ids'][:-k, 1:].contiguous()
+            shift_logits = logits[:-k, :-1, :].contiguous()
+            bs = text_tokens["input_ids"].shape[0] - k
         # only cal loss of target text tokens
         loss_fct = CrossEntropyLoss(reduction='none')
         a = shift_logits.view(-1, shift_logits.size(-1))
@@ -646,4 +691,3 @@ class WISEMultimodal(WISE):
         label_mask = torch.ones_like(loss, dtype=torch.bool)        
         ft_loss = ((loss * label_mask).sum(1) / label_mask.sum(1)).mean()
         return ft_loss
-    

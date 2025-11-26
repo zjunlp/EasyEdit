@@ -217,15 +217,18 @@ def prepare_multimodal_hf_edit(hparams,
                                             add_generation_prompt=True,
                                             tokenize=False) + l
                         for p, l in zip(prompts, targets)]
+        if "qwen2-vl" in hparams.model_name.lower() and "|vision_start|" not in text_input[0]:
+            image_token = "<|vision_start|><|image_pad|><|vision_end|>"       
+            text_input = [image_token + text_input[0]]
     else:
         raise AssertionError("Not support file type: {}".format(file_type))
     
     if file_type in ["image", "single-image", "multi-image"]:
-        multimodal_inputs = processor(images=image, text=text_input, return_tensors="pt").to(hparams.device, dtype=torch.float32)
+        multimodal_inputs = processor(images=image, text=text_input, return_tensors="pt").to(hparams.device, dtype=hparams.dtype)
     elif file_type == "video":
-        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt").to(hparams.device, dtype=torch.float32)
+        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt").to(hparams.device, dtype=hparams.dtype)
     elif file_type == "text":
-        multimodal_inputs = processor(text=text_input, return_tensors="pt").to(hparams.device, dtype=torch.float32)
+        multimodal_inputs = processor(text=text_input, return_tensors="pt").to(hparams.device, dtype=hparams.dtype)
     
     targets = processor.tokenizer(targets, add_special_tokens=False,
                      return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
@@ -270,6 +273,43 @@ def compute_multimodal_hf_edit_quality(model, batch, tok,exach_match=False):
 
     pred_ids = pred_ids.masked_select(pred_ids != 0).view(1, -1)
     return acc, pred_ids.numpy()
+
+def compute_multimodal_hf_edit_quality_demo(model, batch, tok, exach_match=False):
+    with torch.no_grad():
+        outputs = model(**batch["multimodal_inputs"])            
+        if isinstance(outputs, torch.Tensor):
+            logits = outputs.detach().cpu()
+            targ = batch["labels"].cpu()
+        else:
+            logits = outputs.logits.detach().cpu()
+            targ = batch["labels"].cpu()
+    
+    # 创建logits副本 - 这是demo版本的关键区别
+    logits_ = logits.clone()
+    
+    if logits.dim() == 3:
+        logits = logits[:, :-1, :]
+        targ = targ[:, 1:]
+        
+    mask = targ != -100
+    targ[~mask] = 0    
+    if exach_match:
+        pred_ids = logits.argmax(-1).masked_fill(~mask, 0)
+        correct = pred_ids == targ
+        if logits.dim() == 3:
+            correct = (pred_ids == targ).all(-1)  # We aim for an exact match across the entire sequence
+        acc = correct.float().mean()
+    else:
+        pred_ids = logits.argmax(-1).masked_fill(~mask, 0).detach().cpu()
+        correct = pred_ids == targ
+        correct = correct & mask
+        num_non_padding = mask.sum().float().item()
+        acc = correct.sum() / num_non_padding
+
+    pred_ids = pred_ids.masked_select(pred_ids != 0).view(1, -1)
+    
+    # demo版本返回完整的logits用于进一步分析
+    return acc, pred_ids.numpy(), logits_
 
 
 def compute_multimodal_edit_quality(model, batch, exact_match=False):
@@ -360,7 +400,16 @@ def compute_multimodal_edit_results(
 
     target = record["target"]
     rewrite_prompts = record["prompt"]
-    image = record["image"] if record["image"].is_cuda else record["image"].to(hparams.device)
+    # image = record["image"] if record["image"].is_cuda else record["image"].to(hparams.device)
+
+    # 由于edit_dataset无prepare，因此request
+    if hasattr(record["image"], 'is_cuda'):  # 如果是PyTorch张量
+        image = record["image"] if record["image"].is_cuda else record["image"].to(hparams.device)
+    else:  # 如果是PIL图像或其他类型
+        # 需要先将PIL图像转换为张量
+        from torchvision import transforms
+        transform = transforms.ToTensor()
+        image = transform(record["image"]).to(hparams.device)
 
     edit_inner = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, image)
     ret['rewrite_acc'], _ = compute_multimodal_edit_quality(model, edit_inner)
@@ -439,14 +488,16 @@ def compute_multimodal_hf_edit_results(
         locality_prompt = record["locality_prompt"]
         locality_ground_truth = record["locality_ground_truth"]
         locality = prepare_multimodal_hf_edit(hparams, tok, locality_ground_truth, locality_prompt, None, file_type="text")
-        _, ret['locality_output'] = compute_multimodal_hf_edit_quality(model, locality, tok)
+        # _, ret['locality_output'] = compute_multimodal_hf_edit_quality(model, locality, tok)
+        _, _, ret['locality_output'] = compute_multimodal_hf_edit_quality_demo(model, locality, tok)
 
     if 'multimodal_locality_prompt' in record.keys():
         m_loc_prompt = record["multimodal_locality_prompt"]
         m_loc_ground_truth = record["multimodal_locality_ground_truth"]
         m_loc_image = record["multimodal_locality_image"]
         m_locality = prepare_multimodal_hf_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image, file_type="image")
-        _, ret['multimodal_locality_output'] = compute_multimodal_hf_edit_quality(model, m_locality, tok)
+        # _, ret['multimodal_locality_output'] = compute_multimodal_hf_edit_quality(model, m_locality, tok)
+        _, _, ret['multimodal_locality_output'] = compute_multimodal_hf_edit_quality_demo(model, m_locality, tok)
 
     return ret
 
