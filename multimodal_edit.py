@@ -86,7 +86,63 @@ def train_MEND_Blip2OPT_VQA():
         val_set=eval_ds
     )
     
+    trainer.run()
+
+def train_MEND_Qwen2VL_Caption(debug=False):
+    hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/qwen2vl-7b.yaml')
+    if debug:
+        train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams, size=20)
+        eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams, size=20)
+    else:
+        train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
+        eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()
+        
+def train_MEND_Qwen2VL_VQA():
+    hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/qwen2vl-7b.yaml')
+    train_ds = VQADataset('data/vqa_train.json', config=hparams)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
     trainer.run()   
+
+def train_MEND_LLaVA_Caption(debug=False):
+    hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/llavaov-7b.yaml')
+    if debug:
+        train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams, size=20)
+        eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams, size=20)
+    else:
+        train_ds = CaptionDataset('data/caption_train_edit.json', config=hparams)
+        eval_ds = CaptionDataset('data/caption_eval_edit.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()
+        
+def train_MEND_LLaVA_VQA():
+    hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/llavaov-7b.yaml')
+    train_ds = VQADataset('data/vqa_train.json', config=hparams)
+    eval_ds = VQADataset('data/vqa_eval.json', config=hparams)
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
+    
+    trainer.run()      
      
 def train_MEND_Blip2OPT_VQA_debug():
     hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/blip2.yaml')
@@ -694,6 +750,24 @@ def train_SERAC(model='blip2', dataset='vqa', train=True, topk=5):
         val_steps = len(eval_ds._data)+1
         val_info = trainer.validate(log=True)
         trainer.echo(val_steps, val_info, pretty=True)
+
+def edit_WISE(model='blip2', dataset='vqa'):
+    hparams = WISEMultimodalHyperParams.from_hparams('EasyEdit/hparams/WISE/{}.yaml'.format(model))
+    Dataset = DATASET_DICT[dataset.lower()]
+    print(f'Using datasets: {dataset.lower()}')
+
+    eval_ds = Dataset(data_dir[dataset.lower()], config=hparams, size=10, mode='test', topk=5)
+    train_ds = Dataset(data_dir[dataset.lower()], config=hparams, size=10, mode='train', topk=-1)
+    
+    editor = MultimodalEditor.from_hparams(hparams)
+
+    print('Start Editing with WISE...')
+    metrics, edited_model, _ = editor.edit_dataset(
+        ds=eval_ds,
+        train_ds=train_ds,
+        keep_original_weight=True        
+    )
+    print_result(metrics)
     
 if __name__ == "__main__":
     

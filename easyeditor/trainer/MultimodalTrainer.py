@@ -67,7 +67,10 @@ class MultimodalTrainer(BaseTrainer):
             post_edit_outputs = edited_model(batch["edit_outer"])
             if not isinstance(post_edit_outputs, torch.Tensor):
                 post_edit_logits = post_edit_outputs.logits
-                post_batch_labels = post_edit_outputs.labels
+                # 检查输出对象是否有 labels 属性，如果没有则从 batch 中获取
+                post_batch_labels = getattr(post_edit_outputs, 'labels', None)
+                if post_batch_labels is None:
+                    post_batch_labels = batch["edit_outer"]["labels"]
             else:
                 post_edit_logits = post_edit_outputs
                 post_batch_labels = batch["edit_outer"]["labels"]
@@ -76,7 +79,10 @@ class MultimodalTrainer(BaseTrainer):
             
             if not isinstance(inner_edit_outputs, torch.Tensor):
                 inner_edit_logits = inner_edit_outputs.logits
-                inner_batch_labels = inner_edit_outputs.labels
+                # 检查输出对象是否有 labels 属性，如果没有则从 batch 中获取
+                inner_batch_labels = getattr(inner_edit_outputs, 'labels', None)
+                if inner_batch_labels is None:
+                    inner_batch_labels = batch["edit_inner"]["labels"]
             else:
                 inner_edit_logits = inner_edit_outputs
                 inner_batch_labels = batch["edit_inner"]["labels"]
@@ -89,11 +95,13 @@ class MultimodalTrainer(BaseTrainer):
                 post_image_edit_outputs = edited_model(batch["edit_outer_image"])
                 if not isinstance(post_image_edit_outputs, torch.Tensor):
                     post_image_edit_logits = post_image_edit_outputs.logits
-                    post_image_batch_labels = post_image_edit_outputs.labels
+                    # 检查输出对象是否有 labels 属性，如果没有则从 batch 中获取
+                    post_image_batch_labels = getattr(post_image_edit_outputs, 'labels', None)
+                    if post_image_batch_labels is None:
+                        post_image_batch_labels = batch["edit_outer_image"]["labels"]
                 else:
                     post_image_edit_logits = post_image_edit_outputs
                     post_image_batch_labels = batch["edit_outer_image"]["labels"]
-
             l_edit = self.model.edit_loss_fn(self.config, post_edit_logits, post_batch_labels, multimodal=True)["nll"]
             l_image_edit = self.model.edit_loss_fn(self.config, post_image_edit_logits, post_image_batch_labels, multimodal=True)["nll"]          
             
@@ -106,15 +114,23 @@ class MultimodalTrainer(BaseTrainer):
             post_base_outputs = edited_model(batch["loc"])
             if not isinstance(post_base_outputs, torch.Tensor):
                 post_base_logits = post_base_outputs.logits
-                kl_mask = post_base_outputs.attention_mask
+                kl_mask = getattr(post_base_outputs, 'attention_mask', None)
+                if kl_mask is None:
+                    kl_mask = batch["loc"].get("attention_mask", None)
+                    if kl_mask is None:
+                        kl_mask = torch.ones(post_base_logits.shape[0], post_base_logits.shape[1]).to(post_base_logits.device)
             else:
                 post_base_logits = post_base_outputs
                 kl_mask = torch.ones(post_base_logits.shape[0], post_base_logits.shape[1]).to(post_base_logits.device)
 
             post_image_base_outputs = edited_model(batch["loc_image"])
-            if not isinstance(post_base_outputs, torch.Tensor):
+            if not isinstance(post_image_base_outputs, torch.Tensor):
                 post_image_base_logits = post_image_base_outputs.logits
-                kl_image_mask = post_image_base_outputs.attention_mask
+                kl_image_mask = getattr(post_image_base_outputs, 'attention_mask', None)
+                if kl_image_mask is None:
+                    kl_image_mask = batch["loc_image"].get("attention_mask", None)
+                    if kl_image_mask is None:
+                        kl_image_mask = torch.ones(post_image_base_logits.shape[0], post_image_base_logits.shape[1]).to(post_image_base_logits.device)
             else:
                 post_image_base_logits = post_image_base_outputs
                 kl_image_mask = torch.ones(post_image_base_logits.shape[0], post_image_base_logits.shape[1]).to(base_image_logits.device)

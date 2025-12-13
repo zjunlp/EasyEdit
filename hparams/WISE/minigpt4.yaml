@@ -1,0 +1,51 @@
+alg_name: "WISE"
+name: hugging_cache/Vicuna
+model_name: minigpt4
+tokenizer_class: LlamaTokenizer
+tokenizer_name: hugging_cache/Vicuna
+device: 0
+dtype: torch.float32
+
+mask_ratio: 0.2
+edit_lr: 1.0
+n_iter: 10
+norm_constraint: 1.0
+act_margin: [5.0, 20.0, 10.0] # alpha, beta, gamma
+act_ratio: 0.4
+save_freq: 500
+merge_freq: 1000
+merge_alg: 'ties'
+objective_optimization: 'only_label'
+
+# inner_params: 挑选 BLIP-2 下游 LM 的 MLP 层
+inner_params:
+- llama_model.model.layers[23].mlp.down_proj.weight
+
+## alternative: WISE-Merge, WISE-Retrieve
+densities: 0.53
+weights: 1.0
+
+retrieve: False
+replay: False
+
+sequential_edit: False
+model_parallel: False
+use_chat_template: True
+
+# 保存/加载
+# save_path: "./wise_checkpoint/wise.pt"
+# load_path: "./wise_checkpoint/wise.pt"
+
+# Multimodal
+exact_match: True
+hidden_act: silu
+qformer_checkpoint: hugging_cache/blip2_pretrained_flant5xxl.pth
+qformer_name_or_path: bert-base-uncased
+state_dict_file: hugging_cache/eva_vit_g.pth
+pretrained_ckpt: hugging_cache/pretrained_minigpt4_7b.pth
+
+
+# 图像输入 (BLIP-2 默认是图像)
+file_type: image
+coco_image: ../
+rephrase_image: ../

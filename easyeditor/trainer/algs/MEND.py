@@ -177,6 +177,11 @@ class MEND(EditableModel):
         if not str(self.config.device).startswith('cuda'):
             self.config.device = f'cuda:{self.config.device}'
 
+        for n, p in model.named_parameters():
+            if n not in self.config.inner_params:
+                p.requires_grad = False
+            else: break # 因为其到末尾的计算图是需要保存的，这里由于编辑的都是最后几层，因此并不影响
+
         if edit_lrs is None:
             edit_lrs = nn.Parameter(
                 torch.tensor([config.edit_lr] * len(self.config.inner_params))
@@ -256,6 +261,9 @@ class MEND(EditableModel):
     def forward(self, *inputs, **kwargs):
         if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
             outputs = self.model(*inputs, **kwargs)
+        elif "llava-onevision" in self.config.model_name.lower() or "qwen2-vl" in self.config.model_name.lower():
+            multimodal_inputs = inputs[0]
+            outputs = self.model(**multimodal_inputs)
         elif 'gpt' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
             # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
@@ -290,6 +298,10 @@ class MEND(EditableModel):
             else:
                 batch_labels = batch['labels']
             loss = self.edit_loss_fn(self.config, outputs, batch_labels, multimodal=True)["nll"]          
+        elif "llava-onevision" in self.config.model_name.lower() or "qwen2-vl" in self.config.model_name.lower():
+            outputs = self.model(**batch)
+            loss = outputs.loss
+            outputs = outputs.logits
         elif 'gpt' in self.config.model_name.lower():
             outputs = _logits(self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']))
             # outputs = outputs[:, -batch['labels'].shape[-1]:, :]

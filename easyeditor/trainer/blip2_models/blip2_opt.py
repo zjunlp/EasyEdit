@@ -93,9 +93,9 @@ class Blip2OPT(Blip2Base):
         )
         # for name, param in self.opt_model.named_parameters():
         #     param.requires_grad = False
-        # self.eos_token_id = self.opt_tokenizer(
-        #     "\n", add_special_tokens=False
-        # ).input_ids[0]
+        self.eos_token_id = self.opt_tokenizer(
+            "\n", add_special_tokens=False
+        ).input_ids[0]
 
         self.opt_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.opt_model.config.hidden_size
@@ -118,7 +118,7 @@ class Blip2OPT(Blip2Base):
         prompt_tokens = self.opt_tokenizer(self.prompt, return_tensors="pt")
         self.prompt_length = prompt_tokens.attention_mask.sum(1)
 
-    def forward(self, samples):
+    def image_encoding(self, samples):
         if samples['image'] is not None:
             image = samples["image"] # bsz, 3, image_size, image_size
             with self.maybe_autocast():
@@ -190,7 +190,66 @@ class Blip2OPT(Blip2Base):
                     
             inputs_embeds = self.opt_model.model.decoder.embed_tokens(opt_tokens.input_ids)
             attention_mask = opt_tokens.attention_mask
+        return inputs_embeds, attention_mask, targets
 
+    def stack_with_padding(self, tensor_list, padding_value=-100):
+        """
+        将 list[ tensor(1, x_i, a) ] 合并为 tensor(n, max_x, a)
+        短序列在第1维（原本的 x 维度）后面用 padding_value 填充
+        
+        Args:
+            tensor_list (List[torch.Tensor]): 长度为 n 的 list，
+                                            每个元素 shape 为 [1, x_i, a]
+            padding_value (number): 填充值，默认为 -100
+        
+        Returns:
+            torch.Tensor: shape = [n, max_x, a]，已经填充好的 tensor
+        """
+        # 确保所有 tensor 都在同一设备、同一 dtype
+        first = tensor_list[0]
+        device = first.device
+        dtype  = first.dtype
+        
+        # 去掉第0维的 1（squeeze），得到 [x_i, a]
+        squeezed = [t.squeeze(0) for t in tensor_list]
+        # print(squeezed[0].shape, squeezed[0])
+        
+        # 计算最大长度
+        max_x = max(t.size(0) for t in squeezed)
+        
+        # 用 -100 填充到 max_x
+        padded = []
+        for t in squeezed:
+            if t.size(0) < max_x:
+                # 计算需要填充的量
+                pad_len = max_x - t.size(0)
+                # 只在第0维（长度维度）右侧填充
+                pad_shape = (pad_len,) + t.shape[1:]
+                
+                pad = torch.full(pad_shape, 
+                                fill_value=padding_value, 
+                                dtype=dtype, device=device)
+                t = torch.cat([t, pad], dim=0)
+            padded.append(t)
+        
+        # 堆叠成 [n, max_x, a]
+        return torch.stack(padded, dim=0)
+
+
+    def forward(self, samples):
+        if isinstance(samples, list):
+            inputs_embeds, attention_mask, targets = [], [], []
+            for sample in samples:
+                inputs_embeds_i, attention_mask_i, targets_i = self.image_encoding(sample)
+                inputs_embeds.append(inputs_embeds_i)
+                attention_mask.append(attention_mask_i)
+                targets.append(targets_i)
+            inputs_embeds = self.stack_with_padding(inputs_embeds, 0)
+            attention_mask = self.stack_with_padding(attention_mask, 0)
+            targets = self.stack_with_padding(targets)
+            # print(inputs_embeds.shape, attention_mask.shape, targets.shape)
+        else: 
+            inputs_embeds, attention_mask, targets = self.image_encoding(samples)
         with self.maybe_autocast():
             outputs = self.opt_model(
                 inputs_embeds=inputs_embeds, # inputs_embeds is the fusion of the image embeddings and the caption embeddings

@@ -144,7 +144,7 @@ class BlipImageEvalProcessor(BlipImageBaseProcessor):
         )
 
     def __call__(self, item, file_type=None):
-        item = Image.open(item)
+        item = Image.open(item).convert("RGB")
         return self.transform(item)
 
     @classmethod

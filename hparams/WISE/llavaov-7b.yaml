@@ -1,12 +1,16 @@
 alg_name: "WISE"
 model_name: "./hugging_cache/llava-onevision-qwen2-7b-ov-hf"
+name: ./hugging_cache/llava-onevision-qwen2-7b-ov-hf
+tokenizer_class: .
+tokenizer_name: .
+dtype: torch.bfloat16
 
 device: 0
 
 mask_ratio: 0.2
 edit_lr: 1.0
 # n_iter: 70
-n_iter: 5
+n_iter: 10
 norm_constraint: 1.0
 act_margin: [5.0, 20.0, 10.0] # alpha, beta, gamma
 act_ratio: 0.4
@@ -29,6 +33,7 @@ weights: 1.0
 retrieve: True
 replay: False # True --> will replay the past editing instances: see https://arxiv.org/abs/2405.14768 Appendix B.3
 
+sequential_edit: False
 model_parallel: False
 use_chat_template: True
 
@@ -42,6 +47,7 @@ hidden_act: silu
 qformer_checkpoint: .
 qformer_name_or_path: .
 state_dict_file: .
+pretrained_ckpt: .
 # image
 file_type: video
 coco_image: ../

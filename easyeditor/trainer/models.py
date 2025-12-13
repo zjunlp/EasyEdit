@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import transformers
 from transformers import GPT2Tokenizer, GPT2TokenizerFast
+from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration, Qwen2VLForConditionalGeneration
+
 
 from .utils import scr
 
@@ -97,6 +99,21 @@ def get_model(config):
             state_dict_file=config.state_dict_file,
             qformer_name_or_path=config.qformer_name_or_path,
             pretrained_ckpt=config.pretrained_ckpt,
+        )
+    elif "llava-onevision" in config.model_name.lower():   
+        model = LlavaOnevisionForConditionalGeneration.from_pretrained(
+            config.name,
+            torch_dtype=config.dtype,
+            # attn_implementation="flash_attention_2" 
+        )
+        # for name, param in model.named_parameters():
+        #     print(f"{name}: {param.shape}")
+
+    elif "qwen2-vl" in config.model_name.lower():
+        model = Qwen2VLForConditionalGeneration.from_pretrained(
+            config.name, 
+            torch_dtype=config.dtype,
+            # attn_implementation="flash_attention_2"
         )
     else:
         ModelClass = getattr(transformers, config.model_class)
