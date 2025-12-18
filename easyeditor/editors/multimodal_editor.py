@@ -136,9 +136,11 @@ class MultimodalEditor:
                 self.rephrase_root = hparams.rephrase_image  
                 
             elif "llava-onevision" in hparams.model_name.lower():   
+                if not hasattr(hparams, 'dtype'):
+                    hparams.dtype = torch.float32
                 self.model = LlavaOnevisionForConditionalGeneration.from_pretrained(
                     hparams.model_name,
-                    torch_dtype=torch.float32,
+                    torch_dtype=hparams.dtype,
                     # attn_implementation="flash_attention_2" 
                 )
                 self.vis_tok = LLaVAOneVisionProcessor()
@@ -146,9 +148,11 @@ class MultimodalEditor:
                 self.model_name = "llava-onevision"
 
             elif "qwen2-vl" in hparams.model_name.lower():
+                if not hasattr(hparams, 'dtype'):
+                    hparams.dtype = torch.float32
                 self.model = Qwen2VLForConditionalGeneration.from_pretrained(
                     hparams.model_name, 
-                    torch_dtype=torch.float32,
+                    torch_dtype=hparams.dtype,
                     # attn_implementation="flash_attention_2"
                 )
                 self.vis_tok = Qwen2VLProcessor()
@@ -443,10 +447,16 @@ class MultimodalEditor:
                     train_ds=kwargs['train_ds']
                 )
             else:
+                if self.model_name in ['minigpt4', 'blip2']:
+                    pre_res = compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
+                                                            request, self.hparams.device)
+                elif self.model_name in ['llava-onevision', 'qwen2-vl']:
+                    pre_res = compute_multimodal_hf_edit_results(self.model, self.model_name, self.hparams, self.tok,
+                                                            request, self.hparams.device)
                 edited_model, weights_copy = self.apply_algo(
                     self.model,
                     self.tok,
-                    request,
+                    [request],
                     self.hparams,
                     copy=False,
                     return_orig_weights=True,
@@ -466,15 +476,32 @@ class MultimodalEditor:
                                                         request, self.hparams.device, pre_edit=True)
                 }
             else:
-                metrics = {
-                    'case_id': i,
-                    # "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": compute_multimodal_edit_results(edited_model, self.model_name, self.hparams, self.tok,
-                                                        request, self.hparams.device),
-                    "pre": compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
-                                                        request, self.hparams.device)
-                }
+                if self.model_name in ['minigpt4', 'blip2']:
+                    metrics = {
+                        'case_id': i,
+                        "time": exec_time,
+                        "post": compute_multimodal_edit_results(edited_model, self.model_name, self.hparams, self.tok,
+                                                            request, self.hparams.device),
+                        "pre": pre_res
+                    }
+                elif self.model_name in ['llava-onevision', 'qwen2-vl']:
+                    metrics = {
+                        'case_id': i,
+                        # "requested_rewrite": request,
+                        "time": exec_time,
+                        "post": compute_multimodal_hf_edit_results(edited_model, self.model_name, self.hparams, self.tok,
+                                                            request, self.hparams.device),
+                        "pre": pre_res
+                    }   
+                # metrics = {
+                #     'case_id': i,
+                #     # "requested_rewrite": request,
+                #     "time": exec_time,
+                #     "post": compute_multimodal_edit_results(edited_model, self.model_name, self.hparams, self.tok,
+                #                                         request, self.hparams.device),
+                #     "pre": compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
+                #                                         request, self.hparams.device)
+                # }
             if 'locality_output' in metrics['post'].keys():
                 assert len(metrics['post']['locality_output']) == \
                         len(metrics['pre']['locality_output'])
@@ -648,7 +675,6 @@ class MultimodalEditor:
                         'multimodal_locality_ground_truth': multimodal_locality_ground_truth[i],
                     }
                 )
-        
         if 'loc_prompts' in kwargs:
             if isinstance(kwargs['loc_prompts'], str):
                 kwargs['loc_prompts'] = [kwargs['loc_prompts'],]

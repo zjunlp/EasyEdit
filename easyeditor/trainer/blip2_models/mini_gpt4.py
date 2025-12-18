@@ -182,7 +182,61 @@ class MiniGPT4(Blip2Base):
         else:
             return img_embeds, atts_img
 
-    def forward(self, samples):
+    def stack_with_padding(self, tensor_list, padding_value=-100):
+        """
+        将 list[ tensor(1, x_i, a) ] 合并为 tensor(n, max_x, a)
+        短序列在第1维（原本的 x 维度）后面用 padding_value 填充
+        
+        Args:
+            tensor_list (List[torch.Tensor]): 长度为 n 的 list，
+                                            每个元素 shape 为 [1, x_i, a] 或 [batch_i, x_i, a]
+            padding_value (number): 填充值，默认为 -100
+        
+        Returns:
+            torch.Tensor: shape = [n, max_x, a]，已经填充好的 tensor
+        """
+        # 确保所有 tensor 都在同一设备、同一 dtype
+        first = tensor_list[0]
+        device = first.device
+        dtype  = first.dtype
+        
+        # 处理每个 tensor：如果 batch_size > 1，则展平；否则直接使用
+        processed_tensors = []
+        for t in tensor_list:
+            batch_size = t.size(0)
+            if batch_size == 1:
+                processed_tensors.append(t.squeeze(0))
+            else:
+                # 如果 batch_size > 1，展平到列表中
+                for b in range(batch_size):
+                    processed_tensors.append(t[b])
+        
+        # 计算最大长度
+        max_x = max(t.size(0) for t in processed_tensors)
+        
+        # 用 padding_value 填充到 max_x
+        padded = []
+        for t in processed_tensors:
+            if t.size(0) < max_x:
+                # 计算需要填充的量
+                pad_len = max_x - t.size(0)
+                # 只在第0维（长度维度）右侧填充
+                pad_shape = (pad_len,) + t.shape[1:]
+                
+                pad = torch.full(pad_shape, 
+                                fill_value=padding_value, 
+                                dtype=dtype, device=device)
+                t = torch.cat([t, pad], dim=0)
+            padded.append(t)
+        
+        # 堆叠成 [n, max_x, a]
+        return torch.stack(padded, dim=0)
+
+    def text_encoding(self, samples):
+        """
+        处理单个 sample，支持 image-text 和纯 text 两种情况
+        返回 inputs_embeds, attention_mask, targets
+        """
         if samples['image'] is not None:
             image = samples["image"]
             img_embeds, atts_img = self.encode_img(image)
@@ -250,7 +304,22 @@ class MiniGPT4(Blip2Base):
                     
             inputs_embeds = self.llama_model.model.embed_tokens(to_regress_tokens.input_ids)
             attention_mask = to_regress_tokens.attention_mask
+        return inputs_embeds, attention_mask, targets
 
+    def forward(self, samples):
+        if isinstance(samples, (list, tuple)):
+            inputs_embeds, attention_mask, targets = [], [], []
+            for sample in samples:
+                inputs_embeds_i, attention_mask_i, targets_i = self.text_encoding(sample)
+                inputs_embeds.append(inputs_embeds_i)
+                attention_mask.append(attention_mask_i)
+                targets.append(targets_i)
+            inputs_embeds = self.stack_with_padding(inputs_embeds, 0)
+            attention_mask = self.stack_with_padding(attention_mask, 0)
+            targets = self.stack_with_padding(targets)
+            # print(inputs_embeds.shape, attention_mask.shape, targets.shape)
+        else: 
+            inputs_embeds, attention_mask, targets = self.text_encoding(samples)
         with self.maybe_autocast():
             outputs = self.llama_model(
                 inputs_embeds=inputs_embeds,
