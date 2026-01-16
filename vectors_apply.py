@@ -10,17 +10,17 @@ def get_generation_params():
         'temperature': 0.9
     }
 
-@hydra.main(version_base='1.2',config_path='./hparams/Steer', config_name='vector_apply.yaml')
+@hydra.main(version_base='1.2',config_path='./hparams/Steer/acl_experiment', config_name='apply_config.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg)
     vector_applier = BaseVectorApplier(top_cfg)
     vector_applier.apply_vectors()
     
     # You can customize your own inputs
-    datasets={'your_dataset_name':[{'input':'hello'},{'input':'how are you'}]}
+    # datasets={'your_dataset_name':[{'input':'hello'},{'input':'how are you'}]}
     
     # Or use the datasets from config.yaml
-    # datasets = prepare_generation_datasets(top_cfg)
+    datasets = prepare_generation_datasets(top_cfg)
     
     # Method 1: Use parameters from config.yaml
     vector_applier.generate(datasets)
