@@ -1,20 +1,20 @@
 
-from .PreferenceModelTrainer import PreferenceModelTrainer
+from .SFTModelTrainer import SFTModelTrainer
 import torch
 from tqdm.auto import tqdm
 
-class RepsVectorTrainer(PreferenceModelTrainer):
+class SFTTrainer(SFTModelTrainer):
 
     # the base class for all preference models
     preference_pairs = ["orig_add"] # "orig_add", "orig_sub", "steered_add", "steered_sub"
     def __str__(self):
-        return 'PreferenceVector'
+        return 'SFTTrainer'
 
     def make_model(self, **kwargs):
         """
         create a model with intervention
         """
-        # from ..models.interventions import RePSVectorIntervention
+        
         from ..models.interventions import LocalWeightIntervention
         from ..models.interventions import LoraIntervention
         from ..models.interventions import VectorIntervention
@@ -27,7 +27,7 @@ class RepsVectorTrainer(PreferenceModelTrainer):
                 steer_vector = VectorIntervention(
                     embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
                     low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
-                    dropout=kwargs.get("dropout", 0.0),                                # set the dropout rate
+                    dropout=kwargs.get("dropout", 0.0),
                     intervention_positions_dropout=kwargs.get("intervention_positions_dropout", 0.0) # set the dropout rate of the intervention positions
                 )
             elif intervention_method == "local_weight":
@@ -35,7 +35,7 @@ class RepsVectorTrainer(PreferenceModelTrainer):
                     input_dim=kwargs.get("input_dim", self.model.model.config.hidden_size), # set the input dimension
                     embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
                     low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
-                    dropout=kwargs.get("dropout", 0.0),                  
+                    dropout=kwargs.get("dropout", 0.0),
                     intervention_components=kwargs.get("intervention_components", "mlp"),                                # set the dropout rate
                     intervention_positions_dropout=kwargs.get("intervention_positions_dropout", 0.0) # set the dropout rate of the intervention positions
                 )
@@ -66,6 +66,4 @@ class RepsVectorTrainer(PreferenceModelTrainer):
         
         for layer in self.layers:
             intervention_copy = self.model.steer_vector  # all layers share the same intervention instance
-            self.model.set_intervention(layer, intervention_copy, "reps")
-    
- 
+            self.model.set_intervention(layer, intervention_copy, "sft")

@@ -53,8 +53,55 @@ train:
   merge:
     file_path: null
 
+  psychopathy:
+    file_path: ./data/psychopathy/train.jsonl
+    field_names:
+      question: 'question'
+      matching: 'answer_matching_behavior'
+      not_matching: 'answer_not_matching_behavior'
+
+  powerseeking:
+    file_path: ./data/powerseeking/train.csv
+    field_names:
+      question: 'question'
+      matching: 'matching'
+      not_matching: 'not_matching'
+
+  # axbench:
+  #   file_path: ./data/axbench/axbench_train.parquet
+  #   multi_concept: true
+  #   field_names:
+  #     question: 'input'
+  #     matching: 'winning_output'
+  #     not_matching: 'losing_output'
+  #     output_concept: 'output_concept'
+  #     concept_id: 'concept_id'
+  #     concept: 'output_concept'
+  #     concept_genre: 'concept_genre'
+  #     category: 'category'
+
+  axbench_train:
+    file_path: ./data/axbench/axbench_train.parquet
+    multi_concept: true
+    field_names:
+      question: 'input'
+      matching: 'winning_output'
+      not_matching: 'losing_output'
+      output_concept: 'output_concept'
+      concept_id: 'concept_id'
+      concept: 'output_concept'
+      concept_genre: 'concept_genre'
+      category: 'category'
+  
+
 # ================generation datasets===========================
 generation:
+  psychopathy:
+    file_path: ./data/psychopathy/test.jsonl
+    field_names:
+      input: 'question'
+      reference_response: 'answer_matching_behavior'
+
   toxigen:
     file_path: ./data/toxigen/test.csv
     field_names:
@@ -110,3 +157,14 @@ generation:
     field_names:
       input: 'instruction'
       reference_response: 'output'
+
+  axbench_test:
+    file_path: ./data/axbench/axbench_test.parquet
+    multi_concept: true
+    field_names:
+      input: 'input'
+      output_concept: 'output_concept'
+      concept_id: 'concept_id'
+      concept: 'output_concept'
+      concept_genre: 'concept_genre'
+      category: 'category'

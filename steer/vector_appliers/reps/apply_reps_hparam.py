@@ -7,11 +7,12 @@ from ...utils import HyperParams
 @dataclass
 class ApplyRepsHyperParams(HyperParams):
     # Model related
-    alg_name: str = 'reps_vector'
+    alg_name: str = 'reps'
     layers: List[int] = field(default_factory=lambda: [24])
     multipliers: List[float] = field(default_factory=lambda: [1.0])
     
     # Vector loading related
+    intervention_method: str = "vector"
     steer_vector_load_dir: str = None  # Base directory for vectors
     concept_id: int = 0  # Single concept
     

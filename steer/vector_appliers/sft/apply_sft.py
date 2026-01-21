@@ -1,35 +1,35 @@
 import os
 import torch
 from ...vector_generators.lm_steer import Hack_no_grad
-from .apply_reps_hparam import ApplyRepsHyperParams
+from .apply_sft_hparam import ApplySFTHyperParams
          
-def reset_reps_layers(model, layers):
-    """Reset only the REPS activations for specified layers"""
+def reset_sft_layers(model, layers):
+    """Reset only the SFT activations for specified layers"""
     model = model.model
     for layer in layers:
         if hasattr(model, 'model') and (hasattr(model.model, 'layers') or (hasattr(model.model, 'module') and hasattr(model.model.module, 'layers'))):
             if isinstance(model.model, Hack_no_grad):
-                model.model.module.layers[layer].reset(method_name="reps")
+                model.model.module.layers[layer].reset(method_name="sft")
             else:
-                model.model.layers[layer].reset(method_name="reps")
+                model.model.layers[layer].reset(method_name="sft")
         elif hasattr(model,'transformer') and hasattr(model.transformer, 'h') or (hasattr(model.transformer, 'module') and hasattr(model.transformer.module, 'h')):  # for GPT models
             if isinstance(model.transformer, Hack_no_grad):
-                model.transformer.module.h[layer].reset(method_name="reps")
+                model.transformer.module.h[layer].reset(method_name="sft")
             else:
-                model.transformer.h[layer].reset(method_name="reps")
+                model.transformer.h[layer].reset(method_name="sft")
         else:
-            raise NotImplementedError("Failed to reset REPS activations")
+            raise NotImplementedError("Failed to reset SFT activations")
 
-def apply_reps(hparams: ApplyRepsHyperParams, pipline=None, vector=None):
+def apply_sft(hparams: ApplySFTHyperParams, pipline=None, vector=None):
     from ...models.get_model import get_model
     device = hparams.device
     if pipline is None:
         model, _ = get_model(hparams)
     else:
         model = pipline
-    print('Apply REPS to model: {}'.format(hparams.model_name_or_path))
-    # Reset only REPS activations for specified layers
-    reset_reps_layers(model, hparams.layers)
+    print('Apply SFT to model: {}'.format(hparams.model_name_or_path))
+    # Reset only SFT activations for specified layers
+    reset_sft_layers(model, hparams.layers)
     
     layers = hparams.layers
     multipliers = hparams.multipliers
@@ -119,6 +119,6 @@ def apply_reps(hparams: ApplyRepsHyperParams, pipline=None, vector=None):
         print(f"Loaded Data State for concept_id {concept_id} (single-concept: {data_states is data_states})")
         
         intervention = intervention.to(device)
-        model.set_intervention(layer, intervention, "reps")
+        model.set_intervention(layer, intervention, "sft")
 
     return model
