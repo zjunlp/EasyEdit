@@ -1,5 +1,4 @@
 import json
-import torch
 
 import pandas as pd
 import hydra
@@ -24,7 +23,7 @@ def load_axbench_datasets() -> list:
     eval_data = dataset_loader.load_file('axbench', 'generation')  # The Apacha-Eval dataset
     return concept_grouped_data, eval_data
 
-@hydra.main(version_base='1.2', config_path='./hparams/Steer/acl_experiment/axbench', config_name='axbench_train.yaml')
+@hydra.main(version_base='1.2', config_path='./hparams/Steer/experiment_hparams/axbench', config_name='axbench.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg, "\n")
 

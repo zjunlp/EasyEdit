@@ -20,6 +20,3 @@ delta.txt
 **/*_test_reps*
 *test_reps
 *test_reps.*
-hparams/Steer/dataset_format.yaml
-models
-generation

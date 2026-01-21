@@ -14,42 +14,19 @@ class RepsVectorTrainer(PreferenceModelTrainer):
         """
         create a model with intervention
         """
-        # from ..models.interventions import RePSVectorIntervention
-        from ..models.interventions import LocalWeightIntervention
-        from ..models.interventions import LoraIntervention
-        from ..models.interventions import VectorIntervention
+        from ..models.interventions import RePSVectorIntervention
         
-        intervention_method = kwargs.get("intervention_method", "vector")
+        print("**Getting embed dim from the following model config**")
+        
         intervention_type = kwargs.get("intervention_type", "addition") # addition
         if intervention_type == "addition":
-            if intervention_method == "vector":
             # create a preference vector intervention object
-                steer_vector = VectorIntervention(
-                    embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
-                    low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
-                    dropout=kwargs.get("dropout", 0.0),                                # set the dropout rate
-                    intervention_positions_dropout=kwargs.get("intervention_positions_dropout", 0.0) # set the dropout rate of the intervention positions
-                )
-            elif intervention_method == "local_weight":
-                steer_vector = LocalWeightIntervention(
-                    input_dim=kwargs.get("input_dim", self.model.model.config.hidden_size), # set the input dimension
-                    embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
-                    low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
-                    dropout=kwargs.get("dropout", 0.0),                  
-                    intervention_components=kwargs.get("intervention_components", "mlp"),                                # set the dropout rate
-                    intervention_positions_dropout=kwargs.get("intervention_positions_dropout", 0.0) # set the dropout rate of the intervention positions
-                )
-            elif intervention_method == "lora":
-                steer_vector = LoraIntervention(
-                    input_dim=kwargs.get("input_dim", self.model.model.config.hidden_size), # set the input dimension
-                    embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
-                    low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
-                    dropout=kwargs.get("dropout", 0.0),
-                    intervention_components=kwargs.get("intervention_components", "mlp"),                                # set the dropout rate
-                    intervention_positions_dropout=kwargs.get("intervention_positions_dropout", 0.0) # set the dropout rate of the intervention positions
-                )
-            else:
-                raise NotImplementedError(f"Intervention method {intervention_method} not implemented")
+            steer_vector = RePSVectorIntervention(
+                embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
+                low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
+                dropout=kwargs.get("dropout", 0.0),                                # set the dropout rate
+                intervention_positions_dropout=kwargs.get("intervention_positions_dropout", 0.0) # set the dropout rate of the intervention positions
+            )
         else:
             raise ValueError(f"Intervention type {intervention_type} not supported")
 

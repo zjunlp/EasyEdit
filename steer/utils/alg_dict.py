@@ -5,10 +5,8 @@ from ..vector_generators import(
     CAAHyperParams,
     LmSteerHyperParams,
     MergeVectorHyperParams,
-    RePSHyperParams,
-    SFTHyperParams
+    RePSHyperParams
 )
-
 from ..vector_appliers import(
     ApplySaeFeatureHyperParams,
     ApplySTAHyperParams,
@@ -18,7 +16,6 @@ from ..vector_appliers import(
     ApplyLmSteerHyperParams,
     ApplyPromptHyperParams,
     ApplyMergeVectorHyperParams,
-    ApplySFTHyperParams
 )
 
 from ..vector_generators import (
@@ -28,10 +25,8 @@ from ..vector_generators import (
     generate_sae_feature_vectors,
     generate_sta_vectors,
     generate_merge_vector,
-    generate_reps,
-    generate_sft
+    generate_reps_vectors
 )
-
 from ..vector_appliers import (
      apply_lm_steer,
      apply_caa,
@@ -41,11 +36,8 @@ from ..vector_appliers import (
      apply_sta,
      apply_prompt,
      apply_merge_vector,
-     apply_sft
 )
-
 import torch
-
 DTYPES_DICT ={
     "float16": torch.float16,
     "float32": torch.float32,
@@ -65,8 +57,9 @@ HYPERPARAMS_CLASS_DICT = {
     'caa': {'train': CAAHyperParams, 'apply': ApplyCAAHyperParams},
     'prompt': {'apply': ApplyPromptHyperParams},
     'merge_vector': {'train': MergeVectorHyperParams, 'apply': ApplyMergeVectorHyperParams},
-    'reps':{'train': RePSHyperParams, 'apply': ApplyRepsHyperParams},
-    'sft':{'train': SFTHyperParams, 'apply': ApplySFTHyperParams}
+
+    'reps_vector':{'train': RePSHyperParams, 'apply': ApplyRepsHyperParams}
+
 }
 
 METHODS_CLASS_DICT = {
@@ -77,8 +70,7 @@ METHODS_CLASS_DICT = {
     'sta': {'train': generate_sta_vectors, 'apply': apply_sta},
     'prompt': {'apply': apply_prompt},
     'merge_vector': {'train': generate_merge_vector, 'apply': apply_merge_vector},
-    'reps': {'train': generate_reps, 'apply': apply_reps},
-    'sft': {'train': generate_sft, 'apply': apply_sft}
+    'reps_vector': {'train': generate_reps_vectors, 'apply': apply_reps}
 }
 
 VLLM_SUPPORTED_METHODS = ['caa']
