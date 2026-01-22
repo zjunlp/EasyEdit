@@ -1,5 +1,5 @@
 # === Basic Config ===
-alg_name: reps
+alg_name: sft
 layers: [20]
 use_cache: false
 
@@ -15,28 +15,30 @@ batch_size: 4 # the actual batch size also needs to multiply with |preference_pa
 gradient_accumulation_steps: 2
 n_epochs: 2
 lr: 0.01
-lora_alpha: 32
-weight_decay: 0.00
-loss_type: "scaled_simpo"
-
-# loss_type: "dpo"
-beta: 1.0
 dropout: 0.1
-gemma: 0.0
-simpo_scaler: 1.0
-label_smoothing: 0.0
-reference_free: false
-train_on_negative: true
+
+weight_decay: 0.00
+pos_loss_weight: 1.0       
+neg_loss_weight: 0.5       
+margin_penalty_weight: 5  
+ref_loss_weight: 0.0       
+margin_threshold: 0.4 
+
+loss_output_dir: null
+inference: false
 
 # === Intervention Config ===
-intervention_components: "mlp_mid"
 intervention_positions: "all"
 intervention_positions_dropout: 0.0
 intervention_type: "addition" # clamping
-low_rank_dimension: 4
-intervention_method: "lora"
+intervention_method: "weight"
+intervention_components: "mlp_mid"
 
 # === Steering Config ===
 steering_factors: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0] # use_cmd_to_define
+
 steering_prompt_type: "blend_in"
 substraction_type: "normal" # normal or null_it_out
+
+
+

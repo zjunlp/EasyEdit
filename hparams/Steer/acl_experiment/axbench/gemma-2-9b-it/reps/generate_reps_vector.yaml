@@ -11,7 +11,7 @@ preference_pairs: ["orig_add", "orig_sub"] # use_cmd_to_define
 output_length: 512
 
 # === Training Config ===
-batch_size: 1 # the actual batch size also needs to multiply with |preference_pairs|
+batch_size: 4 # the actual batch size also needs to multiply with |preference_pairs|
 beta: 1.0
 dropout: 0.1
 gemma: 0.0

@@ -25,6 +25,7 @@ simpo_scaler: 1.0
 label_smoothing: 0.0
 reference_free: false
 train_on_negative: true
+lora_alpha: 32
 
 # === Intervention Config ===
 intervention_positions: "all"
