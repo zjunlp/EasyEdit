@@ -6,7 +6,8 @@ from ..vector_generators import(
     LmSteerHyperParams,
     MergeVectorHyperParams,
     RePSHyperParams,
-    SFTHyperParams
+    SFTHyperParams,
+    PrismHyperParams
 )
 
 from ..vector_appliers import(
@@ -18,7 +19,8 @@ from ..vector_appliers import(
     ApplyLmSteerHyperParams,
     ApplyPromptHyperParams,
     ApplyMergeVectorHyperParams,
-    ApplySFTHyperParams
+    ApplySFTHyperParams,
+    ApplyPrismHyperParams
 )
 
 from ..vector_generators import (
@@ -29,7 +31,8 @@ from ..vector_generators import (
     generate_sta_vectors,
     generate_merge_vector,
     generate_reps,
-    generate_sft
+    generate_sft,
+    generate_prism
 )
 
 from ..vector_appliers import (
@@ -41,7 +44,8 @@ from ..vector_appliers import (
      apply_sta,
      apply_prompt,
      apply_merge_vector,
-     apply_sft
+     apply_sft,
+     apply_prism
 )
 
 import torch
@@ -66,7 +70,8 @@ HYPERPARAMS_CLASS_DICT = {
     'prompt': {'apply': ApplyPromptHyperParams},
     'merge_vector': {'train': MergeVectorHyperParams, 'apply': ApplyMergeVectorHyperParams},
     'reps':{'train': RePSHyperParams, 'apply': ApplyRepsHyperParams},
-    'sft':{'train': SFTHyperParams, 'apply': ApplySFTHyperParams}
+    'sft':{'train': SFTHyperParams, 'apply': ApplySFTHyperParams},
+    'prism':{'train': PrismHyperParams, 'apply': ApplyPrismHyperParams}
 }
 
 METHODS_CLASS_DICT = {
@@ -78,7 +83,8 @@ METHODS_CLASS_DICT = {
     'prompt': {'apply': apply_prompt},
     'merge_vector': {'train': generate_merge_vector, 'apply': apply_merge_vector},
     'reps': {'train': generate_reps, 'apply': apply_reps},
-    'sft': {'train': generate_sft, 'apply': apply_sft}
+    'sft': {'train': generate_sft, 'apply': apply_sft},
+    'prism': {'train': generate_prism, 'apply': apply_prism}
 }
 
 VLLM_SUPPORTED_METHODS = ['caa']

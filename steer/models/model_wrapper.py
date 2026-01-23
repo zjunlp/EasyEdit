@@ -194,7 +194,7 @@ class BlockOutputWrapper(t.nn.Module):
             augmented_output = output[0]
             for method_name, intervention in self.intervention_dict.items():
                 if intervention is not None:
-                    if method_name in ['reps', 'sft'] and hasattr(intervention, 'intervention_components') and intervention.intervention_method in ['lora', 'local_weight']:
+                    if method_name in ['reps', 'sft', 'prism'] and hasattr(intervention, 'intervention_components') and intervention.intervention_method in ['lora', 'local_weight']:
                         if intervention.intervention_components == "mlp":
                             kwargs['args'] = self.block.mlp.input_activations
                             assert kwargs['args'] is not None, "MLP input activations are None"
@@ -264,7 +264,7 @@ class BlockOutputWrapper(t.nn.Module):
         if method_name == "all":
             self.add_activations_dict.clear()
             self.intervention_dict.clear()
-        elif method_name == "reps" or method_name == "sft":
+        elif method_name == "reps" or method_name == "sft" or method_name == "prism":
             # RePS uses the new intervention class
             if method_name in self.intervention_dict:
                 del self.intervention_dict[method_name]
@@ -455,7 +455,7 @@ class BaseModelWrapper:
             
     def reset(self, method_name):
         method_name = method_name.lower()
-        if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps', 'sft']:
+        if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps', 'sft', 'prism']:
             if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):  #if the model is wrapped by Hack_no_grad, then the layers are in the module
                 model_layers = self.model.model.module.layers
             else:
@@ -755,7 +755,7 @@ class GPTWrapper(BaseModelWrapper):
             
     def reset(self, method_name):
         method_name = method_name.lower()
-        if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps', 'sft']:
+        if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps', 'sft', 'prism']:
             if isinstance(self.model.transformer, Hack_no_grad):  #if the model is wrapped by Hack_no_grad, then the layers are in the module
                 model_layers = self.model.transformer.module.h
             else:
