@@ -1,0 +1,4 @@
+alg_name: reps
+layers: [20] 
+multipliers: [1.0] 
+concepts_id: 0

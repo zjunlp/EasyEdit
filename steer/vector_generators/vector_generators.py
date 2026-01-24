@@ -1,7 +1,7 @@
 from omegaconf import DictConfig
 import os
 
-REQUIRED_DATASET_METHODS=['lm_steer', 'caa', 'vector_prompt', 'sta', 'reps_vector']
+REQUIRED_DATASET_METHODS=['lm_steer', 'caa', 'vector_prompt', 'sta', 'reps', 'sft', 'prism']
 
 class BaseVectorGenerator:
     """Base vector generator for all methods"""

@@ -3,12 +3,12 @@ import argparse
 import torch
 import json
 from tqdm import tqdm
-from .generate_reps_vector_hparams import RePSHyperParams
+from .generate_prism_hparams import PrismHyperParams
 from .utils import get_prefix_length, load_state, prepare_groups, save_state
-from steer.trainer.RepsVectorTrainer import RepsVectorTrainer
+from steer.trainer.SFTTrainer import SFTTrainer
 
 
-def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_name = None):
+def generate_prism(args: PrismHyperParams, dataset, model = None, dataset_name = None):
     """
     Generate RePS vectors from dataset.
     
@@ -86,8 +86,10 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
             print(f"[WARNING] Chat model prefix length: {prefix_length}")
         
         output_dir = os.path.join(
-            args.steer_vector_output_dir, "reps_vector"
+            args.steer_vector_output_dir, 
+            f"prism_{args.intervention_method}"
         )
+        
         if args.save_vectors:
             os.makedirs(output_dir, exist_ok=True)
 
@@ -96,9 +98,9 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
         print(f"[WARNING] last concept_id processed: {last_concept_id}")
 
         # For multi-concept datasets, store all vectors and their concept info
-        vectors_dict = {} if is_multi_concept else None
+        datas_dict = {} if is_multi_concept else None
         concept_info_dict = {} if is_multi_concept else None  # Store concept descriptions
-        vec = None
+        data_state = None
         
         for concept_key, concept_groups in concept_grouped_data:
             # Handle both numeric concept_id and string dataset names
@@ -115,7 +117,7 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
                 print(f"[WARNING] Skip concept_id {concept_id}, because it has been processed")
                 continue
             
-            print(f"[INFO] Start to train RePS for concept: {concept_key_str}")
+            print(f"[INFO] Start to train Prism for concept: {concept_key_str}")
 
             # Get concept name
             if is_multi_concept:
@@ -123,27 +125,31 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
                 concept_info_dict[concept_id] = concept
             else:
                 concept = concept_key_str
-            print(f"[INFO] Using concept '{concept}' to train RePS")
+            print(f"[INFO] Using concept '{concept}' to train Prism")
             
             # Store concept info for multi-concept datasets
             
             
             # Init the trainer
-            benchmark_model = RepsVectorTrainer(
+            benchmark_model = SFTTrainer(
                 model=model,
                 layers=[layer],
                 hparams=args 
             )
+            
             # get the low rank dimension,  set to 1 as a vector
             low_rank_dimension = args.low_rank_dimension if args.low_rank_dimension else 1
             
             # incorporate the intervention to the model
             benchmark_model.make_model(
                 mode="train",
+                input_dim=model.model.config.hidden_size if args.intervention_components != "mlp_mid" else model.model.config.intermediate_size,
                 embed_dim=model.model.config.hidden_size,
                 low_rank_dimension=low_rank_dimension,
                 dtype=model.torch_dtype,
                 intervention_type=args.intervention_type, 
+                intervention_components=args.intervention_components,
+                intervention_method=args.intervention_method,
                 concept_id=concept_id,
                 dump_dir=args.steer_vector_output_dir,
                 model_params=args,
@@ -159,7 +165,6 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
                 "prefix_length": prefix_length,
                 "positions": args.intervention_positions, 
                 "exclude_bos": args.exclude_bos,
-
                 "preference_pairs": args.preference_pairs,
                 "steering_prompt_type": args.steering_prompt_type,
                 "substraction_type": args.substraction_type,
@@ -177,12 +182,31 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
             )
             benchmark_model.train(prepared_groups, **training_kwargs)
 
-            # get the trained vectors
-            vec = benchmark_model.model.steer_vector.proj.weight.data.clone().cpu()
-            vec = vec.squeeze(0)
+            if args.intervention_method == "vector":
+                data_state = benchmark_model.model.steer_vector.proj.weight.data.clone().cpu()
+                data_state = data_state.squeeze(0)
+            elif args.intervention_method == "lora":
+                lora_module = benchmark_model.model.steer_vector
+                data_state = {
+                    "lora_A": lora_module.lora_A.detach().cpu(),
+                    "lora_B": lora_module.lora_B.detach().cpu(),
+                    "r": lora_module.r,
+                    "alpha": lora_module.lora_alpha,
+                    "intervention_components": lora_module.intervention_components,
+                    "concept_id": concept_id,
+                }
+            elif args.intervention_method == "local_weight":
+                local_weight_module = benchmark_model.model.steer_vector
+                data_state = {
+                    "weight": local_weight_module.delta_weight.detach().cpu(),
+                    "bias": local_weight_module.delta_bias.detach().cpu(),
+                    "intervention_components": local_weight_module.intervention_components,
+                    "concept_id": concept_id,
+                }
+
             # Store vector for multi-concept datasets
             if is_multi_concept:
-                vectors_dict[concept_id] = vec
+                datas_dict[concept_id] = data_state
             
             # save the vectors immediately after training each concept
             if args.save_vectors:
@@ -206,7 +230,7 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
                         existing_vectors = []
                     
                     # Append new vector
-                    existing_vectors.append(vec)
+                    existing_vectors.append(data_state)
                     
                     # Save updated vectors as stacked tensor
                     combined_vectors = torch.stack(existing_vectors, dim=0)
@@ -215,6 +239,9 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
                     # Also save/append metadata for this concept
                     metadata = {
                         "concept_id": concept_id,
+                        "intervention_components": args.intervention_components,
+                        "rank": args.low_rank_dimension,
+                        "alpha": args.lora_alpha,
                         "concept": concept,  # Use the concept name we got earlier
                         "ref": f"vector_index_{len(existing_vectors)-1}"  # Index in the stacked tensor
                     }
@@ -226,7 +253,7 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
                     print(f"[INFO] Saved vector for concept {concept_id} to {vector_filename} (total: {len(existing_vectors)} vectors)")
                 else:
                     # For single-concept datasets, use original filename
-                    torch.save(vec, os.path.join(output_dir, f"layer_{layer}.pt"))
+                    torch.save(data_state, os.path.join(output_dir, f"layer_{layer}.pt"))
                     print(f"[INFO] Saved single-concept vector to layer_{layer}.pt")
 
             
@@ -236,9 +263,9 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
 
         if is_multi_concept:
             # After processing all concepts, return the vectors dict
-            all_vectors[f"layer_{layer}"] = vectors_dict
+            all_vectors[f"layer_{layer}"] = datas_dict
         else:
-            all_vectors[f"layer_{layer}"] = vec
+            all_vectors[f"layer_{layer}"] = data_state
 
     if del_model:
         model.model.to('cpu')
@@ -247,7 +274,7 @@ def generate_reps_vectors(args: RePSHyperParams, dataset, model = None, dataset_
             torch.cuda.empty_cache()
 
     # Return appropriate result based on dataset type
-    print(f"[INFO] Generated RePS vectors {all_vectors}")
+    print(f"[INFO] Generated Prism {args.intervention_method} : {all_vectors}")
     if is_multi_concept:
         return all_vectors
     else:

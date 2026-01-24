@@ -28,12 +28,25 @@ class AttnWrapper(t.nn.Module):
     def __init__(self, attn):
         super().__init__()
         self.attn = attn
+        self.input_activations = None
         self.activations = None
         self.add_attn_activations = None
+        self.attn_no_grad = False
+    
+    def set_no_grad(self):
+        self.attn_no_grad = True
 
     def forward(self, *args, **kwargs):
-        output = self.attn(*args, **kwargs)
-        self.activations = output[0]
+        if len(args) > 0:
+            self.input_activations = args[0]
+        
+        if self.attn_no_grad:
+            # print("Attention forward with no grad")
+            with t.no_grad():
+                output = self.attn(*args, **kwargs)
+        else:
+            output = self.attn(*args, **kwargs)
+        self.activations = output[0] if isinstance(output, tuple) else output
         return output
 
     def add(self, activations):
@@ -47,12 +60,28 @@ class MLPWrapper(t.nn.Module):
     def __init__(self, mlp):
         super().__init__()
         self.mlp = mlp
+        self.input_activations = None
+        self.mid_activations = None
         self.activations = None
         self.add_mlp_activations = None
+        self.mlp_no_grad = False
+    
+    def set_no_grad(self):
+        self.mlp_no_grad = True
 
     def forward(self, *args, **kwargs):
-        output = self.mlp(*args, **kwargs)
-        self.activations = output
+        if len(args) > 0:
+            self.input_activations = args[0]
+        
+        if self.mlp_no_grad:
+            # print("MLP forward with no grad")
+            with t.no_grad():
+                output = self.mlp(*args, **kwargs)
+        else:
+            output = self.mlp(*args, **kwargs)
+        self.activations = output[0] if isinstance(output, tuple) else output
+        
+        self.mid_activations = self.mlp.act_fn(self.mlp.gate_proj(args[0])) * self.mlp.up_proj(args[0])
         return output
 
     def add(self, activations):
@@ -159,24 +188,36 @@ class BlockOutputWrapper(t.nn.Module):
                         from_pos=self.from_position,
                     )
             output = (augmented_output,) + output[1:]
-
+        
         # Intervention
-
         if self.intervention_dict:
             augmented_output = output[0]
             for method_name, intervention in self.intervention_dict.items():
                 if intervention is not None:
-
+                    if method_name in ['reps', 'sft', 'prism'] and hasattr(intervention, 'intervention_components') and intervention.intervention_method in ['lora', 'local_weight']:
+                        if intervention.intervention_components == "mlp":
+                            kwargs['args'] = self.block.mlp.input_activations
+                            assert kwargs['args'] is not None, "MLP input activations are None"
+                        elif intervention.intervention_components == "mlp_mid":
+                            kwargs['args'] = self.block.mlp.mid_activations
+                            assert kwargs['args'] is not None, "MLP mid activations are None"
+                        elif intervention.intervention_components == "attn":
+                            if self.model_type in ['gpt']:
+                                kwargs['args'] = self.block.attn.input_activations
+                            elif self.model_type in ['llama', 'gemma', 'qwen', 'qwq']:
+                                kwargs['args'] = self.block.self_attn.input_activations
+                            assert kwargs['args'] is not None, "Attention input activations are None"
+                        elif intervention.intervention_components == "block":
+                            kwargs['args'] = args[0]
+                            assert kwargs['args'] is not None, "Block input activations are None"
                     # call the forward method of the intervention class
                     intervention_result = intervention.forward(augmented_output, **kwargs)
-                    
                     # handle different types of return values
                     if hasattr(intervention_result, 'output'):
                         # for the case that the intervention class returns InterventionOutput
                         augmented_output = intervention_result.output
                     else:
                         # for the case that the intervention class returns a tensor
-
                         augmented_output = intervention_result
             output = (augmented_output,) + output[1:]
 
@@ -223,10 +264,12 @@ class BlockOutputWrapper(t.nn.Module):
         if method_name == "all":
             self.add_activations_dict.clear()
             self.intervention_dict.clear()
-        elif method_name == "reps":
+        elif method_name == "reps" or method_name == "sft" or method_name == "prism":
             # RePS uses the new intervention class
             if method_name in self.intervention_dict:
                 del self.intervention_dict[method_name]
+            if method_name in self.add_activations_dict:
+                del self.add_activations_dict[method_name]
         else:
 
             if method_name in self.add_activations_dict:
@@ -412,14 +455,13 @@ class BaseModelWrapper:
             
     def reset(self, method_name):
         method_name = method_name.lower()
-        if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps']:
+        if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps', 'sft', 'prism']:
             if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):  #if the model is wrapped by Hack_no_grad, then the layers are in the module
                 model_layers = self.model.model.module.layers
             else:
                 model_layers = self.model.model.layers
             for layer in model_layers:
                 layer.reset(method_name=method_name)
-                
         elif method_name in ['lm_steer']:
             self.reset_lm_steer()    
         elif method_name in ['prompt']:
@@ -713,7 +755,7 @@ class GPTWrapper(BaseModelWrapper):
             
     def reset(self, method_name):
         method_name = method_name.lower()
-        if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps']:
+        if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps', 'sft', 'prism']:
             if isinstance(self.model.transformer, Hack_no_grad):  #if the model is wrapped by Hack_no_grad, then the layers are in the module
                 model_layers = self.model.transformer.module.h
             else:

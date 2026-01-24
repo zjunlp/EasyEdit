@@ -8,3 +8,5 @@ from .prompt import *
 from .sta import *
 from .sae_feature import *
 from .vector_applier import *
+from .sft import*
+from .prism import*
