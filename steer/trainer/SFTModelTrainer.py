@@ -202,15 +202,45 @@ class SFTModelTrainer(ModelTrainer):
                         self.loss_log_file = os.path.join(self.hparams.loss_output_dir if hasattr(self.hparams, "loss_output_dir") else ".", f"train_losses.csv")
                         # Write header if file does not exist
                         if not os.path.exists(self.loss_log_file):
+                            # Build header dynamically based on weight values
+                            header = ["epoch", "step", "pos_steer_loss"]
+                            if neg_loss_weight != 0 and neg_loss_weight != 0.0:
+                                header.append("neg_steer_loss")
+                            if ref_loss_weight != 0 and ref_loss_weight != 0.0:
+                                header.extend(["pos_ref_loss", "neg_ref_loss"])
+                            if margin_penalty_weight != 0 and margin_penalty_weight != 0.0:
+                                header.append("margin_loss")
+                            if ref_loss_weight != 0 and ref_loss_weight != 0.0:
+                                header.append("ref_loss")
+                            header.extend(["pos_steering_factors", "neg_steering_factors"])
+                            
                             with open(self.loss_log_file, "w", newline="") as f:
                                 writer = csv.writer(f)
-                                writer.writerow(["epoch", "step", "pos_steer_loss", "neg_steer_loss", "pos_ref_loss", "neg_ref_loss", "margin_loss", "ref_loss", "pos_steering_factors", "neg_steering_factors"])
+                                writer.writerow(header)
+
+                        # Build row dynamically based on weight values
+                        row = [epoch, step, pos_outputs_orig.loss.item()]
+                        if neg_loss_weight != 0 and neg_loss_weight != 0.0:
+                            row.append(neg_outputs_orig.loss.item())
+                        if ref_loss_weight != 0 and ref_loss_weight != 0.0:
+                            row.extend([pos_ref_outputs.loss.item(), neg_ref_outputs.loss.item()])
+                        if margin_penalty_weight != 0 and margin_penalty_weight != 0.0:
+                            row.append(margin_loss.item())
+                        if ref_loss_weight != 0 and ref_loss_weight != 0.0:
+                            row.append(ref_loss.item())
+                        row.extend([pos_minibatch_inputs["steering_factors"], neg_minibatch_inputs["steering_factors"]])
 
                         with open(self.loss_log_file, "a", newline="") as f:
                             writer = csv.writer(f)
-                            writer.writerow([epoch, step, pos_outputs_orig.loss.item(), neg_outputs_orig.loss.item(), pos_ref_outputs.loss.item(), neg_ref_outputs.loss.item(), margin_loss.item(), ref_loss.item(), pos_minibatch_inputs["steering_factors"], neg_minibatch_inputs["steering_factors"]])
+                            writer.writerow(row)
 
-                    print(f"steer_loss: %.6f" % (steer_loss.item()), f"margin_loss: %.6f" % (margin_loss.item()), f"ref_loss: %.6f" % (ref_loss.item()))
+                    # Build print message dynamically
+                    print_parts = [f"steer_loss: %.6f" % (steer_loss.item())]
+                    if margin_penalty_weight != 0 and margin_penalty_weight != 0.0:
+                        print_parts.append(f"margin_loss: %.6f" % (margin_loss.item()))
+                    if ref_loss_weight != 0 and ref_loss_weight != 0.0:
+                        print_parts.append(f"ref_loss: %.6f" % (ref_loss.item()))
+                    print(" ".join(print_parts))
                     minibatch_loss = steer_loss
                     
                     # Normalize loss by total number of minibatches for this step

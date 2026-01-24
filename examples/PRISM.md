@@ -1,4 +1,4 @@
-# Steering
+# PRISM
 - Code for the paper ``Why Steering Works: Toward a Unified View of Language Model Parameter Dynamics``.
 
 - LLM control methods (local weight edits, LoRA adaptation, and activation steering) are often studied in isolation, limiting systematic comparison. **PRISM (Preference–Utility Integrated Steering Method)** decomposes model behavior into two orthogonal dimensions—**Preference** and **Utility**—providing different “refraction angles” to interpret and steer model behavior more effectively. Under this lens, diverse interventions can be understood as control-signal-induced dynamic weight updates, enabling more  improved steering.
@@ -10,27 +10,99 @@
 To set up the environment for running steering experiments, follow these steps:
 
 ```bash
-# git clone https://github.com/zjunlp/EasyEdit.git
+git clone https://github.com/zjunlp/EasyEdit.git
 conda create -n prism python=3.10
 conda activate prism
 pip install -r requirements_2.txt
 ```
 
-## Quick Start
-### An example for generating and applying steering vectors on psychopathy dataset using SFT method with local_weight intervention
+<!-- ## Download Resources
 
-#### 1. Prepare the model and dataset
-
-Make sure that the model has been downloaded into the `./models/` directory. The dataset files should be placed in the appropriate data directories as specified in `hparams/Steer/dataset_format.yaml`.
-
-You can get the pre-trained models and datasets from the following links:
+You can download the pre-trained models, datasets, and pre-trained steering vectors from the following links:
 
 | **Resource** | Google Drive | BaiduNetDisk |
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
-| Models | [[Google Drive]](PLACEHOLDER_GOOGLE_DRIVE_MODELS) | [[BaiduNetdisk]](PLACEHOLDER_BAIDU_MODELS) |
-| Datasets | [[Google Drive]](PLACEHOLDER_GOOGLE_DRIVE_DATASETS) | [[BaiduNetdisk]](PLACEHOLDER_BAIDU_DATASETS) |
+| Models, Datasets & Pre-trained Vectors | [[Google Drive]](PLACEHOLDER_GOOGLE_DRIVE_RESOURCES) | [[BaiduNetdisk]](PLACEHOLDER_BAIDU_RESOURCES) | -->
 
-#### 2. Run the script [run_PRISM.py](../run_PRISM.py) using the following line of code:
+### Directory Structure
+
+After downloading, organize the resources as follows:
+
+#### Models
+Place the model files in the `./models/` directory:
+```
+models/
+└── {model_name}/
+    ├── config.json
+    ├── tokenizer.json
+    └── ... (model files)
+```
+
+#### Datasets
+Place the dataset files in the appropriate data directories as specified in `hparams/Steer/dataset_format.yaml`:
+```
+data/
+├── psychopathy/
+│   ├── train.jsonl
+│   └── test.jsonl
+├── axbench/
+│   └── ...
+└── powerseeking/
+    └── ...
+```
+
+#### Pre-trained Steering Vectors
+Extract the pre-trained vectors to the following directory structure:
+```
+vectors/
+└── {model_name}/
+    └── {method}/
+        └── {dataset}/
+            └── {intervention_method}/
+                ├── layer_{layer_id}.pt
+                └── metadata_layer_{layer_id}.jsonl (optional)
+```
+
+For example, for `gemma-2-9b-it` model with `prism` method on `psychopathy` dataset using `local_weight` intervention, the vectors should be placed at:
+```
+vectors/gemma-2-9b-it/prism/psychopathy/prism_local_weight/
+├── layer_20.pt
+└── metadata_layer_20.jsonl (optional)
+```
+
+### Using Pre-trained Vectors
+
+If you want to skip the vector generation phase and directly apply pre-trained steering vectors, modify the `run_PRISM.sh` script or run the Python script directly with `--mode apply`:
+
+#### Apply Vectors with modified run_PRISM.sh
+
+Edit `examples/run_PRISM.sh` and change the `--mode` parameter from `both` or `generate` to `apply`:
+
+```bash
+python run_PRISM.py \
+    --dataset psychopathy \
+    --method all \
+    --model_name gemma-2-9b-it \
+    --intervention_method all \
+    --mode apply \
+    --multipliers 1.0 \
+    --device cuda:0 \
+    --base_dir .
+```
+
+This will:
+1. Skip vector generation (since vectors already exist)
+2. Apply all available pre-trained vectors for all method-intervention combinations
+3. Generate text outputs with different multiplier values (1.0 and 2.0 in this example)
+4. Save results to `generation/{model_name}/{method}/{dataset}/{intervention_method}/m{multiplier}/`
+
+**Note**: Make sure all required vector files exist before running with `--mode apply`. The script will skip combinations where vector files are missing and print a warning message.
+
+
+## Quick Start
+### An example for generating and applying steering vectors on psychopathy dataset using PRISM method with local_weight intervention
+
+Run the script [run_PRISM.py](../run_PRISM.py) using the following line of code:
  
     bash examples/run_PRISM.sh
 
@@ -52,11 +124,11 @@ This command runs both vector generation and application for the psychopathy dat
 
 - `--dataset`: Specifies the dataset name. Options: `axbench`, `psychopathy`, `powerseeking`. This determines which dataset will be used for training and evaluation.
 
-- `--method`: Specifies the steering method to use. Options: `caa`, `reps`, `sft`, `our`, or `all` (to run all methods). Each method implements a different approach to generating steering vectors:
+- `--method`: Specifies the steering method to use. Options: `caa`, `reps`, `sft`, `prism`, or `all` (to run all methods). Each method implements a different approach to generating steering vectors:
   - `caa`: Contrastive Activation Addition
   - `reps`: Representation Engineering via Preference Steering
   - `sft`: Supervised Fine-tuning based Steering
-  - `our`: Our method implementation
+  - `prism`: Our PRISM method implementation
   - `all`: Run all available methods sequentially
 
 - `--model_name`: Specifies the model name (e.g., `gemma-2-9b-it`, `qwen2.5-7b-it`). The model should be located in `./models/{model_name}/`.
@@ -84,120 +156,26 @@ This command runs both vector generation and application for the psychopathy dat
 
 ### Advanced Usage
 
-#### Running all methods with a specific intervention
+#### Running prism methods with a specific intervention
 
-    python run_our.py \
+    python run_PRISM.py \
         --dataset psychopathy \
-        --method all \
+        --method prism \
         --model_name gemma-2-9b-it \
         --intervention_method local_weight \
         --mode both \
         --base_dir .
 
-#### Running a specific method with all interventions
-
-    python run_our.py \
-        --dataset psychopathy \
-        --method sft \
-        --model_name gemma-2-9b-it \
-        --intervention_method all \
-        --mode both \
-        --base_dir .
-
-#### Running all combinations
-
-    python run_our.py \
-        --dataset psychopathy \
-        --method all \
-        --model_name gemma-2-9b-it \
-        --intervention_method all \
-        --mode both \
-        --base_dir .
 
 **Note**: When using `all` for either `--method` or `--intervention_method`, the script will automatically skip invalid combinations (e.g., CAA only supports `vector` intervention, so `caa + lora` will be skipped).
 
 
-## Using Pre-trained Steering Vectors
+<!-- ## 📖 Citation
 
-If you want to skip the vector generation phase and directly apply pre-trained steering vectors, you can download the pre-trained vectors from the following links:
-
-| **Resource** | Google Drive | BaiduNetDisk |
-| :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
-| Pre-trained Vectors | [[Google Drive]](PLACEHOLDER_GOOGLE_DRIVE_VECTORS) | [[BaiduNetdisk]](PLACEHOLDER_BAIDU_VECTORS) |
-
-### Directory Structure
-
-After downloading, extract the vectors to the following directory structure:
-
-```
-vectors/
-└── {model_name}/
-    └── {method}/
-        └── {dataset}/
-            └── {intervention_method}/
-                ├── layer_{layer_id}.pt
-                └── metadata_layer_{layer_id}.jsonl (optional)
-```
-
-For example, for `gemma-2-9b-it` model with `sft` method on `psychopathy` dataset using `local_weight` intervention, the vectors should be placed at:
-
-```
-vectors/gemma-2-9b-it/sft/psychopathy/sft_local_weight/
-├── layer_20.pt
-└── metadata_layer_20.jsonl (optional)
-```
-
-### Running with Pre-trained Vectors
-
-To use pre-trained vectors and skip the generation phase, modify the `run_our.sh` script or run the Python script directly with `--mode apply`:
-
-#### Option 1: Modify run_our.sh
-
-Edit `examples/run_our.sh` and change the `--mode` parameter from `both` or `generate` to `apply`:
-
-```bash
-python run_our.py \
-    --dataset psychopathy \
-    --method all \
-    --model_name gemma-2-9b-it \
-    --intervention_method all \
-    --mode apply \
-    --multipliers 1.0 \
-    --device cuda:0 \
-    --base_dir .
-```
-
-#### Option 2: Run directly with apply mode
-
-To apply all pre-trained vectors for all methods and interventions:
-
-```bash
-python run_our.py \
-    --dataset psychopathy \
-    --method all \
-    --model_name gemma-2-9b-it \
-    --intervention_method all \
-    --mode apply \
-    --multipliers 1.0 2.0 \
-    --device cuda:0 \
-    --base_dir .
-```
-
-This will:
-1. Skip vector generation (since vectors already exist)
-2. Apply all available pre-trained vectors for all method-intervention combinations
-3. Generate text outputs with different multiplier values (1.0 and 2.0 in this example)
-4. Save results to `generation/{model_name}/{method}/{dataset}/{intervention_method}/m{multiplier}/`
-
-**Note**: Make sure all required vector files exist before running with `--mode apply`. The script will skip combinations where vector files are missing and print a warning message.
+If finding this work useful for your research, you can cite it as follows: -->
 
 
-## 📖 Citation
-
-If finding this work useful for your research, you can cite it as follows:
-
-
-```bibtex
+<!-- ```bibtex
 @article{PLACEHOLDER_CITATION,
     author =   {PLACEHOLDER_AUTHORS},
     title =    {{Why Steering Works: Toward a Unified View of Language Model Parameter Dynamics}},
@@ -207,4 +185,4 @@ If finding this work useful for your research, you can cite it as follows:
     doi =      {PLACEHOLDER_DOI},
     abstract = {PLACEHOLDER_ABSTRACT},
 }
-```
+``` -->

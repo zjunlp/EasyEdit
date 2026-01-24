@@ -1,28 +1,28 @@
 # === Basic Config ===
 alg_name: prism
-layers: [14]
+layers: [20]
 use_cache: false
 
 # === Dataset Config ===
 exclude_bos: true
 max_concepts: 1
 max_num_of_examples: null
-preference_pairs: ["orig_add", "orig_sub"] # use_cmd_to_define
+preference_pairs: ["orig_add"] # use_cmd_to_define
 output_length: 512
 
 # === Training Config ===
 batch_size: 4 # the actual batch size also needs to multiply with |preference_pairs|
-dropout: 0.1
 gradient_accumulation_steps: 2
+n_epochs: 2
 lr: 0.01
-n_epochs: 1
+dropout: 0.1
 
 weight_decay: 0.00
-pos_loss_weight: 1.0      
+pos_loss_weight: 1.0       
 neg_loss_weight: 0.5       
-margin_penalty_weight: 6  
-ref_loss_weight: 0.0      
-margin_threshold: 0.4      
+margin_penalty_weight: 5  
+ref_loss_weight: 0.0       
+margin_threshold: 0.4 
 
 loss_output_dir: null
 inference: false
@@ -31,7 +31,7 @@ inference: false
 intervention_positions: "all"
 intervention_positions_dropout: 0.0
 intervention_type: "addition" # clamping
-intervention_method: "weight"
+intervention_method: "local_weight"
 intervention_components: "mlp_mid"
 
 # === Steering Config ===

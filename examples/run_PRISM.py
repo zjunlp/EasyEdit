@@ -103,11 +103,9 @@ def _resolve_apply_hparam(
 
 
 def _vector_load_subdir(method: str, intervention_method: str) -> str:
-    # NOTE: for "prism" configs, alg_name may still be "reps" (so reuse reps_* layout).
+    # NOTE: for "our" configs, alg_name may still be "reps" (so reuse reps_* layout).
     if method == "caa":
         return "caa_vector"
-    if method == "prism":
-        return f"reps_{intervention_method}"
     return f"{method}_{intervention_method}"
 
 
@@ -297,7 +295,7 @@ def run_vector_application(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run ACL 2026 experiments for steering vector generation and application",
+        description="Run PRISM experiments for steering vector generation and application",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -346,7 +344,7 @@ Examples:
         return 1
     
     print("=" * 80)
-    print("ACL 2026 Experiment Runner")
+    print("PRISM Experiment Runner")
     print("=" * 80)
     print(f"Dataset: {args.dataset}")
     print(f"Method: {args.method}")

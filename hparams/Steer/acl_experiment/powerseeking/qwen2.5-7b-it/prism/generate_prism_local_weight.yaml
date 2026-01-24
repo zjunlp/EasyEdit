@@ -7,7 +7,7 @@ use_cache: false
 exclude_bos: true
 max_concepts: 1
 max_num_of_examples: null
-preference_pairs: ["orig_add", "orig_sub"] # use_cmd_to_define
+preference_pairs: ["orig_add"] # use_cmd_to_define
 output_length: 512
 
 # === Training Config ===
@@ -31,7 +31,7 @@ inference: false
 intervention_positions: "all"
 intervention_positions_dropout: 0.0
 intervention_type: "addition" # clamping
-intervention_method: "weight"
+intervention_method: "local_weight"
 intervention_components: "mlp_mid"
 
 # === Steering Config ===

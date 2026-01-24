@@ -136,6 +136,7 @@ def generate_prism(args: PrismHyperParams, dataset, model = None, dataset_name =
                 layers=[layer],
                 hparams=args 
             )
+            
             # get the low rank dimension,  set to 1 as a vector
             low_rank_dimension = args.low_rank_dimension if args.low_rank_dimension else 1
             
