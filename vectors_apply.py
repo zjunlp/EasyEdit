@@ -10,7 +10,7 @@ def get_generation_params():
         'temperature': 0.9
     }
 
-@hydra.main(version_base='1.2',config_path='./hparams/Steer/acl_experiment', config_name='apply_config.yaml')
+@hydra.main(version_base='1.2',config_path='./hparams/Steer/prism_experiment', config_name='apply_config.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg)
     vector_applier = BaseVectorApplier(top_cfg)
