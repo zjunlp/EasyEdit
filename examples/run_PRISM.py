@@ -120,7 +120,7 @@ def run_vector_generation(
 ):
     """
     Run vector generation.
-    - dataset=axbench: use axbench_experiment.py (AxBench-only pipeline)
+    - dataset=axbench: use axbench_generate.py (AxBench-only pipeline)
     - otherwise: use vectors_generate.py (generic pipeline)
     
     Args:
@@ -153,10 +153,10 @@ def run_vector_generation(
         return True
     
     if dataset == "axbench":
-        axbench_experiment_path = _abs_script_path(base_dir, "axbench_experiment.py")
+        axbench_generate_path = _abs_script_path(base_dir, "axbench_generate.py")
         cmd = [
             sys.executable,
-            axbench_experiment_path,
+            axbench_generate_path,
             f"device={device}",
             f"+axbench_output_dir_name={method}_{intervention_method}",
             f"steer_train_hparam_paths=[{train_hparam}]",
