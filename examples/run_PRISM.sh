@@ -89,7 +89,7 @@ DEVICE=${DEVICE:-"cuda:0"}
 
 # Uncomment and modify the following line to run yprism experiment:
 
-python run_PRISM.py \
+python ./examples/run_PRISM.py \
     --dataset psychopathy \
     --method prism \
     --model_name gemma-2-9b-it \

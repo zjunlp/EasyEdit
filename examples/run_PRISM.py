@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ACL 2026 Experiment Runner
+PRISM Experiment Runner
 
 This script runs steering vector generation and application experiments
 for different datasets (axbench, psychopathy, powerseeking), methods (caa, reps, sft, prism),
@@ -70,7 +70,7 @@ def _resolve_generate_hparam(
     Resolve the training hparam yaml path for a given (dataset, model, method, intervention).
     Some folders use legacy filenames (e.g. caa uses generate_caa.yaml, prism uses generate_prism_weight.yaml).
     """
-    base = f"{base_dir}/hparams/Steer/acl_experiment/{dataset}/{model_name}/{method}"
+    base = f"{base_dir}/hparams/Steer/prism_experiment/{dataset}/{model_name}/{method}"
     candidates: List[str] = [
         f"{base}/generate_{method}_{intervention_method}.yaml",
     ]
@@ -91,7 +91,7 @@ def _resolve_apply_hparam(
     model_name: str,
     method: str,
 ) -> Optional[str]:
-    base = f"{base_dir}/hparams/Steer/acl_experiment/{dataset}/{model_name}/{method}"
+    base = f"{base_dir}/hparams/Steer/prism_experiment/{dataset}/{model_name}/{method}"
     candidates: List[str] = [
         f"{base}/apply_{method}.yaml",
         f"{base}/apply.yaml",
@@ -120,7 +120,7 @@ def run_vector_generation(
 ):
     """
     Run vector generation.
-    - dataset=axbench: use axbench_generate.py (AxBench-only pipeline)
+    - dataset=axbench: use axbench_experiment.py (AxBench-only pipeline)
     - otherwise: use vectors_generate.py (generic pipeline)
     
     Args:
@@ -147,16 +147,16 @@ def run_vector_generation(
     )
     
     if not train_hparam:
-        expected = f"{base_dir}/hparams/Steer/acl_experiment/{dataset}/{model_name}/{method}/..."
+        expected = f"{base_dir}/hparams/Steer/prism_experiment/{dataset}/{model_name}/{method}/..."
         print(f"[WARNING] Hparam file not found under: {expected}")
         print(f"[SKIP] Skipping {method} with {intervention_method} for {dataset}")
         return True
     
     if dataset == "axbench":
-        axbench_generate_path = _abs_script_path(base_dir, "axbench_generate.py")
+        axbench_experiment_path = _abs_script_path(base_dir, "examples/axbench_generate.py")
         cmd = [
             sys.executable,
-            axbench_generate_path,
+            axbench_experiment_path,
             f"device={device}",
             f"+axbench_output_dir_name={method}_{intervention_method}",
             f"steer_train_hparam_paths=[{train_hparam}]",
@@ -234,13 +234,13 @@ def run_vector_application(
         )
         
         if not apply_hparam:
-            expected = f"{base_dir}/hparams/Steer/acl_experiment/{dataset}/{model_name}/{method}/..."
+            expected = f"{base_dir}/hparams/Steer/prism_experiment/{dataset}/{model_name}/{method}/..."
             print(f"[WARNING] Apply hparam file not found under: {expected}")
             results.append(True)
             continue
         
         if dataset == "axbench":
-            axbench_infer_path = _abs_script_path(base_dir, "axbench_infer.py")
+            axbench_infer_path = _abs_script_path(base_dir, "examples/axbench_apply.py")
             cmd = [
                 sys.executable,
                 axbench_infer_path,
@@ -300,13 +300,13 @@ def main():
         epilog="""
 Examples:
   # Generate vectors for axbench dataset using reps method with vector intervention
-  python run_ACL2026.py --dataset axbench --method reps --model_name gemma-2-9b-it --intervention_method vector --mode generate
+  python run_PRISM.py --dataset axbench --method reps --model_name gemma-2-9b-it --intervention_method vector --mode generate
 
   # Apply vectors for axbench dataset using sft method with lora intervention
-  python run_ACL2026.py --dataset axbench --method sft --model_name gemma-2-9b-it --intervention_method lora --mode apply --multipliers 1.0 2.0
+  python run_PRISM.py --dataset axbench --method sft --model_name gemma-2-9b-it --intervention_method lora --mode apply --multipliers 1.0 2.0
 
   # Run both generation and application
-  python run_ACL2026.py --dataset axbench --method reps --model_name gemma-2-9b-it --intervention_method vector --mode both
+  python run_PRISM.py --dataset axbench --method reps --model_name gemma-2-9b-it --intervention_method vector --mode both
         """
     )
     
@@ -331,8 +331,16 @@ Examples:
                        help='Device to use (default: cuda:0)')
     parser.add_argument('--multipliers', nargs='+', type=float, default=[1.0],
                        help='Multiplier values for vector application (default: [1.0])')
-    parser.add_argument('--base_dir', default='.', type=str,
-                       help='Base directory for the project (default: current directory)')
+    # Auto-detect base_dir if script is in examples/ directory
+    script_dir = Path(__file__).parent.absolute()
+    script_name = Path(__file__).name
+    if script_dir.name == "examples":
+        default_base_dir = str(script_dir.parent)
+    else:
+        default_base_dir = "."
+    
+    parser.add_argument('--base_dir', default=default_base_dir, type=str,
+                       help=f'Base directory for the project (default: {default_base_dir})')
     parser.add_argument('--dry_run', action='store_true',
                        help='Only print commands (do not execute). Useful to verify dataset/method routing.')
     

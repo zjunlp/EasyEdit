@@ -1,15 +1,21 @@
 import json
 import torch
+import sys
+from pathlib import Path
 
 import pandas as pd
 import hydra
 from omegaconf import DictConfig
 import random
+import os
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from steer.datasets.dataset_loader import DatasetLoader
 from steer.vector_generators.vector_generators import BaseVectorGenerator
 from steer.vector_appliers.vector_applier import BaseVectorApplier
 from steer.evaluate.evaluate import Evaluator
-import os
 
 def load_axbench_datasets() -> list:
     print(f"Loading 500 concepts from axbench...")
@@ -24,7 +30,7 @@ def load_axbench_datasets() -> list:
     eval_data = dataset_loader.load_file('axbench_test', 'generation')  # The Apacha-Eval dataset
     return concept_grouped_data, eval_data
 
-@hydra.main(version_base='1.2', config_path='./hparams/Steer/acl_experiment/axbench', config_name='axbench_config.yaml')
+@hydra.main(version_base='1.2', config_path='../hparams/Steer/prism_experiment/axbench', config_name='axbench_config.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg, "\n")
 
