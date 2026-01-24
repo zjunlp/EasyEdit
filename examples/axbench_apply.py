@@ -28,7 +28,7 @@ def load_axbench_datasets() -> list:
 
     return concept_grouped_data
 
-@hydra.main(version_base='1.2', config_path='../hparams/Steer/prism_experiment/axbench', config_name='axbench_config.yaml')
+@hydra.main(version_base='1.2', config_path='../hparams/Steer/experiment_hparams/prism_experiment/axbench', config_name='axbench_config.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg, "\n")
 
@@ -58,13 +58,12 @@ def main(top_cfg: DictConfig):
         
         elif "reps" in vector_applier.hparams_dict:
             m = vector_applier.hparams_dict['reps'].multipliers[0]
-            vector_applier.hparams_dict['sft'].steer_vector_load_dir=f"vectors/{top_cfg.model_name}/{top_cfg.method}/axbench_concept_{i}/{top_cfg.vector_name}/"
+            vector_applier.hparams_dict['reps'].steer_vector_load_dir=f"vectors/{top_cfg.model_name}/{top_cfg.method}/axbench_concept_{i}/{top_cfg.vector_name}/"
             print(f"Updated RePS vector applier config: {vector_applier.hparams_dict['reps']}")
 
         elif "caa" in vector_applier.hparams_dict:
             m = vector_applier.hparams_dict['caa'].multipliers[0]
-            # vector_applier.hparams_dict['our'].steer_vector_load_dir=f"vectors/gemma-2-9b-it/axbench_concept_{i}/our_vector/"
-            vector_applier.hparams_dict['sft'].steer_vector_load_dir=f"vectors/{top_cfg.model_name}/{top_cfg.method}/axbench_concept_{i}/{top_cfg.vector_name}/"
+            vector_applier.hparams_dict['caa'].steer_vector_load_dir=f"vectors/{top_cfg.model_name}/{top_cfg.method}/axbench_concept_{i}/{top_cfg.vector_name}/"
             print(f"Updated CAA vector applier config: {vector_applier.hparams_dict['caa']}")
 
 
@@ -112,6 +111,8 @@ def main(top_cfg: DictConfig):
         m = vector_applier.hparams_dict['sft'].multipliers[0]
     elif "caa" in vector_applier.hparams_dict:
         m = vector_applier.hparams_dict['caa'].multipliers[0]
+    elif "prism" in vector_applier.hparams_dict:
+        m = vector_applier.hparams_dict['prism'].multipliers[0]
     generation_file_path = f"{eval_args['save_path']}/all_generation_results_m{m}.json"
     os.makedirs(os.path.dirname(generation_file_path), exist_ok=True)
     with open(generation_file_path, "w", encoding="utf-8") as f:

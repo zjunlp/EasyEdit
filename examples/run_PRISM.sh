@@ -13,7 +13,7 @@ DEVICE=${DEVICE:-"cuda:0"}
 ##########################################
 
 ############# Steer Examples #############
-# RePS Method - Vector for Powerseeking
+# PRISM Method - All interventions for AxBench
 # python run_PRISM.py \
 #     --dataset axbench \
 #     --method all \
@@ -23,7 +23,7 @@ DEVICE=${DEVICE:-"cuda:0"}
 #     --device ${DEVICE} \
 #     --base_dir ${BASE_DIR}
 
-# SFT Method - LoRA for Powerseeking
+# PRISM Method - All interventions for AxBench (Qwen model)
 # python run_PRISM.py \
 #     --dataset axbench \
 #     --method all \
@@ -38,7 +38,7 @@ DEVICE=${DEVICE:-"cuda:0"}
 ##########################################
 
 ############# Steer Examples #############
-# RePS Method - Vector for Powerseeking
+# PRISM Method - All interventions for Psychopathy
 # python run_PRISM.py \
 #     --dataset psychopathy \
 #     --method all \
@@ -48,7 +48,7 @@ DEVICE=${DEVICE:-"cuda:0"}
 #     --device ${DEVICE} \
 #     --base_dir ${BASE_DIR}
 
-# SFT Method - LoRA for Powerseeking
+# PRISM Method - All interventions for Psychopathy (Qwen model)
 # python run_PRISM.py \
 #     --dataset psychopathy \
 #     --method all \
@@ -63,7 +63,7 @@ DEVICE=${DEVICE:-"cuda:0"}
 ##########################################
 
 ############# Steer Examples #############
-# RePS Method - Vector for Powerseeking
+# PRISM Method - All interventions for Powerseeking
 # python run_PRISM.py \
 #     --dataset powerseeking \
 #     --method all \
@@ -73,7 +73,7 @@ DEVICE=${DEVICE:-"cuda:0"}
 #     --device ${DEVICE} \
 #     --base_dir ${BASE_DIR}
 
-# SFT Method - LoRA for Powerseeking
+# PRISM Method - All interventions for Powerseeking (Qwen model)
 # python run_PRISM.py \
 #     --dataset powerseeking \
 #     --method all \
@@ -87,7 +87,7 @@ DEVICE=${DEVICE:-"cuda:0"}
 ############## Quick Start ###############
 ##########################################
 
-# Uncomment and modify the following line to run yprism experiment:
+# Uncomment and modify the following line to run PRISM experiment:
 
 python ./examples/run_PRISM.py \
     --dataset psychopathy \

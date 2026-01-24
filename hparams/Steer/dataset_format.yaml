@@ -67,19 +67,6 @@ train:
       matching: 'matching'
       not_matching: 'not_matching'
 
-  # axbench:
-  #   file_path: ./data/axbench/axbench_train.parquet
-  #   multi_concept: true
-  #   field_names:
-  #     question: 'input'
-  #     matching: 'winning_output'
-  #     not_matching: 'losing_output'
-  #     output_concept: 'output_concept'
-  #     concept_id: 'concept_id'
-  #     concept: 'output_concept'
-  #     concept_genre: 'concept_genre'
-  #     category: 'category'
-
   axbench_train:
     file_path: ./data/axbench/axbench_train.parquet
     multi_concept: true

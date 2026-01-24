@@ -70,7 +70,7 @@ def _resolve_generate_hparam(
     Resolve the training hparam yaml path for a given (dataset, model, method, intervention).
     Some folders use legacy filenames (e.g. caa uses generate_caa.yaml, prism uses generate_prism_weight.yaml).
     """
-    base = f"{base_dir}/hparams/Steer/prism_experiment/{dataset}/{model_name}/{method}"
+    base = f"{base_dir}/hparams/Steer/experiment_hparams/prism_experiment/{dataset}/{model_name}/{method}"
     candidates: List[str] = [
         f"{base}/generate_{method}_{intervention_method}.yaml",
     ]
@@ -91,7 +91,7 @@ def _resolve_apply_hparam(
     model_name: str,
     method: str,
 ) -> Optional[str]:
-    base = f"{base_dir}/hparams/Steer/prism_experiment/{dataset}/{model_name}/{method}"
+    base = f"{base_dir}/hparams/Steer/experiment_hparams/prism_experiment/{dataset}/{model_name}/{method}"
     candidates: List[str] = [
         f"{base}/apply_{method}.yaml",
         f"{base}/apply.yaml",
@@ -147,7 +147,7 @@ def run_vector_generation(
     )
     
     if not train_hparam:
-        expected = f"{base_dir}/hparams/Steer/prism_experiment/{dataset}/{model_name}/{method}/..."
+        expected = f"{base_dir}/hparams/Steer/experiment_hparams/prism_experiment/{dataset}/{model_name}/{method}/..."
         print(f"[WARNING] Hparam file not found under: {expected}")
         print(f"[SKIP] Skipping {method} with {intervention_method} for {dataset}")
         return True
@@ -234,7 +234,7 @@ def run_vector_application(
         )
         
         if not apply_hparam:
-            expected = f"{base_dir}/hparams/Steer/prism_experiment/{dataset}/{model_name}/{method}/..."
+            expected = f"{base_dir}/hparams/Steer/experiment_hparams/prism_experiment/{dataset}/{model_name}/{method}/..."
             print(f"[WARNING] Apply hparam file not found under: {expected}")
             results.append(True)
             continue

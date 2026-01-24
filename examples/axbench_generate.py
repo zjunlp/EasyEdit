@@ -30,7 +30,7 @@ def load_axbench_datasets() -> list:
     eval_data = dataset_loader.load_file('axbench_test', 'generation')  # The Apacha-Eval dataset
     return concept_grouped_data, eval_data
 
-@hydra.main(version_base='1.2', config_path='../hparams/Steer/prism_experiment/axbench', config_name='axbench_config.yaml')
+@hydra.main(version_base='1.2', config_path='../hparams/Steer/experiment_hparams/prism_experiment/axbench', config_name='axbench_config.yaml')
 def main(top_cfg: DictConfig):
     print("Global Config:", top_cfg, "\n")
 
@@ -65,8 +65,8 @@ def main(top_cfg: DictConfig):
 
     if 'prism' in vector_generator.hparams_dict:
         save_vectors = False
-        sft_output_dir = os.path.join(top_cfg.steer_vector_output_dirs[0], "axbench", f"{top_cfg.axbench_output_dir_name}")
-        os.makedirs(sft_output_dir, exist_ok=True)
+        prism_output_dir = os.path.join(top_cfg.steer_vector_output_dirs[0], "axbench", f"{top_cfg.axbench_output_dir_name}")
+        os.makedirs(prism_output_dir, exist_ok=True)
         layers = vector_generator.hparams_dict['prism'].layers
 
     for i, concept_train_data in train_datasets.items():
@@ -185,7 +185,7 @@ def main(top_cfg: DictConfig):
                     print(f"[INFO] Saved reps_{top_cfg.intervention_method} for concept {i} to layer_{layer}.pt (total: {len(existing_vectors)})")
 
                 if 'sft' in vectors and layer_key in vectors['sft']:
-                                        # vectors structure: {layer_key: {'reps_vector': tensor}}
+                    # vectors structure: {layer_key: {'sft': tensor}}
                     if 'sft' in vectors and isinstance(vectors['sft'], dict) and layer_key in vectors['sft']:
                         data_state = vectors['sft'][layer_key]  # Get sft vector for this layer
                     elif layer_key in vectors:
@@ -231,16 +231,16 @@ def main(top_cfg: DictConfig):
                         "ref": f"vector_index_{len(existing_vectors)-1}"  # Index in the stacked tensor
                     }
                     
-                    metadata_file = os.path.join(reps_output_dir, f"metadata_layer_{layer}.jsonl")
+                    metadata_file = os.path.join(sft_output_dir, f"metadata_layer_{layer}.jsonl")
                     with open(metadata_file, 'a', encoding='utf-8') as f:
                         f.write(json.dumps(metadata) + '\n')
                     
                     print(f"[INFO] Saved sft_{top_cfg.intervention_method} for concept {i} to layer_{layer}.pt (total: {len(existing_vectors)})")
 
                 if 'prism' in vectors and layer_key in vectors['prism']:
-                                        # vectors structure: {layer_key: {'reps_vector': tensor}}
+                    # vectors structure: {layer_key: {'prism': tensor}}
                     if 'prism' in vectors and isinstance(vectors['prism'], dict) and layer_key in vectors['prism']:
-                        data_state = vectors['prism'][layer_key]  # Get sft vector for this layer
+                        data_state = vectors['prism'][layer_key]  # Get prism vector for this layer
                     elif layer_key in vectors:
                         # vectors structure: {layer_key: tensor} (direct tensor)
                         data_state = vectors[layer_key]
@@ -257,7 +257,7 @@ def main(top_cfg: DictConfig):
                     
                     # Load existing vectors if file exists, otherwise create new list
                     vector_filename = f"layer_{layer}.pt"
-                    vector_filepath = os.path.join(sft_output_dir, vector_filename)
+                    vector_filepath = os.path.join(prism_output_dir, vector_filename)
 
                     if os.path.exists(vector_filepath):
                         existing_vectors = torch.load(vector_filepath)
@@ -284,7 +284,7 @@ def main(top_cfg: DictConfig):
                         "ref": f"vector_index_{len(existing_vectors)-1}"  # Index in the stacked tensor
                     }
                     
-                    metadata_file = os.path.join(reps_output_dir, f"metadata_layer_{layer}.jsonl")
+                    metadata_file = os.path.join(prism_output_dir, f"metadata_layer_{layer}.jsonl")
                     with open(metadata_file, 'a', encoding='utf-8') as f:
                         f.write(json.dumps(metadata) + '\n')
                     
