@@ -1,7 +1,19 @@
 # PRISM
-- Code for the paper ``Why Steering Works: Toward a Unified View of Language Model Parameter Dynamics``.
+
+
+<div align=center><img src="../figs/PRISM.png" width="100%" height="100%" /></div>
+
+This README is about reproducing the paper [Why Steering Works: Toward a Unified View of Language Model Parameter Dynamics]
 
 - LLM control methods (local weight edits, LoRA adaptation, and activation steering) are often studied in isolation, limiting systematic comparison. **PRISM (Preference–Utility Integrated Steering Method)** decomposes model behavior into two orthogonal dimensions—**Preference** and **Utility**—providing different “refraction angles” to interpret and steer model behavior more effectively. Under this lens, diverse interventions can be understood as control-signal-induced dynamic weight updates, enabling more  improved steering.
+
+
+## Table of Contents
+
+- [Requirements](#Requirements)
+- [Directory Structure](#Directory-Structure)
+- [Quick Start](#Quick-Start)
+- [Using Pre-trained Vectors](#Using-Pre-trained-Vectors)
 
 ## Requirements
 
@@ -24,7 +36,7 @@ You can download the pre-trained models, datasets, and pre-trained steering vect
 | :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
 | Models, Datasets & Pre-trained Vectors | [[Google Drive]](PLACEHOLDER_GOOGLE_DRIVE_RESOURCES) | [[BaiduNetdisk]](PLACEHOLDER_BAIDU_RESOURCES) | -->
 
-### Directory Structure
+## Directory Structure
 
 After downloading, organize the resources as follows:
 
@@ -69,35 +81,6 @@ vectors/gemma-2-9b-it/prism/psychopathy/prism_local_weight/
 ├── layer_20.pt
 └── metadata_layer_20.jsonl (optional)
 ```
-
-### Using Pre-trained Vectors
-
-If you want to skip the vector generation phase and directly apply pre-trained steering vectors, modify the `run_PRISM.sh` script or run the Python script directly with `--mode apply`:
-
-#### Apply Vectors with modified run_PRISM.sh
-
-Edit `examples/run_PRISM.sh` and change the `--mode` parameter from `both` or `generate` to `apply`:
-
-```bash
-python run_PRISM.py \
-    --dataset psychopathy \
-    --method all \
-    --model_name gemma-2-9b-it \
-    --intervention_method all \
-    --mode apply \
-    --multipliers 1.0 \
-    --device cuda:0 \
-    --base_dir .
-```
-
-This will:
-1. Skip vector generation (since vectors already exist)
-2. Apply all available pre-trained vectors for all method-intervention combinations
-3. Generate text outputs with different multiplier values (1.0 and 2.0 in this example)
-4. Save results to `generation/{model_name}/{method}/{dataset}/{intervention_method}/m{multiplier}/`
-
-**Note**: Make sure all required vector files exist before running with `--mode apply`. The script will skip combinations where vector files are missing and print a warning message.
-
 
 ## Quick Start
 ### An example for generating and applying steering vectors on psychopathy dataset using PRISM method with local_weight intervention
@@ -169,6 +152,33 @@ This command runs both vector generation and application for the psychopathy dat
 
 **Note**: When using `all` for either `--method` or `--intervention_method`, the script will automatically skip invalid combinations (e.g., CAA only supports `vector` intervention, so `caa + lora` will be skipped).
 
+## Using Pre-trained Vectors
+
+If you want to skip the vector generation phase and directly apply pre-trained steering vectors, modify the `run_PRISM.sh` script or run the Python script directly with `--mode apply`:
+
+#### Apply Vectors with modified run_PRISM.sh
+
+Edit `examples/run_PRISM.sh` and change the `--mode` parameter from `both` or `generate` to `apply`:
+
+```bash
+python run_PRISM.py \
+    --dataset psychopathy \
+    --method all \
+    --model_name gemma-2-9b-it \
+    --intervention_method all \
+    --mode apply \
+    --multipliers 1.0 \
+    --device cuda:0 \
+    --base_dir .
+```
+
+This will:
+1. Skip vector generation (since vectors already exist)
+2. Apply all available pre-trained vectors for all method-intervention combinations
+3. Generate text outputs with different multiplier values (1.0 and 2.0 in this example)
+4. Save results to `generation/{model_name}/{method}/{dataset}/{intervention_method}/m{multiplier}/`
+
+**Note**: Make sure all required vector files exist before running with `--mode apply`. The script will skip combinations where vector files are missing and print a warning message.
 
 <!-- ## 📖 Citation
 
