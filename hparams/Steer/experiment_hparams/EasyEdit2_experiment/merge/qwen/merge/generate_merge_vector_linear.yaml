@@ -1,8 +1,0 @@
-alg_name: merge_vector
-method: linear
-vector_paths:
-- ./vectors/qwen2.5-7b/safety/caa_vector/layer_16.pt
-- ./vectors/qwen2.5-7b/sentiment/caa_vector/layer_16.pt
-weights: [1.0, 1.0]    # default are ones
-densities: [0.9, 0.9]   # default are ones
-normalize: false

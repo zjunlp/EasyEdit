@@ -1,8 +1,0 @@
-alg_name: merge_vector
-method: dare_ties
-vector_paths:
-- ./vectors/gemma-2-9b-base/safety/caa_vector/layer_24.pt
-- ./vectors/gemma-2-9b-base/sentiment/caa_vector/layer_24.pt
-weights: [1.0, 1.0]    # default are ones
-densities: [0.9, 0.9]   # default are ones
-normalize: false

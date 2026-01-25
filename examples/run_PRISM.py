@@ -194,6 +194,99 @@ def run_vector_generation(
         return False
 
 
+def run_loss_calculation(
+    dataset: str,
+    method: str,
+    model_name: str,
+    intervention_method: str,
+    multipliers: list,
+    device: str = "cuda:0",
+    base_dir: str = ".",
+    dry_run: bool = False,
+):
+    """
+    Run loss calculation for a dataset.
+    This mode calculates loss for both winning_only and losing_only preference types.
+    
+    Args:
+        dataset: Dataset name (psychopathy, powerseeking)
+        method: Method name (caa, reps, sft, prism)
+        model_name: Model name (e.g., gemma-2-9b-it)
+        intervention_method: Intervention method (vector, lora, local_weight)
+        multipliers: List of multiplier values (e.g., [0.2])
+        device: Device to use (e.g., cuda:0)
+        base_dir: Base directory for the project
+        dry_run: If True, only print the command without executing
+    """
+    if dataset == "axbench":
+        print(f"[WARNING] Loss calculation mode is not supported for axbench dataset. Skipping.")
+        return True
+    
+    results = []
+    sft_preference_types = ["winning_only", "losing_only"]
+    
+    # Resolve train hparam for loss calculation
+    train_hparam = os.path.join(
+        base_dir,
+        f"hparams/Steer/experiment_hparams/prism_experiment/{dataset}/{model_name}/sft/generate_sft_loss.yaml"
+    )
+    
+    if not os.path.exists(train_hparam):
+        print(f"[WARNING] Loss hparam file not found: {train_hparam}")
+        print(f"[SKIP] Skipping loss calculation for {method} with {intervention_method} for {dataset}")
+        return True
+    
+    # Init vector path (from previously generated vectors)
+    init_path = f"vectors/{model_name}/{method}/{dataset}/{method}_{intervention_method}"
+    
+    for m in multipliers:
+        for sft_preference_type in sft_preference_types:
+            # Set up output directories
+            output_subdir = f"{intervention_method}_{method}_m{m}_{sft_preference_type}"
+            steer_vector_output_dirs = f"vectors/{model_name}/get_sft_loss/{method}/{dataset}/{method}_{intervention_method}/{output_subdir}/"
+            loss_output_dir = steer_vector_output_dirs
+            log_path = os.path.join(base_dir, steer_vector_output_dirs, "train.log")
+            log_dir = os.path.dirname(log_path)
+            os.makedirs(log_dir, exist_ok=True)
+            
+            vectors_generate_path = _abs_script_path(base_dir, "vectors_generate.py")
+            cmd = [
+                sys.executable,
+                vectors_generate_path,
+                f"device={device}",
+                f"model_name_or_path=./models/{model_name}",
+                f"steer_train_dataset=[{dataset}]",
+                f"steer_train_hparam_paths=[{train_hparam}]",
+                f"+steering_factors=[{m}]",
+                f"+init_vector_path={init_path}",
+                f"+sft_preference_type={sft_preference_type}",
+                f"+loss_output_dir={loss_output_dir}",
+                f"steer_vector_output_dirs=[{steer_vector_output_dirs}]",
+                f"+intervention_method={intervention_method}",
+            ]
+            
+            print(f"[INFO] Running loss calculation: {method} with {intervention_method}, multiplier={m}, preference_type={sft_preference_type} for {dataset}")
+            print(f"[INFO] Command: {' '.join(cmd)}")
+            
+            if dry_run:
+                print(f"[DRY_RUN] Log would be written to: {log_path}")
+                results.append(True)
+                continue
+            
+            # Run command and redirect output to log file
+            with open(log_path, 'w') as log_file:
+                result = subprocess.run(cmd, stdout=log_file, stderr=subprocess.STDOUT, cwd=base_dir)
+            
+            if result.returncode == 0:
+                print(f"[SUCCESS] Loss calculation completed. Log: {log_path}")
+                results.append(True)
+            else:
+                print(f"[ERROR] Loss calculation failed. Check log: {log_path}")
+                results.append(False)
+    
+    return all(results)
+
+
 def run_vector_application(
     dataset: str,
     method: str,
@@ -307,6 +400,9 @@ Examples:
 
   # Run both generation and application
   python run_PRISM.py --dataset axbench --method reps --model_name gemma-2-9b-it --intervention_method vector --mode both
+
+  # Calculate loss for psychopathy dataset
+  python run_PRISM.py --dataset psychopathy --method prism --model_name gemma-2-9b-it --intervention_method local_weight --mode loss --multipliers 0.2
         """
     )
     
@@ -325,8 +421,8 @@ Examples:
     
     # Optional arguments
     parser.add_argument('--mode', default='both', type=str,
-                       choices=['generate', 'apply', 'both'],
-                       help='Mode: generate vectors, apply vectors, or both (default: both)')
+                       choices=['generate', 'apply', 'both', 'loss'],
+                       help='Mode: generate vectors, apply vectors, both, or loss calculation (default: both)')
     parser.add_argument('--device', default='cuda:0', type=str,
                        help='Device to use (default: cuda:0)')
     parser.add_argument('--multipliers', nargs='+', type=float, default=[1.0],
@@ -361,7 +457,7 @@ Examples:
     print(f"Expanded pairs: {pairs}")
     print(f"Mode: {args.mode}")
     print(f"Device: {args.device}")
-    if args.mode in ['apply', 'both']:
+    if args.mode in ['apply', 'both', 'loss']:
         print(f"Multipliers: {args.multipliers}")
     print("=" * 80)
     
@@ -399,6 +495,24 @@ Examples:
                 dry_run=args.dry_run,
             )
             success = success and app_success
+    
+    # Run loss calculation
+    if args.mode == 'loss':
+        print("\n[PHASE] Loss Calculation")
+        print("-" * 80)
+        print("[INFO] Loss calculation will run for both winning_only and losing_only preference types")
+        for method, intervention_method in pairs:
+            loss_success = run_loss_calculation(
+                dataset=args.dataset,
+                method=method,
+                model_name=args.model_name,
+                intervention_method=intervention_method,
+                multipliers=args.multipliers,
+                device=args.device,
+                base_dir=args.base_dir,
+                dry_run=args.dry_run,
+            )
+            success = success and loss_success
     
     # Summary
     print("\n" + "=" * 80)

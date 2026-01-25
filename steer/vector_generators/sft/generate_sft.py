@@ -136,9 +136,80 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 layers=[layer],
                 hparams=args 
             )
+
             # get the low rank dimension,  set to 1 as a vector
             low_rank_dimension = args.low_rank_dimension if args.low_rank_dimension else 1
-            
+            init_vector = None
+
+            if args.init_vector_path and args.inference and args.intervention_method == "vector":
+
+                print("Init with vector: ", args.init_vector_path)
+                init_vector_path=os.path.join(args.init_vector_path, f"layer_{layer}.pt")
+                vectors = torch.load(init_vector_path, map_location="cpu")
+                init_vector = vectors
+                print("Use init vector to init vector: ", init_vector)
+
+            elif args.init_vector_path and args.inference and args.intervention_method == "lora":
+
+                print("Init with LoRA: ", args.init_vector_path)
+                init_lora_path = os.path.join(args.init_vector_path, f"layer_{layer}.pt")
+                lora_states = torch.load(init_lora_path, map_location="cpu")
+                print(isinstance(lora_states, dict) and all(isinstance(v, dict) for v in lora_states.values()))
+                lora_state = lora_states
+                lora_A = lora_state["lora_A"]
+                lora_B = lora_state["lora_B"]
+                input_dim = lora_A.shape[0]
+                embed_dim = lora_B.shape[1]
+                
+                if args.ablation_vector_path:
+                    ablation_vector_path=os.path.join(args.ablation_vector_path, f"layer_{layer}.pt")
+                    ablation_vector = torch.load(ablation_vector_path, map_location="cpu")
+                    print("Applying ablation vector: ", ablation_vector)
+                    print("Ablation_vector.shape: ", ablation_vector.shape)
+
+                from ...models.interventions import LoraIntervention
+                init_vector = LoraIntervention(
+                    input_dim=input_dim,
+                    embed_dim=embed_dim,
+                    low_rank_dimension=lora_state["r"],
+                    alpha=lora_state["alpha"],
+                    intervention_components=lora_state["intervention_components"],
+                    torch_dtype=lora_A.dtype,
+                    ablation_vector=ablation_vector if args.ablation_vector_path else None
+                )
+                with torch.no_grad():
+                    init_vector.lora_A.copy_(lora_A)
+                    init_vector.lora_B.copy_(lora_B)
+
+                init_vector = init_vector.to(args.device)
+                print("Use LoRA to init vector: ", init_vector)
+
+            elif args.init_vector_path and args.inference and args.intervention_method == "local_weight":
+
+                print("Init with local_weight: ", args.init_vector_path)
+                init_weight_path = os.path.join(args.init_vector_path, f"layer_{layer}.pt")
+                weight_states = torch.load(init_weight_path, map_location="cpu")
+                print(isinstance(weight_states, dict) and all(isinstance(v, dict) for v in weight_states.values()))
+                weight_state = weight_states
+                delta_weight = weight_state["weight"]
+                delta_bias = weight_state["bias"]
+                input_dim = delta_weight.shape[0]
+                embed_dim = delta_weight.shape[1]
+
+                from ...models.interventions import LocalWeightIntervention
+                init_vector = LocalWeightIntervention(
+                    input_dim=input_dim,
+                    embed_dim=embed_dim,
+                    intervention_components=weight_state["intervention_components"],
+                    torch_dtype=delta_weight.dtype,
+                    ablation_vector=ablation_vector if args.ablation_vector_path else None
+                )
+                with torch.no_grad():
+                    init_vector.delta_weight.copy_(delta_weight)
+                    init_vector.delta_bias.copy_(delta_bias)
+                init_vector = init_vector.to(args.device)
+                print("Use Weight to init vector: ", init_vector)
+
             # incorporate the intervention to the model
             benchmark_model.make_model(
                 mode="train",
@@ -155,6 +226,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 dropout=args.dropout,
                 intervention_positions_dropout=args.intervention_positions_dropout,
                 preference_pairs=args.preference_pairs,
+                init_vector=init_vector,
             )
 
             benchmark_model.model.steer_vector.to(model.torch_dtype)
