@@ -1,6 +1,0 @@
-# Model related
-alg_name: sta
-layers: [24]
-multipliers: [1.0]
-trims: [0.65]
-mode: act_and_freq
