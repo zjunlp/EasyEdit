@@ -26,20 +26,14 @@ class SFTHyperParams(HyperParams):
     lr: float = 0.08
     n_epochs: int = 12
     weight_decay: float = 0.00
-
-    pos_loss_weight: float = 1.0
-    neg_loss_weight: float = 0.0
-    margin_penalty_weight: float = 0.0
-    ref_loss_weight: float = 0.0
-    margin_threshold: float = 0.5
-    
-    # === Loss Config ===
-    sft_preference_type: str = "winning_only"  # add_sub, add_null, sub_null
+    pos_loss_weight: float = 1.0       # 正样本 loss 权重
+    neg_loss_weight: float = 0.0      # 负样本 loss 权重
+    margin_penalty_weight: float = 0.0 # 正负样本差距约束权重
+    ref_loss_weight: float = 0.0       # 参考模型约束权重
+    margin_threshold: float = 0.5      # 正负样本差距阈值
     loss_output_dir: str = None  # Directory to save the loss CSV file
     inference: bool = False  # If True, only perform inference to generate vectors without training
     all_labels: bool = False
-    init_vector_path: str = None
-    ablation_vector_path: str = None
 
     # === Intervention Config ===
     intervention_components: str = "mlp_mid"  # lora components to intervene, e.g., ["mlp", "attn", "block"]

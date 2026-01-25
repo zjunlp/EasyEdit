@@ -18,10 +18,10 @@ lr: 0.08
 n_epochs: 2
 weight_decay: 0.00
 pos_loss_weight: 1.0       
-neg_loss_weight: 0.0       
-margin_penalty_weight: 0   
+neg_loss_weight: 0.5       
+margin_penalty_weight: 8   
 ref_loss_weight: 0.0       
-margin_threshold: 0.0      
+margin_threshold: 0.3      
 
 loss_output_dir: null
 inference: false

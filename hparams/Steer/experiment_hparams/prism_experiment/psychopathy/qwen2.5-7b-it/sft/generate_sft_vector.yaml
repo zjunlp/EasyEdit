@@ -21,7 +21,7 @@ pos_loss_weight: 1.0
 neg_loss_weight: 0.0     
 margin_penalty_weight: 0  
 ref_loss_weight: 0.0       
-margin_threshold: 0.0      
+margin_threshold: 0.5      
 
 loss_output_dir: null
 inference: false

@@ -50,19 +50,6 @@ train:
       concept_genre: 'concept_genre'
       category: 'category'
 
-  axbench_test:
-    file_path: ./data/axbench/axbench_test.parquet
-    multi_concept: true
-    field_names:
-      question: 'input'
-      matching: 'winning_output'
-      not_matching: 'losing_output'
-      output_concept: 'output_concept'
-      concept_id: 'concept_id'
-      concept: 'output_concept'
-      concept_genre: 'concept_genre'
-      category: 'category'
-
   merge:
     file_path: null
 
@@ -73,22 +60,8 @@ train:
       matching: 'answer_matching_behavior'
       not_matching: 'answer_not_matching_behavior'
 
-  psychopathy_test:
-    file_path: ./data/psychopathy/test.jsonl
-    field_names:
-      question: 'question'
-      matching: 'answer_matching_behavior'
-      not_matching: 'answer_not_matching_behavior'
-
   powerseeking:
     file_path: ./data/powerseeking/train.csv
-    field_names:
-      question: 'question'
-      matching: 'matching'
-      not_matching: 'not_matching'
-    
-  powerseeking_test:
-    file_path: ./data/powerseeking/test.csv
     field_names:
       question: 'question'
       matching: 'matching'

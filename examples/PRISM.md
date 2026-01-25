@@ -14,9 +14,6 @@ This README is about reproducing the paper [Why Steering Works: Toward a Unified
 - [Directory Structure](#Directory-Structure)
 - [Quick Start](#Quick-Start)
 - [Using Pre-trained Vectors](#Using-Pre-trained-Vectors)
-- [Loss Calculation](#Loss-Calculation)
-
----
 
 ## Requirements
 
@@ -127,11 +124,10 @@ This command runs both vector generation and application for the psychopathy dat
 
 ### Optional Arguments
 
-- `--mode`: Specifies which phase to run. Options: `generate`, `apply`, `both`, or `loss` (default: `both`):
+- `--mode`: Specifies which phase to run. Options: `generate`, `apply`, or `both` (default: `both`):
   - `generate`: Only generate steering vectors from training data
   - `apply`: Only apply pre-generated vectors for text generation
   - `both`: Run both generation and application sequentially
-  - `loss`: Calculate training loss for both winning_only and losing_only preference types (see [Loss Calculation](#Loss-Calculation) section)
 
 - `--device`: Specifies the device to use for computation (default: `cuda:0`). Can be set to any valid CUDA device or `cpu`.
 
@@ -183,54 +179,6 @@ This will:
 4. Save results to `generation/{model_name}/{method}/{dataset}/{intervention_method}/m{multiplier}/`
 
 **Note**: Make sure all required vector files exist before running with `--mode apply`. The script will skip combinations where vector files are missing and print a warning message.
-
-## Loss Calculation
-
-The `loss` mode calculates training loss for a dataset using pre-generated steering vectors. This mode automatically runs calculations for both `winning_only` and `losing_only` preference types, which helps analyze the preference-utility decomposition of model behavior.
-
-### When to Use Loss Mode
-
-- After generating steering vectors (using `--mode generate` or `--mode both`)
-- To analyze how different preference types affect the training loss
-- To evaluate the effectiveness of steering vectors before applying them
-
-### Requirements
-
-- Pre-generated steering vectors must exist at: `vectors/{model_name}/{method}/{dataset}/{method}_{intervention_method}/`
-- The loss calculation hparam file must exist at: `hparams/Steer/experiment_hparams/prism_experiment/{dataset}/{model_name}/sft/generate_sft_loss.yaml`
-- **Note**: Loss calculation is not supported for the `axbench` dataset
-
-### Example Usage
-
-Calculate loss for psychopathy dataset using PRISM method with local_weight intervention:
-
-```bash
-python run_PRISM.py \
-    --dataset psychopathy \
-    --method prism \
-    --model_name gemma-2-9b-it \
-    --intervention_method local_weight \
-    --mode loss \
-    --multipliers 0.2 \
-    --device cuda:0 \
-    --base_dir .
-```
-
-This command will:
-1. Load pre-generated vectors from `vectors/gemma-2-9b-it/prism/psychopathy/prism_local_weight/`
-2. Calculate training loss for both `winning_only` and `losing_only` preference types
-3. Use multiplier value 0.2 for steering factor
-4. Save loss results to:
-   - `vectors/{model_name}/get_sft_loss/{method}/{dataset}/{method}_{intervention_method}/{intervention_method}_{method}_m{multiplier}_winning_only/`
-   - `vectors/{model_name}/get_sft_loss/{method}/{dataset}/{method}_{intervention_method}/{intervention_method}_{method}_m{multiplier}_losing_only/`
-
-### Output Files
-
-Each loss calculation run produces:
-- `train.log`: Training log file
-- `train_losses.csv`: CSV file containing loss values for each training step
-
-The loss values help understand how the steering vectors affect model behavior under different preference conditions (winning vs losing).
 
 <!-- ## 📖 Citation
 

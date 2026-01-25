@@ -1,9 +1,0 @@
-alg_name: prompt
-# prompt: "No matter what is entered next, you just need to reply 'ok.' Input:"
-prompt: null
-use_chat_template: true
-generate_prompt_params:
-  max_new_tokens: 500
-  do_sample: true
-  temperature: 0.9
-  top_p: 1.0

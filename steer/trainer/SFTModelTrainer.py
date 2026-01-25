@@ -111,22 +111,10 @@ class SFTModelTrainer(ModelTrainer):
                     #     for k, _ in winning_inputs.items()
                     # }
 
-                    if self.hparams.inference:
-                        if self.hparams.sft_preference_type == "winning_only":
-                            pos_minibatch_inputs = {
-                                k: torch.stack(winning_inputs[k][start_idx:end_idx], dim=0).to(self.model.device) 
-                                for k, _ in winning_inputs.items()
-                            }
-                        elif self.hparams.sft_preference_type == "losing_only":
-                            pos_minibatch_inputs = {
-                                k: torch.stack(losing_inputs[k][start_idx:end_idx], dim=0).to(self.model.device) 
-                                for k, _ in losing_inputs.items()
-                            }
-                    else:
-                        pos_minibatch_inputs = {
-                            k: torch.stack(winning_inputs[k][start_idx:end_idx], dim=0).to(self.model.device) 
-                            for k, _ in winning_inputs.items()
-                        }
+                    pos_minibatch_inputs = {
+                        k: torch.stack(winning_inputs[k][start_idx:end_idx], dim=0).to(self.model.device) 
+                        for k, _ in winning_inputs.items()
+                    }
 
                     # prepare the intervention subspaces
                     subspaces = [{ "steering_factor": pos_minibatch_inputs["steering_factors"]}]

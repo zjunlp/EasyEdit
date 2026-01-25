@@ -90,11 +90,11 @@ DEVICE=${DEVICE:-"cuda:0"}
 # Uncomment and modify the following line to run PRISM experiment:
 
 python ./examples/run_PRISM.py \
-    --dataset axbench \
+    --dataset psychopathy \
     --method prism \
     --model_name gemma-2-9b-it \
     --intervention_method local_weight \
-    --mode loss \
+    --mode generate \
     --multipliers 1.0 \
     --device cuda:0 \
     --base_dir .
