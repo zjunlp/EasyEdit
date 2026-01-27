@@ -1,4 +1,4 @@
-# PRISM
+# Why Steering Works: Toward a Unified View of Language Model Parameter Dynamics
 
 
 <div align=center><img src="../figs/PRISM.png" width="100%" height="100%" /></div>
