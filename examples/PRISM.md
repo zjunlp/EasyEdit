@@ -5,7 +5,15 @@
 
 This README is about reproducing the paper [Why Steering Works: Toward a Unified View of Language Model Parameter Dynamics]
 
-- LLM control methods (local weight edits, LoRA adaptation, and activation steering) are often studied in isolation, limiting systematic comparison. **PRISM (Preference–Utility Integrated Steering Method)** decomposes model behavior into two orthogonal dimensions—**Preference** and **Utility**—providing different “refraction angles” to interpret and steer model behavior more effectively. Under this lens, diverse interventions can be understood as control-signal-induced dynamic weight updates, enabling more  improved steering.
+This paper presents a unified framework for understanding and optimizing language model steering, explaining diverse intervention methods through dynamic weight updates and their preference–utility dynamics.
+
+Our contributions are as follows:
+
+- **Unified View.** We unify local weight fine-tuning, LoRA, and activation steering under a single framework of *dynamic weight updates*, revealing consistent preference–utility dynamics across intervention forms.
+
+- **Preference–Utility Mechanism.** We introduce an activation-manifold analysis showing that preference arises from projection onto target directions, while utility degradation is primarily driven by off-manifold deviations, yielding predictive log-odds–control relationships.
+
+- **PRISM Steering Method.** Guided by this mechanism, we propose **PRISM**, a preference–utility joint training objective that improves controllability while better preserving utility.
 
 
 ## Table of Contents
