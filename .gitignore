@@ -20,6 +20,6 @@ delta.txt
 **/*_test_reps*
 *test_reps
 *test_reps.*
-models
+# models
 generation
 judge
