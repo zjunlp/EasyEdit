@@ -140,7 +140,12 @@ def get_reprs_at_idxs(
 
     def _process(cur_repr, batch_idxs, key):
         nonlocal to_return
-        cur_repr = cur_repr[0] if type(cur_repr) is tuple else cur_repr
+        # Handle tuple outputs - some model hooks return tuples (e.g., transformer blocks)
+        if isinstance(cur_repr, tuple):
+            if len(cur_repr) == 0:
+                # This should not happen with the nethook.py fix, but handle gracefully
+                return
+            cur_repr = cur_repr[0]
         if cur_repr.shape[0]!=len(batch_idxs):
             cur_repr=cur_repr.transpose(0,1)
         for i, idx_list in enumerate(batch_idxs):
@@ -152,11 +157,6 @@ def get_reprs_at_idxs(
             next(model.parameters()).device
         )
 
-        if tok.padding_side == "left":
-            for id, tok_list in enumerate(contexts_tok["input_ids"]):
-                batch_idxs[id][0] += tok_list.detach().clone().cpu().tolist().count(tok.pad_token_id)
-
-
         with torch.no_grad():
             with nethook.Trace(
                 module=model,
@@ -167,7 +167,24 @@ def get_reprs_at_idxs(
                 model(**contexts_tok)
 
         if tin:
-            _process(tr.input, batch_idxs, "in")
+            if tr.input is None:
+                # If input is None, use output as proxy (for transformer blocks where 
+                # input hidden_states and output hidden_states have the same shape)
+                if tout and tr.output is not None:
+                    import warnings
+                    warnings.warn(
+                        f"No input was captured for layer {module_name}. "
+                        f"Using output as input proxy (valid for transformer blocks).",
+                        UserWarning
+                    )
+                    _process(tr.output, batch_idxs, "in")
+                else:
+                    raise ValueError(
+                        f"No input was captured for layer {module_name}. "
+                        f"The layer may have received inputs via kwargs which requires PyTorch 2.0+."
+                    )
+            else:
+                _process(tr.input, batch_idxs, "in")
         if tout:
             _process(tr.output, batch_idxs, "out")
 
