@@ -166,7 +166,7 @@ class SFTModelTrainer(ModelTrainer):
                     # calculate the reference model output ref_outputs
                     if hasattr(self.model, "steer_vector"):
                         # remove the intervention
-                        self.model.reset("sft")
+                        self.model.reset(self.hparams.alg_name)
                         
                         # forward propagation without intervention
                         pos_ref_outputs = self.model.model(
@@ -184,7 +184,7 @@ class SFTModelTrainer(ModelTrainer):
 
                         # restore the intervention to all layers
                         for layer in self.layers:
-                            self.model.set_intervention(layer, self.model.steer_vector, "sft")
+                            self.model.set_intervention(layer, self.model.steer_vector, self.hparams.alg_name)
                     else:
                         pos_ref_outputs = pos_outputs_orig
                         neg_ref_outputs = neg_outputs_orig

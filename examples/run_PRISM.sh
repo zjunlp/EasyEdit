@@ -94,7 +94,7 @@ python ./examples/run_PRISM.py \
     --method prism \
     --model_name gemma-2-9b-it \
     --intervention_method local_weight \
-    --mode loss \
+    --mode generate \
     --multipliers 1.0 \
     --device cuda:0 \
     --base_dir .

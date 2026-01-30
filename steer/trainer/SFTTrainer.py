@@ -78,4 +78,4 @@ class SFTTrainer(SFTModelTrainer):
         
         for layer in self.layers:
             intervention_copy = self.model.steer_vector  # all layers share the same intervention instance
-            self.model.set_intervention(layer, intervention_copy, "sft")
+            self.model.set_intervention(layer, intervention_copy, self.hparams.alg_name)

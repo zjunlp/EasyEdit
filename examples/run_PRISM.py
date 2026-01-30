@@ -207,9 +207,11 @@ def run_loss_calculation(
     """
     Run loss calculation for a dataset.
     This mode calculates loss for both winning_only and losing_only preference types.
+    - dataset=axbench: use examples/axbench_generate.py (AxBench pipeline)
+    - otherwise: use vectors_generate.py (generic pipeline)
     
     Args:
-        dataset: Dataset name (psychopathy, powerseeking)
+        dataset: Dataset name (axbench, psychopathy, powerseeking)
         method: Method name (caa, reps, sft, prism)
         model_name: Model name (e.g., gemma-2-9b-it)
         intervention_method: Intervention method (vector, lora, local_weight)
@@ -218,10 +220,6 @@ def run_loss_calculation(
         base_dir: Base directory for the project
         dry_run: If True, only print the command without executing
     """
-    if dataset == "axbench":
-        print(f"[WARNING] Loss calculation mode is not supported for axbench dataset. Skipping.")
-        return True
-    
     results = []
     sft_preference_types = ["winning_only", "losing_only"]
     
@@ -236,12 +234,55 @@ def run_loss_calculation(
         print(f"[SKIP] Skipping loss calculation for {method} with {intervention_method} for {dataset}")
         return True
     
-    # Init vector path (from previously generated vectors)
+    if dataset == "axbench":
+        # AxBench loss: call axbench_generate.py; log and loss go to vectors/.../axbench_{i}/.../ per concept
+        axbench_generate_path = _abs_script_path(base_dir, "examples/axbench_generate.py")
+        for m in multipliers:
+            for sft_preference_type in sft_preference_types:
+                output_subdir = f"{intervention_method}_{method}_m{m}_{sft_preference_type}"
+                steer_vector_output_dirs = f"vectors/{model_name}/get_sft_loss/{method}/{dataset}/{method}_{intervention_method}/{output_subdir}/"
+                # Whole-run stdout/stderr -> run.log (no terminal); per-concept train.log under axbench_0/, axbench_1/, ...
+                run_log_path = os.path.join(base_dir, steer_vector_output_dirs, "run.log")
+                run_log_dir = os.path.dirname(run_log_path)
+                os.makedirs(run_log_dir, exist_ok=True)
+                cmd = [
+                    sys.executable,
+                    axbench_generate_path,
+                    f"device={device}",
+                    f"+model_name={model_name}",
+                    f"+intervention_method={intervention_method}",
+                    f"+method={method}",
+                    f"+sft_preference_type={sft_preference_type}",
+                    f"+axbench_output_dir_name={method}_{intervention_method}",
+                    f"steer_train_hparam_paths=[{train_hparam}]",
+                    f"+steering_factors=[{m}]",
+                    f"steer_vector_output_dirs=[{steer_vector_output_dirs}]",
+                ]
+                
+                print(f"[INFO] Running axbench loss calculation: {method} with {intervention_method}, multiplier={m}, preference_type={sft_preference_type}")
+                print(f"[INFO] Log and loss per concept: vectors/.../get_sft_loss/{method}/axbench_{{i}}/.../{output_subdir}/")
+                print(f"[INFO] Command: {' '.join(cmd)}")
+                
+                if dry_run:
+                    results.append(True)
+                    continue
+                
+                with open(run_log_path, 'w', encoding='utf-8') as run_log_file:
+                    result = subprocess.run(cmd, stdout=run_log_file, stderr=subprocess.STDOUT, cwd=base_dir)
+                
+                if result.returncode == 0:
+                    print(f"[SUCCESS] Axbench loss calculation completed.")
+                    results.append(True)
+                else:
+                    print(f"[ERROR] Axbench loss calculation failed (exit code {result.returncode}).")
+                    results.append(False)
+        return all(results)
+    
+    # Generic (psychopathy / powerseeking) loss: call vectors_generate.py
     init_path = f"vectors/{model_name}/{method}/{dataset}/{method}_{intervention_method}"
     
     for m in multipliers:
         for sft_preference_type in sft_preference_types:
-            # Set up output directories
             output_subdir = f"{intervention_method}_{method}_m{m}_{sft_preference_type}"
             steer_vector_output_dirs = f"vectors/{model_name}/get_sft_loss/{method}/{dataset}/{method}_{intervention_method}/{output_subdir}/"
             loss_output_dir = steer_vector_output_dirs
@@ -273,7 +314,6 @@ def run_loss_calculation(
                 results.append(True)
                 continue
             
-            # Run command and redirect output to log file
             with open(log_path, 'w') as log_file:
                 result = subprocess.run(cmd, stdout=log_file, stderr=subprocess.STDOUT, cwd=base_dir)
             
