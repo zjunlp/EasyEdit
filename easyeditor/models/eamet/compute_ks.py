@@ -6,7 +6,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .compute_z import get_module_input_output_at_words
-from .hparams import NAMETHyperParams
+from .hparams import EAMETHyperParams
 
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
@@ -19,11 +19,14 @@ def compute_ks(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
     requests: Dict,
-    hparams: NAMETHyperParams,
+    hparams: EAMETHyperParams,
     layer: int,
     context_templates: List[str],
 ):
 
+    # layer_ks_stack = []
+    # for requests_slice in chunks(requests, hparams.ks_bs):
+        # print(f"lens of requests:{len(requests_slice)}")
     all_temps = [
         context.format(request["prompt"])
         for request in requests
@@ -37,6 +40,8 @@ def compute_ks(
         for _ in context_type
     ]
 
+    # input to the rewrite_module_tmp (mlp.c_proj) is the desired representation
+    # here we dont use out_ks
     layer_ks, _ = get_module_input_output_at_words(
         model,
         tok,
@@ -47,6 +52,8 @@ def compute_ks(
         fact_token_strategy=hparams.fact_token,
         change_padding=True
     )
+    #     layer_ks_stack.append(layer_ks)
+    # layer_ks=torch.cat(layer_ks_stack, dim=0)
 
     print(f"inside layer_ks, size:{layer_ks.size()}")
     context_type_lens = [0] + [len(context_type) for context_type in context_templates]
@@ -56,7 +63,6 @@ def compute_ks(
 
     for i in range(0, layer_ks.size(0), context_len): #for one context
         tmp = []  #layer_ks[i:i+context_len]
-
         for j in range(len(context_type_csum) - 1):
             start, end = context_type_csum[j], context_type_csum[j + 1]
             tmp.append(layer_ks[i + start : i + end].mean(0)) #mean for reprs for the same context

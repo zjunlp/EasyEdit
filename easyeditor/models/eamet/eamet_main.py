@@ -13,28 +13,33 @@ from tqdm import *
 from torch.utils.data import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from ..rome.layer_stats import layer_stats
-from ...util import nethook
-from ...util.generate import generate_fast, generate_standard
-from ...util.globals import *
+from rome.layer_stats import layer_stats
+from util import nethook
+from util.generate import generate_fast, generate_standard
+from util.globals import *
 
 from .compute_ks import compute_ks
 from .compute_z import compute_z, get_module_input_output_at_words, find_fact_lookup_idx
-from .hparams import NAMETHyperParams
+from .hparams import EAMETHyperParams
+
+import torch.nn.functional as F
 
 # Cache variable(s)
 CONTEXT_TEMPLATES_CACHE = None
 COV_CACHE = {}
 
-def apply_namet_to_model(
+def apply_eamet_to_model(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
     requests: List[Dict],
-    hparams: NAMETHyperParams,
+    hparams: EAMETHyperParams,
     copy=False,
     return_orig_weights=False,
     cache_template: Optional[str] = None,
     cache_id: int = 0,
+    motivation_exp: bool=False,
+    cache_motivation_fname: Optional[str] = None,
+    duplicate_subjects: Optional[Dict[str, List[int]]] = None
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
     """
     Returns a model with the desired changes.
@@ -42,8 +47,7 @@ def apply_namet_to_model(
         Note that you are responsible for deallocating the new model's memory to avoid leaks.
     :return: (1) the updated model, (2) an original copy of the weights that changed
     """
-    tok.padding_side = "left"
-    print(f"changing padding_side to left")
+
     def chunks(ds, n):
         for i in range(0, len(ds), n):
             yield ds[i:i + n]
@@ -54,9 +58,12 @@ def apply_namet_to_model(
 
     # requests = requests + list(chain(*[record for record in cali_chunks]))
 
-    deltas = execute_namet(model, tok, requests, hparams, 
+    deltas = execute_eamet(model, tok, requests, hparams, 
                             cache_template=cache_template, 
-                            cache_id=cache_id)
+                            cache_id=cache_id, 
+                            motivation_exp=motivation_exp,
+                            cache_motivation_fname=cache_motivation_fname,
+                            duplicate_subjects=duplicate_subjects)
 
     with torch.no_grad():
         for w_name, (key_mat, val_mat) in deltas.items():
@@ -71,18 +78,20 @@ def apply_namet_to_model(
             w[...] += upd_matrix.float()
 
     print(f"New weights successfully inserted into {list(deltas.keys())}")
-    tok.padding_side = "right"
-    print(f"restoring padding_side to right")
+
     return model, weights_copy
 
 
-def execute_namet(
+def execute_eamet(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
     requests: List[Dict],
-    hparams: NAMETHyperParams,
+    hparams: EAMETHyperParams,
     cache_template: Optional[str] = None,
-    cache_id: int = 0
+    cache_id: int = 0,
+    motivation_exp: bool=False,
+    cache_motivation_fname: Optional[str] = None,
+    duplicate_subjects: Optional[Dict[str, List[int]]] = None
 ) -> Dict[str, Tuple[torch.Tensor]]:
     """
     Executes the MEMIT update algorithm for the specified update at the specified layer
@@ -109,15 +118,27 @@ def execute_namet(
     # Compute z for final layer
 
     z_layer = hparams.layers[-1]
-    opt_zs_list = []
-    target_zs_list = []
+    z_list = []
+    delta_list = []
     context_templates = get_context_templates(model, tok)
 
     print(f"Start optimizing z for requests:")
     print(f"")
+    start_time = time.time()
+    z_layer_ks = compute_ks(model, tok, requests, hparams, z_layer, context_templates).T
+    print(f"size of z_layer_ks:{z_layer_ks.size()}")
+    layer_ks_norm = torch.norm(z_layer_ks, dim=0)
+    print(f"computing z_layer_ks takes:{time.time()-start_time}")
+    combine_weights = compute_ks_collision_score(z_layer_ks) 
+    if motivation_exp:
+        print(f"avg combine_weights:{torch.mean(combine_weights)}")
+        assert False, "Finishing computing z_layer_ks"
+    z_layer_ks.cpu()
+    del z_layer_ks
+    torch.cuda.empty_cache()
+
     for re_id, request in enumerate(requests):
-        if re_id % 10 == 0:
-            print(f"optimize for {re_id}th request")
+        print(f"optimize for {re_id}th request")
         # Retrieve k/v pair if already stored in cache
         if cache_id==0:
             cache_fname = (
@@ -147,22 +168,29 @@ def execute_namet(
         ):
             try:
                 data = np.load(cache_fname)
-                opt_zs_list.append(torch.from_numpy(data["v_star"]).to("cuda"))
+                z_list.append(torch.from_numpy(data["v_star"]).to("cuda"))
+                delta_list.append(torch.from_numpy(data["delta"]).to("cuda"))
                 data_loaded = True
             except Exception as e:
                 print(f"Error reading cache file due to {e}. Recomputing...")
 
         # Compute k/v pair if not loaded from cache
         if not data_loaded:
-            opt_zs = compute_z(
+            opt_zs, delta = compute_z(
                 model,
                 tok,
                 request,
                 hparams,
                 z_layer,
-                context_templates
+                context_templates,
+                delta_list,
+                combine_weights,
+                request_id=re_id,
+                layer_ks_norm=layer_ks_norm[re_id]
             )
 
+            z_list.append(opt_zs.to("cuda"))
+            delta_list.append(delta.to("cuda"))
             if cache_fname is not None:
                 try:
                     cache_fname.parent.mkdir(exist_ok=True, parents=True)
@@ -170,13 +198,16 @@ def execute_namet(
                         cache_fname,
                         **{
                             "v_star": opt_zs.detach().cpu().numpy(),
+                            "delta": delta.detach().cpu().numpy(),
                         },
                     )
                     print(f"Cached k/v pair at {cache_fname}")
                 except Exception as e:
                     print(f"Error loading cache file due to {e}.")
 
-            opt_zs_list.append(opt_zs)
+    zs = torch.stack(z_list, dim=1)
+    del delta_list
+    torch.cuda.empty_cache()
 
     # Insert
     edit_layers = hparams.layers
@@ -184,32 +215,27 @@ def execute_namet(
         print(f"\n\nLAYER {layer}\n")
 
         # Get current model activations
+        # if layer == z_layer:
+        #     layer_ks = z_layer_ks
+        # else:
         layer_ks = compute_ks(model, tok, requests, hparams, layer, context_templates).T
-        print(f"size of layer_ks:{layer_ks.size()}")
 
-        target_zs_list=[]
-        for re_id, request in enumerate(requests):
-            temp_templates = context_templates + [["{} is a"]]
-            all_temps = [
-                context.format(request["prompt"])
-                for context_type in temp_templates
-                for context in context_type
-            ]
-            all_temp_words = [request["subject"] for _ in all_temps]
-            cur_zs = get_module_input_output_at_words(
-                model,
-                tok,
-                z_layer,
-                context_templates=all_temps,
-                words=all_temp_words,
-                module_template=hparams.layer_module_tmp,
-                fact_token_strategy=hparams.fact_token,
-            )[1].T #0 for the module input before layer_module, 1 for the output after layer_module
-            target_zs = opt_zs_list[re_id][:,1:-1] - cur_zs[:,1:-1]
-            temp_target_zs = torch.mean(target_zs, dim=1)
-            target_zs_list.append(temp_target_zs)
-
-        targets = torch.stack(target_zs_list, dim=1) # targets to be distributed across layers
+        ### for computing the layer_ks collision score
+        cur_zs_list=[]
+        temps = [request['prompt'] for request in requests]
+        temp_words = [request["subject"] for request in requests]
+        cur_zs = get_module_input_output_at_words(
+            model,
+            tok,
+            z_layer,
+            context_templates=temps,
+            words=temp_words,
+            module_template=hparams.layer_module_tmp,
+            fact_token_strategy=hparams.fact_token,
+        )[1].T #0 for the module input before layer_module, 1 for the output after layer_module
+        cur_zs_list.append(cur_zs)
+        cur_zs=torch.cat(cur_zs_list,dim=1)
+        targets = zs - cur_zs # targets to be distributed across layers
 
         # after transpose, layer_ks.size(1) and targets.size(1) means the number
         # of entries
@@ -227,7 +253,6 @@ def execute_namet(
             else hparams.mom2_n_samples // 10,
             hparams.mom2_dtype,
             force_recompute=force_recompute,
-            hparams=hparams
         )
 
         # Compute update in double precision
@@ -251,6 +276,8 @@ def execute_namet(
             adj_k = torch.inverse(cov_mat.to("cuda:1")).to("cuda:1") \
                 @ layer_ks
         print(f"computing inverse takes:{time.time()-start_time}")
+        norm_of_inv= torch.norm(torch.inverse(cov_mat.to("cpu")))
+        print(f"norm of inv:{norm_of_inv}")
         resid = targets / (len(edit_layers) - i) # Distribute residual across layers
         upd_matrix = resid @ adj_k.T
 
@@ -311,7 +338,6 @@ def get_cov(
     mom2_dtype: str,
     inv: bool = False,
     force_recompute: bool = False,
-    hparams=None,
 ) -> torch.Tensor:
     """
     Retrieves covariance statistics, then computes the algebraic inverse.
@@ -325,7 +351,7 @@ def get_cov(
             model,
             tok,
             layer_name,
-            hparams.stats_dir,
+            STATS_DIR,
             mom2_dataset,
             to_collect=["mom2"],
             sample_size=mom2_n_samples,
@@ -374,12 +400,10 @@ def get_context_templates(model, tok):
     top_k=100
     
     if CONTEXT_TEMPLATES_CACHE==None:
-        if "deepseek" in str(model.config._name_or_path).lower():
-            initial_tplt = ["The", "Therefore", "Because", "I", "You"]
-        else:
-            initial_tplt = ["The", "Therefore", "Because", "I", "You", \
-                            "However", "Also", "Nevertheless", "He", "It", \
-                        "Can", "Because"]
+        initial_tplt = ["The", "Therefore", "Because", "I", "You", \
+                        "However", "Also", "Nevertheless", "He", "It", \
+                    "Can", "Because"]
+
         CONTEXT_TEMPLATES_CACHE = [["{}"]] + [
             [
                 f.replace("{", " ").replace("}", " ") + ". {}"
@@ -395,32 +419,33 @@ def get_context_templates(model, tok):
             ]
             for length, n_gen in [(10, 5)]  # Be careful about changing this.
             ]
-        # print(f"context_template:{CONTEXT_TEMPLATES_CACHE}")
+
         print(f"temperature:{temperature}")
         print(f"top_k:{top_k}")
         print(f"len(initial_tplt):{len(initial_tplt)}")
 
     return CONTEXT_TEMPLATES_CACHE
 
-# def get_context_templates(model, tok):
-#     global CONTEXT_TEMPLATES_CACHE
-
-#     print(f"Generating using generate_fast")
-#     if CONTEXT_TEMPLATES_CACHE is None:
-#         CONTEXT_TEMPLATES_CACHE = [["{}"]] + [
-#             [
-#                 f.replace("{", " ").replace("}", " ") + ". {}"
-#                 for f in generate_fast(
-#                     model,
-#                     tok,
-#                     ["The", "Therefore", "Because", "I", "You"],
-#                     n_gen_per_prompt=n_gen // 5,
-#                     max_out_len=length,
-#                 ) # 用模型生成句子
-#             ]
-#             for length, n_gen in [(10, 5)]  # Be careful about changing this.
-#         ]
-#         print(f"Cached context templates {CONTEXT_TEMPLATES_CACHE}")
-
-#     return CONTEXT_TEMPLATES_CACHE
+def compute_ks_collision_score(layer_ks: torch.Tensor) -> torch.Tensor:
+    """
+    Compute weights based on collision scores of layer_ks tensor.
+    For each vector in layer_ks, computes a weight (0-1) based on its cosine similarities with all other vectors.
+    Higher collision scores result in lower weights.
+    
+    Args:
+        layer_ks: Tensor of shape (d, n) where d is the dimension and n is the number of vectors
+        
+    Returns:
+        List of weights (0-1), where lower values indicate higher collision with other vectors
+    """
+    start_time = time.time()
+    
+    print(f"layer_ks.size():{layer_ks.size()}")
+    normalized_ks = layer_ks / torch.norm(layer_ks, dim=0, keepdim=True)
+    similarities = torch.mm(normalized_ks.T, normalized_ks)
+    similarities.fill_diagonal_(0)
+    
+    print(f"computing collision score takes:{time.time()-start_time}")    
+    return similarities
+    
 
