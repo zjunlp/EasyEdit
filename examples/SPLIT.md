@@ -1,7 +1,7 @@
 # Why Steering Works: Toward a Unified View of Language Model Parameter Dynamics
 
 
-<div align=center><img src="../figs/PRISM.png" width="100%" height="100%" /></div>
+<div align=center><img src="../figs/SPILT.png" width="100%" height="100%" /></div>
 
 This README is about reproducing the paper [Why Steering Works: Toward a Unified View of Language Model Parameter Dynamics]
 
@@ -13,7 +13,7 @@ Our contributions are as follows:
 
 - **Preference–Utility Mechanism.** We introduce an activation-manifold analysis showing that preference arises from projection onto target directions, while utility degradation is primarily driven by off-manifold deviations, yielding predictive log-odds–control relationships.
 
-- **PRISM Steering Method.** Guided by this mechanism, we propose **PRISM**, a preference–utility joint training objective that improves controllability while better preserving utility.
+- **SPILT Steering Method.** Guided by this mechanism, we propose **SPILT**, a preference–utility joint training objective that improves controllability while better preserving utility.
 
 
 ## Table of Contents
@@ -32,8 +32,8 @@ To set up the environment for running steering experiments, follow these steps:
 
 ```bash
 git clone https://github.com/zjunlp/EasyEdit.git
-conda create -n prism python=3.10
-conda activate prism
+conda create -n spilt python=3.10
+conda activate spilt
 pip install -r requirements_2.txt
 ```
 
@@ -84,25 +84,25 @@ vectors/
                 └── metadata_layer_{layer_id}.jsonl (optional)
 ```
 
-For example, for `gemma-2-9b-it` model with `prism` method on `psychopathy` dataset using `local_weight` intervention, the vectors should be placed at:
+For example, for `gemma-2-9b-it` model with `spilt` method on `psychopathy` dataset using `local_weight` intervention, the vectors should be placed at:
 ```
-vectors/gemma-2-9b-it/prism/psychopathy/prism_local_weight/
+vectors/gemma-2-9b-it/spilt/psychopathy/spilt_local_weight/
 ├── layer_20.pt
 └── metadata_layer_20.jsonl (optional)
 ```
 
 ## Quick Start
-### An example for generating and applying steering vectors on psychopathy dataset using PRISM method with local_weight intervention
+### An example for generating and applying steering vectors on psychopathy dataset using SPILT method with local_weight intervention
 
-Run the script [run_PRISM.py](../run_PRISM.py) using the following line of code:
+Run the script [run_SPILT.py](../run_SPILT.py) using the following line of code:
  
-    bash examples/run_PRISM.sh
+    bash examples/run_SPILT.sh
 
 Or directly run the Python script:
 
-    python run_PRISM.py \
+    python run_SPILT.py \
         --dataset psychopathy \
-        --method prism \
+        --method spilt \
         --model_name gemma-2-9b-it \
         --intervention_method local_weight \
         --mode both \
@@ -116,11 +116,11 @@ This command runs both vector generation and application for the psychopathy dat
 
 - `--dataset`: Specifies the dataset name. Options: `axbench`, `psychopathy`, `powerseeking`. This determines which dataset will be used for training and evaluation.
 
-- `--method`: Specifies the steering method to use. Options: `caa`, `reps`, `sft`, `prism`, or `all` (to run all methods). Each method implements a different approach to generating steering vectors:
+- `--method`: Specifies the steering method to use. Options: `caa`, `reps`, `sft`, `spilt`, or `all` (to run all methods). Each method implements a different approach to generating steering vectors:
   - `caa`: Contrastive Activation Addition
   - `reps`: Representation Engineering via Preference Steering
   - `sft`: Supervised Fine-tuning based Steering
-  - `prism`: Our PRISM method implementation
+  - `spilt`: Our SPILT method implementation
   - `all`: Run all available methods sequentially
 
 - `--model_name`: Specifies the model name (e.g., `gemma-2-9b-it`, `qwen2.5-7b-it`). The model should be located in `./models/{model_name}/`.
@@ -148,11 +148,11 @@ This command runs both vector generation and application for the psychopathy dat
 
 ### Advanced Usage
 
-#### Running prism methods with a specific intervention
+#### Running spilt methods with a specific intervention
 
-    python run_PRISM.py \
+    python run_SPILT.py \
         --dataset psychopathy \
-        --method prism \
+        --method spilt \
         --model_name gemma-2-9b-it \
         --intervention_method local_weight \
         --mode both \
@@ -163,14 +163,14 @@ This command runs both vector generation and application for the psychopathy dat
 
 ## Using Pre-trained Vectors
 
-If you want to skip the vector generation phase and directly apply pre-trained steering vectors, modify the `run_PRISM.sh` script or run the Python script directly with `--mode apply`:
+If you want to skip the vector generation phase and directly apply pre-trained steering vectors, modify the `run_SPILT.sh` script or run the Python script directly with `--mode apply`:
 
-#### Apply Vectors with modified run_PRISM.sh
+#### Apply Vectors with modified run_SPILT.sh
 
-Edit `examples/run_PRISM.sh` and change the `--mode` parameter from `both` or `generate` to `apply`:
+Edit `examples/run_SPILT.sh` and change the `--mode` parameter from `both` or `generate` to `apply`:
 
 ```bash
-python run_PRISM.py \
+python run_SPILT.py \
     --dataset psychopathy \
     --method all \
     --model_name gemma-2-9b-it \
@@ -202,17 +202,17 @@ The `loss` mode calculates training loss for a dataset using pre-generated steer
 ### Requirements
 
 - Pre-generated steering vectors must exist at: `vectors/{model_name}/{method}/{dataset}/{method}_{intervention_method}/`
-- The loss calculation hparam file must exist at: `hparams/Steer/experiment_hparams/prism_experiment/{dataset}/{model_name}/sft/generate_sft_loss.yaml`
+- The loss calculation hparam file must exist at: `hparams/Steer/experiment_hparams/spilt_experiment/{dataset}/{model_name}/sft/generate_sft_loss.yaml`
 - **Note**: Loss calculation is not supported for the `axbench` dataset
 
 ### Example Usage
 
-Calculate loss for psychopathy dataset using PRISM method with local_weight intervention:
+Calculate loss for psychopathy dataset using SPILT method with local_weight intervention:
 
 ```bash
-python run_PRISM.py \
+python run_SPILT.py \
     --dataset psychopathy \
-    --method prism \
+    --method spilt \
     --model_name gemma-2-9b-it \
     --intervention_method local_weight \
     --mode loss \
@@ -222,7 +222,7 @@ python run_PRISM.py \
 ```
 
 This command will:
-1. Load pre-generated vectors from `vectors/gemma-2-9b-it/prism/psychopathy/prism_local_weight/`
+1. Load pre-generated vectors from `vectors/gemma-2-9b-it/spilt/psychopathy/spilt_local_weight/`
 2. Calculate training loss for both `winning_only` and `losing_only` preference types
 3. Use multiplier value 0.2 for steering factor
 4. Save loss results to:

@@ -7,4 +7,4 @@ from .merge import *
 from .vector_generators import *
 from .reps import *
 from .sft import *
-from .prism import *
+from .spilt import *
