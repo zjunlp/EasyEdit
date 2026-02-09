@@ -81,7 +81,13 @@ class DatasetLoader:
             
     def load_file(self, dataset_name = None, split = None) -> Union[Dict, List[Dict], List[Tuple]]:
         
-        dataset_config = self.format_config[split][dataset_name]
+        if 'steer_eval' in dataset_name:
+            domain = dataset_name.split('/')[-1]
+            dataset_name = 'steer_eval'
+            dataset_config = self.format_config[split][dataset_name]
+            dataset_config['file_path'] = dataset_config['file_path'].replace('domain', domain)
+        else:
+            dataset_config = self.format_config[split][dataset_name]
         if 'hf_path' in dataset_config and dataset_config['hf_path'] is not None:
             if split == 'generation':
                 split = 'test'
@@ -100,10 +106,36 @@ class DatasetLoader:
             ext = os.path.splitext(file_path)[1].lower()
             # read raw data
             raw_data = self._read_file(file_path, ext)
+        
+        if dataset_name == 'steer_eval':
+            N_Train = 68
+            N_Eval = 30
+            N_Valid = 5
+            valid_data = {}
+            if split == 'train':
+                for concept, datas in raw_data.items():
+                    if len(datas) > N_Train:
+                        raw_data[concept] = datas[:N_Train]
+                    elif len(datas) % 2 == 1:
+                        raw_data[concept] = datas[:-1]  
+                    print(f"Concept {concept} has {len(raw_data[concept])} training items after adjustment.")
+                return raw_data
+            else :
+                for concept, datas in raw_data.items():
+                    for item in datas:
+                        item['input'] = item.pop('question')
+                    if len(datas) > N_Eval:
+                        raw_data[concept] = datas[:N_Eval]
+                    if len(datas) > N_Valid + N_Eval:
+                        valid_data[concept] = datas[N_Eval:N_Eval + N_Valid]
+                    else:
+                        valid_data[concept] = datas[-N_Valid:]
+                    print(f"Concept {concept} has {len(raw_data[concept])} evaluation items.")
+                    print(f"Concept {concept} has {len(valid_data[concept])} validation items.")
+                return {"eval": raw_data, "valid": valid_data}
             
         if isinstance(raw_data, dict):
             raw_data = [raw_data]
-
         # format each item
         formatted_data = [
             self.format_single_item(item, dataset_name, split)
