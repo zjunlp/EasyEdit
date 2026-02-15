@@ -29,10 +29,12 @@ def extract_json(text: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate question dataset.")
-    parser.add_argument('-f','--file', default= 'version1',      type=str, help="Path to the input file.")
-    parser.add_argument('-n1','--n1', type=int, default=1, help="Number of concepts to generate.")
-    parser.add_argument('-n2','--n2', type=int, default=1, help="Number of concepts to generate.")
-    parser.add_argument('-n3','--n3', type=int, default=1, help="Number of concepts to generate.")
+    parser.add_argument('-f','--file', default= 'example',      type=str, help="Path to the input file.")
+    parser.add_argument('--domain', nargs='+', default=['sentiment', 'personality', 'reasoning patterns',  'language features'], help="Domains to generate concepts for.")
+    parser.add_argument('-n1','--n1', type=int, default=1, help="Number of concepts to generate of Level 1.")
+    parser.add_argument('-n2','--n2', type=int, default=1, help="Number of concepts to generate of Level 2.")
+    parser.add_argument('-n3','--n3', type=int, default=1, help="Number of concepts to generate of Level 3.")
+    
     
     args = parser.parse_args()
     MAX_RETRIES = 5
@@ -41,9 +43,9 @@ if __name__ == "__main__":
         api_key=API_KEY , 
     )
 
-    path = f"data/concept/{args.file}"
+    path = f"data/{args.file}"
     
-    domain = [ 'sentiment', 'personality', 'reasoning patterns',  'language features']
+    domain = args.domain
     
     for d in domain:
         print(f"\033[94mDomain: {d}\033[0m")
@@ -103,5 +105,3 @@ if __name__ == "__main__":
         with open(f'{path}/{d.replace(" ", "_")}/concepts_all.json', 'w', encoding='utf-8') as f:
             json.dump(total, f, indent=2, ensure_ascii=False)
         print('\n\n')   
-
-# python generate_concept.py  -f data -n1 10 -n2 1 -n3 1

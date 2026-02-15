@@ -23,10 +23,6 @@ def main(top_cfg: DictConfig):
     train_datasets = loader.load_file(dataset_name=top_cfg.dataset,split='train')
     eval_datasets = loader.load_file(dataset_name=top_cfg.dataset,split='generation')
     eval_datasets = eval_datasets['valid'] if top_cfg.exp == 'valid' else eval_datasets['eval']
-    # # Initialize and load
-    # train_datasets, test, valid = load_steer_eval_datasets(top_cfg.dataset, top_cfg.data_path)
-    # eval_datasets = valid if top_cfg.exp == 'valid' else test
-    
     
     all_generation_results = []
     
@@ -66,7 +62,6 @@ def main(top_cfg: DictConfig):
             best_multipliers = None
     vectors = None
     for i, concept_train_data in train_datasets.items():
-        
         if generate_vector:
             if method == "prompt":
                 print(f"{color.BLUE}Processing concept {i} with {len(concept_train_data)} items{color.END}")
@@ -166,5 +161,3 @@ def main(top_cfg: DictConfig):
 
 if __name__ == '__main__':
     main()
-
-# CUDA_VISIBLE_DEVICES=2 python steer_eval.py

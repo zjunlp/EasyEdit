@@ -228,8 +228,8 @@ async def main(input_path, output_path, n_concepts, n_qa_pairs):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate question dataset.")
-    parser.add_argument('-i','--input_path', default= 'data/case.json',      type=str, help="Path to the input file.")
-    parser.add_argument('-o','--output_path', default='case_20', type=str, required=True, help="Path to the output folder.")
+    parser.add_argument('-i','--input_path', default= 'data/concept.json',      type=str, help="Path to the input file.")
+    parser.add_argument('-o','--output_path', default='case', type=str, required=True, help="Path to the output folder.")
     parser.add_argument('-n','--n_concepts', type=int, default=15, help="Number of concepts to generate.")
     parser.add_argument('-a','--n_qa_pairs', type=int, default=100, help="Number of question-answer pairs to generate.")
     
@@ -244,8 +244,3 @@ if __name__ == "__main__":
     
     asyncio.run(main(input_path, output_path, n_concepts=args.n_concepts, n_qa_pairs=args.n_qa_pairs))
     
-    # python generate_qa_asy.py -i data/version1/language_features/concepts_all.json    -o try -n 2 -a 2
-    # python generate_qa_asy.py -i data/version1/personality/concepts_all.json          -o try -n 1 -a 2
-    # python generate_qa_asy.py -i data/version1/reasoning_patterns/concepts_all.json   -o try -n 1 -a 2
-    # python generate_qa_asy.py -i data/version1/sentiment/concepts_all.json            -o try -n 1 -a 2
-    # python generate_qa_asy.py -i data/version1/safety/concepts_all.json               -o try -n 1 -a 2
