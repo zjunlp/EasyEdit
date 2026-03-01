@@ -311,9 +311,7 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
                                 {
 
                                     "role": "user",
-                                    "content": [
-                                        [{"type": "image"}] * num_images + [{"type": "text", "text": p}]
-                                        ],
+                                    "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
                                 },
                             ],
                                         add_generation_prompt=True,

@@ -407,6 +407,22 @@ class MultimodalEditor:
                         f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
                     )
 
+                # reset layer
+                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE': 
+                    with torch.no_grad():
+                        weights_copy()
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
+                    edited_model.unload()
+                    del self.model.peft_config
+                elif self.alg_name == 'MELO':
+                    self.model = edited_model
+                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
+                    self.model = edited_model
+                else:
+                    with torch.no_grad():
+                        for k, v in weights_copy.items():
+                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+
                 all_metrics.append(metrics)
 
         return all_metrics, edited_model, weights_copy
