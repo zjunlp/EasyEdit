@@ -1,5 +1,14 @@
 # ================train datasets===========================
 train:
+  steer_eval:
+    file_path: ./data/steer_eval/domain/result/gpt41_q_gpt41mini_a/train_results.json
+    field_names:
+      question: question
+      matching: pos_answer
+      not_matching: neg_answer
+      concept: concept 
+      concept_id: 'level'
+
   safe_edit:       
     file_path: ./data/safe_edit/train.csv
     field_names:
@@ -83,6 +92,9 @@ train:
 
 # ================generation datasets===========================
 generation:
+  steer_eval:
+    file_path: ./data/steer_eval/domain/result/gpt41_q_gpt41mini_a/test_results.json
+
   psychopathy:
     file_path: ./data/psychopathy/test.jsonl
     field_names:
