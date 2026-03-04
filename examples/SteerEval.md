@@ -2,7 +2,7 @@
 
 <div align=center><img src="../figs/steer_eval_data_examples.jpg" width="100%" height="100%" /></div>
 
-This README is about reproducing the paper [How Controllable Are Large Language Models? A Unified Evaluation across Behavioral Granularities]().
+This README is about reproducing the paper [How Controllable Are Large Language Models? A Unified Evaluation across Behavioral Granularities](https://arxiv.org/abs/2603.02578).
 
 This paper introduce a hierarchical benchmark **SteerEval**,  designed for systematically evaluating LLM steerability. 
 ## Dataset Description
