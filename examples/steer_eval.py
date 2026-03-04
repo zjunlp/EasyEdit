@@ -21,8 +21,9 @@ def main(top_cfg: DictConfig):
     # Initialize and load
     loader = DatasetLoader()
     train_datasets = loader.load_file(dataset_name=top_cfg.dataset,split='train')
-    eval_datasets = loader.load_file(dataset_name=top_cfg.dataset,split='generation')
-    eval_datasets = eval_datasets['valid'] if top_cfg.exp == 'valid' else eval_datasets['eval']
+    top_cfg.exp = 'generation' if top_cfg.exp == 'test' else top_cfg.exp
+    eval_datasets = loader.load_file(dataset_name=top_cfg.dataset,split=top_cfg.exp)
+
     
     all_generation_results = []
     

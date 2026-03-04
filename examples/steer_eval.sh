@@ -9,13 +9,12 @@ gpu=0
 vllm_enable=false
 
 model=gemma-2-9b-it
-method=reps_vector
+method=reps
 use_pca=false
-dataset=p
-data_path=final_2
+dataset=SteerEval/language_features
 
 generate_vector=true
-gen_out_path=final_2-4
+gen_out_path=steer_eval_output
 
 generate_response=true
 generate_orig_output=false
@@ -50,9 +49,6 @@ while [[ "$#" -gt 0 ]]; do
 
         --dataset=*) dataset="${1#*=}"; shift ;;
         --dataset)   dataset="$2"; shift; shift ;;
-
-        --data_path=*) data_path="${1#*=}"; shift ;;
-        --data_path)   data_path="$2"; shift; shift ;;
 
         --generate_vector=*) generate_vector="${1#*=}"; shift ;;
         --generate_vector)   generate_vector="$2"; shift; shift ;;
@@ -97,7 +93,6 @@ echo "Method:          $method"
 echo "use PCA:         $use_pca"
 
 echo "Dataset:         $dataset"
-echo "Data Path:       $data_path"
 
 echo "Generate Vector: $generate_vector"
 echo "Output Path:     $gen_out_path"
@@ -152,7 +147,6 @@ CUDA_VISIBLE_DEVICES=$gpu python steer_eval.py \
     +method=${method} \
     +use_pca=${use_pca} \
     +dataset=${dataset} \
-    +data_path=${data_path} \
     steer_train_hparam_paths=$steer_train_hparam_paths \
     apply_steer_hparam_paths=$apply_steer_hparam_paths \
     +generate_vector=${generate_vector} \
@@ -173,6 +167,6 @@ CUDA_VISIBLE_DEVICES=$gpu python steer_eval.py \
 
 # Example Command:
 #  personality reasoning_patterns sentiment language_features
-# ./steer_eval.sh --gpu=1  --method=reps_vector --dataset=version2/personality  --data_path=gpt41_q_qwenmax_a   --generate_vector=true   --gen_out_path=f_version_2 --generate_response=false --generate_orig_output=false --evaluate=false --layers=20 --multipliers=10  --exp=test
-# ./steer_eval.sh --gpu=2  --method=caa --dataset=version2/personality  --data_path=gpt41_q_qwenmax_a   --generate_vector=true   --gen_out_path=f_version_2 --generate_response=false --generate_orig_output=false --evaluate=false --layers=20 --multipliers=10  --exp=test
-# ./steer_eval.sh --gpu=1  --method=reps_vector --dataset=version1/reasoning_patterns  --data_path=gpt41_q_qwenmax_a    --generate_vector=true    --gen_out_path=f_version_1_batch_4 --generate_response=false  --generate_orig_output=false --evaluate=false --layers=20 --multipliers=10  --exp=test
+# ./steer_eval.sh --gpu=1  --method=reps_vector --dataset=SteerEval/personality     --generate_vector=true   --gen_out_path=f_version_2 --generate_response=false --generate_orig_output=false --evaluate=false --layers=20 --multipliers=10  --exp=test
+# ./steer_eval.sh --gpu=2  --method=caa --dataset=SteerEval/personality    --generate_vector=true   --gen_out_path=f_version_2 --generate_response=false --generate_orig_output=false --evaluate=false --layers=20 --multipliers=10  --exp=test
+# ./steer_eval.sh --gpu=1  --method=reps_vector --dataset=SteerEval/reasoning_patterns      --generate_vector=true    --gen_out_path=testsss --generate_response=false  --generate_orig_output=false --evaluate=false --layers=20 --multipliers=10  --exp=valid

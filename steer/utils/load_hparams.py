@@ -10,6 +10,7 @@ def load_generate_vector_hparams(top_cfg):
     for i, hparam_path in enumerate(top_cfg.steer_train_hparam_paths):
         assert os.path.exists(hparam_path), f"Hparam path {hparam_path} does not exist !"
         method_hparams = OmegaConf.load(hparam_path)
+        print(hparam_path)
         alg_name = method_hparams['alg_name']
         hparams_dict_key = f"{alg_name}"
         # hparams_dict_key = f"{alg_name}_{i}"

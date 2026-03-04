@@ -1,5 +1,5 @@
 # === Basic Config ===
-alg_name: reps_vector
+alg_name: reps
 layers: [12]
 use_cache: false
 
