@@ -68,7 +68,7 @@ class Trace(contextlib.AbstractContextManager):
         if layer is not None:
             module = get_module(module, layer)
 
-        def retain_hook(m, inputs, output, kwargs=None):
+        def retain_hook(m, inputs, output):
             if retain_input:
                 # Try to get input from positional args first
                 if len(inputs) > 0:
@@ -78,17 +78,7 @@ class Trace(contextlib.AbstractContextManager):
                         detach=detach,
                         retain_grad=False,
                     )
-                # If inputs is empty, try to get hidden_states from kwargs (modern transformers)
-                elif kwargs is not None and 'hidden_states' in kwargs:
-                    retainer.input = recursive_copy(
-                        kwargs['hidden_states'],
-                        clone=clone,
-                        detach=detach,
-                        retain_grad=False,
-                    )
                 else:
-                    # Fallback: use output as input proxy for transformer blocks
-                    # since they transform hidden_states -> hidden_states with same shape
                     retainer.input = None
             if edit_output:
                 output = invoke_with_optional_args(
@@ -107,15 +97,7 @@ class Trace(contextlib.AbstractContextManager):
                 raise StopForward()
             return output
 
-        # Try to use with_kwargs=True for PyTorch 2.0+ to capture kwargs like hidden_states
-        try:
-            # PyTorch 2.0+ supports with_kwargs parameter
-            self.registered_hook = module.register_forward_hook(retain_hook, with_kwargs=True)
-        except TypeError:
-            # Fallback for older PyTorch versions - wrap the hook to ignore kwargs parameter
-            def legacy_hook(m, inputs, output):
-                return retain_hook(m, inputs, output, kwargs=None)
-            self.registered_hook = module.register_forward_hook(legacy_hook)
+        self.registered_hook = module.register_forward_hook(retain_hook)
         self.stop = stop
 
     def __enter__(self):
