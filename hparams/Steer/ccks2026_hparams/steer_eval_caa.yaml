@@ -1,0 +1,52 @@
+# CCKS2026 — CAA 主配置（RePS 见 steer_eval_reps.yaml）
+# 运行: --config-path=hparams/Steer/ccks2026_hparams --config-name=steer_eval_caa
+# 第二步: 追加 generate_vector=false generate_response=true
+
+# General
+model_name_or_path: hf_models/Qwen3-4B-Instruct-2507
+torch_dtype: bfloat16
+device: cuda:0
+seed: 42
+use_chat_template: true
+system_prompt: ''
+
+method: caa
+dataset: SteerEval/personality
+exp: valid
+
+layers: [18]
+multipliers: [3]
+use_pca: false
+
+# Generate vector
+steer_train_hparam_paths:
+  - hparams/Steer/ccks2026_hparams/qwen3-4b-it/caa/generate_caa.yaml
+steer_train_dataset: steer_eval
+save_vectors: true
+steer_vector_output_dirs:
+  - vectors/Qwen3-4B-Instruct-2507/SteerEval/personality/ccks_baseline_caa
+
+# Apply vector
+apply_steer_hparam_paths:
+  - hparams/Steer/ccks2026_hparams/qwen3-4b-it/caa/apply_caa.yaml
+steer_vector_load_dir:
+  - vectors/Qwen3-4B-Instruct-2507/SteerEval/personality/ccks_baseline_caa
+
+# Step 1: generate_vector=true, generate_response=false
+# Step 2: generate_vector=false, generate_response=true
+generate_vector: true
+generate_response: false
+evaluate: false
+
+# Generation
+generation_data:
+  - steer_eval
+generation_data_size: null
+generation_output_dir: generation/Qwen3-4B-Instruct-2507/SteerEval/personality/ccks_baseline_caa/caa
+num_responses: 1
+steer_from_end_position: false
+generate_orig_output: false
+generation_params:
+  max_new_tokens: 256
+  temperature: 0
+  do_sample: false
