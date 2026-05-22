@@ -1,5 +1,6 @@
 from ..models.rome import ROMEHyperParams, apply_rome_to_model
 from ..models.memit import MEMITHyperParams, apply_memit_to_model
+from ..models.memit_FE import MEMITFEHyperParams, apply_memit_FE_to_model
 from ..models.kn import KNHyperParams, apply_kn_to_model
 from ..models.mend import MENDHyperParams, MendRewriteExecutor, MendMultimodalRewriteExecutor, MendPerRewriteExecutor
 from ..models.ft import FTHyperParams, apply_ft_to_model
@@ -28,6 +29,7 @@ from ..models.simie import SimIEHyperParams, apply_simie_to_model
 ALG_DICT = {
     'ROME': apply_rome_to_model,
     'MEMIT': apply_memit_to_model,
+    'MEMIT-FE': apply_memit_FE_to_model,
     "FT": apply_ft_to_model,
     "DINM": apply_dinm_to_model,
     'KN': apply_kn_to_model,
