@@ -41,6 +41,8 @@ def compute_z(
             context_templates=context_templates,
         )
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"Error computing z for layer {first_layer} due to {e}. Returning None.")
         return None
     
@@ -91,14 +93,16 @@ def compute_z(
             output = tr[layer_module].output
             c_z_raw = output[0] if isinstance(output, tuple) else output
             
-            # Extract at lookup position (match memit_a_main.py logic)
+            # Extract at lookup position
             if c_z_raw.dim() == 3:
                 c_z = c_z_raw[0, lookup_idx, :] if c_z_raw.shape[0] == 1 else c_z_raw[lookup_idx, 0, :]
             else:
                 c_z = c_z_raw[lookup_idx, :]
             
             zs_dict[layer]=c_z.detach().clone()
+            print()
             print(f"Computed z for layer {layer} during forward pass.")
+            print(f"Norm of z for layer {layer}: {zs_dict[layer].norm().item()}")
     
     return zs_dict
 
@@ -128,7 +132,7 @@ def _direct_compute_z(
     print("Computing right vector (v)")
 
     # Tokenize target into list of int token IDs
-    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(f"cuda:{hparams.device}")[0]
+    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False)[0].to(f"cuda:{hparams.device}")[0]
 
     if target_ids[0] == tok.bos_token_id or target_ids[0] == tok.unk_token_id:
         target_ids = target_ids[1:]
@@ -206,27 +210,56 @@ def _direct_compute_z(
                 )
             new_out[0] = updated
             return type(original)(new_out) if isinstance(original, tuple) else new_out
-
+    
+        if isinstance(cur_out, tuple):
+            output_tensor = cur_out[0]
+            is_tuple = True
+        else:
+            output_tensor = cur_out
+            is_tuple = False
+        
         if cur_layer == hparams.layer_module_tmp.format(layer):
-            layer_output, original_container = _unwrap_output(cur_out)
 
             # Store initial value of the vector of interest
             if target_init is None:
                 print("Recording initial value of v*")
-                # Initial value is recorded for the clean sentence
-                target_init = layer_output[0, lookup_idxs[0]].detach().clone()
+                target_init = output_tensor[0, lookup_idxs[0]].detach().clone()
+
 
             # Add intervened delta
+            new_output = output_tensor.clone()
+            
             for i, idx in enumerate(lookup_idxs):
-
-                if len(lookup_idxs)!=layer_output.shape[0]:
-                    layer_output[idx, i, :] += delta
+                if len(lookup_idxs) != new_output.shape[0]:
+                    new_output[idx, i, :] = new_output[idx, i, :] + delta
                 else:
-                    layer_output[i, idx, :] += delta
-
-            return _rewrap_output(layer_output, original_container)
-
+                    new_output[i, idx, :] = new_output[i, idx, :] + delta
+            
+            if is_tuple:
+                return (new_output,) + cur_out[1:]
+            return new_output
+        
         return cur_out
+
+        # if cur_layer == hparams.layer_module_tmp.format(layer):
+        #     layer_output, original_container = _unwrap_output(cur_out)
+
+        #     # Store initial value of the vector of interest
+        #     if target_init is None:
+        #         print("Recording initial value of v*")
+        #         target_init = layer_output[0, lookup_idxs[0]].detach().clone()
+
+        #     # Add intervened delta
+        #     for i, idx in enumerate(lookup_idxs):
+
+        #         if len(lookup_idxs)!=layer_output.shape[0]:
+        #             layer_output[idx, i, :] += delta
+        #         else:
+        #             layer_output[i, idx, :] += delta
+
+        #     return _rewrap_output(layer_output, original_container)
+
+        # return cur_out
 
     # Optimizer
     opt = torch.optim.Adam([delta], lr=hparams.v_lr)
@@ -296,6 +329,7 @@ def _direct_compute_z(
             f"avg prob of [{request['target_new']}] "
             f"{torch.exp(-nll_loss_each).mean().item()}"
         )
+
         if loss < 5e-2:
             break
 
