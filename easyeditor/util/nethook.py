@@ -68,7 +68,7 @@ class Trace(contextlib.AbstractContextManager):
         if layer is not None:
             module = get_module(module, layer)
 
-        def retain_hook(m, inputs, output, kwargs=None):
+        def retain_hook(m, inputs, kwargs, output):
             if retain_input:
                 # Try to get input from positional args first
                 if len(inputs) > 0:
@@ -114,7 +114,7 @@ class Trace(contextlib.AbstractContextManager):
         except TypeError:
             # Fallback for older PyTorch versions - wrap the hook to ignore kwargs parameter
             def legacy_hook(m, inputs, output):
-                return retain_hook(m, inputs, output, kwargs=None)
+                return retain_hook(m, inputs, None, output)
             self.registered_hook = module.register_forward_hook(legacy_hook)
         self.stop = stop
 
@@ -216,6 +216,39 @@ class StopForward(Exception):
     """
 
     pass
+
+
+def get_hidden_state(output):
+    """
+    Returns the primary hidden-state tensor from a transformer layer output.
+    Newer transformers decoder layers may return a tensor directly, while
+    older versions commonly returned a tuple whose first item is the tensor.
+    """
+    if isinstance(output, torch.Tensor):
+        return output
+    if isinstance(output, (list, tuple)):
+        if len(output) == 0:
+            raise ValueError("Cannot read hidden state from an empty layer output.")
+        return output[0]
+    raise TypeError(f"Unsupported layer output type: {type(output)}")
+
+
+def replace_hidden_state(output, hidden_state):
+    """
+    Replaces the primary hidden-state tensor while preserving the original
+    output container type when the layer returned a tuple/list.
+    """
+    if isinstance(output, torch.Tensor):
+        return hidden_state
+    if isinstance(output, list):
+        updated = list(output)
+        updated[0] = hidden_state
+        return updated
+    if isinstance(output, tuple):
+        updated = list(output)
+        updated[0] = hidden_state
+        return type(output)(updated)
+    raise TypeError(f"Unsupported layer output type: {type(output)}")
 
 
 def recursive_copy(x, clone=None, detach=None, retain_grad=None):

@@ -99,17 +99,20 @@ def compute_v(
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init
         if cur_layer == hparams.mlp_module_tmp.format(layer):
+            hidden_state = nethook.get_hidden_state(cur_out)
             # Store initial value of the vector of interest
             if target_init is None:
                 print("Recording initial value of v*")
                 # Initial value is recorded for the clean sentence
-                target_init = cur_out[0, lookup_idxs[0]].detach().clone()
+                target_init = hidden_state[0, lookup_idxs[0]].detach().clone()
 
             for i, idx in enumerate(lookup_idxs):
-                if len(lookup_idxs) != len(cur_out):
-                    cur_out[idx, i, :] += delta
+                if len(lookup_idxs) != len(hidden_state):
+                    hidden_state[idx, i, :] += delta
                 else:
-                    cur_out[i, idx, :] += delta
+                    hidden_state[i, idx, :] += delta
+
+            return nethook.replace_hidden_state(cur_out, hidden_state)
 
         return cur_out
 

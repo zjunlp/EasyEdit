@@ -36,7 +36,7 @@ def compute_ks(
                 _ = model(**input_ids)
                 #layer_in_ks = tr.input #(bs:seq:h_dim)
                 zs_out = tr.output#(bs:seq:h_dim)
-    zs_out = zs_out[0] if type(zs_out) is tuple else zs_out
+    zs_out = nethook.get_hidden_state(zs_out)
     for k, idxs in idxs_dict.items():
         zs_out_list = []
         for idx in idxs:
@@ -119,7 +119,7 @@ def apply_unke_ARE_to_model(
                 _ = model(**contexts_tok)
                 layer_in_ks = tr.input #(bs:seq:h_dim)
                 layer_out_ks = tr.output#(bs:seq:h_dim)
-        layer_out_ks = layer_out_ks[0] if type(layer_out_ks) is tuple else layer_out_ks
+        layer_out_ks = nethook.get_hidden_state(layer_out_ks)
         
 
         cur_zs_dict = compute_ks(model, tok,batch_question_ans, hparams, z_layer, idxs_dict)
@@ -145,7 +145,7 @@ def apply_unke_ARE_to_model(
                 _ = model(**ex_tok)
                 stat_in = tr.input
                 stat_out = tr.output
-        stat_out = stat_out[0] if type(stat_out) is tuple else stat_out
+        stat_out = nethook.get_hidden_state(stat_out)
 
 
 

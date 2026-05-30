@@ -104,23 +104,26 @@ def compute_z(
             nonlocal target_init  
 
             if cur_layer == hparams.layer_module_tmp.format(layer):
+                hidden_state = nethook.get_hidden_state(cur_out)
                 
                 if target_init is None:
                 
-                    target_init = cur_out[0][0, lookup_idxs[0]].detach().clone()
+                    target_init = hidden_state[0, lookup_idxs[0]].detach().clone()
 
                 for idxs_pre, delta_pre in all_delta:
                     for i, idx in enumerate(idxs_pre):
-                        if len(idxs_pre)!=len(cur_out[0]):
-                            cur_out[0][idx, i, :] += delta_pre
+                        if len(idxs_pre)!=len(hidden_state):
+                            hidden_state[idx, i, :] += delta_pre
                         else:
-                            cur_out[0][i, idx, :] += delta_pre
+                            hidden_state[i, idx, :] += delta_pre
                 for i, idx in enumerate(lookup_idxs):
                     
-                    if len(lookup_idxs)!=len(cur_out[0]):
-                        cur_out[0][idx, i, :] += delta
+                    if len(lookup_idxs)!=len(hidden_state):
+                        hidden_state[idx, i, :] += delta
                     else:
-                        cur_out[0][i, idx, :] += delta
+                        hidden_state[i, idx, :] += delta
+
+                return nethook.replace_hidden_state(cur_out, hidden_state)
 
             return cur_out
 
@@ -148,7 +151,7 @@ def compute_z(
 
             # Compute loss on rewriting targets
 
-            output=tr[hparams.layer_module_tmp.format(loss_layer)].output[0]  
+            output = nethook.get_hidden_state(tr[hparams.layer_module_tmp.format(loss_layer)].output)
             if output.shape[1]!=rewriting_targets.shape[1]:
                 output=torch.transpose(output, 0, 1)
             full_repr =  output
@@ -200,7 +203,6 @@ def compute_z(
     )
 
     return all_idxs, all_target
-
 
 
 

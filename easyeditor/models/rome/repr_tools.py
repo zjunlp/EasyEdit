@@ -140,12 +140,7 @@ def get_reprs_at_idxs(
 
     def _process(cur_repr, batch_idxs, key):
         nonlocal to_return
-        # Handle tuple outputs - some model hooks return tuples (e.g., transformer blocks)
-        if isinstance(cur_repr, tuple):
-            if len(cur_repr) == 0:
-                # This should not happen with the nethook.py fix, but handle gracefully
-                return
-            cur_repr = cur_repr[0]
+        cur_repr = nethook.get_hidden_state(cur_repr)
         if cur_repr.shape[0]!=len(batch_idxs):
             cur_repr=cur_repr.transpose(0,1)
         for i, idx_list in enumerate(batch_idxs):
