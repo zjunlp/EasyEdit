@@ -905,6 +905,7 @@ class KnowledgeNeurons:
             "argmax_prob": new_argmax_prob,
         }
 
+        @torch.no_grad()
         def unpatch_fn():
             # reverse modified weights
             for idx, (layer_idx, position) in enumerate(neurons):
