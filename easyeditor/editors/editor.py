@@ -128,10 +128,10 @@ class BaseEditor:
             else:
                 raise NotImplementedError
 
-            if self.tok is not None and (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer) or isinstance(self.tok, LlamaTokenizerFast) or isinstance(self.tok, PreTrainedTokenizerFast)) and (hparams.alg_name not in ['ROME', 'MEMIT', 'EMMET', 'R-ROME','AlphaEdit','CORE']):
+            if self.tok is not None and (isinstance(self.tok, GPT2Tokenizer) or isinstance(self.tok, GPT2TokenizerFast) or isinstance(self.tok, LlamaTokenizer) or isinstance(self.tok, LlamaTokenizerFast) or isinstance(self.tok, PreTrainedTokenizerFast)) and (hparams.alg_name not in ['ROME', 'MEMIT', 'EMMET', 'R-ROME','AlphaEdit','CORE', 'SPHERE']):
                 LOG.info('AutoRegressive Model detected, set the padding side of Tokenizer to left...')
                 self.tok.padding_side = 'left'
-            if self.tok is not None and ('mistral' in self.model_name.lower() or 'llama' in self.model_name.lower() or 'qwen' in self.model_name.lower()) and (hparams.alg_name in ['ROME', 'MEMIT', 'EMMET', 'R-ROME','AlphaEdit', 'CORE']):
+            if self.tok is not None and ('mistral' in self.model_name.lower() or 'llama' in self.model_name.lower() or 'qwen' in self.model_name.lower()) and (hparams.alg_name in ['ROME', 'MEMIT', 'EMMET', 'R-ROME','AlphaEdit', 'CORE', 'SPHERE']):
                 LOG.info('AutoRegressive Model detected, set the padding side of Tokenizer to right...')
                 self.tok.padding_side = 'right'
         else:
@@ -637,5 +637,4 @@ class BaseEditor:
     ):
         metrics = self.apply_algo(datasets, self.hparams)
         return metrics
-
 

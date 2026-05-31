@@ -16,6 +16,7 @@ from .qlora import *
 from .lora import *
 from .dpo import *
 from .alphaedit import *
+from .SPHERE import *
 from .deco import *
 from .dola import *
 from .deepedit_api import *
