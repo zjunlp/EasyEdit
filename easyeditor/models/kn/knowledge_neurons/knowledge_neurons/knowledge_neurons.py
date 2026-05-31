@@ -76,7 +76,7 @@ class KnowledgeNeurons:
             self.input_ff_attr = "mlp.gate_proj"
             self.output_ff_attr = "mlp.down_proj.weight"
             self.word_embeddings_attr = "model.embed_tokens.weight"
-        elif 'qwen2' == model_type:
+        elif model_type in ['qwen2', 'qwen3']:
             self.transformer_layers_attr = "model.layers"
             self.input_ff_attr = "mlp.gate_proj"
             self.output_ff_attr = "mlp.down_proj.weight"
