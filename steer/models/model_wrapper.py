@@ -308,7 +308,8 @@ class BaseModelWrapper:
         self.torch_dtype = DTYPES_DICT.get(torch_dtype, t.float32)
         self.use_cache = use_cache
         self.model_name_or_path = model_name_or_path
-        
+        self.processor = None  # text models have no image processor; multimodal subclasses set this
+
         if hparams.vllm_enable and VLLM_AVAILABLE:
             self.VLLM_model = LLM(
                 model=self.model_name_or_path,
