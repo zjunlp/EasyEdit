@@ -62,6 +62,7 @@ We have also published a blog post titled "[Take Control of What Your LLM Knows 
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#pip-installation)
+    - [⚡uv Installation](#uv-installation)
     - [Editing GPU memory usage](#editing-gpu-memory-usage)
 - [📌Use EasyEdit](#use-easyedit)
   - [BaseEditor](#baseeditor)
@@ -674,13 +675,39 @@ data
 #### 🔧Pip Installation
 
 **Note: Please use Python 3.9+ for EasyEdit**
-To get started, simply install conda and run:
+To get started with pip, simply install conda and run:
 
 ```shell
 git clone https://github.com/zjunlp/EasyEdit.git
+cd EasyEdit
 conda create -n EasyEdit python=3.10
-...
+conda activate EasyEdit
 pip install -r requirements.txt
+```
+
+#### ⚡uv Installation
+
+You can also use [uv](https://docs.astral.sh/uv/) for faster dependency installation:
+
+```shell
+git clone https://github.com/zjunlp/EasyEdit.git
+cd EasyEdit
+conda create -n EasyEdit python=3.10
+conda activate EasyEdit
+pip install uv
+uv pip install --torch-backend cu128 -r requirements.txt
+```
+
+If you are installing for a CPU-only environment, replace the last command with:
+
+```shell
+uv pip install --torch-backend cpu -r requirements.txt
+```
+
+After installation, you can verify the environment with:
+
+```shell
+uv pip check
 ```
 
 
