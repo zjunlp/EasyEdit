@@ -29,7 +29,7 @@ def prepare_input(tokenizer, prompts, device="cuda"):
     return input_tokens
 
 def get_sae_config(release, sae_id):
-    from sae_lens.toolkit.pretrained_saes_directory import get_pretrained_saes_directory
+    from sae_lens.loading.pretrained_saes_directory import get_pretrained_saes_directory
     sae_directory = get_pretrained_saes_directory()
 
     # get the repo id and path to the SAE
@@ -155,11 +155,12 @@ def generate_sae_feature_vectors(hparams:SaeFeatureHyperParams):
     
     if args.sae_path is None:
         from sae_lens import SAE
-        sae, sae_cfg, sparsity = SAE.from_pretrained(
+        sae, _, sparsity = SAE.from_pretrained_with_cfg_and_sparsity(
             release=args.release,  # <- Release name
             sae_id=args.sae_id,  # <- SAE id (not always a hook point!)
             device=device,
         )
+        sae_cfg = sae.cfg.metadata
     else:
         assert str(args.layer) in args.sae_path, f"Sae doesnt match the layer!!!"
         if "gemma" in args.sae_path.lower():

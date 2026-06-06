@@ -1,24 +1,11 @@
 import os
 import torch
-from ...vector_generators.lm_steer import Hack_no_grad
 from .apply_reps_hparam import ApplyRepsHyperParams
-         
+
 def reset_reps_layers(model, layers):
-    """Reset only the REPS activations for specified layers"""
-    model = model.model
+    decoder_layers = model._decoder_layers()
     for layer in layers:
-        if hasattr(model, 'model') and (hasattr(model.model, 'layers') or (hasattr(model.model, 'module') and hasattr(model.model.module, 'layers'))):
-            if isinstance(model.model, Hack_no_grad):
-                model.model.module.layers[layer].reset(method_name="reps")
-            else:
-                model.model.layers[layer].reset(method_name="reps")
-        elif hasattr(model,'transformer') and hasattr(model.transformer, 'h') or (hasattr(model.transformer, 'module') and hasattr(model.transformer.module, 'h')):  # for GPT models
-            if isinstance(model.transformer, Hack_no_grad):
-                model.transformer.module.h[layer].reset(method_name="reps")
-            else:
-                model.transformer.h[layer].reset(method_name="reps")
-        else:
-            raise NotImplementedError("Failed to reset REPS activations")
+        decoder_layers[layer].reset(method_name="reps")
 
 def apply_reps(hparams: ApplyRepsHyperParams, pipline=None, vector=None):
     from ...models.get_model import get_model
@@ -56,10 +43,10 @@ def apply_reps(hparams: ApplyRepsHyperParams, pipline=None, vector=None):
                 steering_vector = data_states.to(device)
             else:
                 raise ValueError(f"Concept ID {concept_id} exceeds the number of vectors available: {steering_vector.shape[0]}")
-            
+            model_config = model.model.config.text_config if hasattr(model.model.config, "text_config") else model.model.config
             intervention = VectorIntervention(
                 multiplier=multiplier,
-                embed_dim=model.model.config.hidden_size, # set the embedding dimension
+                embed_dim=model_config.hidden_size, # set the embedding dimension
                 low_rank_dimension=1,            # set the low rank dimension
                 init_vector=steering_vector,
             )

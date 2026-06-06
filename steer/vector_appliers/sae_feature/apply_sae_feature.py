@@ -3,26 +3,12 @@ import json
 import torch
 from tqdm import tqdm
 
-from ...vector_generators.lm_steer import Hack_no_grad
-
 from .apply_sae_feature_hparam import ApplySaeFeatureHyperParams
-         
+
 def reset_sae_feature_layers(model, layers):
-    """Reset only the SaeFeature activations for specified layers"""
-    model=model.model
+    decoder_layers = model._decoder_layers()
     for layer in layers:
-        if hasattr(model, 'model') and (hasattr(model.model, 'layers') or (hasattr(model.model, 'module') and hasattr(model.model.module, 'layers'))):
-            if isinstance(model.model, Hack_no_grad):
-                model.model.module.layers[layer].reset(method_name="sae_feature")
-            else:
-                model.model.layers[layer].reset(method_name="sae_feature")
-        elif hasattr(model,'transformer') and hasattr(model.transformer, 'h') or (hasattr(model.transformer, 'module') and hasattr(model.transformer.module, 'h')):  # for GPT models
-            if isinstance(model.transformer, Hack_no_grad):
-                model.transformer.module.h[layer].reset(method_name="sae_feature")
-            else:
-                model.transformer.h[layer].reset(method_name="sae_feature")
-        else:
-            raise NotImplementedError("Failed to reset SaeFeature activations")
+        decoder_layers[layer].reset(method_name="sae_feature")
 
 def apply_sae_feature(hparams: ApplySaeFeatureHyperParams,pipline=None,vector=None):
     from ...models.get_model import get_model

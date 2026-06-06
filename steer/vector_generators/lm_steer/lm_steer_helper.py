@@ -43,7 +43,11 @@ class Projected_Adaptor(nn.Module):
     def set_value(self, steer_values):
         self.steer_values = steer_values
 
-    def forward(self, state):
+    def forward(self, state, *args, **kwargs):
+        # Accept (and ignore) any extra positional / keyword arguments. This module replaces the
+        # model's output embedding (lm_head) via set_output_embeddings; multimodal model forwards
+        # may invoke the lm_head with additional arguments, which a plain ``forward(self, state)``
+        # would reject with a TypeError. Only ``state`` (the hidden states) is ever used.
         if self.steer_values.abs().sum() == 0:
             return state.matmul(
                 self.lm_head.weight.detach().transpose(0, 1))
@@ -118,6 +122,12 @@ class Hack_no_grad(nn.Module):
     def forward(self, *inputs, **kwargs):
         with torch.no_grad():
             return self.module(*inputs, **kwargs)
+        
+    def __getattr__(self, name):
+        try:
+            return super().__getattr__(name)  
+        except AttributeError:
+            return getattr(self.module, name)
          
 import random
 import torch

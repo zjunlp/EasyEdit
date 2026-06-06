@@ -141,10 +141,11 @@ def generate_spilt(args: SpiltHyperParams, dataset, model = None, dataset_name =
             low_rank_dimension = args.low_rank_dimension if args.low_rank_dimension else 1
             
             # incorporate the intervention to the model
+            model_config = model.model.config if not hasattr(model.model.config, "text_config") else model.model.config.text_config
             benchmark_model.make_model(
                 mode="train",
-                input_dim=model.model.config.hidden_size if args.intervention_components != "mlp_mid" else model.model.config.intermediate_size,
-                embed_dim=model.model.config.hidden_size,
+                input_dim=model_config.hidden_size if args.intervention_components != "mlp_mid" else model_config.intermediate_size,
+                embed_dim=model_config.hidden_size,
                 low_rank_dimension=low_rank_dimension,
                 dtype=model.torch_dtype,
                 intervention_type=args.intervention_type, 

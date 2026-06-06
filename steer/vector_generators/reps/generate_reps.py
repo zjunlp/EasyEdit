@@ -139,14 +139,15 @@ def generate_reps(args: RePSHyperParams, dataset, model = None, dataset_name = N
             low_rank_dimension = args.low_rank_dimension if args.low_rank_dimension else 1
             
             # incorporate the intervention to the model
+            model_config = model.model.config if not hasattr(model.model.config, "text_config") else model.model.config.text_config
             benchmark_model.make_model(
                 mode="train",
-                input_dim=model.model.config.hidden_size if args.intervention_components != "mlp_mid" else model.model.config.intermediate_size,
-                embed_dim=model.model.config.hidden_size,
-                intervention_components=args.intervention_components,
+                input_dim=model_config.hidden_size if args.intervention_components != "mlp_mid" else model_config.intermediate_size,
+                embed_dim=model_config.hidden_size,
                 low_rank_dimension=low_rank_dimension,
                 dtype=model.torch_dtype,
                 intervention_type=args.intervention_type, 
+                intervention_components=args.intervention_components,
                 intervention_method=args.intervention_method,
                 concept_id=concept_id,
                 dump_dir=args.steer_vector_output_dir,

@@ -1,16 +1,13 @@
-import tempfile
 from typing import Any, Dict, Optional, Tuple
 import os, sys
 import torch
 from pathlib import Path
-import json
-import shutil
 import numpy as np
-from sae_lens.toolkit.pretrained_sae_loaders import (
-    gemma_2_sae_loader,
-    get_gemma_2_config,
+from sae_lens import SAE
+from sae_lens.loading.pretrained_sae_loaders import (
+    get_gemma_2_config_from_hf,
+    handle_config_defaulting,
 )
-from sae_lens import SAE, SAEConfig, LanguageModelSAERunnerConfig, SAETrainingRunner
 from safetensors import safe_open
 
 sys.path.append("../")
@@ -18,15 +15,8 @@ import pdb
 
 def load_sae_from_dir(sae_dir: Path | str, device: str = "cpu") -> SAE:
     """
-    Due to a bug (https://github.com/jbloomAus/SAELens/issues/168) in the SAE save implementation for SAE Lens we need to make
-    a specialized workaround.
-
-    WARNING this will be creating a directory where the files are LINKED with the exception of "cfg.json" which is copied. This is NOT efficient
-    and you should not be calling it many times!
-
-    This wraps: https://github.com/jbloomAus/SAELens/blob/main/sae_lens/sae.py#L284.
-
-    SPECIFICALLY fix cfg.json.
+    Load an SAE saved to a directory (``cfg.json`` + ``sae_weights.safetensors``) together
+    with its log-sparsity tensor.
     """
     sae_dir = Path(sae_dir)
     # print(f"Loading SAE from {sae_dir}")
@@ -36,48 +26,7 @@ def load_sae_from_dir(sae_dir: Path | str, device: str = "cpu") -> SAE:
             "Not all files are present in the directory! Only files allowed for loading SAE Directory."
         )
 
-    # https://github.com/jbloomAus/SAELens/blob/9dacd4a9672c138b7c900ddd9a28d1b3b3a0870c/sae_lens/config.py#L188
-    # Load ourselves instead of from_json because there are some __dir__ elements that are not in the JSON
-    # They should ALL be enumerated in `derivatives`
-    ##### BEGIN #####
-    cfg_f = sae_dir / "cfg.json"
-    with open(cfg_f, "r") as f:
-        cfg = json.load(f)
-    derivatives = [
-        "tokens_per_buffer",
-    ]
-    derivative_values = [cfg[x] for x in derivatives]
-    for x in derivatives:
-        del cfg[x]
-    runner_config = LanguageModelSAERunnerConfig(**cfg)
-    assert all(
-        [
-            d in runner_config.__dict__ and runner_config.__dict__[d] == dv
-            for d, dv in zip(derivatives, derivative_values)
-        ]
-    )
-    del derivative_values
-    del derivatives
-    ##### END #####
-
-    # Load the SAE
-    sae_config = runner_config.get_training_sae_cfg_dict()
-    sae = None
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir = Path(temp_dir)
-
-        # Copy in the CFG
-        sae_config_f = temp_dir / "cfg.json"
-        with open(sae_config_f, "w") as f:
-            json.dump(sae_config, f)
-        # Copy all the other files
-        for name_f in sae_dir.iterdir():
-            if name_f.name == "cfg.json":
-                continue
-            else:
-                shutil.copy(name_f, temp_dir / name_f.name)
-        # Load SAE
-        sae = SAE.load_from_pretrained(temp_dir, device=device)
+    sae = SAE.load_from_pretrained(sae_dir, device=device)
     assert sae is not None and isinstance(sae, SAE)
 
     with safe_open(os.path.join(sae_dir, "sparsity.safetensors"), framework="pt", device=device) as f:  # type: ignore
@@ -100,10 +49,11 @@ def load_gemma_2_sae(
     layer_override: Optional[int] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, torch.Tensor], Optional[torch.Tensor]]:
     """
-    Custom loader for Gemma 2 SAEs.
+    Custom loader for Gemma 2 SAEs. Not sure if this should be preserved.
     """
-    cfg_dict = get_gemma_2_config(repo_id, sae_path, d_sae_override, layer_override)
     cfg_dict["device"] = device
+    if d_sae_override is not None:
+        cfg_dict["d_sae"] = d_sae_override
 
     # Apply overrides if provided
     if cfg_overrides is not None:
@@ -132,8 +82,9 @@ def load_gemma_2_sae(
             state_dict["finetuning_scaling_factor"] = state_dict.pop("scaling_factor")
     else:
         cfg_dict["finetuning_scaling_factor"] = False
-    sae_cfg = SAEConfig.from_dict(cfg_dict)
-    sae = SAE(sae_cfg)
+
+    cfg_dict = handle_config_defaulting(cfg_dict)
+    sae = SAE.from_dict(cfg_dict)
     sae.load_state_dict(state_dict)
 
     # No sparsity tensor for Gemma 2 SAEs

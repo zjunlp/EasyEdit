@@ -211,10 +211,11 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 print("Use Weight to init vector: ", init_vector)
 
             # incorporate the intervention to the model
+            model_config = model.model.config.text_config if hasattr(model.model.config, "text_config") else model.model.config
             benchmark_model.make_model(
                 mode="train",
-                input_dim=model.model.config.hidden_size if args.intervention_components != "mlp_mid" else model.model.config.intermediate_size,
-                embed_dim=model.model.config.hidden_size,
+                input_dim=model_config.hidden_size if args.intervention_components != "mlp_mid" else model_config.intermediate_size,
+                embed_dim=model_config.hidden_size,
                 low_rank_dimension=low_rank_dimension,
                 dtype=model.torch_dtype,
                 intervention_type=args.intervention_type, 
