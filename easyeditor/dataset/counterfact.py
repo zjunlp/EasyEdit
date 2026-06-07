@@ -140,7 +140,7 @@ class CounterFactDataset(Dataset):
 
 
     def collate_gpt_fn(self, batch):
-        if self.config.alg =='SERAC' and 'gpt' in self.config.model_name.lower():
+        if self.config.alg_name == 'SERAC' and 'gpt' in self.config.model_name.lower():
             src = [b["prompt"] for b in batch]
             trg = [' ' + b["target_new"] for b in batch]
             cond = ["{} >> {} || {}".format(b['ground_truth'],

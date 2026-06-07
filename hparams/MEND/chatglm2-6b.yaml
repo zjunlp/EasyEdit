@@ -18,7 +18,6 @@ inner_params:
 - transformer.encoder.layers.27.mlp.dense_4h_to_h.weight
 
 # Method
-alg: MEND
 lr: 1e-6
 edit_lr: 1e-4
 lr_lr: 1e-4

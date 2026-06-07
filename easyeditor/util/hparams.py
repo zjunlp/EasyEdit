@@ -2,6 +2,8 @@ import json
 from dataclasses import dataclass
 from dataclasses import asdict
 
+import yaml
+
 
 @dataclass
 class HyperParams:
@@ -29,18 +31,69 @@ class HyperParams:
     def to_dict(config) -> dict:
         dict = asdict(config)
         return dict
-            
-        
 
-    # @classmethod
-    # def from_hparams(cls, hparams_name_or_path: str):
-    #
-    #     if '.yaml' not in hparams_name_or_path:
-    #         hparams_name_or_path = hparams_name_or_path + '.yaml'
-    #     config = compose(hparams_name_or_path)
-    #
-    #     assert config.alg_name in ALG_DICT.keys() or print(f'Editing Alg name {config.alg_name} not supported yet.')
-    #
-    #     params_class, apply_algo = ALG_DICT[config.alg_name]
-    #
-    #     return params_class(**config)
+
+def load_hparams_config(hparams_name_or_path: str) -> dict:
+    hparams_path = str(hparams_name_or_path)
+    if not hparams_path.endswith((".yaml", ".yml", ".json")):
+        hparams_path = hparams_path + ".yaml"
+
+    with open(hparams_path, "r") as stream:
+        if hparams_path.endswith(".json"):
+            config = json.load(stream)
+        else:
+            config = yaml.safe_load(stream)
+
+    if config is None:
+        return config
+    if not isinstance(config, dict):
+        raise ValueError(f"hparams config must be a mapping: {hparams_path}")
+    return HyperParams.construct_float_from_scientific_notation(config)
+
+
+def normalize_alg_name(
+    config: dict,
+    expected_alg_name: str,
+    *,
+    aliases: dict = None,
+    legacy_key: str = "alg",
+    keep_legacy: bool = False,
+    legacy_value: str = None,
+) -> dict:
+    if not config:
+        raise ValueError(f"{expected_alg_name} hparams config is empty.")
+
+    aliases = aliases or {}
+
+    def canonical(value):
+        if value is None:
+            return None
+        value = str(value)
+        return aliases.get(value, value)
+
+    present = [
+        (key, config.get(key), canonical(config.get(key)))
+        for key in ("alg_name", legacy_key)
+        if config.get(key) is not None
+    ]
+    if not present:
+        raise ValueError(
+            f"{expected_alg_name} hparams must define alg_name or {legacy_key}."
+        )
+
+    invalid = [
+        f"{key}={value!r}"
+        for key, value, name in present
+        if name != expected_alg_name
+    ]
+    if invalid:
+        details = ", ".join(invalid)
+        raise ValueError(f"{expected_alg_name} hparams can not load with {details}.")
+
+    config["alg_name"] = expected_alg_name
+    if keep_legacy:
+        if legacy_key not in config or config.get(legacy_key) is None:
+            config[legacy_key] = legacy_value or expected_alg_name
+    else:
+        config.pop(legacy_key, None)
+    return config
