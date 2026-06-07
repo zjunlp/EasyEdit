@@ -15,7 +15,6 @@ inner_params:
 - llama_model.model.layers.31.mlp.up_proj.weight
 
 # Method
-alg: MEND
 lr: 1e-6
 edit_lr: 1e-4
 lr_lr: 1e-4

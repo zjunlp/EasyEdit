@@ -15,7 +15,6 @@ inner_params:
 - transformer.h.47.mlp.c_proj.weight
 
 # Method
-alg: MALMEN
 dropout: 0.0
 train_base: False
 no_grad_layers: null

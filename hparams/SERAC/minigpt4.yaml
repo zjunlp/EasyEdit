@@ -18,7 +18,6 @@ inner_params:
 - llama_model.model.layers.31.mlp.up_proj.weight
 
 # Method
-alg: SERAC_MULTI
 alg_name: SERAC_MULTI
 lr: 1e-5
 edit_lr: 1e-2
