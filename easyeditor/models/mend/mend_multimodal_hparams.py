@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from ...util.hparams import HyperParams
+from ...util.hparams import HyperParams, load_hparams_config, normalize_alg_name
 from .mend_hparams import MENDHyperParams
 from typing import Optional, Any, List
-import yaml
 
 
 @dataclass
@@ -27,7 +26,6 @@ class MENDMultimodalHparams(HyperParams):
     archive: Any
 
     # Method
-    alg: str
     lr: float
     edit_lr: float
     lr_lr: float
@@ -94,14 +92,6 @@ class MENDMultimodalHparams(HyperParams):
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 
-        if '.yaml' not in hparams_name_or_path:
-            hparams_name_or_path = hparams_name_or_path + '.yaml'
-
-        with open(hparams_name_or_path, "r") as stream:
-            config = yaml.safe_load(stream)
-            config = super().construct_float_from_scientific_notation(config)
-
-        assert (config and config['alg'] == 'MEND') or print(f'MENDMultimodalHyperParams can not load from {hparams_name_or_path}, '
-                                                f'alg_name is {config["alg"]} ')
+        config = load_hparams_config(hparams_name_or_path)
+        config = normalize_alg_name(config, "MEND")
         return cls(**config)
-

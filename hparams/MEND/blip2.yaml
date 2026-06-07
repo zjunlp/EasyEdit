@@ -15,7 +15,6 @@ inner_params:
 - opt_model.model.decoder.layers.31.fc2.weight
 
 # Method
-alg: MEND
 lr: 1e-6
 edit_lr: 1e-4
 lr_lr: 1e-4
