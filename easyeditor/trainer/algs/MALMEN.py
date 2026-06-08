@@ -23,6 +23,7 @@ from .malmen.util import (
     kl_div,
     succ_ratios
 )
+from ...util.device import normalize_device
 
 from ..utils import (
     EarlyStopper,
@@ -57,8 +58,7 @@ class MALMEN(EditableModel):
         elif 'mistral' in config.model_name.lower():
             self.shift = True
 
-        if not str(self.config.device).startswith('cuda'):
-            self.config.device = f'cuda:{self.config.device}'
+        self.config.device = str(normalize_device(getattr(self.config, "device", None)))
         
         if config.half:
             self.model.bfloat16()

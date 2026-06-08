@@ -13,6 +13,7 @@ from transformers import T5ForConditionalGeneration
 import time
 import regex
 import string
+from ..util.device import normalize_device
 
 
 def normalize_answer(s):
@@ -121,7 +122,7 @@ def test_prediction_acc_LLM_judge(model, tok, hparams, prompts, targets, device,
             padding = True,
             truncation = True,
             return_tensors="pt",
-        ).to(f"cuda:{device}")
+        ).to(normalize_device(device))
         # add a template
         gen_tokens = model.generate(
             input_ids=prompt_tok['input_ids'],
@@ -172,7 +173,7 @@ def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, loca
         truncation=True,
         max_length=hparams.max_length,
         return_tensors="pt",
-    ).to(f"cuda:{device}")
+    ).to(normalize_device(device))
 
     with torch.no_grad():
         outputs = model(**prompt_tok)
@@ -205,7 +206,7 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompts, targets, dev
         truncation=True,
         max_length=hparams.max_length,
         return_tensors="pt",
-    ).to(f"cuda:{device}")
+    ).to(normalize_device(device))
 
     trg_tok = tok(
         targets,
@@ -213,7 +214,7 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompts, targets, dev
         truncation=True,
         max_length=hparams.max_length,
         return_tensors="pt",
-    ).to(f"cuda:{device}")
+    ).to(normalize_device(device))
 
     prompt_tok['decoder_input_ids'] = trg_tok['input_ids']
     prompt_tok['decoder_attention_mask'] = trg_tok['attention_mask']
@@ -242,7 +243,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
             prompt_tok = tok(
                 prompt,
                 return_tensors="pt",
-            ).to(f"cuda:{device}")
+            ).to(normalize_device(device))
             gen_token = model.generate(
                 input_ids=prompt_tok['input_ids'],
                 attention_mask=prompt_tok['attention_mask'],
@@ -274,7 +275,7 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
         truncation=True,
         max_length=max(hparams.max_length, max_prompt_len),
         return_tensors="pt",
-    ).to(f"cuda:{device}")
+    ).to(normalize_device(device))
     prompt_tok = tok(
         prompts,
         padding=True,
@@ -677,7 +678,7 @@ def F1(model, tok, hparams, prompts, targets, device, locality=False, vanilla_ge
         truncation=True,
         max_length=max(hparams.max_length, max_prompt_len),
         return_tensors="pt",
-    ).to(f"cuda:{device}")
+    ).to(normalize_device(device))
     prompt_tok = tok(
         prompts,
         padding=True,
@@ -721,8 +722,8 @@ def test_instance_change(model, tok, max_length, prompts, targets, device, P = N
     )
     with torch.no_grad():
         pre_edit_outputs = model.generate(
-            input_ids=prompt_tok['input_ids'].to(f"cuda:{device}"),
-            attention_mask=prompt_tok['attention_mask'].to(f"cuda:{device}"),
+            input_ids=prompt_tok['input_ids'].to(normalize_device(device)),
+            attention_mask=prompt_tok['attention_mask'].to(normalize_device(device)),
             max_new_tokens=2,
             pad_token_id=tok.eos_token_id
         )
@@ -754,8 +755,8 @@ def test_concept_gen(model, tok, max_length, prompts, targets, device):
     )
     with torch.no_grad():
         pre_edit_outputs = model.generate(
-            input_ids=prompt_tok['input_ids'].to(f"cuda:{device}"),
-            attention_mask=prompt_tok['attention_mask'].to(f"cuda:{device}"),
+            input_ids=prompt_tok['input_ids'].to(normalize_device(device)),
+            attention_mask=prompt_tok['attention_mask'].to(normalize_device(device)),
             max_new_tokens=40,
             pad_token_id=tok.eos_token_id
         )
@@ -777,7 +778,7 @@ def test_safety_gen(
     if max_tokens < 1624:
         only_response = []
         for item in test_prompt:
-            input = tokenizer([item,], return_tensors="pt", padding=True, truncation=True).to(f"cuda:{cuda}")
+            input = tokenizer([item,], return_tensors="pt", padding=True, truncation=True).to(normalize_device(cuda))
             if input["input_ids"].size(-1) > max_tokens-max_output_tokens:
                 input = {k: v[:, -(max_tokens - max_output_tokens):] for k, v in input.items()}
             with torch.no_grad():
@@ -792,7 +793,7 @@ def test_safety_gen(
             only_response.append(texts[len(overlap)+1:].lstrip())
         return only_response
     else:
-        input = tokenizer(test_prompt, return_tensors="pt", padding=True, truncation=True).to(f"cuda:{cuda}")
+        input = tokenizer(test_prompt, return_tensors="pt", padding=True, truncation=True).to(normalize_device(cuda))
         with torch.no_grad():
             outputs = model.generate(**input, max_new_tokens=max_output_tokens)
             texts = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]

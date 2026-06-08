@@ -14,6 +14,7 @@ import torch
 # from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import AutoTokenizer
 from ..util import HyperParams
+from ..util.device import normalize_device
 from .evaluate_utils import (
     test_seq2seq_batch_prediction_acc, 
     test_batch_prediction_acc, 
@@ -335,7 +336,7 @@ def icl_lm_eval(
         x,
         neighborhood=False
 )-> typing.Dict:
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     if 't5' in model_name.lower():
         target_len = len(tokenizer.encode(target))
         target_ids = tokenizer(f'{x} {target}', return_tensors='pt')['input_ids'].to(device)

@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from ...util.device import normalize_device
 from .kn_hparams import KNHyperParams
 from .knowledge_neurons.knowledge_neurons import KnowledgeNeurons, model_type
 
@@ -25,7 +26,7 @@ def apply_kn_to_model(
         model,
         tok,
         model_type=model_type(hparams.model_name),
-        device=f"cuda:{hparams.device}",
+        device=str(normalize_device(getattr(hparams, "device", None))),
     )
     request_rewrite = deepcopy(request)
     text = [request_rewrite["prompt"]]

@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Tuple
 import torch
 from torch import tensor
 
+from ...util.device import normalize_device
+
 
 def apply_ike_to_model(
     model: AutoModelForCausalLM,
@@ -27,7 +29,7 @@ def apply_ike_to_model(
     if type(request) is list:
         request = request[0]
 
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
 
     new_fact = request['prompt'] + ' ' + request['target_new']
     if hparams.use_icl_examples is True:
@@ -72,7 +74,7 @@ def apply_ike_to_multimodal_model(
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
     
     assert train_ds is not None
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     sentence_model = SentenceTransformer(hparams.sentence_model_name).to(device)
 
     safe_model_name = hparams.sentence_model_name.rsplit('/', 1)[-1]

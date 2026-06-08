@@ -7,6 +7,9 @@ from transformers import AutoTokenizer, AutoModel
 import string
 import logging    
 import os
+
+from ...util.device import normalize_device
+
 def apply_deepedit_api_to_model(
         datasets,
         hparams: DeepEditApiHyperParams,
@@ -35,8 +38,9 @@ def apply_deepedit_api_to_model(
         exist_prompt = f.read()
       
     ## read contriver, tokenizer
+    device = normalize_device(getattr(hparams, "device", None))
     contriver_dir = hparams.contriver_dir
-    contriever = AutoModel.from_pretrained(contriver_dir).cuda()
+    contriever = AutoModel.from_pretrained(contriver_dir).to(device)
     tokenizer_dir = hparams.contriver_dir
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
     
@@ -66,7 +70,7 @@ def apply_deepedit_api_to_model(
         all_embs = []
         for i in range(0, len(sents), BSZ):
             sent_batch = sents[i:i+BSZ]
-            inputs = tok(sent_batch, padding=True, truncation=True, return_tensors='pt').to("cuda")
+            inputs = tok(sent_batch, padding=True, truncation=True, return_tensors='pt').to(device)
             with torch.no_grad():
                 outputs = contriever(**inputs)
                 embeddings = mean_pooling(outputs[0], inputs['attention_mask'])
@@ -75,7 +79,7 @@ def apply_deepedit_api_to_model(
         return all_embs
     
     def retrieve_facts(query, fact_embs, contriever, tok, k=2):
-        inputs = tok([query], padding=True, truncation=True, return_tensors='pt').to("cuda")
+        inputs = tok([query], padding=True, truncation=True, return_tensors='pt').to(device)
         with torch.no_grad():
             outputs = contriever(**inputs)
             query_emb = mean_pooling(outputs[0], inputs['attention_mask']).cpu()

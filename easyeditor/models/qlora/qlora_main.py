@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Tuple
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import get_peft_model, LoraConfig, prepare_model_for_kbit_training
+from ...util.device import normalize_device
 from .qlora_hparams import QLoRAHyperParams
 
 def apply_qlora_to_model(
@@ -47,7 +48,7 @@ def execute_qlora(
     model.enable_input_require_grads()
 
     # hparams.device = 1
-    device = torch.device(f"cuda:{hparams.device}")
+    device = normalize_device(getattr(hparams, "device", None))
     model.to(device)
 
     # Prepare data

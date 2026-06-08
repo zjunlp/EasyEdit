@@ -7,6 +7,7 @@ from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
+from ...util.device import normalize_device
 from ...util.nethook import Trace, set_requires_grad
 from ...util.runningstats import CombinedStat, Mean, NormMean, SecondMoment, tally
 
@@ -46,8 +47,9 @@ def main():
     aa("--download", default=1, type=int, choices=[0, 1])
     args = parser.parse_args()
 
+    device = normalize_device(None)
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
-    model = AutoModelForCausalLM.from_pretrained(args.model_name).eval().cuda()
+    model = AutoModelForCausalLM.from_pretrained(args.model_name).eval().to(device)
     set_requires_grad(False, model)
 
     for layer_num in args.layers:
@@ -186,7 +188,7 @@ def layer_stats(
     with torch.no_grad():
         for batch_group in progress(loader, total=batch_count):
             for batch in batch_group:
-                batch = dict_to_(batch, f"cuda:{hparams.device}")
+                batch = dict_to_(batch, normalize_device(getattr(hparams, "device", None)))
                 with Trace(
                     model, layer_name, retain_input=True, retain_output=False, stop=True
                 ) as tr:

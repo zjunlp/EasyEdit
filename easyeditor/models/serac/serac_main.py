@@ -7,6 +7,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
+from ...util.device import normalize_device
 
 from ...trainer import SERAC, SERAC_MULTI
 from .serac_hparams import SERACHparams
@@ -32,9 +33,9 @@ class SeracRewriteExecutor:
         self.alg = SERAC(self.model, deepcopy(params), lambda: deepcopy(self.model))
         d = torch.load(params.archive, map_location='cpu')
         self.alg.load_state_dict(d["model"], False)
-        # self.alg.to(torch.device(f'cuda:{params.device}'))
-        self.alg.replacement.to(torch.device(f'cuda:{params.device}'))
-        self.alg.classifier.to(torch.device(f'cuda:{params.device}'))
+        device = normalize_device(getattr(params, "device", None))
+        self.alg.replacement.to(device)
+        self.alg.classifier.to(device)
 
         self.is_init = True
 
@@ -82,13 +83,12 @@ class SeracRewriteExecutor:
         ]
         #
         # # Tokenize
-        sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
-            f"cuda:{hparams.device}"
-        )
+        device = normalize_device(getattr(hparams, "device", None))
+        sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(device)
         label_tok = self.tokenizer([request["target_new"] for request in requests],
                                     padding=True,
                                     return_tensors="pt"
-                                    ).to(f"cuda:{hparams.device}")
+                                    ).to(device)
         #
         # # label_tok = deepcopy(sent_tok["input_ids"])
         # # for i in range(label_tok.size(0)):
@@ -133,16 +133,6 @@ class SeracRewriteExecutor:
         # ]
         #
         # targets = [target for targets_ in targets for target in targets_]
-
-        # label_tok = self.tokenizer(targets,
-        #                             padding=True,
-        #                             return_tensors="pt"
-        #                             ).to(f"cuda:{hparams.device}")
-
-        # Tokenize
-        # sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
-        #     f"cuda:{hparams.device}"
-        # )
 
         # label_tok = deepcopy(sent_tok["input_ids"])
         # for i in range(label_tok.size(0)):
@@ -219,9 +209,10 @@ class SeracMultimodalRewriteExecutor(SeracRewriteExecutor):
         self.alg = SERAC_MULTI(self.model, params, lambda: deepcopy(self.model))
         d = torch.load(params.archive, map_location='cpu')
         self.alg.load_state_dict(d["model"], False)
-        self.alg.to(torch.device(f'cuda:{params.device}'))
-        self.alg.replacement.to(torch.device(f'cuda:{params.device}'))
-        self.alg.classifier.to(torch.device(f'cuda:{params.device}'))
+        device = normalize_device(getattr(params, "device", None))
+        self.alg.to(device)
+        self.alg.replacement.to(device)
+        self.alg.classifier.to(device)
 
         self.is_init = True
 

@@ -9,6 +9,7 @@ import torch
 # from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import AutoTokenizer, AutoProcessor
 from ..util import HyperParams
+from ..util.device import normalize_device
 from .evaluate_utils import (
     test_seq2seq_batch_prediction_acc,
     test_batch_prediction_acc,
@@ -52,20 +53,21 @@ def compute_icl_multimodal_edit_quality(
     """
     vis_root = hparams.coco_image
     rephrase_root = hparams.rephrase_image
+    target_device = normalize_device(device if device is not None else getattr(hparams, "device", None))
     # First, unpack rewrite evaluation record.
     target = record["target"]
     prompt = record["prompt"]
-    image = record["image"] if record["image"].is_cuda else record["image"].to(hparams.device)
+    image = record["image"] if record["image"].is_cuda else record["image"].to(target_device)
     rephrase = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
     rephrase_image = record["image_rephrase"] if 'image_rephrase' in record.keys() else None
     if rephrase_image is not None:
-        rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(hparams.device)
+        rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(target_device)
 
     if "locality_prompt" in record.keys():
         loc_q = record["locality_prompt"]
         loc_a = record["locality_ground_truth"]
     if "multimodal_locality_image" in record.keys():
-        m_loc_image = record["multimodal_locality_image"] if record["multimodal_locality_image"].is_cuda else record["multimodal_locality_image"].to(hparams.device)
+        m_loc_image = record["multimodal_locality_image"] if record["multimodal_locality_image"].is_cuda else record["multimodal_locality_image"].to(target_device)
         m_loc_q = record["multimodal_locality_prompt"]
         m_loc_a = record["multimodal_locality_ground_truth"]
 
@@ -121,7 +123,7 @@ def icl_multimodal_lm_eval(
         image,
         is_loc=False,
         neighborhood=False )-> typing.Dict:
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
 
     samples = prepare_multimodal_edit(hparams, tokenizer, target, [''.join(icl_examples) + f'{x}'], image)
 
@@ -223,12 +225,13 @@ def prepare_multimodal_hf_edit(hparams,
     else:
         raise AssertionError("Not support file type: {}".format(file_type))
     
+    device = normalize_device(getattr(hparams, "device", None))
     if file_type in ["image", "single-image", "multi-image"]:
-        multimodal_inputs = processor(images=image, text=text_input, return_tensors="pt").to(hparams.device, dtype=hparams.dtype)
+        multimodal_inputs = processor(images=image, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
     elif file_type == "video":
-        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt").to(hparams.device, dtype=hparams.dtype)
+        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
     elif file_type == "text":
-        multimodal_inputs = processor(text=text_input, return_tensors="pt").to(hparams.device, dtype=hparams.dtype)
+        multimodal_inputs = processor(text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
     
     targets = processor.tokenizer(targets, add_special_tokens=False,
                      return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
@@ -397,19 +400,18 @@ def compute_multimodal_edit_results(
     :return: Dictionary containing rewriting metrics
     """
     ret = {}
+    target_device = normalize_device(device if device is not None else getattr(hparams, "device", None))
 
     target = record["target"]
     rewrite_prompts = record["prompt"]
-    # image = record["image"] if record["image"].is_cuda else record["image"].to(hparams.device)
-
     # 由于edit_dataset无prepare，因此request
     if hasattr(record["image"], 'is_cuda'):  # 如果是PyTorch张量
-        image = record["image"] if record["image"].is_cuda else record["image"].to(hparams.device)
+        image = record["image"] if record["image"].is_cuda else record["image"].to(target_device)
     else:  # 如果是PIL图像或其他类型
         # 需要先将PIL图像转换为张量
         from torchvision import transforms
         transform = transforms.ToTensor()
-        image = transform(record["image"]).to(hparams.device)
+        image = transform(record["image"]).to(target_device)
 
     edit_inner = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, image)
     ret['rewrite_acc'], _ = compute_multimodal_edit_quality(model, edit_inner)
@@ -421,7 +423,7 @@ def compute_multimodal_edit_results(
 
     if "image_rephrase" in record.keys():
         rephrase_image = record["image_rephrase"]
-        rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(hparams.device)
+        rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(target_device)
         edit_image_outer = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, rephrase_image)
         ret['image_rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
 
@@ -435,7 +437,7 @@ def compute_multimodal_edit_results(
         m_loc_prompt = record["multimodal_locality_prompt"]
         m_loc_ground_truth = record["multimodal_locality_ground_truth"]
         m_loc_image = record["multimodal_locality_image"]
-        m_loc_image = m_loc_image if m_loc_image.is_cuda else m_loc_image.to(hparams.device)
+        m_loc_image = m_loc_image if m_loc_image.is_cuda else m_loc_image.to(target_device)
         m_locality = prepare_multimodal_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image)
         _, _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality_demo(model, m_locality)
     # Form a list of lists of prefixes to test.
@@ -522,10 +524,11 @@ def compute_multimodal_edit_results_demo(
     :return: Dictionary containing rewriting metrics
     """
     ret = {}
+    target_device = normalize_device(device if device is not None else getattr(hparams, "device", None))
 
     target = record["target"]
     rewrite_prompts = record["prompt"]
-    image = record["image"] if record["image"].is_cuda else record["image"].to(hparams.device)
+    image = record["image"] if record["image"].is_cuda else record["image"].to(target_device)
 
     edit_inner = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, image)
     ret['rewrite_acc'], _, logits = compute_multimodal_edit_quality_demo(model, edit_inner)
@@ -537,7 +540,7 @@ def compute_multimodal_edit_results_demo(
 
     if "image_rephrase" in record.keys():
         rephrase_image = record["image_rephrase"]
-        rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(hparams.device)
+        rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(target_device)
         edit_image_outer = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, rephrase_image)
         ret['image_rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
 
@@ -551,7 +554,7 @@ def compute_multimodal_edit_results_demo(
         m_loc_prompt = record["multimodal_locality_prompt"]
         m_loc_ground_truth = record["multimodal_locality_ground_truth"]
         m_loc_image = record["multimodal_locality_image"]
-        m_loc_image = m_loc_image if m_loc_image.is_cuda else m_loc_image.to(hparams.device)
+        m_loc_image = m_loc_image if m_loc_image.is_cuda else m_loc_image.to(target_device)
         m_locality = prepare_multimodal_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image)
         _, _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality_demo(model, m_locality)
     # Form a list of lists of prefixes to test.

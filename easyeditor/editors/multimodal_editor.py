@@ -30,6 +30,7 @@ from ..evaluate import (compute_icl_multimodal_edit_quality,
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
+from ..util.device import copy_to_param, normalize_device
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -162,7 +163,8 @@ class MultimodalEditor:
         else:
             self.model, self.tok = self.model_name
             
-        self.model.to(f'cuda:{hparams.device}')
+        self.device = normalize_device(getattr(hparams, "device", None))
+        self.model.to(self.device)
         self.hparams = hparams
 
     def edit(self,
@@ -437,7 +439,7 @@ class MultimodalEditor:
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                            copy_to_param(nethook.get_parameter(self.model, k), v)
 
                 all_metrics.append(metrics)
 

@@ -4,6 +4,7 @@ from peft import get_peft_model, AdaLoraConfig, TaskType, get_peft_model_state_d
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoProcessor
 
+from ...util.device import normalize_device
 from .lora_hparams import LoRAHyperParams
 from .lora_multimodal_hparams import LoRAMultimodalHyperParams
 
@@ -80,7 +81,7 @@ def execute_lora(
             f"Executing LoRA algo for: "
             f"[{request['prompt']}] -> [{request['target_new']}]"
         )
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     # Define inputs
     texts = [r["prompt"] for r in requests]
     targets = [r["target_new"] for r in requests]
@@ -191,7 +192,7 @@ def apply_lora_to_multimodal_model(
     :return: (1) the updated model, (2) the weights that changed
     """
     weights_copy = {}
-    device = f'cuda:{hparams.device}'
+    device = normalize_device(getattr(hparams, "device", None))
     if copy:
         model = deepcopy(model)
         model.to(device)
@@ -255,7 +256,7 @@ def execute_multimodal_lora(
             f"Executing LoRA algo for: "
             f"[{request['prompt']}] -> [{request['target']}]"
         )
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     # Define inputs
     prompts = [r["prompt"] for r in requests]
     labels = [r["target"] for r in requests]

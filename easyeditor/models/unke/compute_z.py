@@ -4,6 +4,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from .unke_hparams import unkeHyperParams
 from ...util import nethook
+from ...util.device import get_model_device
 
 
 
@@ -30,9 +31,10 @@ def compute_z(
         lm_b = next(model.parameters()).new_zeros(model.config.vocab_size)
 
     #print("Computing right vector (v)")
+    device = get_model_device(model, fallback=getattr(hparams, "device", None))
 
     # Tokenize target into list of int token IDs
-    target_ids = tok(data["answer"], return_tensors="pt").to("cuda")[
+    target_ids = tok(data["answer"], return_tensors="pt").to(device)[
         "input_ids"
     ][0]  
     
@@ -42,11 +44,11 @@ def compute_z(
         [data["question"]],  
         return_tensors="pt",
         padding=True,
-    ).to("cuda")
+    ).to(device)
     
     input_ids = torch.cat([input_tok['input_ids'],torch.unsqueeze(target_ids[:-1], dim=0)],dim=1)
     
-    rewriting_targets = torch.tensor(-100, device="cuda").repeat(
+    rewriting_targets = torch.tensor(-100, device=device).repeat(
         1, len(input_ids[0])
     )
    
@@ -62,9 +64,9 @@ def compute_z(
     loss_layer = max(hparams.v_loss_layer, layer)
     
     if hasattr(model.config, 'n_embd'):
-        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device="cuda")
+        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
     elif hasattr(model.config, 'hidden_size'):
-        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device="cuda")
+        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
     else:
         raise NotImplementedError
     target_init = None

@@ -4,6 +4,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from .unke_ARE_hparams import unkeAREHyperParams
 from ...util import nethook
+from ...util.device import get_model_device
 import nltk
 
 
@@ -30,9 +31,10 @@ def compute_z(
         lm_b = next(model.parameters()).new_zeros(model.config.vocab_size)
 
     #print("Computing right vector (v)")
+    device = get_model_device(model, fallback=getattr(hparams, "device", None))
 
     # Tokenize target into list of int token IDs
-    target_ids = tok(data["answer"], return_tensors="pt").to("cuda")[
+    target_ids = tok(data["answer"], return_tensors="pt").to(device)[
         "input_ids"
     ][0]  
     
@@ -43,7 +45,7 @@ def compute_z(
         [data["question"]],  
         return_tensors="pt",
         padding=True,
-    ).to("cuda")
+    ).to(device)
 
     cur_input_ids = input_tok['input_ids'] 
     all_delta = []
@@ -55,7 +57,7 @@ def compute_z(
     #     if i > 0  and sen[0]!=" ":
     #         sen = " " + sen
     #     cur_sen = cur_sen + sen
-    #     current_target_ids = tok(cur_sen, return_tensors="pt").to("cuda")["input_ids"][0]
+    #     current_target_ids = tok(cur_sen, return_tensors="pt").to(device)["input_ids"][0]
     #     if current_target_ids[0] == tok.bos_token_id or current_target_ids[0] == tok.unk_token_id:
     #         current_target_ids = current_target_ids[1:]
     #     # if len(current_target_ids) < hparams.window_size:
@@ -79,7 +81,7 @@ def compute_z(
         
         start += hparams.window_size - hparams.overlap
         
-        rewriting_targets = torch.tensor(-100, device="cuda").repeat(
+        rewriting_targets = torch.tensor(-100, device=device).repeat(
             1, len(input_ids[0])
         )
    
@@ -93,9 +95,9 @@ def compute_z(
         loss_layer = max(hparams.v_loss_layer, layer)
     
         if hasattr(model.config, 'n_embd'):
-            delta = torch.zeros((model.config.n_embd,), requires_grad=True, device="cuda")
+            delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
         elif hasattr(model.config, 'hidden_size'):
-            delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device="cuda")
+            delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
         else:
             raise NotImplementedError
         target_init = None
