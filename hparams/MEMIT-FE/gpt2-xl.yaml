@@ -1,5 +1,5 @@
 alg_name: "MEMIT-FE"
-model_name: "/hkLIU/@Model-Edit/easyedit/hf_cache/hub/models--gpt2-xl/snapshots/15ea56dee5df4983c59b2538573817e1667135e2"
+model_name: "./hugging_cache/gpt2-xl"
 stats_dir: "./tmp/stats"
 device: 0
 layers: [13, 14, 15, 16, 17]

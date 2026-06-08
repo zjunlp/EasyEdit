@@ -1,5 +1,5 @@
 alg_name: "MEMIT-FE"
-model_name: "/hkLIU/@Model-Edit/easyedit/hf_cache/hub/models--meta-llama--Meta-Llama-3-8B-Instruct/snapshots/8afb486c1db24fe5011ec46dfbe5b5dccdb575c2"
+model_name: "./hugging_cache/llama3-8b-instruct"
 stats_dir: "./tmp/stats"
 device: 0
 layers: [4, 5, 6, 7, 8]
