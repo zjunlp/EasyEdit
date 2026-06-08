@@ -7,6 +7,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome import repr_tools
 from ...util import nethook
+from ...util.device import normalize_device
 
 from .memit_FE_hparams import MEMITFEHyperParams
 
@@ -50,13 +51,16 @@ def compute_z(
         print(f"Direct computation for layer {first_layer} returned None. Returning None.")
         return None
 
-    zs_dict[first_layer] = first_layer_z
+    zs_dict[first_layer] = first_layer_z.detach().clone()
 
 
     # Forward propagation
+    device = normalize_device(getattr(hparams, "device", None))
     other_layers = z_layers[1:]
     prompt = request["prompt"].format(request["subject"])
-    input_tok = tok(prompt, return_tensors="pt").to(f"cuda:{hparams.device}")
+    input_tok = tok(prompt, return_tensors="pt").to(device)
+
+    seq_len = input_tok["input_ids"].shape[1]
     
     # Find lookup index
     lookup_idx = find_fact_lookup_idx(
@@ -67,15 +71,32 @@ def compute_z(
         verbose=False
     )
     
+    # def edit_output_fn(cur_out, cur_layer_name):
+    #     first_layer_module = hparams.layer_module_tmp.format(first_layer)
+    #     # Inject the first layer z into the forward pass when we reach the first layer
+    #     if cur_layer_name == first_layer_module:
+    #         z_to_inject = zs_dict[first_layer]
+    #         if cur_out[0].shape[0] == 1:
+    #             cur_out[0][0, lookup_idx, :] = z_to_inject
+    #         else:
+    #             cur_out[0][lookup_idx, 0, :] = z_to_inject
+    #     return cur_out
+
     def edit_output_fn(cur_out, cur_layer_name):
         first_layer_module = hparams.layer_module_tmp.format(first_layer)
-        # Inject the first layer z into the forward pass when we reach the first layer
         if cur_layer_name == first_layer_module:
+            layer_output = nethook.get_hidden_state(cur_out)  
             z_to_inject = zs_dict[first_layer]
-            if cur_out[0].shape[0] == 1:
-                cur_out[0][0, lookup_idx, :] = z_to_inject
+            
+            if layer_output.shape[0] == 1: 
+                layer_output[0, lookup_idx, :] = z_to_inject
             else:
-                cur_out[0][lookup_idx, 0, :] = z_to_inject
+                if layer_output.shape[1] == seq_len: # [batch, seq, dim]
+                    layer_output[:, lookup_idx, :] = z_to_inject
+                else: # [seq, batch, dim]
+                    layer_output[lookup_idx, :, :] = z_to_inject
+                    
+            return nethook.replace_hidden_state(cur_out, layer_output)
         return cur_out
     
     with torch.no_grad():
@@ -87,22 +108,31 @@ def compute_z(
         ) as tr:
             model(**input_tok)
         
-        # Extract z from each layer
-        for layer in other_layers:
-            layer_module = hparams.layer_module_tmp.format(layer)
-            output = tr[layer_module].output
-            c_z_raw = output[0] if isinstance(output, tuple) else output
-            
-            # Extract at lookup position
-            if c_z_raw.dim() == 3:
-                c_z = c_z_raw[0, lookup_idx, :] if c_z_raw.shape[0] == 1 else c_z_raw[lookup_idx, 0, :]
-            else:
-                c_z = c_z_raw[lookup_idx, :]
-            
-            zs_dict[layer]=c_z.detach().clone()
-            print()
-            print(f"Computed z for layer {layer} during forward pass.")
-            print(f"Norm of z for layer {layer}: {zs_dict[layer].norm().item()}")
+            # Extract z from each layer
+            for layer in other_layers:
+                layer_module = hparams.layer_module_tmp.format(layer)
+                output = tr[layer_module].output
+                c_z_raw = nethook.get_hidden_state(output)
+                # c_z_raw = output[0] if isinstance(output, tuple) else output
+                
+                # # Extract at lookup position
+                # if c_z_raw.dim() == 3:
+                #     c_z = c_z_raw[0, lookup_idx, :] if c_z_raw.shape[0] == 1 else c_z_raw[lookup_idx, 0, :]
+                # else:
+                #     c_z = c_z_raw[lookup_idx, :]
+
+                if c_z_raw.dim() == 3:
+                    if c_z_raw.shape[1] == seq_len:  # [Batch, Seq, Dim]
+                        c_z = c_z_raw[0, lookup_idx, :] if c_z_raw.shape[0] == 1 else c_z_raw[:, lookup_idx, :]
+                    else:                             # [Seq, Batch, Dim]
+                        c_z = c_z_raw[lookup_idx, 0, :] if c_z_raw.shape[1] == 1 else c_z_raw[lookup_idx, :, :]
+                else:
+                    c_z = c_z_raw[lookup_idx, :]
+                
+                zs_dict[layer]=c_z.detach().clone()
+                print()
+                print(f"Computed z for layer {layer} during forward pass.")
+                print(f"Norm of z for layer {layer}: {zs_dict[layer].norm().item()}")
     
     return zs_dict
 
@@ -130,9 +160,10 @@ def _direct_compute_z(
         lm_b = next(model.parameters()).new_zeros(model.config.vocab_size)
 
     print("Computing right vector (v)")
+    device = normalize_device(getattr(hparams, "device", None))
 
     # Tokenize target into list of int token IDs
-    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False)[0].to(f"cuda:{hparams.device}")[0]
+    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(device)[0]
 
     if target_ids[0] == tok.bos_token_id or target_ids[0] == tok.unk_token_id:
         target_ids = target_ids[1:]
@@ -148,10 +179,10 @@ def _direct_compute_z(
         [prompt.format(request["subject"]) for prompt in all_prompts],
         return_tensors="pt",
         padding=True,
-    ).to(f"cuda:{hparams.device}")
+    ).to(device)
 
     # Compute rewriting targets
-    rewriting_targets = torch.tensor(-100, device=f"cuda:{hparams.device}").repeat(
+    rewriting_targets = torch.tensor(-100, device=device).repeat(
         len(rewriting_prompts), *input_tok["input_ids"].shape[1:]
     )
     for i in range(len(rewriting_prompts)):
@@ -175,9 +206,9 @@ def _direct_compute_z(
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
     if hasattr(model.config, 'n_embd'):
-        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=f"cuda:{hparams.device}")
+        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
     elif hasattr(model.config, 'hidden_size'):
-        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=f"cuda:{hparams.device}")
+        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
     else:
         raise NotImplementedError
     target_init, kl_distr_init = None, None
@@ -186,80 +217,26 @@ def _direct_compute_z(
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init
 
-        def _unwrap_output(output):
-            if isinstance(output, torch.Tensor):
-                return output, None
-            if isinstance(output, (list, tuple)):
-                if len(output) == 0:
-                    raise ValueError("Layer output container is empty.")
-                return output[0], output
-            raise TypeError(
-                f"Unsupported layer output type {type(output)} encountered in MEMIT."
-            )
-
-        def _rewrap_output(updated, original):
-            if original is None:
-                return updated
-            if isinstance(original, list):
-                new_out = list(original)
-            elif isinstance(original, tuple):
-                new_out = list(original)
-            else:
-                raise TypeError(
-                    f"Unsupported layer output container {type(original)} in MEMIT."
-                )
-            new_out[0] = updated
-            return type(original)(new_out) if isinstance(original, tuple) else new_out
-    
-        if isinstance(cur_out, tuple):
-            output_tensor = cur_out[0]
-            is_tuple = True
-        else:
-            output_tensor = cur_out
-            is_tuple = False
-        
         if cur_layer == hparams.layer_module_tmp.format(layer):
+            layer_output = nethook.get_hidden_state(cur_out)
 
             # Store initial value of the vector of interest
             if target_init is None:
                 print("Recording initial value of v*")
-                target_init = output_tensor[0, lookup_idxs[0]].detach().clone()
-
+                # Initial value is recorded for the clean sentence
+                target_init = layer_output[0, lookup_idxs[0]].detach().clone()
 
             # Add intervened delta
-            new_output = output_tensor.clone()
-            
             for i, idx in enumerate(lookup_idxs):
-                if len(lookup_idxs) != new_output.shape[0]:
-                    new_output[idx, i, :] = new_output[idx, i, :] + delta
+
+                if len(lookup_idxs)!=layer_output.shape[0]:
+                    layer_output[idx, i, :] += delta
                 else:
-                    new_output[i, idx, :] = new_output[i, idx, :] + delta
-            
-            if is_tuple:
-                return (new_output,) + cur_out[1:]
-            return new_output
-        
+                    layer_output[i, idx, :] += delta
+
+            return nethook.replace_hidden_state(cur_out, layer_output)
+
         return cur_out
-
-        # if cur_layer == hparams.layer_module_tmp.format(layer):
-        #     layer_output, original_container = _unwrap_output(cur_out)
-
-        #     # Store initial value of the vector of interest
-        #     if target_init is None:
-        #         print("Recording initial value of v*")
-        #         target_init = layer_output[0, lookup_idxs[0]].detach().clone()
-
-        #     # Add intervened delta
-        #     for i, idx in enumerate(lookup_idxs):
-
-        #         if len(lookup_idxs)!=layer_output.shape[0]:
-        #             layer_output[idx, i, :] += delta
-        #         else:
-        #             layer_output[i, idx, :] += delta
-
-        #     return _rewrap_output(layer_output, original_container)
-
-        # return cur_out
 
     # Optimizer
     opt = torch.optim.Adam([delta], lr=hparams.v_lr)
@@ -295,11 +272,13 @@ def _direct_compute_z(
 
         # Compute loss on rewriting targets
 
-        loss_layer_out = tr[hparams.layer_module_tmp.format(loss_layer)].output
-        if isinstance(loss_layer_out, (list, tuple)):
-            output = loss_layer_out[0]
-        else:
-            output = loss_layer_out
+        output = nethook.get_hidden_state(tr[hparams.layer_module_tmp.format(loss_layer)].output)
+
+        # loss_layer_out = tr[hparams.layer_module_tmp.format(loss_layer)].output
+        # if isinstance(loss_layer_out, (list, tuple)):
+        #     output = loss_layer_out[0]
+        # else:
+        #     output = loss_layer_out
 
         if output.shape[1]!=rewriting_targets.shape[1]:
             output=torch.transpose(output, 0, 1)
