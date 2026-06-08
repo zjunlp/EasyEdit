@@ -4,6 +4,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from .WISE import WISE, WISEMultimodal
 from .utils import tokenize, multimodal_tokenize, get_context_templates, blip2_multimodal_tokenize
 from .wise_hparams import WISEHyperParams
+from ...util.device import normalize_device
 WISEload = True
 def apply_wise_to_model(
         model: AutoModelForCausalLM,
@@ -15,7 +16,7 @@ def apply_wise_to_model(
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
     if copy:
         model = deepcopy(model)
-    device = f'cuda:{hparams.device}'
+    device = normalize_device(getattr(hparams, "device", None))
     context_templates = get_context_templates(model, tok, length_params=[[5,5], [10,5]], device=device)
     editor = WISE(model=model, config=hparams, device=device)
     import os
@@ -45,7 +46,7 @@ def apply_wise_to_multimodal_model(
         copy=False,
         **kwargs: Any,
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
-    device = f'cuda:{hparams.device}'    
+    device = normalize_device(getattr(hparams, "device", None))
     if copy:
         model = deepcopy(model)
         model.to(device)

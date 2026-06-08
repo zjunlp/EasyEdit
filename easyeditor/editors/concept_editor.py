@@ -15,6 +15,7 @@ from ..evaluate import compute_concept_edit_quality
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
+from ..util.device import copy_to_param, normalize_device
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -128,10 +129,9 @@ class ConceptEditor:
         else:
             self.model, self.tok = self.model_name
 
-        if hparams.model_parallel:
-            hparams.device = str(self.model.device).split(":")[1]
+        self.device = normalize_device(getattr(hparams, "device", None))
         if not hparams.model_parallel and hasattr(hparams, 'device'):
-            self.model.to(f'cuda:{hparams.device}')
+            self.model.to(self.device)
 
         self.hparams = hparams
 
@@ -224,7 +224,7 @@ class ConceptEditor:
                 })
                 with torch.no_grad():
                     for k, v in weights_copy.items():
-                        nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                        copy_to_param(nethook.get_parameter(self.model, k), v)
             if 'locality' in all_metrics[i]['post'].keys():
                 for locality_key in request['locality'].keys():
                     assert len(all_metrics[i]['post']['locality'][f'{locality_key}_output']) == \

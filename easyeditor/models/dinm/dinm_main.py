@@ -7,6 +7,7 @@ from torch.nn import CrossEntropyLoss
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util import nethook
+from ...util.device import normalize_device
 
 from .dinm_hparams import DINMHyperParams
 from ...trainer import kl_loc_loss, masked_log_probs
@@ -67,7 +68,7 @@ def execute_dinm(
     Executes the FT update algorithm for the specified update at the specified layer
     Invariant: model at beginning of function == model at end of function
     """
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     # model = model.to(device)
     # Update target and print info
     requests = deepcopy(requests)

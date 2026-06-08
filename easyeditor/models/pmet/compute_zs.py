@@ -6,6 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome import repr_tools
 from ...util import nethook
+from ...util.device import normalize_device
 
 from .pmet_hparams import PMETHyperParams
 
@@ -39,9 +40,10 @@ def compute_zs(
         lm_b = next(model.parameters()).new_zeros(model.config.vocab_size)
 
     print("Computing right vector (v)")
+    device = normalize_device(getattr(hparams, "device", None))
 
     # Tokenize target into list of int token IDs
-    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(f"cuda:{hparams.device}")[0]
+    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(device)[0]
 
 
     # Compile list of rewriting and KL x/y pairs
@@ -56,10 +58,10 @@ def compute_zs(
         [prompt.format(request["subject"]) for prompt in all_prompts],
         return_tensors="pt",
         padding=True,
-    ).to("cuda")
+    ).to(device)
 
     # Compute rewriting targets
-    rewriting_targets = torch.tensor(-100, device="cuda").repeat(
+    rewriting_targets = torch.tensor(-100, device=device).repeat(
         len(rewriting_prompts), *input_tok["input_ids"].shape[1:]
     )
     for i in range(len(rewriting_prompts)):
@@ -83,11 +85,11 @@ def compute_zs(
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
     if hasattr(model.config, "n_embd"):
-        delta_attn = torch.zeros((model.config.n_embd,), requires_grad=True, device="cuda")
-        delta_mlp = torch.zeros((model.config.n_embd,), requires_grad=True, device="cuda")
+        delta_attn = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
+        delta_mlp = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
     elif hasattr(model.config, "hidden_size"):
-        delta_attn = torch.zeros((model.config.hidden_size,), requires_grad=True, device="cuda")
-        delta_mlp = torch.zeros((model.config.hidden_size,), requires_grad=True, device="cuda")
+        delta_attn = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
+        delta_mlp = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
     else:
         raise NotImplementedError
     target_init_attn, target_init_mlp, kl_distr_init = None, None, None
@@ -248,9 +250,10 @@ def compute_z(
         lm_b = next(model.parameters()).new_zeros(model.config.vocab_size)
 
     print("Computing right vector (v)")
+    device = normalize_device(getattr(hparams, "device", None))
 
     # Tokenize target into list of int token IDs
-    target_ids = tok(request["target_new"], return_tensors="pt").to("cuda")[
+    target_ids = tok(request["target_new"], return_tensors="pt").to(device)[
         "input_ids"
     ][0]
 
@@ -266,10 +269,10 @@ def compute_z(
         [prompt.format(request["subject"]) for prompt in all_prompts],
         return_tensors="pt",
         padding=True,
-    ).to("cuda")
+    ).to(device)
 
     # Compute rewriting targets
-    rewriting_targets = torch.tensor(-100, device="cuda").repeat(
+    rewriting_targets = torch.tensor(-100, device=device).repeat(
         len(rewriting_prompts), *input_tok["input_ids"].shape[1:]
     )
     for i in range(len(rewriting_prompts)):
@@ -293,9 +296,9 @@ def compute_z(
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
     if hasattr(model.config, "n_embd"):
-        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device="cuda")
+        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
     elif hasattr(model.config, "hidden_size"):
-        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device="cuda")
+        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
     else:
         raise NotImplementedError
     target_init, kl_distr_init = None, None

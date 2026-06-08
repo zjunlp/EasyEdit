@@ -4,6 +4,7 @@ from peft import get_peft_model, AdaLoraConfig, TaskType, get_peft_model_state_d
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from ...util.device import normalize_device
 from .dpo_hparams import DPOHyperParams
 
 def apply_dpo_to_model(
@@ -24,7 +25,7 @@ def apply_dpo_to_model(
         # If you need to copy the model, handle it here
         pass  # Avoid deep copying to save memory
 
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     print(f"Using device: {device}")
 
     # Configure LoRA

@@ -8,6 +8,7 @@ from collections import deque
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
+from ...util.device import normalize_device
 
 from ...trainer import MALMEN
 from .malmen_hparams import MALMENHyperParams
@@ -26,12 +27,13 @@ class MalmenRewriteExecutor:
 
         # Load the trained MEND model
         self.alg = MALMEN(self.model, params, lambda: deepcopy(self.model))
-        d = torch.load(params.archive, map_location=f'cuda:{params.device}')
+        device = normalize_device(getattr(params, "device", None))
+        d = torch.load(params.archive, map_location=device)
         self.alg.load_state_dict(d["model"])
         if params.model_parallel:
             self.alg.net.to(deque(self.alg.model.parameters(), maxlen=1)[0].device)
         else:
-            self.alg.to(torch.device(f'cuda:{params.device}'))
+            self.alg.to(device)
 
 
     def reset_model(self):
@@ -82,12 +84,9 @@ class MalmenRewriteExecutor:
             ]
 
             # Tokenize
-            sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
-                f"cuda:{hparams.device}"
-            )
-            target_tok = self.tokenizer(targets, padding=True, return_tensors="pt").to(
-                f"cuda:{hparams.device}"
-            )
+            device = normalize_device(getattr(hparams, "device", None))
+            sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(device)
+            target_tok = self.tokenizer(targets, padding=True, return_tensors="pt").to(device)
 
             # Define labels
             label_tok = deepcopy(sent_tok["input_ids"])
@@ -117,4 +116,4 @@ class MalmenRewriteExecutor:
         self.alg.edit_model(param_shifts, False)
 
         return self.alg.model, weights_copy
- 
+

@@ -22,6 +22,7 @@ from ..evaluate import (
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
+from ..util.device import normalize_device
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -85,31 +86,29 @@ class PerEditor:
         else:
             self.model, self.tok = self.model_name
 
-        if hparams.model_parallel:
-            hparams.device = str(self.model.device).split(":")[1]
+        self.device = normalize_device(getattr(hparams, "device", None))
         if not hparams.model_parallel and hasattr(hparams, 'device'):
-            self.model.to(f'cuda:{hparams.device}')
-            self.device = hparams.device
+            self.model.to(self.device)
 
         self.hparams = hparams
-        
-        
+
+
     def edit_dataset(self, ds: Dataset, keep_original_weight=False, verbose=True):
         """edit for IKE in Personality Dataset"""
         # Make Sure dataset supportedxiao
         assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in PER_DS_DICT.values()]) > 0, print(f'DataSet {ds} not supported yet.')
-                
+
         all_metrics = []
         collate_fn = ds.collate_gpt_fn
         for i, request in enumerate(tqdm(ds, desc='Editing dataset', total=len(ds))):
             start = time()
-            
+
             if self.alg_name == 'IKE':
                 edited_model, weights_copy = self.model, {}
                 outer_idx = (i + 1) % len(ds)
                 loc_case = ds[outer_idx]
                 example = self.apply_algo(request=request, loc_request=loc_case, tokenizer=self.tok, device=self.device)
-                
+
                 exec_time = time() - start
                 LOG.info(f"Execution {i} editing took {exec_time}")
                 start = time()
@@ -124,7 +123,7 @@ class PerEditor:
                     )
 
                 all_metrics.append(metrics)
-                
+
             else:
                 example = collate_fn([request])
                 edited_model, weights_copy = self.apply_algo(
@@ -134,7 +133,7 @@ class PerEditor:
                     hparams=self.hparams,
                     device=self.device,
                 )
-                
+
                 exec_time = time() - start
                 LOG.info(f"Execution {i} editing took {exec_time}")
                 start = time()
@@ -142,16 +141,16 @@ class PerEditor:
                     'case_id': i,
                     "time": exec_time,
                 }
-                
+
                 metrics.update(compute_per_metric(example=example, model=self.model, edited_model=edited_model, tok=self.tok, device=self.device, test_generation=True))
                 if verbose:
                     LOG.info(
                         f"{i} editing: {request['ent']} -> {request['target_personality']}  \n {metrics}"
                     )
-                    
+
                 all_metrics.append(metrics)
 
 
         return all_metrics, edited_model, weights_copy
-    
-    
+
+

@@ -6,6 +6,7 @@ from .GRACE import GRACE, GRACEMultimodal
 from .grace_hparams import GraceHyperParams
 from .utils import tokenize, multimodal_tokenize
 from ...util import nethook
+from ...util.device import normalize_device
 
 
 def apply_grace_to_model(
@@ -21,7 +22,7 @@ def apply_grace_to_model(
     request = requests[0]
     if copy:
         model = deepcopy(model)
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     editor = GRACE(model=model, config=hparams, device=device)
     tokens = tokenize(request, tokenizer=tok, device=device)
     editor.edit(config=hparams, tokens=tokens,edit_id=request['target_new'])
@@ -42,7 +43,7 @@ def apply_grace_to_multimodal_model(
         keep_original_weight=False,
         **kwargs: Any,
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     if copy:
         model = deepcopy(model)
         model.to(device)

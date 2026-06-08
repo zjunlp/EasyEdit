@@ -442,6 +442,6 @@ def create_eva_vit_g(img_size=224,drop_path_rate=0.4,use_checkpoint=False,precis
 #     print(incompatible_keys)
     
     if precision == "fp16":
-#         model.to("cuda") 
+#         model.to(device)
         convert_weights_to_fp16(model)
     return model

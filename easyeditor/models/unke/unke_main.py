@@ -6,6 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from .compute_z import compute_z
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from ...util import nethook
+from ...util.device import get_model_device
 import torch.optim as optim
 
 import argparse
@@ -21,7 +22,8 @@ def compute_ks(
     hparams: unkeHyperParams,
     layer: int,
 ):
-    input_ids = tok(batch_data, padding=True,return_tensors="pt").to("cuda")
+    device = get_model_device(model, fallback=getattr(hparams, "device", None))
+    input_ids = tok(batch_data, padding=True,return_tensors="pt").to(device)
     idxs = [i.sum()-1 for i in input_ids['attention_mask']]
     with torch.no_grad():
         with nethook.Trace(

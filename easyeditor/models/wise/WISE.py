@@ -503,7 +503,7 @@ class WISEAdapter(torch.nn.Module):
         p_size = self.new_weight.grad.size()
         p_grad = self.new_weight.grad.reshape(-1)
 
-        # mask = torch.from_numpy(np.random.choice([0, 1], size=p_grad.size()[0], p=[.1, .9])).cuda()
+        # mask = torch.from_numpy(np.random.choice([0, 1], size=p_grad.size()[0], p=[.1, .9])).to(p_grad.device)
         p_grad = p_grad * self.weight_mask
         self.new_weight.grad = p_grad.view(p_size).to(self.new_weight.grad.dtype)
 

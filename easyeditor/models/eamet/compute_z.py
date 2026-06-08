@@ -4,9 +4,9 @@ import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from rome import repr_tools
-from util import nethook
-from random_word import RandomWords
+from ..rome import repr_tools
+from ...util import nethook
+from ...util.device import normalize_device
 import random
 import copy
 import time
@@ -68,7 +68,8 @@ def compute_z(
     ### return_tensors="pt" gives [[xxx]].
     ##############################################################################
 
-    target_ids = tok(request["target_new"]["str"], return_tensors="pt").to("cuda")["input_ids"][0]
+    device = normalize_device(getattr(hparams, "device", None))
+    target_ids = tok(request["target_new"]["str"], return_tensors="pt").to(device)["input_ids"][0]
 
     print(f"DEBUG INFO:target_ids:{target_ids}")
     print(f"DEBUG INFO:tok('English'):{tok('English')}")
@@ -124,9 +125,9 @@ def compute_z(
         all_filled_prompts,
         return_tensors="pt",
         padding=True,
-    ).to("cuda")
+    ).to(device)
 
-    rewriting_targets = torch.tensor(-100, device="cuda").repeat(
+    rewriting_targets = torch.tensor(-100, device=device).repeat(
         len(rewriting_prompts), *input_tok["input_ids"].shape[1:]
     )
     for i in range(len(rewriting_prompts)):
@@ -142,7 +143,7 @@ def compute_z(
     
     # Finalize rewrite and loss layers
     loss_layer = max(hparams.v_loss_layer, layer)
-    delta = torch.zeros((model.config.hidden_size, ), device="cuda", requires_grad=True)
+    delta = torch.zeros((model.config.hidden_size, ), device=device, requires_grad=True)
     target_init, kl_distr_init, target_constrain = None, None, None
 
     ### nonlocal helps to modify parameter from outer function
@@ -348,7 +349,6 @@ def noisy_trigger(
         num: int,
         tok: AutoTokenizer
 ) -> List[torch.Tensor]:
-    gen = RandomWords()
     trigers = tok([trigger], return_tensors="pt",
         padding=False)['input_ids'][0].tolist()
     noisy_list = []

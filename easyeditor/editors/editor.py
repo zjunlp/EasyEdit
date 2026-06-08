@@ -17,6 +17,7 @@ from ..evaluate import compute_edit_quality, compute_icl_edit_quality, compute_s
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
+from ..util.device import copy_to_param, move_to_device, normalize_device
 from ..evaluate.evaluate_utils import test_generation_quality
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -137,10 +138,9 @@ class BaseEditor:
         else:
             self.model, self.tok = self.model_name
 
-        if hparams.model_parallel: 
-            hparams.device = str(self.model.device).split(":")[1]
-        if not hparams.model_parallel and hasattr(hparams, 'device') and hparams.alg_name != 'QLoRA':
-            self.model.to(f'cuda:{hparams.device}')
+        self.device = normalize_device(getattr(hparams, "device", None))
+        if self.model is not None and not hparams.model_parallel and hparams.alg_name != 'QLoRA':
+            self.model.to(self.device)
 
         self.hparams = hparams
 
@@ -262,7 +262,7 @@ class BaseEditor:
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                            copy_to_param(nethook.get_parameter(self.model, k), v)
 
             for i, request in enumerate(record_chunks):
                 chunk_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
@@ -407,7 +407,7 @@ class BaseEditor:
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                            copy_to_param(nethook.get_parameter(self.model, k), v)
 
 
         if isinstance(edited_model, LORA):
@@ -459,7 +459,7 @@ class BaseEditor:
 
         with torch.no_grad():
             for k, v in weights_copy.items():
-                nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                copy_to_param(nethook.get_parameter(self.model, k), v)
 
         return None, edited_model, weights_copy
     
@@ -508,7 +508,7 @@ class BaseEditor:
                 tokenize=False,
                 add_generation_prompt=True,
             )
-            model_inputs = tok.encode(text, return_tensors="pt").to(f"cuda:{device}")
+            model_inputs = move_to_device(tok.encode(text, return_tensors="pt"), device)
             template_length = len(model_inputs[0])
             generated_ids = model.generate(
                 input_ids=model_inputs,
@@ -622,7 +622,7 @@ class BaseEditor:
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                            copy_to_param(nethook.get_parameter(self.model, k), v)
 
         if isinstance(edited_model, LORA):
             edited_model = edited_model.model

@@ -9,6 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome.layer_stats import layer_stats
 from ...util import nethook
+from ...util.device import copy_to_param, normalize_device
 from ...util.generate import generate_fast
 from ...util.globals import *
 
@@ -46,15 +47,16 @@ def apply_memit_to_model(
     deltas = execute_memit(model, tok, requests, hparams, cache_template=cache_template)
 
     with torch.no_grad():
+        device = normalize_device(getattr(hparams, "device", None))
         for w_name, (key_mat, val_mat) in deltas.items():
-            key_mat, val_mat = key_mat.to(f"cuda:{hparams.device}"), val_mat.to(f"cuda:{hparams.device}")
+            key_mat, val_mat = key_mat.to(device), val_mat.to(device)
             upd_matrix = key_mat @ val_mat.T
             w = nethook.get_parameter(model, w_name)
             upd_matrix = upd_matrix_match_shape(upd_matrix, w.shape)
 
             if return_orig_weights and w_name not in weights_copy:
                 weights_copy[w_name] = w.detach().clone()
-            w[...] += upd_matrix.float()
+            w[...] += upd_matrix.to(device=w.device, dtype=w.dtype)
 
     print(f"New weights successfully inserted into {list(deltas.keys())}")
 
@@ -74,6 +76,7 @@ def execute_memit(
     """
 
     deltas = {}
+    device = normalize_device(getattr(hparams, "device", None))
 
     # Update target and print info
     requests = deepcopy(requests)
@@ -127,7 +130,7 @@ def execute_memit(
         ):
             try:
                 data = np.load(cache_fname)
-                z_list.append(torch.from_numpy(data["v_star"]).to(f"cuda:{hparams.device}"))
+                z_list.append(torch.from_numpy(data["v_star"]).to(device))
                 data_loaded = True
             except Exception as e:
                 print(f"Error reading cache file due to {e}. Recomputing...")
@@ -199,8 +202,8 @@ def execute_memit(
 
         # Compute update in double precision
         layer_ks, targets = (
-            layer_ks.double(),
-            targets.double(),
+            layer_ks.double().to(device),
+            targets.double().to(device),
         )
 
         adj_k = torch.linalg.solve(
@@ -219,7 +222,8 @@ def execute_memit(
 
         # Update model weights and record desired changes in `delta` variable
         with torch.no_grad():
-            weights[weight_name][...] = weights_copy[weight_name] + upd_matrix.float()
+            updated_weight = weights_copy[weight_name].to(device=upd_matrix.device, dtype=upd_matrix.dtype) + upd_matrix
+            copy_to_param(weights[weight_name], updated_weight)
             deltas[weight_name] = (
                 adj_k.detach().cpu(),
                 resid.detach().cpu(),
@@ -235,7 +239,7 @@ def execute_memit(
     # Restore state of original model
     with torch.no_grad():
         for k, v in weights.items():
-            v[...] = weights_copy[k]
+            copy_to_param(v, weights_copy[k])
 
     print(f"Deltas successfully computed for {list(weights.keys())}")
 
@@ -277,9 +281,8 @@ def get_cov(
         )
         COV_CACHE[key] = stat.mom2.moment().float().to("cpu")
 
-    return (
-        torch.inverse(COV_CACHE[key].to(f"cuda:{hparams.device}")) if inv else COV_CACHE[key].to(f"cuda:{hparams.device}")
-    )
+    cov = COV_CACHE[key].to(normalize_device(getattr(hparams, "device", None)))
+    return torch.inverse(cov) if inv else cov
 
 
 def upd_matrix_match_shape(matrix: torch.Tensor, shape: torch.Size) -> torch.Tensor:

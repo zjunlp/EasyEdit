@@ -4,6 +4,7 @@ from typing import List, Optional
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from .device import normalize_device
 from .logit_lens import LogitLens
 
 
@@ -181,7 +182,7 @@ def generate_standard(model, prompt, tokenizer, max_input_tokens=256, max_new_to
         tokenizer.padding_side = 'left'
         right_pad_flag=True
 
-    inputs = tokenizer(prompt, padding = True, truncation = True, max_length = max_input_tokens, return_tensors = "pt").to('cuda')
+    inputs = tokenizer(prompt, padding = True, truncation = True, max_length = max_input_tokens, return_tensors = "pt").to(normalize_device())
 
     with torch.no_grad():
         outputs = model.generate(

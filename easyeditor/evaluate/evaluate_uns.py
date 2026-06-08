@@ -5,6 +5,7 @@ from nltk.translate.bleu_score import corpus_bleu, sentence_bleu
 from rouge import Rouge
 from sentence_transformers import SentenceTransformer, util
 from tqdm import tqdm
+from ..util.device import normalize_device
 
 def eval_akew_unstructured(result_path, dataset_type, model_path='all-MiniLM-L6-v2', device=4):
     if not path.exists(result_path):
@@ -99,7 +100,7 @@ def eval_akew_unstructured(result_path, dataset_type, model_path='all-MiniLM-L6-
     sentences2 = [i['original_prediction'] for i in data]
     if dataset_type in ['unke','cf','wikiupdate','mquake']:
         sentences3 = [i['para_prediction'] for i in data]
-    model = SentenceTransformer(model_path, device=f"cuda:{device}")
+    model = SentenceTransformer(model_path, device=str(normalize_device(device)))
 
     embeddings1 = model.encode(sentences1, convert_to_tensor=True, show_progress_bar=True)
     embeddings2 = model.encode(sentences2, convert_to_tensor=True, show_progress_bar=True)

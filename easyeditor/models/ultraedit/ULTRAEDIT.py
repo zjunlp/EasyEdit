@@ -23,6 +23,7 @@ from ...trainer.algs.malmen.util import (
 )
 
 from ...trainer.algs.malmen.nets import RunningMeanStd
+from ...util.device import normalize_device
 from ...trainer.utils import (
     EarlyStopper,
     RunningStatAverager,
@@ -70,8 +71,7 @@ class ULTRAEDIT(EditableModel):
         elif 'mistral' in config.model_name.lower():
             self.shift = True
 
-        if not str(self.config.device).startswith('cuda'):
-            self.config.device = f'cuda:{self.config.device}'
+        self.config.device = str(normalize_device(getattr(self.config, "device", None)))
         
         if config.half:
             self.model.half()

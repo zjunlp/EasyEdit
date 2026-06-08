@@ -7,6 +7,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome import repr_tools
 from ...util import nethook
+from ...util.device import normalize_device
 
 from .r_rome_hparams import R_ROMEHyperParams
 
@@ -26,11 +27,10 @@ def compute_v(
     """
 
     print("Computing right vector (v)")
+    device = normalize_device(getattr(hparams, "device", None))
 
     # Tokenize target into list of int token IDs
-    target_ids = tok(request["target_new"], return_tensors="pt").to(
-        f"cuda:{hparams.device}"
-    )["input_ids"][0]
+    target_ids = tok(request["target_new"], return_tensors="pt").to(device)["input_ids"][0]
 
     if target_ids[0] == tok.bos_token_id or target_ids[0] == tok.unk_token_id:
         target_ids = target_ids[1:]
@@ -48,10 +48,10 @@ def compute_v(
         [prompt.format(request["subject"]) for prompt in all_prompts],
         return_tensors="pt",
         padding=True,
-    ).to(f"cuda:{hparams.device}")
+    ).to(device)
 
     # Compute rewriting targets
-    rewriting_targets = torch.tensor(-100, device=f"cuda:{hparams.device}").repeat(
+    rewriting_targets = torch.tensor(-100, device=device).repeat(
         len(rewriting_prompts), *input_tok["input_ids"].shape[1:]
     )
     for i in range(len(rewriting_prompts)):
@@ -85,13 +85,13 @@ def compute_v(
     # target token to be predicted at the final layer.
     if hasattr(model.config, "n_embd"):
         delta = torch.zeros(
-            (model.config.n_embd,), requires_grad=True, device=f"cuda:{hparams.device}"
+            (model.config.n_embd,), requires_grad=True, device=device
         )
     else:
         delta = torch.zeros(
             (model.config.hidden_size,),
             requires_grad=True,
-            device=f"cuda:{hparams.device}",
+            device=device,
         )
     target_init, kl_distr_init = None, None
 
