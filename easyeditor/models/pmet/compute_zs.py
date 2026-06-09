@@ -6,7 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome import repr_tools
 from ...util import nethook
-from ...util.device import normalize_device
+from ...util.device import get_module_device, normalize_device
 
 from .pmet_hparams import PMETHyperParams
 
@@ -41,6 +41,10 @@ def compute_zs(
 
     print("Computing right vector (v)")
     device = normalize_device(getattr(hparams, "device", None))
+    mlp_module_name = hparams.mlp_module_tmp.format(layer)
+    attn_module_name = hparams.attn_module_tmp.format(layer)
+    mlp_device = get_module_device(nethook.get_module(model, mlp_module_name), device)
+    attn_device = get_module_device(nethook.get_module(model, attn_module_name), device)
 
     # Tokenize target into list of int token IDs
     target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(device)[0]
@@ -85,11 +89,11 @@ def compute_zs(
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
     if hasattr(model.config, "n_embd"):
-        delta_attn = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
-        delta_mlp = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
+        delta_attn = torch.zeros((model.config.n_embd,), requires_grad=True, device=attn_device)
+        delta_mlp = torch.zeros((model.config.n_embd,), requires_grad=True, device=mlp_device)
     elif hasattr(model.config, "hidden_size"):
-        delta_attn = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
-        delta_mlp = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
+        delta_attn = torch.zeros((model.config.hidden_size,), requires_grad=True, device=attn_device)
+        delta_mlp = torch.zeros((model.config.hidden_size,), requires_grad=True, device=mlp_device)
     else:
         raise NotImplementedError
     target_init_attn, target_init_mlp, kl_distr_init = None, None, None
@@ -98,8 +102,9 @@ def compute_zs(
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init_attn, target_init_mlp
 
-        if cur_layer == hparams.mlp_module_tmp.format(layer):
+        if cur_layer == mlp_module_name:
             hidden_state = nethook.get_hidden_state(cur_out)
+            delta_for_hidden = delta_mlp.to(device=hidden_state.device, dtype=hidden_state.dtype)
             # Store initial value of the vector of interest
             if target_init_mlp is None:
                 print("Recording initial value of v* in mlp")
@@ -108,10 +113,11 @@ def compute_zs(
 
             # Add intervened delta
             for i, idx in enumerate(lookup_idxs):
-                hidden_state[i, idx, :] += delta_mlp
+                hidden_state[i, idx, :] += delta_for_hidden
             return nethook.replace_hidden_state(cur_out, hidden_state)
-        if cur_layer == hparams.attn_module_tmp.format(layer):
+        if cur_layer == attn_module_name:
             hidden_state = nethook.get_hidden_state(cur_out)
+            delta_for_hidden = delta_attn.to(device=hidden_state.device, dtype=hidden_state.dtype)
             # Store initial value of the vector of interest
             if target_init_attn is None:
                 print("Recording initial value of v* in attn")
@@ -120,7 +126,7 @@ def compute_zs(
 
             # Add intervened delta
             for i, idx in enumerate(lookup_idxs):
-                hidden_state[i, idx, :] += delta_attn
+                hidden_state[i, idx, :] += delta_for_hidden
             return nethook.replace_hidden_state(cur_out, hidden_state)
         return cur_out
 
@@ -163,26 +169,30 @@ def compute_zs(
         full_repr = nethook.get_hidden_state(tr[hparams.layer_module_tmp.format(loss_layer)].output)[
             : len(rewriting_prompts)
         ]
-        log_probs = torch.log_softmax(ln_f(full_repr) @ lm_w + lm_b, dim=2)
+        full_repr = ln_f(full_repr)
+        log_probs = torch.log_softmax(full_repr @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
         loss = torch.gather(
             log_probs,
             2,
-            torch.where(rewriting_targets != -100, rewriting_targets, 0).unsqueeze(2),
+            torch.where(rewriting_targets != -100, rewriting_targets, 0).unsqueeze(2).to(log_probs.device),
         ).squeeze(2)
         mask = (rewriting_targets != -100).float()
         max_probs = torch.max(log_probs, dim = 2)[0]
-        max_prob = torch.exp((max_probs * mask).sum(1) / target_ids.size(0)).mean().item()
+        max_prob = torch.exp((max_probs * mask.to(max_probs.device)).sum(1) / target_ids.size(0)).mean().item()
         # Aggregate total losses
-        nll_loss_each = -(loss * mask).sum(1) / target_ids.size(0)
+        nll_loss_each = -(loss * mask.to(loss.device)).sum(1) / target_ids.size(0)
         nll_loss = nll_loss_factor * nll_loss_each.mean()
         kl_loss = kl_factor * torch.nn.functional.kl_div(
             kl_distr_init, kl_log_probs, log_target=True, reduction="batchmean"
         )
+        mlp_weight_decay = torch.norm(delta_mlp) / torch.norm(target_init_mlp) ** 2
+        attn_weight_decay = torch.norm(delta_attn) / torch.norm(target_init_attn) ** 2
         weight_decay = hparams.v_weight_decay * (
-            torch.norm(delta_mlp) / torch.norm(target_init_mlp) ** 2 + torch.norm(delta_attn) / torch.norm(target_init_attn) ** 2
+            mlp_weight_decay
+            + attn_weight_decay.to(device=mlp_weight_decay.device)
         )
         # weight_decay = hparams.v_weight_decay * torch.norm(delta) ** 2
-        loss = nll_loss + kl_loss + weight_decay
+        loss = nll_loss + kl_loss.to(nll_loss.device) + weight_decay.to(nll_loss.device)
         prob = torch.exp(-nll_loss_each).mean().item()
         print(
             f"loss {np.round(loss.item(), 3)} = {np.round(nll_loss.item(), 3)} + {np.round(kl_loss.item(), 3)} + {np.round(weight_decay.item(), 3)} "
@@ -216,8 +226,8 @@ def compute_zs(
             with torch.no_grad():
                 delta_attn[...] = delta_attn * max_norm / delta_attn.norm()
 
-    target_attn = target_init_attn + delta_attn
-    target_mlp = target_init_mlp + delta_mlp
+    target_attn = target_init_attn + delta_attn.to(device=target_init_attn.device, dtype=target_init_attn.dtype)
+    target_mlp = target_init_mlp + delta_mlp.to(device=target_init_mlp.device, dtype=target_init_mlp.dtype)
     print(
         f"[ATTN]: Init norm {target_init_attn.norm()} | Delta norm {delta_attn.norm()} | Target norm {target_attn.norm()}",
         f"[MLP]: Init norm {target_init_mlp.norm()} | Delta norm {delta_mlp.norm()} | Target norm {target_mlp.norm()}",
@@ -251,6 +261,8 @@ def compute_z(
 
     print("Computing right vector (v)")
     device = normalize_device(getattr(hparams, "device", None))
+    rewrite_module_name = hparams.mlp_module_tmp.format(layer)
+    rewrite_device = get_module_device(nethook.get_module(model, rewrite_module_name), device)
 
     # Tokenize target into list of int token IDs
     target_ids = tok(request["target_new"], return_tensors="pt").to(device)[
@@ -296,9 +308,9 @@ def compute_z(
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
     if hasattr(model.config, "n_embd"):
-        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
+        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=rewrite_device)
     elif hasattr(model.config, "hidden_size"):
-        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
+        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=rewrite_device)
     else:
         raise NotImplementedError
     target_init, kl_distr_init = None, None
@@ -307,8 +319,9 @@ def compute_z(
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init
 
-        if cur_layer == hparams.mlp_module_tmp.format(layer):
+        if cur_layer == rewrite_module_name:
             hidden_state = nethook.get_hidden_state(cur_out)
+            delta_for_hidden = delta.to(device=hidden_state.device, dtype=hidden_state.dtype)
             # Store initial value of the vector of interest
             if target_init is None:
                 print("Recording initial value of v*")
@@ -317,7 +330,7 @@ def compute_z(
 
             # Add intervened delta
             for i, idx in enumerate(lookup_idxs):
-                hidden_state[i, idx, :] += delta
+                hidden_state[i, idx, :] += delta_for_hidden
 
             return nethook.replace_hidden_state(cur_out, hidden_state)
 
@@ -361,17 +374,18 @@ def compute_z(
         full_repr = nethook.get_hidden_state(tr[hparams.layer_module_tmp.format(loss_layer)].output)[
             : len(rewriting_prompts)
         ]
-        log_probs = torch.log_softmax(ln_f(full_repr) @ lm_w + lm_b, dim=2)
+        full_repr = ln_f(full_repr)
+        log_probs = torch.log_softmax(full_repr @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
         loss = torch.gather(
             log_probs,
             2,
-            torch.where(rewriting_targets != -100, rewriting_targets, 0).unsqueeze(2),
+            torch.where(rewriting_targets != -100, rewriting_targets, 0).unsqueeze(2).to(log_probs.device),
         ).squeeze(2)
         mask = (rewriting_targets != -100).float()
         max_probs = torch.max(log_probs, dim = 2)[0]
-        max_prob = torch.exp((max_probs * mask).sum(1) / target_ids.size(0)).mean().item()
+        max_prob = torch.exp((max_probs * mask.to(max_probs.device)).sum(1) / target_ids.size(0)).mean().item()
         # Aggregate total losses
-        nll_loss_each = -(loss * mask).sum(1) / target_ids.size(0)
+        nll_loss_each = -(loss * mask.to(loss.device)).sum(1) / target_ids.size(0)
         nll_loss = nll_loss_factor * nll_loss_each.mean()
         kl_loss = hparams.kl_factor * torch.nn.functional.kl_div(
             kl_distr_init, kl_log_probs, log_target=True, reduction="batchmean"
@@ -380,7 +394,7 @@ def compute_z(
             torch.norm(delta) / torch.norm(target_init) ** 2
         )
         # weight_decay = hparams.v_weight_decay * torch.norm(delta) ** 2
-        loss = nll_loss + kl_loss + weight_decay
+        loss = nll_loss + kl_loss.to(nll_loss.device) + weight_decay.to(nll_loss.device)
         prob = torch.exp(-nll_loss_each).mean().item()
         print(
             f"loss {np.round(loss.item(), 3)} = {np.round(nll_loss.item(), 3)} + {np.round(kl_loss.item(), 3)} + {np.round(weight_decay.item(), 3)} "
@@ -409,7 +423,7 @@ def compute_z(
             with torch.no_grad():
                 delta[...] = delta * max_norm / delta.norm()
 
-    target = target_init + delta
+    target = target_init + delta.to(device=target_init.device, dtype=target_init.dtype)
     print(
         f"Init norm {target_init.norm()} | Delta norm {delta.norm()} | Target norm {target.norm()}"
     )

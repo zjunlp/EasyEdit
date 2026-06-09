@@ -6,7 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome import repr_tools
 from ...util import nethook
-from ...util.device import normalize_device
+from ...util.device import get_module_device, normalize_device
 
 from .emmet_hparams import EMMETHyperParams
 
@@ -36,6 +36,8 @@ def compute_z(
 
     print("Computing right vector (v)")
     device = normalize_device(getattr(hparams, "device", None))
+    rewrite_module_name = hparams.layer_module_tmp.format(layer)
+    rewrite_device = get_module_device(nethook.get_module(model, rewrite_module_name), device)
 
     # Tokenize target into list of int token IDs
     target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(device)[0]
@@ -81,9 +83,9 @@ def compute_z(
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
     if hasattr(model.config, 'n_embd'):
-        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
+        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=rewrite_device)
     elif hasattr(model.config, 'hidden_size'):
-        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
+        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=rewrite_device)
     else:
         raise NotImplementedError
     target_init, kl_distr_init = None, None
@@ -92,8 +94,9 @@ def compute_z(
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init
 
-        if cur_layer == hparams.layer_module_tmp.format(layer):
+        if cur_layer == rewrite_module_name:
             hidden_state = nethook.get_hidden_state(cur_out)
+            delta_for_hidden = delta.to(device=hidden_state.device, dtype=hidden_state.dtype)
             # Store initial value of the vector of interest
             if target_init is None:
                 print("Recording initial value of v*")
@@ -104,9 +107,9 @@ def compute_z(
             for i, idx in enumerate(lookup_idxs):
 
                 if len(lookup_idxs)!=len(hidden_state):
-                    hidden_state[idx, i, :] += delta
+                    hidden_state[idx, i, :] += delta_for_hidden
                 else:
-                    hidden_state[i, idx, :] += delta
+                    hidden_state[i, idx, :] += delta_for_hidden
 
             return nethook.replace_hidden_state(cur_out, hidden_state)
 
@@ -151,7 +154,8 @@ def compute_z(
             output=torch.transpose(output, 0, 1)
         full_repr = output[:len(rewriting_prompts)]
 
-        log_probs = torch.log_softmax(ln_f(full_repr) @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
+        full_repr = ln_f(full_repr)
+        log_probs = torch.log_softmax(full_repr @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
         loss = torch.gather(
             log_probs,
             2,
@@ -191,7 +195,7 @@ def compute_z(
             with torch.no_grad():
                 delta[...] = delta * max_norm / delta.norm()
 
-    target = target_init + delta
+    target = target_init + delta.to(device=target_init.device, dtype=target_init.dtype)
     print(
         f"Init norm {target_init.norm()} | Delta norm {delta.norm()} | Target norm {target.norm()}"
     )

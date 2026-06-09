@@ -15,7 +15,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome.layer_stats import layer_stats
 from ...util import nethook
-from ...util.device import copy_to_param, normalize_device
+from ...util.device import copy_to_param, get_module_device, normalize_device
 from ...util.generate import generate_fast, generate_standard
 from ...util.globals import *
 
@@ -121,6 +121,8 @@ def execute_eamet(
     # Compute z for final layer
 
     z_layer = hparams.layers[-1]
+    z_module_name = hparams.layer_module_tmp.format(z_layer)
+    z_device = get_module_device(nethook.get_module(model, z_module_name), device)
     z_list = []
     delta_list = []
     context_templates = get_context_templates(model, tok)
@@ -171,8 +173,8 @@ def execute_eamet(
         ):
             try:
                 data = np.load(cache_fname)
-                z_list.append(torch.from_numpy(data["v_star"]).to(device))
-                delta_list.append(torch.from_numpy(data["delta"]).to(device))
+                z_list.append(torch.from_numpy(data["v_star"]).to(z_device))
+                delta_list.append(torch.from_numpy(data["delta"]).to(z_device))
                 data_loaded = True
             except Exception as e:
                 print(f"Error reading cache file due to {e}. Recomputing...")
@@ -192,8 +194,8 @@ def execute_eamet(
                 layer_ks_norm=layer_ks_norm[re_id]
             )
 
-            z_list.append(opt_zs.to(device))
-            delta_list.append(delta.to(device))
+            z_list.append(opt_zs.to(z_device))
+            delta_list.append(delta.to(z_device))
             if cache_fname is not None:
                 try:
                     cache_fname.parent.mkdir(exist_ok=True, parents=True)
@@ -238,6 +240,7 @@ def execute_eamet(
         )[1].T #0 for the module input before layer_module, 1 for the output after layer_module
         cur_zs_list.append(cur_zs)
         cur_zs=torch.cat(cur_zs_list,dim=1)
+        cur_zs = cur_zs.to(device=zs.device, dtype=zs.dtype)
         targets = zs - cur_zs # targets to be distributed across layers
 
         # after transpose, layer_ks.size(1) and targets.size(1) means the number

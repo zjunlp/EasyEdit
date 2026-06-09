@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome.layer_stats import layer_stats
 from ...util import nethook
-from ...util.device import copy_to_param, normalize_device
+from ...util.device import copy_to_param, get_module_device, normalize_device
 from ...util.generate import generate_fast
 from ...util.globals import *
 
@@ -118,6 +118,10 @@ def execute_pmet(
         # Retrieve k/v pair if already stored in cache
         for rewrite_module_name in rewrite_module_names:
             block_name = "attn" if "attn" in rewrite_module_name else "mlp"
+            rewrite_device = get_module_device(
+                nethook.get_module(model, rewrite_module_name.format(z_layer)),
+                device,
+            )
             cache_fname = (
                 Path(
                     str(cache_template).format(
@@ -134,7 +138,7 @@ def execute_pmet(
             ):
                 try:
                     data = np.load(cache_fname)
-                    z_list[rewrite_module_name].append(torch.from_numpy(data["v_star"]).to(device))
+                    z_list[rewrite_module_name].append(torch.from_numpy(data["v_star"]).to(rewrite_device))
                     data_loaded = True
                 except Exception as e:
                     print(f"Error reading cache file due to {e}. Recomputing...")
@@ -232,7 +236,11 @@ def execute_pmet(
                 module_template=rewrite_module_name,
                 fact_token_strategy=hparams.fact_token,
             )[1].T
-            targets = z_list[rewrite_module_name]  - cur_zs #z_i - h_i^L
+            cur_zs = cur_zs.to(
+                device=z_list[rewrite_module_name].device,
+                dtype=z_list[rewrite_module_name].dtype,
+            )
+            targets = z_list[rewrite_module_name] - cur_zs #z_i - h_i^L
             layer_ks, targets = (
                 layers_ks[rewrite_module_name].T.double().to(device),
                 targets.double().to(device)

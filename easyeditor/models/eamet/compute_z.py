@@ -6,7 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome import repr_tools
 from ...util import nethook
-from ...util.device import normalize_device
+from ...util.device import get_module_device, normalize_device
 import random
 import copy
 import time
@@ -69,6 +69,8 @@ def compute_z(
     ##############################################################################
 
     device = normalize_device(getattr(hparams, "device", None))
+    rewrite_module_name = hparams.layer_module_tmp.format(layer)
+    rewrite_device = get_module_device(nethook.get_module(model, rewrite_module_name), device)
     target_ids = tok(request["target_new"]["str"], return_tensors="pt").to(device)["input_ids"][0]
 
     print(f"DEBUG INFO:target_ids:{target_ids}")
@@ -143,14 +145,15 @@ def compute_z(
     
     # Finalize rewrite and loss layers
     loss_layer = max(hparams.v_loss_layer, layer)
-    delta = torch.zeros((model.config.hidden_size, ), device=device, requires_grad=True)
+    delta = torch.zeros((model.config.hidden_size, ), device=rewrite_device, requires_grad=True)
     target_init, kl_distr_init, target_constrain = None, None, None
 
     ### nonlocal helps to modify parameter from outer function
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init, target_constrain, delta
-        if cur_layer == hparams.layer_module_tmp.format(layer):
+        if cur_layer == rewrite_module_name:
             hidden_state = nethook.get_hidden_state(cur_out)
+            delta_for_hidden = delta.to(device=hidden_state.device, dtype=hidden_state.dtype)
             if target_init is None:
                 print("Recording initial value of v*")
                 target_init = hidden_state[0, lookup_idxs[0]].detach().clone()
@@ -175,7 +178,7 @@ def compute_z(
                     
             # Add intervened delta
             for i, idx in enumerate(lookup_idxs):
-                hidden_state[i, idx, :] += delta
+                hidden_state[i, idx, :] += delta_for_hidden
 
             return nethook.replace_hidden_state(cur_out, hidden_state)
 
@@ -223,13 +226,14 @@ def compute_z(
             : len(rewriting_prompts)
         ]
 
-        after_mult = ln_f(full_repr) @ lm_w + lm_b
+        full_repr = ln_f(full_repr)
+        after_mult = full_repr @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device)
         log_probs = torch.log_softmax(after_mult, dim=2)
 
         loss = torch.gather(
             log_probs,
             2,
-            torch.where(rewriting_targets != -100, rewriting_targets, 0).unsqueeze(2),
+            torch.where(rewriting_targets != -100, rewriting_targets, 0).unsqueeze(2).to(log_probs.device),
         ).squeeze(2) # use gather to pick desired token from vocabulary
         mask = (rewriting_targets != -100).float()
 
@@ -254,7 +258,7 @@ def compute_z(
                 end_time = time.time()
                 print(f"time cost when compute cs structure:{end_time - start_time}")
 
-        nll_loss_each = -(loss * mask).sum(1) / opt_target_ids.size(0)
+        nll_loss_each = -(loss * mask.to(loss.device)).sum(1) / opt_target_ids.size(0)
         nll_loss = nll_loss_each.mean()
 
         kl_loss = hparams.kl_factor * torch.nn.functional.kl_div(
@@ -270,7 +274,17 @@ def compute_z(
         else:
             raise ValueError(f"weight_decay_method={hparams.weight_decay_method} not recognized")
 
-        loss = nll_loss + kl_loss + weight_decay + collision_loss + mse_loss
+        if torch.is_tensor(collision_loss):
+            collision_loss = collision_loss.to(nll_loss.device)
+        if torch.is_tensor(mse_loss):
+            mse_loss = mse_loss.to(nll_loss.device)
+        loss = (
+            nll_loss
+            + kl_loss.to(nll_loss.device)
+            + weight_decay.to(nll_loss.device)
+            + collision_loss
+            + mse_loss
+        )
 
         if loss < 1e-2 or it==0:
             if isinstance(collision_loss, int):
@@ -336,7 +350,7 @@ def compute_z(
             with torch.no_grad():
                 delta[...] = delta * max_norm / delta.norm()
  
-    target = target_init + delta    
+    target = target_init + delta.to(device=target_init.device, dtype=target_init.dtype)
     print(
         f"Init norm {target_init.norm()} | Delta norm {delta.norm()} | Target norm {target.norm()}"
     )
