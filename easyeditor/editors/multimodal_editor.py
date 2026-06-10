@@ -194,9 +194,6 @@ class MultimodalEditor:
         else:
             prompts, targets, image = [prompts,], [targets,], [image,]
 
-        if file_type is None:
-            file_type = [None for _ in range(len(prompts))]
-
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
 
@@ -619,11 +616,18 @@ class MultimodalEditor:
                           file_type: Union[str, List[str]] = None,
                           **kwargs
                           ):
+        if isinstance(image, str):
+            image = [image, ]
+        if file_type is None:
+            file_type = ["image" for _ in range(len(prompts))]
+        elif isinstance(file_type, str):
+            file_type = [file_type for _ in range(len(prompts))]
+        if locality_inputs is None:
+            locality_inputs = {}
+
         if isinstance(file_type, List):
             assert len(file_type) == len(image) == len(prompts) == len(targets)
         
-        if isinstance(image, str):
-            image = [image, ]
         # image_path = [os.path.join(self.vis_root, image_) for image_ in image]
         # image = [Image.open(ip).convert("RGB") for ip in image_path]
         # image = [self.vis_tok(i).to(self.hparams.device) for i in image]
