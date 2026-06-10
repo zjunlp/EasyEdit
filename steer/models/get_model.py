@@ -166,12 +166,12 @@ def get_model(hparams):
                 raise ValueError(f"No chat template found for model {model_name_or_path}")
         else:
             template_name = "default.jinja"
-    
-    try:
-        jinja_template = load_chat_template(template_name)
-        model.tokenizer.chat_template = jinja_template
-    except Exception as e:
-        print(f"Failed to load template, keeping default settings, may cause unexpected behavior due to lack of default chat template after Transformers upgraded to Version 5.x. Error: {e}")
+
+        try:
+            jinja_template = load_chat_template(template_name)
+            model.tokenizer.chat_template = jinja_template
+        except Exception as e:
+            print(f"Failed to load template, keeping default settings, may cause unexpected behavior due to lack of default chat template after Transformers upgraded to Version 5.x. Error: {e}")
 
     # Returns a 2-tuple for both modalities. Downstream detects modality via model.processor:
     # text wrappers expose model.processor = None, multimodal wrappers expose a real processor.

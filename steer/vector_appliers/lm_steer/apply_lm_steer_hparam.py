@@ -6,7 +6,7 @@ from ...utils import HyperParams
 @dataclass
 class ApplyLmSteerHyperParams(HyperParams):
     # Model related
-    alg_name: str='caa'
+    alg_name: str='lm_steer'
     steer_vector_load_dir: Optional[str]='vectors'
     adaptor_class: str='multiply'
     adapted_component: str='final_layer'
