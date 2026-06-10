@@ -194,11 +194,6 @@ class MultimodalEditor:
         else:
             prompts, targets, image = [prompts,], [targets,], [image,]
 
-        if file_type is None:
-            file_type = ["image" for _ in range(len(prompts))]
-        elif isinstance(file_type, str):
-            file_type = [file_type for _ in range(len(prompts))]
-
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
 
