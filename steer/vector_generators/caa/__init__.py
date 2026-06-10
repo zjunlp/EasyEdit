@@ -1,3 +1,7 @@
-from .generate_caa_hparam import *
-from .generate_caa_vectors import *
-from .utils import *
+"""
+CAA vector generator subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

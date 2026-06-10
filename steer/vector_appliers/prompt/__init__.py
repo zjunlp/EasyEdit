@@ -1,2 +1,7 @@
-from .apply_prompt_hparam import *
-from .apply_prompt import *
+"""
+Prompt applier subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

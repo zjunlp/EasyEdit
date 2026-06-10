@@ -1,3 +1,7 @@
-from .generate_spilt_hparams import *
-from .generate_spilt import *
-from .utils import *
+"""
+Spilt vector generator subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

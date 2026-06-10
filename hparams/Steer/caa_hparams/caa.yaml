@@ -1,0 +1,23 @@
+# Merged CAA hyperparameters (generate + apply in one file).
+#
+# - Top-level fields are SHARED by both generate and apply.
+# - The `generate:` section holds fields used only when generating vectors.
+# - The `apply:`    section holds fields used only when applying vectors.
+#
+# Referenced from a top-level config via:
+#   steer_train_hparam_paths:  [ .../caa/caa.yaml ]   # uses shared + generate
+#   apply_steer_hparam_paths:  [ .../caa/caa.yaml ]   # uses shared + apply
+
+alg_name: caa
+
+# === Shared ===
+layers: [20]
+save_activations: true
+
+# === Generate only ===
+generate:
+  multiple_choice: false
+
+# === Apply only ===
+apply:
+  multipliers: [1.0]

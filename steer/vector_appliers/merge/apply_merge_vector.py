@@ -48,9 +48,14 @@ def apply_merge_vector(hparams: ApplyMergeVectorHyperParams,pipline=None, vector
         print("Steering vector: ",steering_vector)
         print(f"Multiplier {multiplier}")
 
-        model.set_add_activations(
-            layer, multiplier * steering_vector, method_name="merge_vector"
+        from ...models.interventions import ActivationAddition
+
+        intervention = ActivationAddition(
+            steering_vector=steering_vector,
+            multiplier=multiplier,
         )
+        intervention = intervention.to(device)
+        model.set_intervention(layer, intervention, "merge_vector")
     return model
 
 # def eval_merge_vector(hparams: ApplyMergeVectorHyperParams):

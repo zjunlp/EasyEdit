@@ -30,18 +30,19 @@ class BaseVectorApplier:
             self.model, self.tokenizer, self.processor = Multimodal_get_model(self.config)
             self.device = self.model.device
     def apply_steering(self, hparams_dict, model=None, vectors=None):
-        from ..utils.alg_dict import METHODS_CLASS_DICT
+        from ..utils.alg_dict import get_method_fn
         for alg_name in hparams_dict.keys():
-            if alg_name in METHODS_CLASS_DICT:
+            apply_fn = get_method_fn(alg_name, "apply")
+            if apply_fn is not None:
                 set_seed(hparams_dict[alg_name].seed)
                 # print(f"Applying {alg_name} vectors to model ...")
                 if alg_name == 'prompt':
-                    model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
+                    model = apply_fn(hparams_dict[alg_name], model)
                 elif vectors is None or vectors.get(alg_name) is None:
                     assert hparams_dict[alg_name].steer_vector_load_dir is not None, f"Steer vector load path {hparams_dict[alg_name].steer_vector_load_dir} does not exist !"
-                    model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name] , model)
+                    model = apply_fn(hparams_dict[alg_name], model)
                 else:
-                    model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name],  model, vectors[alg_name])
+                    model = apply_fn(hparams_dict[alg_name], model, vectors[alg_name])
                 print(f"Applying {alg_name} vectors or prompt to model successfully !\n")
             else:
                 return NotImplementedError(f"Method {alg_name} not implemented !")\
