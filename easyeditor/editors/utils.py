@@ -24,6 +24,22 @@ def get_all_acc_keys(dict_list):
         recursive_keys(dictionary)
 
     return all_keys
+
+def get_metric_protocol_summary(dict_list):
+    protocol_summary = {}
+    for metric in dict_list:
+        for phase in ["pre", "post"]:
+            phase_metrics = metric.get(phase, {})
+            metric_meta = phase_metrics.get("metric_meta", {})
+            for section, meta in metric_meta.items():
+                key = f"{phase}.{section}"
+                comparable_group = meta.get("comparable_group", "unknown")
+                protocol_summary.setdefault(key, set()).add(comparable_group)
+
+    return {
+        key: sorted(groups)
+        for key, groups in sorted(protocol_summary.items())
+    }
     
 def summary_metrics(all_metrics):
     if isinstance(all_metrics, dict):
@@ -51,6 +67,16 @@ def summary_metrics(all_metrics):
                     # mean_metrics[eval][key][lkey] = np.mean(
                     #     [metric[eval][key][lkey] for metric in all_metrics])
     # mean_metrics["time"] = np.mean([metric["time"] for metric in all_metrics])
+    protocol_summary = get_metric_protocol_summary(all_metrics)
+    if protocol_summary:
+        mean_metrics["metric_protocols"] = protocol_summary
+        print("Metric Protocol Summary: ", protocol_summary)
+        for metric_key, comparable_groups in protocol_summary.items():
+            if len(comparable_groups) > 1:
+                print(
+                    f"WARNING: {metric_key} contains multiple comparable_group values: "
+                    f"{comparable_groups}. Do not average or compare these scores directly."
+                )
 
     print("Metrics Summary: ", mean_metrics)
 

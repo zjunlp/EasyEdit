@@ -25,6 +25,7 @@ from .evaluate_utils import (
     per_generation,
     F1
 )
+from .metric_meta import attach_metric_meta, build_multimodal_metric_meta
 
 
 
@@ -82,15 +83,58 @@ def compute_icl_multimodal_edit_quality(
     ret = {
         f"rewrite_acc": edit_acc
     }
+    exact_match = getattr(hparams, "exact_match", False)
+    attach_metric_meta(
+        ret,
+        "rewrite",
+        build_multimodal_metric_meta(
+            "rewrite",
+            hparams,
+            model_name,
+            result_key="rewrite_acc",
+            protocol="multimodal_icl_target_token",
+            scorer="target_token_accuracy",
+            comparable_group="multimodal.icl.target_token_accuracy",
+            exact_match=exact_match,
+        ),
+    )
     if rephrase is not None:
         rephrase_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
                                                  target, f'New Fact: {prompt} {target}\nPrompt: {rephrase}', image)
         ret['rephrase_acc'] = rephrase_acc
+        attach_metric_meta(
+            ret,
+            "rephrase",
+            build_multimodal_metric_meta(
+                "rephrase",
+                hparams,
+                model_name,
+                result_key="rephrase_acc",
+                protocol="multimodal_icl_target_token",
+                scorer="target_token_accuracy",
+                comparable_group="multimodal.icl.target_token_accuracy",
+                exact_match=exact_match,
+            ),
+        )
 
     if "image_rephrase" in record.keys():
         rephrase_image_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
                                                        target, new_fact, rephrase_image)
         ret['rephrase_image_acc'] = rephrase_image_acc
+        attach_metric_meta(
+            ret,
+            "image_rephrase",
+            build_multimodal_metric_meta(
+                "image_rephrase",
+                hparams,
+                model_name,
+                result_key="rephrase_image_acc",
+                protocol="multimodal_icl_target_token",
+                scorer="target_token_accuracy",
+                comparable_group="multimodal.icl.target_token_accuracy",
+                exact_match=exact_match,
+            ),
+        )
 
     if "locality_prompt" in record.keys():
         if pre_edit:
@@ -415,17 +459,56 @@ def compute_multimodal_edit_results(
 
     edit_inner = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, image)
     ret['rewrite_acc'], _ = compute_multimodal_edit_quality(model, edit_inner)
+    attach_metric_meta(
+        ret,
+        "rewrite",
+        build_multimodal_metric_meta(
+            "rewrite",
+            hparams,
+            model_name,
+            result_key="rewrite_acc",
+            protocol="multimodal_teacher_forcing",
+            scorer="target_token_accuracy",
+            comparable_group="multimodal.teacher_forcing.target_token_accuracy",
+        ),
+    )
 
     if "rephrase_prompt" in record.keys():
         rephrase_prompts = record["rephrase_prompt"]
         edit_outer = prepare_multimodal_edit(hparams, tok, target, rephrase_prompts, image)
         ret['rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_outer)
+        attach_metric_meta(
+            ret,
+            "rephrase",
+            build_multimodal_metric_meta(
+                "rephrase",
+                hparams,
+                model_name,
+                result_key="rephrase_acc",
+                protocol="multimodal_teacher_forcing",
+                scorer="target_token_accuracy",
+                comparable_group="multimodal.teacher_forcing.target_token_accuracy",
+            ),
+        )
 
     if "image_rephrase" in record.keys():
         rephrase_image = record["image_rephrase"]
         rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(target_device)
         edit_image_outer = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, rephrase_image)
         ret['image_rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
+        attach_metric_meta(
+            ret,
+            "image_rephrase",
+            build_multimodal_metric_meta(
+                "image_rephrase",
+                hparams,
+                model_name,
+                result_key="image_rephrase_acc",
+                protocol="multimodal_teacher_forcing",
+                scorer="target_token_accuracy",
+                comparable_group="multimodal.teacher_forcing.target_token_accuracy",
+            ),
+        )
 
     if 'locality_prompt' in record.keys():
         locality_prompt = record["locality_prompt"]
@@ -475,16 +558,55 @@ def compute_multimodal_hf_edit_results(
     
     edit_inner = prepare_multimodal_hf_edit(hparams, tok, target, rewrite_prompts, image, file_type)
     ret['rewrite_acc'], _ = compute_multimodal_hf_edit_quality(model, edit_inner, tok)
+    attach_metric_meta(
+        ret,
+        "rewrite",
+        build_multimodal_metric_meta(
+            "rewrite",
+            hparams,
+            model_name,
+            result_key="rewrite_acc",
+            protocol="multimodal_hf_masked_label",
+            scorer="masked_label_token_accuracy",
+            comparable_group="multimodal.hf_masked_label.token_accuracy",
+        ),
+    )
 
     if "rephrase_prompt" in record.keys():
         rephrase_prompts = record["rephrase_prompt"]
         edit_outer = prepare_multimodal_hf_edit(hparams, tok, target, rephrase_prompts, image, file_type)
         ret['rephrase_acc'], _ = compute_multimodal_hf_edit_quality(model, edit_outer, tok)
+        attach_metric_meta(
+            ret,
+            "rephrase",
+            build_multimodal_metric_meta(
+                "rephrase",
+                hparams,
+                model_name,
+                result_key="rephrase_acc",
+                protocol="multimodal_hf_masked_label",
+                scorer="masked_label_token_accuracy",
+                comparable_group="multimodal.hf_masked_label.token_accuracy",
+            ),
+        )
 
     if "image_rephrase" in record.keys():
         rephrase_image = record["image_rephrase"]
         edit_image_outer = prepare_multimodal_hf_edit(hparams, tok, target, rewrite_prompts, rephrase_image, file_type)
         ret['image_rephrase_acc'], _ = compute_multimodal_hf_edit_quality(model, edit_image_outer, tok)
+        attach_metric_meta(
+            ret,
+            "image_rephrase",
+            build_multimodal_metric_meta(
+                "image_rephrase",
+                hparams,
+                model_name,
+                result_key="image_rephrase_acc",
+                protocol="multimodal_hf_masked_label",
+                scorer="masked_label_token_accuracy",
+                comparable_group="multimodal.hf_masked_label.token_accuracy",
+            ),
+        )
 
     if 'locality_prompt' in record.keys():
         locality_prompt = record["locality_prompt"]
@@ -532,17 +654,56 @@ def compute_multimodal_edit_results_demo(
 
     edit_inner = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, image)
     ret['rewrite_acc'], _, logits = compute_multimodal_edit_quality_demo(model, edit_inner)
+    attach_metric_meta(
+        ret,
+        "rewrite",
+        build_multimodal_metric_meta(
+            "rewrite",
+            hparams,
+            model_name,
+            result_key="rewrite_acc",
+            protocol="multimodal_teacher_forcing",
+            scorer="target_token_accuracy",
+            comparable_group="multimodal.teacher_forcing.target_token_accuracy",
+        ),
+    )
 
     if "rephrase_prompt" in record.keys():
         rephrase_prompts = record["rephrase_prompt"]
         edit_outer = prepare_multimodal_edit(hparams, tok, target, rephrase_prompts, image)
         ret['rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_outer)
+        attach_metric_meta(
+            ret,
+            "rephrase",
+            build_multimodal_metric_meta(
+                "rephrase",
+                hparams,
+                model_name,
+                result_key="rephrase_acc",
+                protocol="multimodal_teacher_forcing",
+                scorer="target_token_accuracy",
+                comparable_group="multimodal.teacher_forcing.target_token_accuracy",
+            ),
+        )
 
     if "image_rephrase" in record.keys():
         rephrase_image = record["image_rephrase"]
         rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(target_device)
         edit_image_outer = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, rephrase_image)
         ret['image_rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
+        attach_metric_meta(
+            ret,
+            "image_rephrase",
+            build_multimodal_metric_meta(
+                "image_rephrase",
+                hparams,
+                model_name,
+                result_key="image_rephrase_acc",
+                protocol="multimodal_teacher_forcing",
+                scorer="target_token_accuracy",
+                comparable_group="multimodal.teacher_forcing.target_token_accuracy",
+            ),
+        )
 
     if 'locality_prompt' in record.keys():
         locality_prompt = record["locality_prompt"]
