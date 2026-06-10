@@ -572,7 +572,7 @@ class MultimodalEditor:
                     f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
                 )
 
-            all_metrics.append(metrics)
+            all_metrics.append(metrics) #All metrics will be appended into all_metrics
 
         return all_metrics, edited_model, weights_copy
 
