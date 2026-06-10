@@ -128,7 +128,10 @@ def apply_unke_ARE_to_model(
         targets_dict = {}
         for k, cur_zs_list in cur_zs_dict.items():
             zs_list = zs_dict[k]
-            targets_list = [(a - b)/(len(hparams.layers) - i) for a, b in zip(zs_list, cur_zs_list)]
+            targets_list = [
+                (a - b.to(device=a.device, dtype=a.dtype))/(len(hparams.layers) - i)
+                for a, b in zip(zs_list, cur_zs_list)
+            ]
             targets_dict[k] = targets_list
 
         ex_tok = tok(ex_data, padding=True, return_tensors="pt").to(
@@ -170,7 +173,7 @@ def apply_unke_ARE_to_model(
         for k, idxs_list in idxs_dict.items():
             for j, idx in enumerate(idxs_list):
                 resid = targets_dict[k][j]
-                layer_out_ks[k,idx]+=resid
+                layer_out_ks[k,idx]+=resid.to(device=layer_out_ks.device, dtype=layer_out_ks.dtype)
         
         # get_qwen2_causal_mask
         # llama2

@@ -125,6 +125,7 @@ def apply_unke_to_model(
         cur_zs,idxs = compute_ks(model, tok,batch_question, hparams, z_layer)
         
         
+        cur_zs = cur_zs.to(device=zs.device, dtype=zs.dtype)
         targets = zs - cur_zs 
         print("z error", torch.linalg.norm(targets, dim=0).mean())
 
@@ -166,7 +167,7 @@ def apply_unke_to_model(
         
         for i in range(len(idxs)):
             
-            layer_out_ks[i,idxs[i]]+=resid[i]
+            layer_out_ks[i,idxs[i]]+=resid[i].to(device=layer_out_ks.device, dtype=layer_out_ks.dtype)
         
         # get_qwen2_causal_mask
         # llama2

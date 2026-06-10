@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome.layer_stats import layer_stats
 from ...util import nethook
-from ...util.device import copy_to_param, normalize_device
+from ...util.device import copy_to_param, get_module_device, normalize_device
 from ...util.generate import generate_fast
 from ...util.globals import *
 
@@ -89,10 +89,9 @@ def apply_SPHERE_to_model(
     deltas = execute_AlphaEdit(model, tok, requests, hparams, cache_template=cache_template)
 
     with torch.no_grad():
-        device = normalize_device(getattr(hparams, "device", None))
         for w_name, upd_m in deltas.items():
-            upd_matrix = upd_m.to(device)
             w = nethook.get_parameter(model, w_name)
+            upd_matrix = upd_m.to(device=w.device, dtype=w.dtype)
             upd_matrix = upd_matrix_match_shape(upd_matrix, w.shape)
 
             if return_orig_weights and w_name not in weights_copy:
@@ -177,6 +176,8 @@ def execute_AlphaEdit(
     # Compute z for final layer
     context_templates = get_context_templates(model, tok)
     z_layer = hparams.layers[-1]
+    z_module_name = hparams.layer_module_tmp.format(z_layer)
+    z_device = get_module_device(nethook.get_module(model, z_module_name), device)
     z_list = []
 
     for request in requests:
@@ -197,7 +198,7 @@ def execute_AlphaEdit(
         ):
             try:
                 data = np.load(cache_fname)
-                z_list.append(torch.from_numpy(data["v_star"]).to(device))
+                z_list.append(torch.from_numpy(data["v_star"]).to(z_device))
                 data_loaded = True
             except Exception as e:
                 print(f"Error reading cache file due to {e}. Recomputing...")
@@ -244,6 +245,7 @@ def execute_AlphaEdit(
             module_template=hparams.layer_module_tmp,
             fact_token_strategy=hparams.fact_token,
         )[1].T
+        cur_zs = cur_zs.to(device=zs.device, dtype=zs.dtype)
         targets = zs - cur_zs
         print("z error", torch.linalg.norm(targets, dim=0).mean())
 

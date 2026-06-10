@@ -4,7 +4,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from .unke_ARE_hparams import unkeAREHyperParams
 from ...util import nethook
-from ...util.device import get_model_device
+from ...util.device import get_model_device, get_module_device
 import nltk
 
 
@@ -32,6 +32,8 @@ def compute_z(
 
     #print("Computing right vector (v)")
     device = get_model_device(model, fallback=getattr(hparams, "device", None))
+    rewrite_module_name = hparams.layer_module_tmp.format(layer)
+    rewrite_device = get_module_device(nethook.get_module(model, rewrite_module_name), device)
 
     # Tokenize target into list of int token IDs
     target_ids = tok(data["answer"], return_tensors="pt").to(device)[
@@ -95,9 +97,9 @@ def compute_z(
         loss_layer = max(hparams.v_loss_layer, layer)
     
         if hasattr(model.config, 'n_embd'):
-            delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=device)
+            delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=rewrite_device)
         elif hasattr(model.config, 'hidden_size'):
-            delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=device)
+            delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=rewrite_device)
         else:
             raise NotImplementedError
         target_init = None
@@ -105,25 +107,27 @@ def compute_z(
         def edit_output_fn(cur_out, cur_layer):
             nonlocal target_init  
 
-            if cur_layer == hparams.layer_module_tmp.format(layer):
+            if cur_layer == rewrite_module_name:
                 hidden_state = nethook.get_hidden_state(cur_out)
+                delta_for_hidden = delta.to(device=hidden_state.device, dtype=hidden_state.dtype)
                 
                 if target_init is None:
                 
                     target_init = hidden_state[0, lookup_idxs[0]].detach().clone()
 
                 for idxs_pre, delta_pre in all_delta:
+                    delta_pre_for_hidden = delta_pre.to(device=hidden_state.device, dtype=hidden_state.dtype)
                     for i, idx in enumerate(idxs_pre):
                         if len(idxs_pre)!=len(hidden_state):
-                            hidden_state[idx, i, :] += delta_pre
+                            hidden_state[idx, i, :] += delta_pre_for_hidden
                         else:
-                            hidden_state[i, idx, :] += delta_pre
+                            hidden_state[i, idx, :] += delta_pre_for_hidden
                 for i, idx in enumerate(lookup_idxs):
                     
                     if len(lookup_idxs)!=len(hidden_state):
-                        hidden_state[idx, i, :] += delta
+                        hidden_state[idx, i, :] += delta_for_hidden
                     else:
-                        hidden_state[i, idx, :] += delta
+                        hidden_state[i, idx, :] += delta_for_hidden
 
                 return nethook.replace_hidden_state(cur_out, hidden_state)
 
@@ -158,7 +162,8 @@ def compute_z(
                 output=torch.transpose(output, 0, 1)
             full_repr =  output
 
-            log_probs = torch.log_softmax(ln_f(full_repr) @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
+            full_repr = ln_f(full_repr)
+            log_probs = torch.log_softmax(full_repr @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
             loss = torch.gather(
                 log_probs,
                 2,
@@ -196,7 +201,7 @@ def compute_z(
                 with torch.no_grad():
                     delta[...] = delta * max_norm / delta.norm()
         cur_sen = ""
-        target = target_init + delta  
+        target = target_init + delta.to(device=target_init.device, dtype=target_init.dtype)
         all_delta.append((lookup_idxs ,delta.clone()))
         all_target.append(target)
         all_idxs.append(lookup_idxs[0])

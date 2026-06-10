@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome.layer_stats import layer_stats
 from ...util import nethook
-from ...util.device import copy_to_param, normalize_device
+from ...util.device import copy_to_param, get_module_device, normalize_device
 from ...util.generate import generate_fast
 from ...util.globals import *
 
@@ -110,6 +110,8 @@ def execute_core(
     # Compute z for final layer
     context_templates = get_context_templates(model = model, tok = tok, length = hparams.ctx_len, ctx_top_k = hparams.ctx_top_k, ctx_num=hparams.ctx_num) 
     z_layer = hparams.layers[-1]
+    z_module_name = hparams.layer_module_tmp.format(z_layer)
+    z_device = get_module_device(nethook.get_module(model, z_module_name), device)
     z_list = []
 
     for request in requests:
@@ -130,7 +132,7 @@ def execute_core(
         ):
             try:
                 data = np.load(cache_fname)
-                z_list.append(torch.from_numpy(data["v_star"]).to(device))
+                z_list.append(torch.from_numpy(data["v_star"]).to(z_device))
                 data_loaded = True
             except Exception as e:
                 print(f"Error reading cache file due to {e}. Recomputing...")
@@ -178,6 +180,7 @@ def execute_core(
             fact_token_strategy=hparams.fact_token,
             track='out'
         ).T
+        cur_zs = cur_zs.to(device=zs.device, dtype=zs.dtype)
         targets = zs - cur_zs
         print("z error", torch.linalg.norm(targets, dim=0).mean())
 
