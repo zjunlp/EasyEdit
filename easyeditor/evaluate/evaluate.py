@@ -319,11 +319,14 @@ def compute_icl_edit_quality(
                 x_prefix = f"New Fact: {prompt} {target_new}\nPrompt: "
             if isinstance(record['portability'][portability_key]['ground_truth'], list):
                 portability_acc = []
-                for x_a, x_p in zip(record['portability'][portability_key]['ground_truth'],
-                                    record['portability'][portability_key]['prompt']):
+                portability_ground_truth = record['portability'][portability_key]['ground_truth']
+                portability_prompt = record['portability'][portability_key]['prompt']
+                assert len(portability_ground_truth) == len(portability_prompt), \
+                    "The number of portability prompts and ground truth answers must match."
+                for x_a, x_p in zip(portability_ground_truth, portability_prompt):
                     tmp_portability_acc = icl_lm_eval(model, model_name, hparams, tok, icl_input, x_a,
                                                       f"{x_prefix}{x_p}")
-                portability_acc.append(tmp_portability_acc)
+                    portability_acc.append(tmp_portability_acc)
             else:
                 portability_acc = icl_lm_eval(model, model_name, hparams, tok, icl_input,
                                               record['portability'][portability_key]['ground_truth'],
