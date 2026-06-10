@@ -56,6 +56,24 @@ def get_model_device(model, fallback=None):
     return normalize_device(fallback)
 
 
+def get_module_device(module, fallback=None):
+    if module is not None and hasattr(module, "device"):
+        return normalize_device(module.device)
+
+    if module is not None:
+        try:
+            return next(module.parameters()).device
+        except (AttributeError, StopIteration):
+            pass
+
+        try:
+            return next(module.buffers()).device
+        except (AttributeError, StopIteration):
+            pass
+
+    return normalize_device(fallback)
+
+
 def copy_to_param(param, value):
     with torch.no_grad():
         if not torch.is_tensor(value):
