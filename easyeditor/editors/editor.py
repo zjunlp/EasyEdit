@@ -384,13 +384,12 @@ class BaseEditor:
         if sequential_edit:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
+                edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
             if self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
                 self.model = edited_model
             if self.alg_name == 'WISE' and hasattr(self.hparams, 'save_path') and self.hparams.save_path:
                 print("Start saving the WISE model!")
                 edited_model.save(self.hparams.save_path)
-            for i, request in enumerate(requests):
-                edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
         else:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
@@ -602,7 +601,6 @@ class BaseEditor:
         if sequential_edit:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
-            for i, request in enumerate(requests):
                 post_edit_results(all_results, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
         else:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
@@ -636,4 +634,3 @@ class BaseEditor:
     ):
         metrics = self.apply_algo(datasets, self.hparams)
         return metrics
-

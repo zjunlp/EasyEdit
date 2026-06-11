@@ -227,6 +227,7 @@ class MultimodalEditor:
                                                                 request, self.hparams.device)
                 pre_edit_cache.append(pre_result)
 
+            all_metrics = []
             start = time()
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 if self.alg_name == 'IKE' and self.hparams.k == 0:
@@ -243,13 +244,7 @@ class MultimodalEditor:
                         keep_original_weight=keep_original_weight,
                         train_ds=None
                 )
-            exec_time = time() - start
-            if self.alg_name == 'WISE' and hasattr(self.hparams, 'save_path') and self.hparams.save_path:
-                print("Start saving the WISE model!")
-                edited_model.save(self.hparams.save_path)
-
-            all_metrics = []
-            for i, request in enumerate(tqdm(requests, total=len(requests), desc='Evaluating post-edit metrics')):
+                exec_time = time() - start
                 if self.alg_name == 'IKE':
                     if self.hparams.k != 0:
                         metrics = {
@@ -312,6 +307,10 @@ class MultimodalEditor:
 
                 LOG.info(f"Evaluation took {time() - start}")
                 all_metrics.append(metrics)
+
+            if self.alg_name == 'WISE' and hasattr(self.hparams, 'save_path') and self.hparams.save_path:
+                print("Start saving the WISE model!")
+                edited_model.save(self.hparams.save_path)
         
         # single editing
         else:
