@@ -431,8 +431,6 @@ class MultimodalEditor:
                     del self.model.peft_config
                 elif self.alg_name == 'MELO':
                     self.model = edited_model
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    self.model = edited_model
                 else:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
@@ -466,7 +464,8 @@ class MultimodalEditor:
                 request['prompt'] = kwargs['template'].format(request['prompt'])
 
             if self.alg_name == 'IKE':
-                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
+                if 'train_ds' not in kwargs:
+                    raise ValueError("IKE editing requires train_ds for in-context prompt construction.")
                 edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
                     self.model,
                     self.tok,
@@ -572,7 +571,7 @@ class MultimodalEditor:
                     f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
                 )
 
-                all_metrics.append(metrics)
+            all_metrics.append(metrics)
 
         return all_metrics, edited_model, weights_copy
 
