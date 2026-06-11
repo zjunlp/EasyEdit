@@ -11,7 +11,11 @@ import logging
 import numpy as np
 import random
 from ..util.globals import *
-from ..evaluate import compute_concept_edit_quality
+from ..evaluate import (
+    attach_metric_meta,
+    build_locality_metric_meta,
+    compute_concept_edit_quality,
+)
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
@@ -233,6 +237,11 @@ class ConceptEditor:
                     for ans,label in zip(all_metrics[i]['post']['locality'][f'{locality_key}_output'],all_metrics[i]['pre']['locality'][f'{locality_key}_output']):
                         locality_result.append(np.mean(np.equal(ans, label)))
                     all_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
+                    attach_metric_meta(
+                        all_metrics[i]['post'],
+                        f"locality.{locality_key}",
+                        build_locality_metric_meta(locality_key, self.hparams, self.model_name),
+                    )
                     all_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
                 all_metrics[i]['pre'].pop('locality')
 

@@ -13,7 +13,13 @@ from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
 from .utils import _chunks, _prepare_requests, summary_metrics
 from .batch_editor import BatchEditor
-from ..evaluate import compute_edit_quality, compute_icl_edit_quality, compute_sent_metric
+from ..evaluate import (
+    attach_metric_meta,
+    build_locality_metric_meta,
+    compute_edit_quality,
+    compute_icl_edit_quality,
+    compute_sent_metric,
+)
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
@@ -275,6 +281,11 @@ class BaseEditor:
                             for ans, label in zip(chunk_metrics[i]['post']['locality'][f'{locality_key}_output'], chunk_metrics[i]['pre']['locality'][f'{locality_key}_output']):
                                 locality_result.append(np.mean(np.equal(ans, label)))
                         chunk_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
+                        attach_metric_meta(
+                            chunk_metrics[i]['post'],
+                            f"locality.{locality_key}",
+                            build_locality_metric_meta(locality_key, self.hparams, self.model_name),
+                        )
                         chunk_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
                     chunk_metrics[i]['pre'].pop('locality')
 
@@ -374,6 +385,11 @@ class BaseEditor:
                             for ans, label in zip(all_metrics[idx]['post']['locality'][f'{locality_key}_output'], all_metrics[idx]['pre']['locality'][f'{locality_key}_output']):
                                 locality_result.append(np.mean(np.equal(ans, label)))
                         all_metrics[idx]['post']['locality'][f'{locality_key}_acc'] = locality_result
+                        attach_metric_meta(
+                            all_metrics[idx]['post'],
+                            f"locality.{locality_key}",
+                            build_locality_metric_meta(locality_key, self.hparams, self.model_name),
+                        )
                         all_metrics[idx]['post']['locality'].pop(f'{locality_key}_output')
                     all_metrics[idx]['pre'].pop('locality')
 
