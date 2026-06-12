@@ -450,7 +450,7 @@ class MultimodalEditor:
         assert sum([isinstance(ds, ds_in_dict) for ds_in_dict in MULTIMODAL_DS_DICT.values()]) > 0, \
         f'DataSet {ds} not supported yet.'
 
-    #    assert self.alg_name == 'IKE', 'Only IKE supported for MultimodalEditor'
+        # assert self.alg_name == 'IKE', 'Only IKE supported for MultimodalEditor'
         num_edits = 1
         # num_edits = self.hparams.batch_size
         
