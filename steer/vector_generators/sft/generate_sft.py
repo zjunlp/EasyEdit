@@ -55,7 +55,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
 
     
     # Load model instance onto device
-    if model.torch_dtype == torch.bfloat16:
+    if model.dtype == torch.bfloat16:
         print(f"[WARNING] Using bfloat16 for model {args.model_name_or_path}")
         
     model.tokenizer.padding_side = "right"
@@ -174,7 +174,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                     low_rank_dimension=lora_state["r"],
                     alpha=lora_state["alpha"],
                     intervention_components=lora_state["intervention_components"],
-                    torch_dtype=lora_A.dtype,
+                    dtype=lora_A.dtype,
                     ablation_vector=ablation_vector if args.ablation_vector_path else None
                 )
                 with torch.no_grad():
@@ -201,7 +201,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                     input_dim=input_dim,
                     embed_dim=embed_dim,
                     intervention_components=weight_state["intervention_components"],
-                    torch_dtype=delta_weight.dtype,
+                    dtype=delta_weight.dtype,
                     ablation_vector=ablation_vector if args.ablation_vector_path else None
                 )
                 with torch.no_grad():
@@ -217,7 +217,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 input_dim=model_config.hidden_size if args.intervention_components != "mlp_mid" else model_config.intermediate_size,
                 embed_dim=model_config.hidden_size,
                 low_rank_dimension=low_rank_dimension,
-                dtype=model.torch_dtype,
+                dtype=model.dtype,
                 intervention_type=args.intervention_type, 
                 intervention_components=args.intervention_components,
                 intervention_method=args.intervention_method,
@@ -230,7 +230,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 init_vector=init_vector,
             )
 
-            benchmark_model.model.steer_vector.to(model.torch_dtype)
+            benchmark_model.model.steer_vector.to(model.dtype)
             
             # prepare the training parameters
             training_kwargs = {

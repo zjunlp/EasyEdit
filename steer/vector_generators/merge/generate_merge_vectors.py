@@ -43,7 +43,7 @@ def generate_merge_vector(hparams: MergeVectorHyperParams):
         
     weights = hparams.weights
     densities = hparams.densities
-    mask_dtype = DTYPES_DICT.get(hparams.torch_dtype, torch.float32)
+    mask_dtype = DTYPES_DICT.get(hparams.dtype, torch.float32)
     kwargs = method_dict.get(hparams.method, {})
     
     if "normalize" in kwargs:

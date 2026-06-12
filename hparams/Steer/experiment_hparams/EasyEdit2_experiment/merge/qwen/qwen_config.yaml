@@ -1,6 +1,6 @@
 # General 
 model_name_or_path: ../models/qwen2.5-7b
-torch_dtype: bfloat16
+dtype: bfloat16
 device: cuda:2
 seed: 42
 use_chat_template: false

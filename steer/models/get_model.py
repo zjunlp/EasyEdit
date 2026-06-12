@@ -136,7 +136,7 @@ def load_chat_template(template_name: str) -> str:
 
 def get_model(hparams):
 
-    torch_dtype = hparams.torch_dtype if hasattr(hparams, "torch_dtype") else t.float32
+    dtype = hparams.dtype if hasattr(hparams, "dtype") else t.float32
     use_cache = hparams.use_cache if hasattr(hparams, "use_cache") else True
     use_chat = hparams.use_chat_template if hasattr(hparams, "use_chat_template") else False
     device = hparams.device if hasattr(hparams, "device") else "cuda" if t.cuda.is_available() else "cpu"
@@ -148,7 +148,7 @@ def get_model(hparams):
     # Text and multimodal wrappers share a constructor signature, so the same kwargs work
     # for both.
     model = wrapper_cls(
-        torch_dtype=torch_dtype,
+        dtype=dtype,
         use_chat=use_chat,
         device=device,
         model_name_or_path=model_name_or_path,

@@ -55,7 +55,7 @@ def generate_reps(args: RePSHyperParams, dataset, model = None, dataset_name = N
 
     
     # Load model instance onto device
-    if model.torch_dtype == torch.bfloat16:
+    if model.dtype == torch.bfloat16:
         print(f"[WARNING] Using bfloat16 for model {args.model_name_or_path}")
         
     model.tokenizer.padding_side = "right"
@@ -145,7 +145,7 @@ def generate_reps(args: RePSHyperParams, dataset, model = None, dataset_name = N
                 input_dim=model_config.hidden_size if args.intervention_components != "mlp_mid" else model_config.intermediate_size,
                 embed_dim=model_config.hidden_size,
                 low_rank_dimension=low_rank_dimension,
-                dtype=model.torch_dtype,
+                dtype=model.dtype,
                 intervention_type=args.intervention_type, 
                 intervention_components=args.intervention_components,
                 intervention_method=args.intervention_method,
@@ -157,7 +157,7 @@ def generate_reps(args: RePSHyperParams, dataset, model = None, dataset_name = N
                 preference_pairs=args.preference_pairs,
             )
 
-            benchmark_model.model.steer_vector.to(model.torch_dtype)
+            benchmark_model.model.steer_vector.to(model.dtype)
             
             # prepare the training parameters
             training_kwargs = {

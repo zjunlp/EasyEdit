@@ -67,7 +67,7 @@ class SFTTrainer(SFTModelTrainer):
             raise ValueError(f"Intervention type {intervention_type} not supported")
 
         self.intervention_type = intervention_type
-        self.model.steer_vector = steer_vector.to(self.model.device, dtype=self.model.torch_dtype)
+        self.model.steer_vector = steer_vector.to(self.model.device, dtype=self.model.dtype)
         self.model.steer_vector.train()
         
         self.preference_pairs = kwargs.get("preference_pairs", ["orig_add"])

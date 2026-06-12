@@ -21,7 +21,7 @@ class BaseMultimodalWrapper(BaseModelWrapper):
 
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -30,7 +30,7 @@ class BaseMultimodalWrapper(BaseModelWrapper):
         hparams: HyperParams = None,
     ):
         super().__init__(
-            torch_dtype=torch_dtype,
+            dtype=dtype,
             use_chat=use_chat,
             device=device,
             model_name_or_path=model_name_or_path,
@@ -49,7 +49,7 @@ class BaseMultimodalWrapper(BaseModelWrapper):
         from transformers import AutoModelForImageTextToText
         return AutoModelForImageTextToText.from_pretrained(
             self.model_name_or_path,
-            torch_dtype=self.torch_dtype,
+            dtype=self.dtype,
             device_map=self.device,
         )
     def _load_processor(self):

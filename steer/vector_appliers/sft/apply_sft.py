@@ -72,7 +72,7 @@ def apply_sft(hparams: ApplySFTHyperParams, pipline=None, vector=None):
                 low_rank_dimension=data_state["r"],
                 alpha=data_state["alpha"],
                 intervention_components=data_state["intervention_components"],
-                torch_dtype=lora_A.dtype,
+                dtype=lora_A.dtype,
                 multiplier=multiplier,
             ) 
             with torch.no_grad():
@@ -97,7 +97,7 @@ def apply_sft(hparams: ApplySFTHyperParams, pipline=None, vector=None):
                 input_dim=input_dim,
                 embed_dim=embed_dim,
                 intervention_components=data_state["intervention_components"],
-                torch_dtype=delta_weight.dtype,
+                dtype=delta_weight.dtype,
                 multiplier=multiplier,
             )     
             with torch.no_grad():

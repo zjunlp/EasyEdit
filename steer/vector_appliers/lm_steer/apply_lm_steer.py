@@ -26,7 +26,7 @@ def apply_lm_steer(hparams: ApplyLmSteerHyperParams, pipline=None, vector=None):
     model.steer.to(device)
 
     # set the steer values
-    steer_values = (torch.tensor(hparams.steer_values, dtype=model.torch_dtype, device=device)
+    steer_values = (torch.tensor(hparams.steer_values, dtype=model.dtype, device=device)
                     if hparams.steer_values is not None else None)
     model.steer.set_value(steer_values[None])
 
