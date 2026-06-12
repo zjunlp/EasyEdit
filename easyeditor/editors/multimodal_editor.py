@@ -24,7 +24,7 @@ from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration, 
 
 from ..util.globals import *
 from .batch_editor import BatchEditor
-from .restore import restore_after_edit
+from .utils import restore_after_edit
 from ..evaluate import (compute_icl_multimodal_edit_quality, 
                         compute_multimodal_edit_results,
                         compute_multimodal_hf_edit_results)

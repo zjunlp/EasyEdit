@@ -11,9 +11,8 @@ from transformers import LlamaTokenizer,PreTrainedTokenizerFast, LlamaTokenizerF
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
-from .utils import _chunks, _prepare_requests, summary_metrics
+from .utils import _chunks, _prepare_requests, restore_after_edit, summary_metrics
 from .batch_editor import BatchEditor
-from .restore import restore_after_edit
 from ..evaluate import compute_edit_quality, compute_icl_edit_quality, compute_sent_metric
 from ..util import nethook
 from ..util.hparams import HyperParams
