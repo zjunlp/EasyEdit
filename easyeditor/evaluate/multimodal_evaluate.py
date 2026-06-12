@@ -10,6 +10,7 @@ import torch
 from transformers import AutoTokenizer, AutoProcessor
 from ..util import HyperParams
 from ..util.device import normalize_device
+from ..util.vl_utils import build_target_labels, prepend_qwen_vl_image_tokens_if_missing
 from .evaluate_utils import (
     test_seq2seq_batch_prediction_acc,
     test_batch_prediction_acc,
@@ -277,9 +278,7 @@ def prepare_multimodal_hf_edit(hparams,
                 },
             ], add_generation_prompt=True, tokenize=False)
 
-            if "qwen2-vl" in hparams.model_name.lower() and "|vision_start|" not in chat:
-                image_token = "<|vision_start|><|image_pad|><|vision_end|>"
-                chat = image_token * num_images + chat
+            chat = prepend_qwen_vl_image_tokens_if_missing(hparams.model_name, chat, num_images)
 
             text_input.append(chat + l)
     else:
@@ -287,17 +286,13 @@ def prepare_multimodal_hf_edit(hparams,
     
     device = normalize_device(getattr(hparams, "device", None))
     if file_type in ["image", "single-image", "multi-image"]:
-        multimodal_inputs = processor(images=images_list, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
+        multimodal_inputs = processor(images=images_list, text=text_input, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
     elif file_type == "video":
-        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
+        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
     elif file_type == "text":
-        multimodal_inputs = processor(text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
+        multimodal_inputs = processor(text=text_input, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
     
-    targets = processor.tokenizer(targets, add_special_tokens=False,
-                     return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
-
-    labels = torch.full_like(multimodal_inputs["input_ids"], -100)
-    labels[:, -targets.size(1):] = targets
+    labels = build_target_labels(multimodal_inputs["input_ids"], processor.tokenizer, targets)
     
     ret = {
         'multimodal_inputs': multimodal_inputs,

@@ -19,6 +19,7 @@ import typing
 import torch
 import transformers
 from transformers import AutoProcessor
+from ..util.vl_utils import prepend_qwen_vl_image_tokens_if_missing
 
 class ADSDataset(BaseDataset):
     def __init__(self, 
@@ -126,27 +127,17 @@ class ADSDataset(BaseDataset):
             else:
                 num_images = 1
 
-            temp_prompt = self.tok.apply_chat_template([
+            chat = self.tok.apply_chat_template([
                                     {
-
                                         "role": "user",
                                         "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
                                     },
                                 ],
                                                 add_generation_prompt=True,
-                                                tokenize=False)  + l
-            prompt_ids = self.tok.tokenizer(
-            self.tok.apply_chat_template([
-                            {
-
-                                "role": "user",
-                                "content": [
-                                    [{"type": "image"}] * num_images + [{"type": "text", "text": p}]
-                                    ],
-                            },
-                        ],
-                                    add_generation_prompt=True,
-                                    tokenize=False), return_tensors="pt", padding=True, truncation=True)["input_ids"]
+                                                tokenize=False)
+            chat = prepend_qwen_vl_image_tokens_if_missing(self.config.model_name, chat, num_images)
+            temp_prompt = chat + l
+            prompt_ids = self.tok.tokenizer(chat, return_tensors="pt", padding=True, truncation=True)["input_ids"]
         
         elif file_type == "text":
             temp_prompt = self.tok.apply_chat_template([

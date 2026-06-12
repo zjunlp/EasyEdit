@@ -5,6 +5,12 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoProcessor
 
 from ...util.device import normalize_device
+from ...util.vl_utils import (
+    build_target_labels,
+    count_media_items,
+    normalize_multimodal_batch,
+    prepend_qwen_vl_image_tokens_if_missing,
+)
 from .lora_hparams import LoRAHyperParams
 from .lora_multimodal_hparams import LoRAMultimodalHyperParams
 
@@ -219,7 +225,7 @@ def execute_multimodal_lora(
     model.supports_gradient_checkpointing = True  #
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
-    
+
     if hparams.lora_type == "lora":
         Config = LoraConfig
     elif hparams.lora_type == "adalora":
@@ -247,7 +253,7 @@ def execute_multimodal_lora(
         lr=hparams.lr,
         weight_decay=hparams.weight_decay,
     )
-    sheduler = ExponentialLR(opt, gamma=hparams.sh_lr)    
+    sheduler = ExponentialLR(opt, gamma=hparams.sh_lr)
     if hasattr(peft_model, 'print_trainable_parameters'):
         peft_model.print_trainable_parameters()
     requests = deepcopy(requests)
@@ -263,19 +269,22 @@ def execute_multimodal_lora(
     file_type = requests[0]['file_type']
     input_images = [r['image'] for r in requests]
     loss_meter = AverageMeter()
-    
+
     for it in range(hparams.num_steps):
         print(20 * "=")
         print(f"Epoch: {it}")
         print(20 * "=")
         loss_meter.reset()
 
-        for txt, tgt in zip(
-                chunks(prompts, hparams.batch_size), chunks(labels, hparams.batch_size)
+        for txt, tgt, imgs in zip(
+                chunks(prompts, hparams.batch_size),
+                chunks(labels, hparams.batch_size),
+                chunks(input_images, hparams.batch_size)
         ):
+            batch_media = normalize_multimodal_batch(imgs, len(txt), file_type)
             mask_token = -100
             opt.zero_grad()
-            
+
             if hasattr(hparams, 'use_chat_template') and hparams.use_chat_template:
                 if file_type == "video":
                     temp_prompt = [processor.apply_chat_template([
@@ -290,42 +299,35 @@ def execute_multimodal_lora(
                                         ],
                                                         add_generation_prompt=True,
                                                         tokenize=False) + l
-                                    for p, l in zip(prompts, labels)]
-                    
-                elif file_type in ["image", "single-image", "multi-image"]:
-                    if file_type == "multi-image":
-                        num_images = len(input_images[0])
-                    else:
-                        num_images = 1
-                    
-                    temp_prompt = [processor.apply_chat_template([
-                                            {
+                                    for p, l in zip(txt, tgt)]
 
+                elif file_type in ["image", "single-image", "multi-image"]:
+                    chats = []
+                    for p, media_item in zip(txt, batch_media):
+                        num_images = count_media_items(media_item, file_type)
+                        chat = processor.apply_chat_template([
+                                            {
                                                 "role": "user",
                                                 "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
                                             },
                                         ],
                                                         add_generation_prompt=True,
-                                                        tokenize=False)  + l
-                                    for p, l in zip(prompts, labels)]              
+                                                        tokenize=False)
+                        chats.append(prepend_qwen_vl_image_tokens_if_missing(hparams.model_name, chat, num_images))
+                    temp_prompt = [chat + l for chat, l in zip(chats, tgt)]
                 else:
                     raise AssertionError("Not support file type: {}".format(file_type))
-                
+
                 full_prompt = temp_prompt
                 if file_type in ["image", "single-image", "multi-image"]:
-                    multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+                    multimodal_inputs = processor(images=batch_media, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
                 elif file_type == "video":
-                    multimodal_inputs = processor(videos=input_images[0], text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
-                    
+                    multimodal_inputs = processor(videos=batch_media, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+
                 tokens = multimodal_inputs
-                            
-            targets = processor.tokenizer(labels[0], add_special_tokens=False,
-                     return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
-    
-            labels_ids = torch.full_like(multimodal_inputs["input_ids"], -100)
-            labels_ids[:, -targets.size(1):] = targets
-            tokens["labels"] = labels_ids
-            
+
+            tokens["labels"] = build_target_labels(multimodal_inputs["input_ids"], processor.tokenizer, tgt)
+
             tokens = tokens.to(device)
             pred = peft_model(**tokens)
             loss = pred.loss
