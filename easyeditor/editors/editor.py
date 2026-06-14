@@ -11,7 +11,7 @@ from transformers import LlamaTokenizer,PreTrainedTokenizerFast, LlamaTokenizerF
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
-from .utils import _chunks, _prepare_requests, summary_metrics
+from .utils import _chunks, _prepare_requests, restore_after_edit, summary_metrics
 from .batch_editor import BatchEditor
 from ..evaluate import (
     attach_metric_meta,
@@ -258,18 +258,7 @@ class BaseEditor:
             if sequential_edit:
                 self.model = edited_model
             else:
-                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
-                    with torch.no_grad():
-                        weights_copy()
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    edited_model.unload()
-                    del self.model.peft_config
-                elif self.alg_name == 'MELO':
-                    self.model = edited_model
-                else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            copy_to_param(nethook.get_parameter(self.model, k), v)
+                restore_after_edit(self, edited_model, weights_copy)
 
             for i, request in enumerate(record_chunks):
                 if 'locality' in chunk_metrics[i]['post'].keys():
@@ -410,18 +399,7 @@ class BaseEditor:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
                 edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
-                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
-                    with torch.no_grad():
-                        weights_copy()
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    edited_model.unload()
-                    del self.model.peft_config
-                elif self.alg_name == 'MELO':
-                    self.model = edited_model
-                else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            copy_to_param(nethook.get_parameter(self.model, k), v)
+                restore_after_edit(self, edited_model, weights_copy)
 
 
         if isinstance(edited_model, LORA):
@@ -622,20 +600,7 @@ class BaseEditor:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
                 post_edit_results(all_results, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
-                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
-                    with torch.no_grad():
-                        weights_copy()
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    edited_model.unload()
-                    del self.model.peft_config
-                elif self.alg_name == 'MELO':
-                    self.model = edited_model
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    self.model = edited_model
-                else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            copy_to_param(nethook.get_parameter(self.model, k), v)
+                restore_after_edit(self, edited_model, weights_copy)
 
         if isinstance(edited_model, LORA):
             edited_model = edited_model.model
