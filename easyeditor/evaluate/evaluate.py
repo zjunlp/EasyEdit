@@ -36,6 +36,7 @@ from .metric_meta import (
     attach_metric_meta,
     build_icl_metric_meta,
     build_lm_metric_meta,
+    build_locality_metric_meta,
     merge_result_with_metric_meta,
 )
 
@@ -308,6 +309,11 @@ def compute_icl_edit_quality(
                 assert len(pre_neighbor) == len(post_neighbor)
 
                 ret['locality'][f'{locality_key}_acc'] = np.mean(np.equal(pre_neighbor, post_neighbor))
+            attach_metric_meta(
+                ret,
+                f"locality.{locality_key}",
+                build_locality_metric_meta(locality_key, hparams, model_name, icl=True),
+            )
     # Form a list of lists of prefixes to test.
     if 'portability' in record.keys() and any(record['portability']):
         for portability_key in record['portability'].keys():

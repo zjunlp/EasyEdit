@@ -215,8 +215,13 @@ def prepare_multimodal_hf_edit(hparams,
                             file_type):
     if isinstance(target, str):
         targets = [target, ]
+    else:
+        targets = target
     if isinstance(prompts, str):
         prompts = [prompts, ]
+
+    if len(prompts) != len(targets):
+        raise ValueError("prompts and target must have the same batch size.")
 
     if file_type == "text":       
         text_input = [processor.apply_chat_template([
@@ -246,32 +251,43 @@ def prepare_multimodal_hf_edit(hparams,
                                             tokenize=False) + l
                         for p, l in zip(prompts, targets)]
     elif file_type in ["image", "single-image", "multi-image"]:
-        if isinstance(image, List):
-            num_images = len(image)
+        if image is None:
+            images_list = [None for _ in range(len(prompts))]
+        elif file_type == "multi-image" and isinstance(image, List):
+            if len(prompts) == 1 and not any(isinstance(item, List) for item in image):
+                images_list = [image]
+            else:
+                images_list = image
+        elif isinstance(image, List):
+            images_list = image
         else:
-            num_images = 1
-            
-        text_input = [processor.apply_chat_template([
-                                {
+            images_list = [image for _ in range(len(prompts))]
 
-                                    "role": "user",
-                                    "content": [
-                                        {"type": "image"}
-                                    ] * num_images + [{"type": "text", "text": p}],
-                                },
-                            ],
-                                            add_generation_prompt=True,
-                                            tokenize=False) + l
-                        for p, l in zip(prompts, targets)]
-        if "qwen2-vl" in hparams.model_name.lower() and "|vision_start|" not in text_input[0]:
-            image_token = "<|vision_start|><|image_pad|><|vision_end|>"       
-            text_input = [image_token + text_input[0]]
+        if len(images_list) != len(prompts):
+            raise ValueError("image and prompts must have the same batch size.")
+
+        text_input = []
+        for p, l, img in zip(prompts, targets, images_list):
+            num_images = len(img) if isinstance(img, List) else 1
+
+            chat = processor.apply_chat_template([
+                {
+                    "role": "user",
+                    "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
+                },
+            ], add_generation_prompt=True, tokenize=False)
+
+            if "qwen2-vl" in hparams.model_name.lower() and "|vision_start|" not in chat:
+                image_token = "<|vision_start|><|image_pad|><|vision_end|>"
+                chat = image_token * num_images + chat
+
+            text_input.append(chat + l)
     else:
         raise AssertionError("Not support file type: {}".format(file_type))
     
     device = normalize_device(getattr(hparams, "device", None))
     if file_type in ["image", "single-image", "multi-image"]:
-        multimodal_inputs = processor(images=image, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
+        multimodal_inputs = processor(images=images_list, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
     elif file_type == "video":
         multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
     elif file_type == "text":
