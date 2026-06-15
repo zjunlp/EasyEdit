@@ -1,0 +1,59 @@
+# Example top-level Steer config (merged-method-file format).
+#
+# How it works:
+# - Generate and Apply are organized as TWO separate path lists (just like the
+#   classic format).
+# - Each path points to a MERGED method file that contains both a `generate:`
+#   and an `apply:` section (see hparams/Steer/caa_hparams/caa.yaml).
+# - The loader automatically picks the `generate:` part for generation and the
+#   `apply:` part for application, so you only maintain ONE file per method.
+# - Free composition: list multiple method files to generate several vectors in
+#   sequence and/or apply several methods at once. The dir lists below are
+#   index-aligned with the corresponding path list.
+#
+# Backward compatible: old flat files (no generate:/apply: sections) still work.
+
+# === General ===
+model_name_or_path: ../models/gemma-2-9b
+torch_dtype: bfloat16
+device: cuda:0
+seed: 0
+use_chat_template: false
+system_prompt: ''
+
+# === Generate vector ===
+# `steer_train_hparam_paths` and `steer_vector_output_dirs` are aligned line by line.
+steer_train_hparam_paths:
+  - hparams/Steer/caa_hparams/caa.yaml
+  - hparams/Steer/reps_hparams/reps.yaml
+steer_train_dataset: toxicity
+save_vectors: true
+steer_vector_output_dirs:
+  - vectors/gemma-2-9b/caa/
+  - vectors/gemma-2-9b/reps/
+
+# === Apply vector ===
+# `apply_steer_hparam_paths` and `steer_vector_load_dir` are aligned line by line.
+apply_steer_hparam_paths:
+  - hparams/Steer/caa_hparams/caa.yaml
+  - hparams/Steer/reps_hparams/reps.yaml
+steer_vector_load_dir:
+  - vectors/gemma-2-9b/toxicity/caa_vector
+  - vectors/gemma-2-9b/toxicity/reps_vector
+
+# === Generation ===
+generation_data:
+  - realtoxicityprompts
+generation_data_size: null
+generation_output_dir: generation/gemma-2-9b/realtoxicityprompts/steer
+num_responses: 1
+steer_from_end_position: false
+generate_orig_output: true
+
+generation_params:
+  max_new_tokens: 100
+  do_sample: true
+  temperature: 0.9
+  top_p: 0.9
+
+vllm_enable: false

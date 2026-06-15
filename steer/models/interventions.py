@@ -71,8 +71,19 @@ class ActivationAddition(BaseIntervention):
         self.multiplier = multiplier
     
     def forward(self, base, **kwargs):
-        steering_addition = self.multiplier * self.steering_vector.unsqueeze(0).unsqueeze(0)
-        return base + steering_addition
+        from steer.models.utils import add_vector_from_position
+
+        steering_addition = self.multiplier * self.steering_vector
+        position_ids = kwargs.get("position_ids", None)
+        from_pos = kwargs.get("from_pos", None)
+        if position_ids is not None or from_pos is not None:
+            return add_vector_from_position(
+                matrix=base,
+                vector=steering_addition,
+                position_ids=position_ids,
+                from_pos=from_pos,
+            )
+        return base + steering_addition.unsqueeze(0).unsqueeze(0)
     
     def to(self, device):
         super().to(device)

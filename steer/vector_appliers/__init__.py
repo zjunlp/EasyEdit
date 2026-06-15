@@ -1,12 +1,10 @@
-# from .apply_vector import *
-from .caa import *
-from .reps import *
-from .vector_prompt import *
-from .lm_steer import *
-from .merge import *
-from .prompt import *
-from .sta import *
-from .sae_feature import *
-from .vector_applier import *
-from .sft import*
-from .spilt import*
+"""
+Vector applier package.
+
+Keep this __init__ lightweight to avoid importing optional dependencies during
+configuration-only workflows (e.g. hyperparameter loading).
+
+Import applier implementations from their submodules when needed.
+"""
+
+__all__ = []

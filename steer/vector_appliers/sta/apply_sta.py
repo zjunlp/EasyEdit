@@ -53,7 +53,12 @@ def apply_sta(hparams: ApplySTAHyperParams,pipline=None,vector=None):
         print("Steering vector: ",steering_vector)
         print(f"Multiplier {multiplier}")
 
-        model.set_add_activations(
-            layer, multiplier * steering_vector, method_name="sta"
+        from ...models.interventions import ActivationAddition
+
+        intervention = ActivationAddition(
+            steering_vector=steering_vector,
+            multiplier=multiplier,
         )
+        intervention = intervention.to(device)
+        model.set_intervention(layer, intervention, "sta")
     return model

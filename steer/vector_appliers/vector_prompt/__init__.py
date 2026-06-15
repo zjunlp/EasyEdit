@@ -1,2 +1,7 @@
-from .apply_vector_prompt_hparam import *
-from .apply_vector_prompt import *
+"""
+Vector-prompt applier subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

@@ -116,6 +116,36 @@ def build_icl_metric_meta(section, hparams, model_name):
     )
 
 
+def build_locality_metric_meta(locality_key, hparams, model_name, icl=False):
+    evaluation_type = getattr(hparams, "evaluation_type", None)
+    alg_name = getattr(hparams, "alg_name", getattr(hparams, "alg", None))
+    model_family = infer_model_family(model_name)
+
+    if icl:
+        protocol = "icl_pre_post_argmax_token_match"
+        scorer = "token_match"
+        comparable_group = "locality.lm.icl_pre_post_argmax_token_match"
+    elif evaluation_type in ["LLM-judge", "generate-text"]:
+        protocol = "pre_post_free_generation_output_match"
+        scorer = "exact_match"
+        comparable_group = "locality.lm.pre_post_free_generation_output_match"
+    elif alg_name == "GRACE" and model_family != "seq2seq":
+        protocol = "pre_post_generated_token_match"
+        scorer = "token_match"
+        comparable_group = "locality.lm.pre_post_generated_token_match"
+    else:
+        protocol = "pre_post_argmax_token_match"
+        scorer = "token_match"
+        comparable_group = "locality.lm.pre_post_argmax_token_match"
+
+    return _base_meta(
+        result_key=f"locality.{locality_key}_acc",
+        protocol=protocol,
+        scorer=scorer,
+        comparable_group=comparable_group,
+    )
+
+
 def build_multimodal_metric_meta(
     section,
     hparams,
@@ -131,6 +161,21 @@ def build_multimodal_metric_meta(
         protocol = f"{protocol}_exact_match"
         scorer = "sequence_exact_match"
         comparable_group = f"{comparable_group.rsplit('.', 1)[0]}.sequence_exact_match"
+    return _base_meta(
+        result_key=result_key,
+        protocol=protocol,
+        scorer=scorer,
+        comparable_group=comparable_group,
+    )
+
+
+def build_multimodal_locality_metric_meta(
+    *,
+    result_key,
+    protocol,
+    scorer,
+    comparable_group,
+):
     return _base_meta(
         result_key=result_key,
         protocol=protocol,
