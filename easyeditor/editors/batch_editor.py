@@ -7,6 +7,7 @@ class BatchEditor(Enum):
     KE = 'KE'
     MEND = 'MEND'
     MEMIT = 'MEMIT'
+    MEMIT_FE = 'MEMIT-FE'
     PMET = 'PMET'
     FT = 'FT'
     QLoRA = 'QLoRA'
@@ -25,6 +26,7 @@ class BatchEditor(Enum):
             or alg_name == BatchEditor.KE.value \
             or alg_name == BatchEditor.MEND.value \
             or alg_name == BatchEditor.MEMIT.value \
+            or alg_name == BatchEditor.MEMIT_FE.value \
             or alg_name == BatchEditor.PMET.value \
             or alg_name == BatchEditor.FT.value \
             or alg_name == BatchEditor.QLoRA.value \

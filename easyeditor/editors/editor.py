@@ -222,6 +222,14 @@ class BaseEditor:
         assert hasattr(self.hparams, 'batch_size'), f'Method {self.alg_name} found, pls specify the batch_size....'
         all_metrics = []
         for record_chunks in _chunks(requests, self.hparams.batch_size):
+            chunk_metrics = []
+            for i, request in enumerate(record_chunks):
+                chunk_metrics.append({
+                    'case_id': i,
+                    "requested_rewrite": request,
+                    "pre": compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation),
+                })
+
             start = time()
 
             edited_model, weights_copy = self.apply_algo(
@@ -236,17 +244,10 @@ class BaseEditor:
             LOG.info(f"Execution editing took {exec_time}")
 
             start = time()
-            chunk_metrics = []
             for i, request in enumerate(record_chunks):
 
-                metrics = {
-                    'case_id': i,
-                    "requested_rewrite": request,
-                    "time": exec_time,
-                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation),
-                }
-
-                chunk_metrics.append(metrics)
+                chunk_metrics[i]["time"] = exec_time
+                chunk_metrics[i]["post"] = compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
 
             if sequential_edit:
                 self.model = edited_model
@@ -265,8 +266,6 @@ class BaseEditor:
                             copy_to_param(nethook.get_parameter(self.model, k), v)
 
             for i, request in enumerate(record_chunks):
-                chunk_metrics[i]["pre"] = compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation)
-
                 if 'locality' in chunk_metrics[i]['post'].keys():
                     for locality_key in request['locality'].keys():
                         locality_result = []
