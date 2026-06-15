@@ -77,7 +77,7 @@ class WISE(torch.nn.Module):
         adapter_layer = getattr(self.edit_module, self.layer_name)
 
         # if the condition below is True, then it is single-edit
-        if not config.sequential_edit:
+        if not getattr(config, "sequential_edit", False):
         # if type(adapter_layer) is not WISEAdapter:
             # 如果 adapter_layer 已经是 WISEAdapter，提取其原始层
             if type(adapter_layer) is WISEAdapter:
@@ -129,7 +129,7 @@ class WISE(torch.nn.Module):
     def get_adapter_layer(self):
         adapter_layer = getattr(self.edit_module, self.layer_name)
         assert type(adapter_layer) is WISEAdapter, print('Adapter Layer is not added correctly....')
-        return adapter_layer.to(self.model.device)
+        return adapter_layer
 
     # TODO: generation
     def generate(self, *args, **kwargs):

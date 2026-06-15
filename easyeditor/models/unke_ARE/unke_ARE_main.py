@@ -189,7 +189,9 @@ def apply_unke_ARE_to_model(
             #scheduler.step()
             optimizer.zero_grad()
             if 'Qwen2.5-7B-Instruct' in hparams.model_name:
-                loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids)[0], stat_out)+ criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids)[0], layer_out_ks)
+                ex_position_embeddings = model.model.rotary_emb(stat_in, ex_position_ids)
+                input_position_embeddings = model.model.rotary_emb(layer_in_ks, input_position_ids)
+                loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids,position_embeddings=ex_position_embeddings)[0], stat_out)+ criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,position_embeddings=input_position_embeddings)[0], layer_out_ks)
                 # loss =  criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids)[0], layer_out_ks)
             elif 'Llama3-8B-Instruct' in hparams.model_name:
                 loss = criterion(_layer(stat_in,attention_mask=ex_causal_mask,position_ids=ex_position_ids,cache_position = ex_cache_position)[0], stat_out)+ criterion(_layer(layer_in_ks,attention_mask=input_causal_mask,position_ids=input_position_ids,cache_position=input_cache_position)[0], layer_out_ks)
