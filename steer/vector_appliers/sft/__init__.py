@@ -1,4 +1,7 @@
-from .apply_sft import apply_sft, reset_sft_layers
-from .apply_sft_hparam import ApplySFTHyperParams
+"""
+SFT applier subpackage.
 
-__all__ = ['apply_sft', 'reset_sft_layers', 'ApplySFTHyperParams']
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []
