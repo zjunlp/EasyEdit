@@ -64,6 +64,25 @@ def get_all_acc_keys(dict_list):
 
     return all_keys
 
+def get_section_acc_keys(dict_list, phase, section):
+    all_keys = set()
+    for metric in dict_list:
+        phase_metrics = metric.get(phase, {})
+        section_metrics = phase_metrics.get(section, {})
+        if isinstance(section_metrics, dict):
+            for key in section_metrics.keys():
+                if key.endswith("acc"):
+                    all_keys.add(key)
+    return all_keys
+
+def collect_metric_values(dict_list, phase, key):
+    values = []
+    for metric in dict_list:
+        phase_metrics = metric.get(phase, {})
+        if key in phase_metrics:
+            values.append(phase_metrics[key])
+    return values
+
 def get_metric_protocol_summary(dict_list):
     protocol_summary = {}
     for metric in dict_list:
@@ -94,17 +113,21 @@ def summary_metrics(all_metrics):
     for eval in ["pre", "post"]:
         mean_metrics[eval] = dict()
         for key in ["rewrite_acc", "rephrase_acc", 'rewrite_ppl', 'ood_acc']:
-            if key in all_metrics[0][eval].keys():
-                mean_metrics[eval][key] = np.mean([metric[eval][key] for metric in all_metrics])
-        for key in ["locality", "portability"]:
-            if key in all_metrics[0][eval].keys() and all_metrics[0][eval][key] != {}:
-                mean_metrics[eval][key] = dict()
-                for lkey in get_all_acc_keys(all_metrics):
-                    metrics = [np.mean(metric[eval][key][lkey]) for metric in all_metrics if lkey in metric[eval][key].keys()]
+            values = collect_metric_values(all_metrics, eval, key)
+            if len(values) > 0:
+                mean_metrics[eval][key] = np.mean(values)
+        for section in ["locality", "portability"]:
+            section_keys = get_section_acc_keys(all_metrics, eval, section)
+            if len(section_keys) > 0:
+                mean_metrics[eval][section] = dict()
+                for lkey in section_keys:
+                    metrics = []
+                    for metric in all_metrics:
+                        section_metrics = metric.get(eval, {}).get(section, {})
+                        if isinstance(section_metrics, dict) and lkey in section_metrics:
+                            metrics.append(np.mean(section_metrics[lkey]))
                     if len(metrics) > 0:
-                        mean_metrics[eval][key][lkey] = np.mean(metrics)
-                    # mean_metrics[eval][key][lkey] = np.mean(
-                    #     [metric[eval][key][lkey] for metric in all_metrics])
+                        mean_metrics[eval][section][lkey] = np.mean(metrics)
     # mean_metrics["time"] = np.mean([metric["time"] for metric in all_metrics])
     protocol_summary = get_metric_protocol_summary(all_metrics)
     if protocol_summary:
