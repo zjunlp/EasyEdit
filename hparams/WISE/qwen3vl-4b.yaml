@@ -18,7 +18,7 @@ merge_freq: 1000
 merge_alg: 'ties'
 objective_optimization: 'only_label'
 inner_params:
-- model.language_model.layers.23.mlp.down_proj.weight
+- model.language_model.layers.30.mlp.down_proj.weight
 
 # for merge
 densities: 0.53
