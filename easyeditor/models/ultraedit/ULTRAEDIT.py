@@ -114,7 +114,7 @@ class ULTRAEDIT(EditableModel):
                 param_shift = param_shift.T
             if is_reverse:
                 param_shift = - param_shift
-            module.weight.data += param_shift.to(module.weight.data.dtype)
+            module.weight.data += param_shift.to(device=module.weight.device, dtype=module.weight.dtype)
 
 
     def cache(self, batch) -> Dict[int, Dict[int, Dict[str, torch.Tensor]]]:
@@ -177,4 +177,3 @@ class ULTRAEDIT(EditableModel):
         super().to(device)
         self.lifelong_normalizer.to(device)
         self.model.to(device)
-
