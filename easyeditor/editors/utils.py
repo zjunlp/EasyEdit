@@ -15,6 +15,20 @@ PEFT_RESTORE_ALGS = {"LoRA", "QLoRA", "DPO"}
 KEEP_EDITED_MODEL_ALGS = {"MELO"}
 
 
+def normalize_ground_truths(
+    ground_truth: Optional[Union[str, List[str]]],
+    prompts: List[str],
+) -> List[Optional[str]]:
+    if ground_truth is None:
+        return [None for _ in prompts]
+
+    if isinstance(ground_truth, str):
+        ground_truth = [ground_truth]
+
+    assert len(ground_truth) == len(prompts)
+    return ground_truth
+
+
 def restore_after_edit(editor, edited_model, weights_copy):
     """Restore editor.model after a non-sequential edit."""
     alg_name = getattr(editor, "alg_name", None)

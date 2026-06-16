@@ -20,6 +20,7 @@ from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
 from ..util.device import copy_to_param, normalize_device
+from .utils import normalize_ground_truths
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -160,13 +161,7 @@ class ConceptEditor:
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
 
-        if ground_truth is not None:
-            if isinstance(ground_truth, str):
-                ground_truth = [ground_truth,]
-            else:
-                assert len(ground_truth) == len(prompts)
-        else: # Default ground truth is <|endoftext|>
-            ground_truth = ['<|endoftext|>' for _ in range(len(prompts))]
+        ground_truth = normalize_ground_truths(ground_truth, prompts)
             
         if "requests" in kwargs.keys():
             requests = kwargs["requests"]
