@@ -19,7 +19,12 @@ class SimIE:
         self.device = str(normalize_device(device))
         self.init_weights_copy = {n: p.clone().cpu() for n, p in init_weights.items()}
         self.weights_copy = {n: p.clone().cpu() for n, p in init_weights.items()}
-        if "llama" in model_name.lower() or "gpt-j-6b" in model_name.lower() or "mistral" in model_name.lower():
+        if (
+            "llama" in model_name.lower()
+            or "gpt-j-6b" in model_name.lower()
+            or "mistral" in model_name.lower()
+            or "qwen" in model_name.lower()
+        ):
             self.matrix_P = {n: self.lamHyper * torch.eye(p.shape[1]).to(dtype=p.dtype) for n, p in init_weights.items()}
             self.transpose = False
         elif "gpt2-xl" in model_name.lower():
@@ -43,6 +48,10 @@ class SimIE:
 
     @staticmethod
     def solve_eqn(A, B, solver="LU", rcond=None):
+        out_dtype = B.dtype
+        if A.dtype in (torch.float16, torch.bfloat16) or B.dtype in (torch.float16, torch.bfloat16):
+            A = A.float()
+            B = B.float()
 
         def solve_with_lu(A, B):
             return torch.linalg.solve(A.T, B.T).T
@@ -67,7 +76,7 @@ class SimIE:
                 result = solve_with_lu(A, B)
         else:
             raise ValueError("Invalid solver")
-        return result
+        return result.to(out_dtype)
 
     def reset_parameter(self, model):
         return set_parameter(model, self.init_weights_copy, self.device)
@@ -144,14 +153,16 @@ class SimIE:
             else:
                 self.matrix_P[module_name] += (key_all.T @ key_all).cpu()
             with torch.no_grad():
-                weights_copy_gpu = self.weights_copy[module_name].to(self.device)
                 param = get_parameter(edited_model, module_name)
+                param_device = param.device
+                weights_copy_gpu = self.weights_copy[module_name].to(param_device)
+                key_all = key_all.to(device=param_device, dtype=param.dtype)
                 if self.transpose:
                     mat = (param - weights_copy_gpu).T @ key_all.T @ key_all
-                    delta_par = SimIE.solve_eqn(self.matrix_P[module_name].to(self.device), mat, self.solver).T
+                    delta_par = SimIE.solve_eqn(self.matrix_P[module_name].to(param_device), mat, self.solver).T
                 elif not self.transpose:
                     mat = (param - weights_copy_gpu) @ key_all.T @ key_all
-                    delta_par = SimIE.solve_eqn(self.matrix_P[module_name].to(self.device), mat, self.solver)
+                    delta_par = SimIE.solve_eqn(self.matrix_P[module_name].to(param_device), mat, self.solver)
                 weights_copy_gpu += delta_par
                 param[...] = weights_copy_gpu
                 if self.fast:
@@ -190,6 +201,3 @@ class SimIE:
                 "BKT": self.BKT
             }
             torch.save(ideal, f"outputs/{run.config.data_type}_{run.config.model_name}_{run.config.editing_method}_ideal_editor.pth")
-
-
-
