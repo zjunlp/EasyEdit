@@ -144,7 +144,8 @@ def generate(
                 - [`~generation.GenerateBeamEncoderDecoderOutput`]
     """
     # 1. Handle `generation_config` and kwargs that might update it, and validate the `.generate()` call
-    self._validate_model_class()
+    if hasattr(self, "_validate_model_class"):
+        self._validate_model_class()
     generation_config, model_kwargs = self._prepare_generation_config(generation_config, **kwargs)
     self._validate_model_kwargs(model_kwargs.copy())
 
@@ -280,6 +281,13 @@ def generate(
             f" correct device by calling for example input_ids = input_ids.to('{self.device.type}') before"
             " running `.generate()`.",
             UserWarning,
+        )
+
+    if hasattr(self, "_prepare_special_tokens"):
+        self._prepare_special_tokens(
+            generation_config,
+            kwargs_has_attention_mask=model_kwargs.get("attention_mask") is not None,
+            device=input_ids.device,
         )
 
     # 8. prepare distribution pre_processing samplers
@@ -426,6 +434,8 @@ def generate(
         while self._has_unfinished_sequences(this_peer_finished, synced_gpus, device=input_ids.device):
             # prepare model inputs
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            for key in ["return_dict", "output_attentions", "output_hidden_states"]:
+                model_inputs.pop(key, None)
 
             # forward pass to get next token
             outputs = self(
