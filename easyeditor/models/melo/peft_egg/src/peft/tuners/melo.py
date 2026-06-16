@@ -1025,8 +1025,8 @@ class Linear(nn.Linear, LoraLayer):
             result = F.linear(x, transpose(self.weight, self.fan_in_fan_out), bias=self.bias)
         elif self.r[self.active_adapter] > 0 and not self.merged:
             result = F.linear(x, transpose(self.weight, self.fan_in_fan_out), bias=self.bias)
-            lora_A = self.nd_lora_A(self.lora_A[self.active_adapter].T).mT
-            lora_B = self.nd_lora_B(self.lora_B[self.active_adapter])
+            lora_A = self.nd_lora_A(self.lora_A[self.active_adapter].T).mT.to(device=x.device, dtype=x.dtype)
+            lora_B = self.nd_lora_B(self.lora_B[self.active_adapter]).to(device=x.device, dtype=x.dtype)
             result += (self.lora_dropout[self.active_adapter](x) @ lora_A @ lora_B) \
                       * self.scaling[self.active_adapter]
 
@@ -1376,5 +1376,4 @@ if is_bnb_available():
                         )
                     result += output
                 return result
-
 
