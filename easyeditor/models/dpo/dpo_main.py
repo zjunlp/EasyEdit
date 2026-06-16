@@ -50,7 +50,11 @@ def apply_dpo_to_model(
         else:
             param.requires_grad = False
 
-    peft_model.to(device)
+    if getattr(model, "hf_device_map", None) is None:
+        peft_model.to(device)
+    else:
+        peft_model.is_parallelizable = True
+        peft_model.model_parallel = True
 
     # Execute the DPO algorithm
     edited_model = execute_dpo(peft_model, tok, requests, hparams)

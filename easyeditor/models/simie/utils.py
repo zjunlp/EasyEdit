@@ -32,7 +32,8 @@ def set_parameter(model, weights_copy, device):
     """
     with torch.no_grad():
         for k, v in weights_copy.items():
-            nethook.get_parameter(model, k)[...] = v.to(device)
+            param = nethook.get_parameter(model, k)
+            param[...] = v.to(device=param.device, dtype=param.dtype)
     return model
 
 class Tracer:
@@ -49,8 +50,11 @@ class Tracer:
             inputs: Tuple[torch.FloatTensor],
             outputs: Tuple[torch.FloatTensor]
         ):
-            self.keys = inputs[0][cache_indices].detach()
-            self.values = outputs[cache_indices].detach()
+            input_indices = tuple(idx.to(inputs[0].device) for idx in cache_indices)
+            output_device = outputs.device if isinstance(outputs, torch.Tensor) else outputs[0].device
+            output_indices = tuple(idx.to(output_device) for idx in cache_indices)
+            self.keys = inputs[0][input_indices].detach()
+            self.values = outputs[output_indices].detach()
 
         self.handles = [
             module.register_forward_hook(forward_hook),
