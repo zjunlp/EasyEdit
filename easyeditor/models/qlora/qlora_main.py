@@ -29,8 +29,12 @@ def execute_qlora(
     """
     Executes the QLoRA update algorithm for the specified requests
     """
-    
-    model = prepare_model_for_kbit_training(model)
+    is_dispatched = getattr(model, "hf_device_map", None) is not None
+
+    model = prepare_model_for_kbit_training(
+        model,
+        use_gradient_checkpointing=not is_dispatched,
+    )
 
     # LoRA config
     peft_config = LoraConfig(
@@ -43,13 +47,16 @@ def execute_qlora(
     )
     model = get_peft_model(model, peft_config)
 
-    # Training setup
-    model.gradient_checkpointing_enable()
-    model.enable_input_require_grads()
+    # Gradient checkpointing can bypass accelerate's per-layer device hooks on
+    # sharded k-bit models, leaving hidden states on the previous GPU.
+    if not is_dispatched:
+        model.gradient_checkpointing_enable()
+        model.enable_input_require_grads()
 
     # hparams.device = 1
     device = normalize_device(getattr(hparams, "device", None))
-    model.to(device)
+    if not is_dispatched:
+        model.to(device)
 
     # Prepare data
     texts = [r["prompt"] for r in requests]
