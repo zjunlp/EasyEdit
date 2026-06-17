@@ -36,7 +36,7 @@ class MendRewriteExecutor:
 
         # Load the trained MEND model
         self.alg = MEND(self.model, params, lambda: deepcopy(self.model))
-        d = torch.load(params.archive, map_location='cpu')
+        d = torch.load(params.archive, map_location='cpu', weights_only=False)
 
         self.alg.load_state_dict(
             {k.replace("gtn.", "mend."): v for k, v in d["model"].items()}
@@ -165,7 +165,7 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
         # Load the trained MEND model
         self.alg = MEND(self.model, params, lambda: deepcopy(self.model))
         device = normalize_device(getattr(params, "device", None))
-        d = torch.load(params.archive, map_location=device)
+        d = torch.load(params.archive, map_location=device, weights_only=False)
 
         self.alg.load_state_dict(
             {k.replace("gtn.", "mend."): v for k, v in d["model"].items()}
@@ -281,4 +281,3 @@ class MendPerRewriteExecutor(MendRewriteExecutor):
         edited_model, model_info = self.alg.edit(request["cond"], personality=True, return_factors=True)
 
         return edited_model, weights_copy
-
