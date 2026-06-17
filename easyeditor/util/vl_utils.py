@@ -8,13 +8,18 @@ def _lower_name(model_name):
     return (model_name or "").lower()
 
 
-def is_qwen_vl_model(model_name):
+def is_qwen35_vl_model(model_name):
     name = _lower_name(model_name)
-    return "qwen2-vl" in name or "qwen3-vl" in name
+    return "qwen3.5" in name or "qwen3_5" in name or "qwen3-5" in name
 
 
 def is_qwen3_vl_model(model_name):
     return "qwen3-vl" in _lower_name(model_name)
+
+
+def is_qwen_vl_model(model_name):
+    name = _lower_name(model_name)
+    return "qwen2-vl" in name or is_qwen3_vl_model(name) or is_qwen35_vl_model(name)
 
 
 def is_hf_multimodal_model(model_name):
@@ -23,6 +28,8 @@ def is_hf_multimodal_model(model_name):
 
 
 def qwen_vl_model_family(model_name):
+    if is_qwen35_vl_model(model_name):
+        return "qwen3.5-vl"
     if is_qwen3_vl_model(model_name):
         return "qwen3-vl"
     if "qwen2-vl" in _lower_name(model_name):
@@ -89,6 +96,12 @@ def build_target_labels(input_ids, tokenizer, targets):
 
 
 def get_qwen_vl_model_class(model_name):
+    if is_qwen35_vl_model(model_name):
+        if hasattr(transformers, "Qwen3_5ForConditionalGeneration"):
+            return transformers.Qwen3_5ForConditionalGeneration
+        if hasattr(transformers, "AutoModelForMultimodalLM"):
+            return transformers.AutoModelForMultimodalLM
+        raise ImportError("Qwen3.5-VL requires a transformers version with Qwen3_5ForConditionalGeneration or AutoModelForMultimodalLM.")
     if is_qwen3_vl_model(model_name):
         if hasattr(transformers, "Qwen3VLForConditionalGeneration"):
             return transformers.Qwen3VLForConditionalGeneration
