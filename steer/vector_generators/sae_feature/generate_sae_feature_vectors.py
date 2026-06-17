@@ -12,8 +12,7 @@ from typing import List
 
 from .sae_utils import (
     clear_gpu_cache,
-    load_sae_from_dir,
-    load_gemma_2_sae,
+    load_sae,
 )
 load_dotenv()
 # os.environ["NP_API_KEY"] = "your_neuronpedia_api_key_here"
@@ -163,22 +162,27 @@ def generate_sae_feature_vectors(hparams:SaeFeatureHyperParams):
         sae_cfg = sae.cfg.metadata
     else:
         assert str(args.layer) in args.sae_path, f"Sae doesnt match the layer!!!"
-        if "gemma" in args.sae_path.lower():
-            sae, sae_cfg, sparsity = load_gemma_2_sae(args.sae_path, device=device)
-            if args.release and args.sae_id:
-                sae_config = get_sae_config(args.release, args.sae_id)
-                sae_cfg["neuronpedia_id"] = sae_config["neuronpedia_id"]
-        else:
-            sae, sae_cfg, sparsity = load_sae_from_dir(args.sae_path, device=device)
-            if args.release and args.sae_id:
-                sae_config = get_sae_config(args.release, args.sae_id)
-                sae_cfg["neuronpedia_id"] = sae_config["neuronpedia_id"]
+        # Dispatch by on-disk format (npz vs cfg.json), not by model name.
+        sae, sae_cfg, sparsity = load_sae(args.sae_path, device=device, release=args.release)
+        if args.release and args.sae_id:
+            sae_config = get_sae_config(args.release, args.sae_id)
+            sae_cfg["neuronpedia_id"] = sae_config.get("neuronpedia_id")
 
     if not os.path.exists(args.steer_vector_output_dir):
             os.makedirs(args.steer_vector_output_dir)
 
     position_ids = args.position_ids
     strengths = args.strengths
+    if not position_ids:
+        raise ValueError("sae_feature: position_ids is empty; nothing to build a vector from.")
+    if len(position_ids) != len(strengths):
+        raise ValueError(
+            f"sae_feature: len(position_ids)={len(position_ids)} != len(strengths)={len(strengths)}."
+        )
+    n_features = sae.W_dec.shape[0]
+    for fid in position_ids:
+        if not (0 <= fid < n_features):
+            raise ValueError(f"sae_feature: feature id {fid} out of range [0, {n_features}).")
     sae_feature_vector = torch.zeros_like(sae.W_dec[position_ids[0]]).to(sae.device)
     for i,id in enumerate(position_ids):
         sae_feature_vector += strengths[i] * sae.W_dec[id]
@@ -210,7 +214,7 @@ def generate_sae_feature_vectors(hparams:SaeFeatureHyperParams):
     }
 
     # Attempts to retrieve and add features description to the dictionary.
-    if sae_cfg["neuronpedia_id"]:
+    if sae_cfg.get("neuronpedia_id"):
         try:
             modelId, saeId = sae_cfg["neuronpedia_id"].split('/')
             desc_data_path = os.path.join(steer_vector_output_dir, f"neuronpedia_description_{modelId}_{saeId}.json")

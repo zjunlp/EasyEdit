@@ -237,7 +237,7 @@ def make_data_module(
         all_intervention_locations.append(intervention_locations)
         all_base_input_ids.append(base_input_ids)
         all_output_ids.append(output_ids)
-        all_prompt_lengths.append(torch.tensor(base_prompt_length - 1)) # exclude bos token
+        all_prompt_lengths.append(torch.tensor(base_prompt_length - prefix_length)) # exclude prefix (BOS / chat prefix); matches intervention_locations starting at prefix_length
         
         all_concept_input_ids.append(concept_input_ids)
         
@@ -260,16 +260,42 @@ def make_data_module(
     return dict(train_dataset=train_dataset, eval_dataset=None, data_collator=data_collator)
 
 
+def _apply_chat_template_ids(tokenizer, message):
+    """Return ``apply_chat_template(tokenize=True)`` as a flat ``list[int]``.
+
+    Depending on the tokenizer / transformers version this call yields a ``list[int]``, a tensor,
+    or a (non-reversible) ``BatchEncoding``/dict. Some tokenizers (e.g. Qwen) return a BatchEncoding
+    here, which broke the downstream ``reversed(...)`` with ``'BatchEncoding' object is not
+    reversible``. Normalise every shape to a plain list so the suffix diff below always works.
+    """
+    out = tokenizer.apply_chat_template(message, tokenize=True, add_generation_prompt=True)
+    if hasattr(out, "input_ids"):          # BatchEncoding
+        out = out.input_ids
+    elif isinstance(out, dict):
+        out = out["input_ids"]
+    if hasattr(out, "tolist"):             # torch tensor / numpy array
+        out = out.tolist()
+    if len(out) > 0 and isinstance(out[0], (list, tuple)):  # batched -> first row
+        out = out[0]
+    return list(out)
+
+
 def get_prompt_suffix_length(tokenizer):
+    # No chat template (base model) -> no templated suffix.
+    if getattr(tokenizer, "chat_template", None) is None:
+        return 0, ""
     message_a = [{"role": "user", "content": 'a'}]
     message_b = [{"role": "user", "content": 'b'}]
-    tokens_a = tokenizer.apply_chat_template(message_a, tokenize=True, add_generation_prompt=True)
-    tokens_b = tokenizer.apply_chat_template(message_b, tokenize=True, add_generation_prompt=True)
+    tokens_a = _apply_chat_template_ids(tokenizer, message_a)
+    tokens_b = _apply_chat_template_ids(tokenizer, message_b)
     suffix_length = 0
     for i, (ta, tb) in enumerate(zip(reversed(tokens_a), reversed(tokens_b))):
         if ta != tb:
             suffix_length = i
             break
+    # suffix_length==0 would make tokens_a[-0:] the WHOLE sequence; return empty instead.
+    if suffix_length == 0:
+        return 0, ""
     return suffix_length, tokenizer.decode(tokens_a[-suffix_length:])
 
 
@@ -352,7 +378,7 @@ def preprocess_preference_data(
         "losing_labels": losing_output_ids,
         "winning_intervention_locations": winning_intervention_locations,
         "losing_intervention_locations": losing_intervention_locations,
-        "prompt_lengths": torch.tensor(prompt_length - 1),
+        "prompt_lengths": torch.tensor(prompt_length - prefix_length),
     }
     
 

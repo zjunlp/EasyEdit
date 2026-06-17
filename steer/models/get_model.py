@@ -3,9 +3,7 @@ import torch as t
 from jinja2 import Template
 from pathlib import Path
 
-# ---- lazy resolvers for the multimodal family wrappers ---------------------------------
-# These pull heavier deps (AutoProcessor, PIL) at import time, so import them only when a
-# multimodal model is actually requested. Each returns the wrapper CLASS.
+# lazy import wrappers for VL families, only when needed.
 def _load_llava_wrapper():
     from .Multimodalmodel_wrapper import LlavaOnevisionWrapper
     return LlavaOnevisionWrapper
@@ -28,7 +26,7 @@ _VL_FAMILY_RESOLVERS = {
     "llava": _load_llava_wrapper,
 }
 
-# Text wrapper fallback, matched as a substring of the lowercased model path. Order = priority.
+# Text wrapper, order = priority for substring matching in the model name.
 _TEXT_REGISTRY = [
     ("llama", LlamaWrapper),
     ("gpt", GPTWrapper),
@@ -39,7 +37,6 @@ _TEXT_REGISTRY = [
 
 
 def _vl_family_from_model_type(model_type: str, archs: str):
-    """Map a HF ``model_type`` / architectures string to one of our VL family keys."""
     blob = f"{model_type} {archs}"
     if "qwen" in blob:
         return "qwen_vl"
@@ -52,16 +49,7 @@ def _vl_family_from_model_type(model_type: str, archs: str):
 
 
 def _detect_from_config(model_name_or_path):
-    """Inspect the HF config (no weights) -> (vl_family | None, config_was_read).
-
-    Architecture-accurate: a model is multimodal iff its config carries a ``vision_config``
-    (or an image-text-to-text architecture). This distinguishes e.g. gemma-3-1b (text, no
-    vision_config) from gemma-3-4b (VL) — something name matching cannot do.
-
-    Returns ``(family, True)`` for a recognized VL model, ``(None, True)`` for a text model
-    whose config we COULD read, and ``(None, False)`` if the config could not be read (so the
-    caller knows to fall back to name keywords).
-    """
+    """Using auto config instead of the name to detect if the model is multimodal."""
     try:
         from transformers import AutoConfig
         cfg = AutoConfig.from_pretrained(model_name_or_path, trust_remote_code=True)
@@ -79,8 +67,7 @@ def _detect_from_config(model_name_or_path):
 
 
 def _detect_vl_family_from_name(name: str):
-    """Name-keyword fallback used only when the config is unavailable. Returns a VL family
-    key or ``None`` (let the text registry handle it)."""
+    """Using name keywords to detect the VL family."""
     if "qwen" in name and "vl" in name:
         return "qwen_vl"
     if "paligemma" in name:
@@ -96,12 +83,7 @@ def _detect_vl_family_from_name(name: str):
 
 
 def resolve_model_entry(model_name_or_path):
-    """Resolve a model name to ``(wrapper_class, is_multimodal)`` without instantiating it.
-
-    Strategy: config-first (architecture-accurate), then name-keyword fallback. Multimodal
-    models route to the matching VL family wrapper; everything else to a text wrapper.
-    Raises ``ValueError`` if nothing matches.
-    """
+    """Using a combination of config inspection and name substring matching to resolve the model wrapper class."""
     family, config_read = _detect_from_config(model_name_or_path)
 
     # If the config could not be read, try to spot a VL family from the name.
@@ -121,7 +103,9 @@ def resolve_model_entry(model_name_or_path):
 
 def load_chat_template(template_name: str) -> str:
     """
-    for models that lacks of a built-in chat template, we load a jinja template from the local chat_template folder and inject it into the tokenizer.
+    for models that lacks of a built-in chat template, you can load a jinja template from the local chat_template folder and inject it into the tokenizer.
+    Some experiments results may fail to reproduce in current dependecies, this is due to the upgrade of transformers library, which remove the built-in chat template for some models.
+    You can load the chat template from local and inject it into the tokenizer to make the model response in a chat way, and then you can find the experiment result can be reproduced.
     """
     current_file = Path(__file__).resolve()
     
@@ -135,8 +119,14 @@ def load_chat_template(template_name: str) -> str:
 
 
 def get_model(hparams):
-
-    dtype = hparams.dtype if hasattr(hparams, "dtype") else t.float32
+    """Resolves and instantiates a model wrapper based on the provided hyperparameters."""
+    # Update for torch_dtype since torch_dtype will be deprecated in torch in the future.
+    if hasattr(hparams, "dtype") and hparams.dtype is not None:
+        dtype = hparams.dtype
+    elif hasattr(hparams, "torch_dtype") and hparams.torch_dtype is not None:
+        dtype = hparams.torch_dtype
+    else:
+        dtype = t.float32
     use_cache = hparams.use_cache if hasattr(hparams, "use_cache") else True
     use_chat = hparams.use_chat_template if hasattr(hparams, "use_chat_template") else False
     device = hparams.device if hasattr(hparams, "device") else "cuda" if t.cuda.is_available() else "cpu"
@@ -156,23 +146,6 @@ def get_model(hparams):
         override_model_weights_path=override_model_weights_path,
         hparams=hparams,
     )
-    if model.tokenizer.chat_template is None:
-        if model.processor is not None:
-            if "qwen" in model_name_or_path.lower():
-                template_name = "qwen_vl.jinja"
-            elif "gemma" in model_name_or_path.lower():
-                template_name = "gemma_vl.jinja"
-            else:
-                raise ValueError(f"No chat template found for model {model_name_or_path}")
-        else:
-            template_name = "default.jinja"
-
-        try:
-            jinja_template = load_chat_template(template_name)
-            model.tokenizer.chat_template = jinja_template
-        except Exception as e:
-            print(f"Failed to load template, keeping default settings, may cause unexpected behavior due to lack of default chat template after Transformers upgraded to Version 5.x. Error: {e}")
-
     # Returns a 2-tuple for both modalities. Downstream detects modality via model.processor:
     # text wrappers expose model.processor = None, multimodal wrappers expose a real processor.
     if model.tokenizer.pad_token is None:

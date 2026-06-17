@@ -69,7 +69,9 @@ class SFTModelTrainer(ModelTrainer):
                 winning_inputs = {k: [] for k in ["input_ids", "attention_mask", "labels", "intervention_locations", "steering_factors"]}
                 losing_inputs = {k: [] for k in ["input_ids", "attention_mask", "labels", "intervention_locations", "steering_factors"]}
                 
-                for i in range(self.hparams.batch_size):
+                # Use the ACTUAL number of rows in this batch, not the configured batch_size to avoid out-of-index errors in the last batch of an epoch. 
+                actual_batch_size = len(batch[f"{self.preference_pairs[0]}_winning_input_ids"])
+                for i in range(actual_batch_size):
                     for pair in self.preference_pairs:
                         # fill the winning and losing inputs
 

@@ -5,6 +5,7 @@ import json
 from tqdm import tqdm
 from .generate_sft_hparams import SFTHyperParams
 from .utils import get_prefix_length, load_state, prepare_groups, save_state
+from steer.utils.templates import get_bos_offset
 from steer.trainer.SFTTrainer import SFTTrainer
 
 
@@ -80,10 +81,12 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
 
     all_vectors = {}
     for layer in args.layers:
-        prefix_length = 1 # prefix is default to 1 for all models due to theBOS token.
-        if args.use_chat_template:
+        # BOS-aware prefix: 1 only if the tokenizer actually prepends a BOS (Qwen adds none).
+        if args.use_chat_template and getattr(tokenizer, "chat_template", None) is not None:
             prefix_length = get_prefix_length(tokenizer)
             print(f"[WARNING] Chat model prefix length: {prefix_length}")
+        else:
+            prefix_length = get_bos_offset(tokenizer)
         
         output_dir = os.path.join(
             args.steer_vector_output_dir, 
@@ -248,6 +251,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 model.tokenizer, 
                 use_chat_template=args.use_chat_template,
                 model_name_or_path=args.model_name_or_path,
+                system_prompt=args.system_prompt,
                 max_num_of_examples=args.max_num_of_examples,
                 steering_prompt_type=args.steering_prompt_type,
                 is_select_category=is_multi_concept

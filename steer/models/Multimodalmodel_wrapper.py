@@ -59,7 +59,7 @@ class BaseMultimodalWrapper(BaseModelWrapper):
         return processor
 
 
-    # --- image / input handling (override per family) -------------------------------
+    # image processing process. for gemma family's weird behavior.
     def _load_image(self, content):
         """Resolve one image segment to a ``PIL.Image`` (or ``None``).
         """
@@ -98,11 +98,20 @@ class BaseMultimodalWrapper(BaseModelWrapper):
             # "answer" and any other segment types are intentionally ignored here
 
         conversation = self._build_conversation(question, image is not None)
-        prompt_text = self.processor.apply_chat_template(
-            conversation,
-            add_generation_prompt=self.ADD_GENERATION_PROMPT,
-            **self.CHAT_TEMPLATE_KWARGS,
-        )
+        chat_kwargs = dict(self.CHAT_TEMPLATE_KWARGS)
+        enable_thinking = getattr(getattr(self, "hparams", None), "enable_thinking", None)
+        if enable_thinking is not None:
+            chat_kwargs["enable_thinking"] = enable_thinking
+        if getattr(self.processor, "chat_template", None) is not None:
+            prompt_text = self.processor.apply_chat_template(
+                conversation,
+                add_generation_prompt=self.ADD_GENERATION_PROMPT,
+                **chat_kwargs,
+            )
+        else:
+            # Base model with no chat template: prompt with the raw question text. Image tokens
+            # are inserted by the processor's __call__ below when images= is passed.
+            prompt_text = question if question is not None else ""
         proc_kwargs = dict(
             text=prompt_text,
             return_tensors="pt",

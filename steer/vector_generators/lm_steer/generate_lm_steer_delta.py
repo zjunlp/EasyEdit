@@ -50,7 +50,9 @@ def generate_lm_steer_delta(hparams: LmSteerHyperParams, dataset, model=None, da
         ckpt_name = os.path.join(save_dir, "lm_steer_vector.pt")
 
         if os.path.exists(ckpt_name):
-            ckpt = torch.load(ckpt_name, map_location=device)
+            # weights_only=False: this is our own checkpoint and it stores [LmSteerHyperParams,
+            # state_dict, step] -- a custom class that torch>=2.6's default weights_only=True rejects.
+            ckpt = torch.load(ckpt_name, map_location=device, weights_only=False)
             model.steer.load_state_dict(ckpt[1])  # load steer
             start_step = ckpt[2]
             print(f"resume training from {start_step}")
@@ -60,7 +62,7 @@ def generate_lm_steer_delta(hparams: LmSteerHyperParams, dataset, model=None, da
 
     pbar = tqdm(range(start_step, n_steps))
     loss_mean = RunningMean(hparams.gamma_mean)
-    scaler = torch.cuda.amp.GradScaler()
+    scaler = torch.amp.GradScaler("cuda")
 
     for step_i in pbar:
         batch = next(data_iter, None)
@@ -81,7 +83,7 @@ def generate_lm_steer_delta(hparams: LmSteerHyperParams, dataset, model=None, da
         optimizer.zero_grad()
 
         if hparams.low_resource_mode:
-            with torch.cuda.amp.autocast(device_type="cuda", dtype=torch.float16):
+            with torch.amp.autocast("cuda", dtype=torch.float16):
                 model.steer.set_value(steer_values=batch_stance.float())  # set steer value
                 loss = model.model(**model_inputs).loss
                 regularization_term = model.steer.regularization_term()
@@ -89,7 +91,7 @@ def generate_lm_steer_delta(hparams: LmSteerHyperParams, dataset, model=None, da
             scaler.step(optimizer)
             scaler.update()
         else:
-            batch_stance = batch_stance.to(model.torch_dtype)
+            batch_stance = batch_stance.to(model.dtype)
             model.steer.set_value(steer_values=batch_stance)  # set steer value
 
             loss = model.model(**model_inputs).loss

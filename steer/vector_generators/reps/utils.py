@@ -2,13 +2,17 @@ import pickle
 import os
 from pathlib import Path
 
-from steer.utils.templates import model_supports_system_prompt
+from steer.utils.templates import get_bos_offset, safe_apply_chat_template
 STATE_FILE = "train_state.pkl"
 
-# get_grouped_data_by_concept_id function has been moved to 
+# get_grouped_data_by_concept_id function has been moved to
 # steer/datasets/dataset_loader.py for better organization
 
 def get_prefix_length(tokenizer, common_prefix=None):
+    # No chat template (base model): the only leading "prefix" is a possible BOS token.
+    # Still, qwen has no BOS token at all, so this returns 0 for both qwen and models with a real BOS.
+    if getattr(tokenizer, "chat_template", None) is None:
+        return get_bos_offset(tokenizer)
     if common_prefix is None:
         message_a = [{"role": "user", "content": "1"}]
         message_b = [{"role": "user", "content": "2"}]
@@ -27,6 +31,8 @@ def get_prefix_length(tokenizer, common_prefix=None):
     return prefix_length
 
 def get_suffix_length(tokenizer):
+    if getattr(tokenizer, "chat_template", None) is None:
+        return 0, ""
     message_a = [{"role": "user", "content": "1"}]
     message_b = [{"role": "user", "content": "2"}]
     tokens_a = tokenizer.apply_chat_template(message_a, tokenize=True)
@@ -36,24 +42,25 @@ def get_suffix_length(tokenizer):
         if ta != tb:
             suffix_length = i
             break
+    # suffix_length==0 would make tokens_a[-0:] the WHOLE sequence; return empty instead.
+    if suffix_length == 0:
+        return 0, ""
     return suffix_length, tokenizer.decode(tokens_a[-suffix_length:])
 
 def prepare_groups(
-    prepared_groups, concept, tokenizer, 
-    use_chat_template, model_name_or_path, 
+    prepared_groups, concept, tokenizer,
+    use_chat_template, model_name_or_path,
+    system_prompt=None,
     max_num_of_examples=None, steering_prompt_type="prepend", is_select_category=False,
     ):
-    
-    suffix_length, suffix_str = get_suffix_length(tokenizer)
-    print(f"Suffix length for {model_name_or_path}: {suffix_length}, Suffix string: {suffix_str}")
 
     # Check if this is axbench dataset (has output_concept and category fields)
     sample_item = prepared_groups[0] if prepared_groups else {}
     is_axbench_format = "output_concept" in sample_item and "category" in sample_item
-    
+
     if is_select_category and is_axbench_format:
         # For axbench datasets, filter by output_concept and category
-        positive_data = [item for item in prepared_groups 
+        positive_data = [item for item in prepared_groups
                         if item.get("output_concept") == concept and item.get("category") == "positive"]
     else:
         # For other datasets (safe_edit, toxicity, etc.), use all data
@@ -63,33 +70,39 @@ def prepare_groups(
     # limit the number of examples
     if max_num_of_examples and max_num_of_examples >= 0:
         positive_data = positive_data[:max_num_of_examples // 2]
-    
+
     all_data = positive_data
-        
-    if use_chat_template:
-        system_messages = []
-        if model_supports_system_prompt(model_name_or_path):
-            system_messages = [{"role": "system", "content": "You are a helpful assistant."}]
-        
+
+    # Use the chat template only when requested AND actually available; a base model with no
+    # template trains on raw text (returned unchanged below), the way base models are prompted.
+    if use_chat_template and getattr(tokenizer, "chat_template", None) is not None:
+        suffix_length, suffix_str = get_suffix_length(tokenizer)
+        print(f"Suffix length for {model_name_or_path}: {suffix_length}, Suffix string: {suffix_str}")
+        # Strip a leading BOS only if this tokenizer actually adds one (Qwen adds none).
+        bos_offset = get_bos_offset(tokenizer)
+
         def apply_input_template(item, column_name):
-            messages = system_messages + [{"role": "user", "content": item[column_name]}]
-            nobos = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True)[1:]
-            return tokenizer.decode(nobos)
-        
+            messages = [{"role": "user", "content": item[column_name]}]
+            toks = safe_apply_chat_template(
+                tokenizer, messages, system_prompt=system_prompt,
+                tokenize=True, add_generation_prompt=True,
+            )
+            return tokenizer.decode(toks[bos_offset:])
+
         def apply_output_template(text):
             return text + suffix_str
-        
+
         processed_data = []
         for item in all_data:
             processed_item = item.copy()
             processed_item["question"] = apply_input_template(item, "question")
-            output_columns = ["output", "matching", "not_matching", 
+            output_columns = ["output", "matching", "not_matching",
                             "prepend_steered_output", "blend_in_steered_output"]
             for column in output_columns:
                 if column in processed_item:
                     processed_item[column] = apply_output_template(processed_item[column])
             processed_data.append(processed_item)
-            
+
         if processed_data:
             print("\n=== Sample Row Data ===")
             sample_item = processed_data[0]
@@ -98,10 +111,10 @@ def prepare_groups(
                 print("-" * (len(key) + 1))
                 print(f"{value}")
             print("=====================\n")
-            
+
         return processed_data
     else:
-        # if not use chat template, return the original data
+        # if not use chat template (or none available), return the original data
         return all_data
 
 
@@ -123,5 +136,3 @@ def save_state(dump_dir, state, state_file=STATE_FILE):
     state_path = os.path.join(dump_dir, state_file)
     with open(state_path, "wb") as f:
         pickle.dump(state, f)
-
-    

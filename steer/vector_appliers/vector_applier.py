@@ -60,8 +60,11 @@ class BaseVectorApplier:
             input_text = f"{base_prompt} {input_text}"
             
         from steer.utils.templates import build_model_input
-        input_text = build_model_input(input_text, self.tokenizer, self.config.system_prompt, self.config.use_chat_template)
-            
+        input_text = build_model_input(
+            input_text, self.tokenizer, self.config.system_prompt, self.config.use_chat_template,
+            enable_thinking=getattr(self.config, 'enable_thinking', None),
+        )
+
         return input_text
 
     def _process_input(self, item) -> dict:
@@ -87,6 +90,7 @@ class BaseVectorApplier:
         conversation = [{"role": "user", "content": user_content}]
         processed_text = build_multimodal_model_input(
             conversation, self.processor, self.config.system_prompt, self.config.use_chat_template,
+            enable_thinking=getattr(self.config, 'enable_thinking', None),
         )
         proc_kwargs = dict(
             text=processed_text, return_tensors="pt",

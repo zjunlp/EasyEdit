@@ -3,6 +3,8 @@ import torch
 from .apply_caa_hparam import ApplyCAAHyperParams
          
 def reset_caa_layers(model, layers):
+    # We replace hardcoded hack_no_grad layer with a more flexible detection of the decoder layers, which is more robust to model and vLLM version changes.
+    # All reset_*_layers() are now the same implementation with detection. 
     decoder_layers = model._decoder_layers()
     for layer in layers:
         decoder_layers[layer].reset(method_name="caa")

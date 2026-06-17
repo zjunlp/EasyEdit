@@ -12,7 +12,8 @@ from steer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyp
 from steer.utils.hparams import HyperParams
 from steer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
 
-os.environ['VLLM_USE_V1'] = '0'
+# New vLLM will implicitly enable multiprocessing for speed, but steering requires in-process execution.
+os.environ.setdefault('VLLM_ENABLE_V1_MULTIPROCESSING', '0')
 
 try:
     from vllm import LLM
@@ -81,10 +82,20 @@ class MLPWrapper(t.nn.Module):
             output = self.mlp(*args, **kwargs)
         self.activations = output[0] if isinstance(output, tuple) else output
         
-        hidden = args[0]  
-        # Vary with the model type. Not necessarily has SwissLU.
+        hidden = args[0]
+
+        # This block detects the projection block in the model. 
+        # Different models have different MLP implementations, so we maintain a if-else block to support future models.
         if hasattr(self.mlp, 'gate_proj') and hasattr(self.mlp, 'up_proj'):
             self.mid_activations = self.mlp.act_fn(self.mlp.gate_proj(hidden)) * self.mlp.up_proj(hidden)
+
+        elif hasattr(self.mlp, 'gate_up_proj'):
+            # For Qwen3 family, vllm combines the gate and up projection into one matrix,
+            # so we need to split the activations into two parts and apply the activation function to the gate part.
+            gate_up = self.mlp.gate_up_proj(hidden)
+            if isinstance(gate_up, tuple):
+                gate_up = gate_up[0]
+            self.mid_activations = self.mlp.act_fn(gate_up)
 
         elif hasattr(self.mlp, 'c_fc'):
             self.mid_activations = self.mlp.c_fc(hidden)
@@ -99,10 +110,7 @@ class MLPWrapper(t.nn.Module):
             self.mid_activations = self.mlp.up_proj(hidden)
 
         else:
-            raise NotImplementedError(
-                f"Unsupported MLP type: {type(self.mlp).__name__}, "
-                f"attributes: {[a for a in dir(self.mlp) if not a.startswith('_')]}"
-            )
+            self.mid_activations = None
         return output
 
     def add(self, activations):
@@ -318,7 +326,7 @@ class BlockOutputWrapper(t.nn.Module):
 class BaseModelWrapper:
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -332,19 +340,28 @@ class BaseModelWrapper:
         self.hparams = hparams    #initialize hyperparams
         self.use_chat = use_chat
         self.device = device
-        self.torch_dtype = DTYPES_DICT.get(torch_dtype, t.float32)
+        self.dtype = DTYPES_DICT.get(dtype, t.float32)
         self.use_cache = use_cache
         self.model_name_or_path = model_name_or_path
         self.processor = None  # text models have no image processor; multimodal subclasses set this
 
         if hparams.vllm_enable and VLLM_AVAILABLE:
-            self.VLLM_model = LLM(
+            # Force in-process execution so the layer wrappers we install below actually run
+            # during generation (see the module-level note next to VLLM_ENABLE_V1_MULTIPROCESSING).
+            os.environ['VLLM_ENABLE_V1_MULTIPROCESSING'] = '0'
+            llm_kwargs = dict(
                 model=self.model_name_or_path,
-                #enable_steer_vector=True,
+                # enforce_eager=True disables CUDA-graph capture. This is required: steering
+                # mutates per-layer state between calls, which a captured graph would not pick up.
                 enforce_eager=True,
                 tensor_parallel_size=1,
-                dtype=self.torch_dtype,
+                dtype=self.dtype,
+                gpu_memory_utilization=getattr(hparams, 'vllm_gpu_memory_utilization', 0.9),
             )
+            _max_len = getattr(hparams, 'vllm_max_model_len', None)
+            if _max_len:
+                llm_kwargs['max_model_len'] = _max_len
+            self.VLLM_model = LLM(**llm_kwargs)
             self.tokenizer = self.VLLM_model.get_tokenizer()
             self.model = self.extract_vllm_model()
         else:
@@ -369,40 +386,78 @@ class BaseModelWrapper:
     def _load_hf_model(self):
         return AutoModelForCausalLM.from_pretrained(
             self.model_name_or_path,
-            torch_dtype=self.torch_dtype,
+            dtype=self.dtype,
             device_map=self.device,
             use_cache=self.use_cache,
         )
     
     def extract_vllm_model(self):
-        """Extract PyTorch model from vLLM LLM instance"""
-        try:
-            # Try vLLM v1 structure first
-            if hasattr(self.VLLM_model, 'llm_engine') and hasattr(self.VLLM_model.llm_engine, 'model_executor'):
-                model_executor = self.VLLM_model.llm_engine.model_executor
-                if hasattr(model_executor, 'driver_worker'):
-                    model = model_executor.driver_worker.model_runner.model
-                else:
-                    model = getattr(model_executor, 'model', None)
+        """
+        In vLLM v1, the old method fails since multiprocessing and distributive method is enforced.
+        So we write this new method to extract the model from the vLLM instance to steer.
+        """
+        if hasattr(self.VLLM_model, 'apply_model'):
+            try:
+                result = self.VLLM_model.apply_model(lambda model: model)
+                model = result[0] if isinstance(result, (list, tuple)) else result
                 if model is not None:
                     return model
-            # Try direct model access
-            if hasattr(self.VLLM_model, 'model'):
-                return self.VLLM_model.model, None
-            raise ValueError("Could not extract model from vLLM instance")
-        except Exception as e:
-            raise RuntimeError(f"Failed to extract model from vLLM instance: {str(e)}")
+            except Exception as e:
+                print(f"[vLLM] apply_model failed ({e}); falling back to attribute traversal.")
+
+        candidate_paths = [
+            ("llm_engine", "engine_core", "engine_core", "model_executor", "driver_worker", "worker", "model_runner", "model"),
+            ("llm_engine", "engine_core", "engine_core", "model_executor", "driver_worker", "model_runner", "model"),
+            ("llm_engine", "engine_core", "model_executor", "driver_worker", "worker", "model_runner", "model"),
+            ("llm_engine", "model_executor", "driver_worker", "model_runner", "model"),
+        ]
+        for path in candidate_paths:
+            obj = self.VLLM_model
+            for attr in path:
+                obj = getattr(obj, attr, None)
+                if obj is None:
+                    break
+            if obj is not None:
+                return obj
+
+        raise RuntimeError(
+            "Could not extract the model from the vLLM instance. The installed vLLM "
+            "exposes neither LLM.apply_model nor a known engine attribute chain; the "
+            "vLLM steering path needs updating for this version."
+        )
 
     def _base_model(self):
-        """The base model holding the decoder layers, with Hack_no_grad unwrapped."""
-        base = self.model.model
-        if isinstance(base, Hack_no_grad):
-            base = base.module
-        if not hasattr(base, "layers") and hasattr(base, "language_model"):
-            base = base.language_model
-            if isinstance(base, Hack_no_grad):
-                base = base.module
-        return base
+        """
+        This method locates the "base model" that contains the decoder layers 
+        under a consistent .layers attribute, regardless of how many wrapper modules nest it. 
+        For standard CausalLM-based architectures this is exactly self.model.model.layers, 
+        but for more complex layouts it detects at most 4 layers of nesting under .model or .language_model, 
+        unwrapping any Hack_no_grad wrappers along the way, and returns the first one that has a .layers attribute.
+        """
+        def _unwrap(m):
+            return m.module if isinstance(m, Hack_no_grad) else m
+
+        base = _unwrap(self.model)
+        for _ in range(4):  # depth guard; real layouts nest at most ~3 deep
+            if hasattr(base, "layers"):
+                return base
+            nxt = None
+            for attr in ("model", "language_model"):
+                child = getattr(base, attr, None)
+                if child is not None:
+                    nxt = _unwrap(child)
+                    break
+            if nxt is None or nxt is base:
+                break
+            base = nxt
+
+        if hasattr(base, "layers"):
+            return base
+        raise AttributeError(
+            f"Could not locate the decoder '.layers' under {type(self.model).__name__}; "
+            f"_base_model() descended model/language_model but found none. The steering "
+            f"path needs an explicit layout for this architecture."
+        )
 
     def _decoder_layers(self):
         """The transformer decoder layers (ModuleList). Override for non-CausalLM layouts.
@@ -442,12 +497,12 @@ class BaseModelWrapper:
                 lm_head, hparams.adaptor_class, hparams.num_steers, embed_dim,
                 vocab_size, hparams.rank, hparams.epsilon, hparams.init_var, "output")
             if hparams.adaptor_class == "multiply":
-                self.steer.projector1 = t.nn.Parameter(self.steer.projector1.to(self.torch_dtype))
-                self.steer.projector2 = t.nn.Parameter(self.steer.projector2.to(self.torch_dtype))
+                self.steer.projector1 = t.nn.Parameter(self.steer.projector1.to(self.dtype))
+                self.steer.projector2 = t.nn.Parameter(self.steer.projector2.to(self.dtype))
             elif hparams.adaptor_class == "add":
-                self.steer.add_vec = t.nn.Parameter(self.steer.add_vec.to(self.torch_dtype))
+                self.steer.add_vec = t.nn.Parameter(self.steer.add_vec.to(self.dtype))
             elif hparams.adaptor_class == "offset":
-                self.steer.offset_vec = t.nn.Parameter(self.steer.offset_vec.to(self.torch_dtype))
+                self.steer.offset_vec = t.nn.Parameter(self.steer.offset_vec.to(self.dtype))
             self.model.set_output_embeddings(self.steer)  
         else:
             raise ValueError('Mismatched adapted component or model structure')
@@ -523,10 +578,13 @@ class BaseModelWrapper:
         tokens = self.tokenizer.batch_decode(indices.unsqueeze(-1))
         return list(zip(tokens, probs_percent)), list(zip(tokens, values.tolist()))
 
-    def get_logits(self,tokens):
+    def get_logits(self, tokens):
         if self.VLLM_model is not None:
             from vllm import SamplingParams
-            logits = self.VLLM_model.generate(prompt_token_ids=tokens.tolist(), sampling_params=SamplingParams(max_tokens=1))
+            logits = self.VLLM_model.generate(
+                {"prompt_token_ids": tokens.flatten().tolist()},
+                sampling_params=SamplingParams(max_tokens=1),
+            )
         else:
             logits = self.model(tokens).logits
         return logits
@@ -621,7 +679,7 @@ class BaseModelWrapper:
 class LlamaWrapper(BaseModelWrapper):
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -630,7 +688,7 @@ class LlamaWrapper(BaseModelWrapper):
         hparams:HyperParams=None,
     ):
         super().__init__(
-            torch_dtype, 
+            dtype, 
             use_chat, 
             device,
             model_name_or_path,
@@ -642,7 +700,7 @@ class LlamaWrapper(BaseModelWrapper):
 class GemmaWrapper(BaseModelWrapper):
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -652,7 +710,7 @@ class GemmaWrapper(BaseModelWrapper):
     ):
 
         super().__init__(
-            torch_dtype, 
+            dtype, 
             use_chat, 
             device,
             model_name_or_path,
@@ -664,7 +722,7 @@ class GemmaWrapper(BaseModelWrapper):
 class QwenWrapper(BaseModelWrapper):
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -673,7 +731,7 @@ class QwenWrapper(BaseModelWrapper):
         hparams:HyperParams=None,
     ):
         super().__init__(
-            torch_dtype, 
+            dtype, 
             use_chat, 
             device,
             model_name_or_path,
@@ -685,7 +743,7 @@ class QwenWrapper(BaseModelWrapper):
 class GPTWrapper(BaseModelWrapper):
     def __init__(
         self,
-        torch_dtype = t.float32,   #change to float16
+        dtype = t.float32,   #change to float16
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -694,7 +752,7 @@ class GPTWrapper(BaseModelWrapper):
         hparams:HyperParams=None,
     ):
         super().__init__(
-            torch_dtype, 
+            dtype, 
             use_chat,
             device,
             model_name_or_path,
@@ -742,12 +800,12 @@ class GPTWrapper(BaseModelWrapper):
                 self.model.lm_head, hparams.adaptor_class, hparams.num_steers, embed_dim,
                 vocab_size, hparams.rank, hparams.epsilon, hparams.init_var, "output")
             if hparams.adaptor_class == "multiply":
-                self.steer.projector1 = t.nn.Parameter(self.steer.projector1.to(self.torch_dtype))
-                self.steer.projector2 = t.nn.Parameter(self.steer.projector2.to(self.torch_dtype))
+                self.steer.projector1 = t.nn.Parameter(self.steer.projector1.to(self.dtype))
+                self.steer.projector2 = t.nn.Parameter(self.steer.projector2.to(self.dtype))
             elif hparams.adaptor_class == "add":
-                self.steer.add_vec = t.nn.Parameter(self.steer.add_vec.to(self.torch_dtype))
+                self.steer.add_vec = t.nn.Parameter(self.steer.add_vec.to(self.dtype))
             elif hparams.adaptor_class == "offset":
-                self.steer.offset_vec = t.nn.Parameter(self.steer.offset_vec.to(self.torch_dtype))
+                self.steer.offset_vec = t.nn.Parameter(self.steer.offset_vec.to(self.dtype))
             self.model.set_output_embeddings(self.steer) 
 
     def set_save_internal_decodings(self, value: bool):

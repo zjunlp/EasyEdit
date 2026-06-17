@@ -19,8 +19,9 @@ def apply_lm_steer(hparams: ApplyLmSteerHyperParams, pipline=None, vector=None):
         model.steer.load_state_dict(vector)
     else:
         ckpt_name = os.path.join(hparams.steer_vector_load_dir, 'lm_steer_vector.pt')
-        # Load the steer checkpoint
-        ckpt = torch.load(ckpt_name, map_location=device)
+        # Load the steer checkpoint. weights_only=False: the checkpoint stores a [LmSteerHyperParams,
+        # state_dict, step] list -- a custom class that torch>=2.6's default weights_only=True rejects.
+        ckpt = torch.load(ckpt_name, map_location=device, weights_only=False)
         model.steer.load_state_dict(ckpt[1])
 
     model.steer.to(device)
