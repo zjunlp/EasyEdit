@@ -34,13 +34,16 @@ class DEFER(torch.nn.Module):
         layer_name = self.layer.rsplit(".", 1)[-1]
         original_layer = getattr(edit_module, layer_name)
         if type(original_layer) is not DeferAdaptor:
-            setattr(edit_module, layer_name, DeferAdaptor(config, original_layer, transpose=transpose).to(self.device))
+            setattr(edit_module, layer_name, DeferAdaptor(config, original_layer, transpose=transpose))
             self.original_layer = copy.deepcopy(original_layer)
 
     def reset_layer(self):
         layer_name = self.layer.rsplit(".", 1)[-1]
         edit_module = parent_module(self.model, brackets_to_periods(self.layer))
-        setattr(edit_module, layer_name, self.original_layer.to(self.device))
+        current_layer = getattr(edit_module, layer_name)
+        device = current_layer.original_layer.weight.device if isinstance(current_layer, DeferAdaptor) else self.original_layer.weight.device
+        dtype = current_layer.original_layer.weight.dtype if isinstance(current_layer, DeferAdaptor) else self.original_layer.weight.dtype
+        setattr(edit_module, layer_name, self.original_layer.to(device=device, dtype=dtype))
         
     def get_inner_layer(self, named_parameters):#, layer_name):
         params = []
@@ -105,8 +108,8 @@ class DeferAdaptor(torch.nn.Module):
         for n, p in layer.named_parameters():
             p.requires_grad = False
             
-        self.defer = torch.nn.Linear(input_dim, 1).to(self.device)
-        self.predict_values = torch.nn.Linear(input_dim, output_dim).to(self.device)
+        self.defer = torch.nn.Linear(input_dim, 1).to(device=self.device, dtype=layer.weight.dtype)
+        self.predict_values = torch.nn.Linear(input_dim, output_dim).to(device=self.device, dtype=layer.weight.dtype)
         self.threshold = config.threshold
     
     def forward(self, *args):

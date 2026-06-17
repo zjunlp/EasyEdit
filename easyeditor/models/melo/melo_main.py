@@ -30,6 +30,9 @@ def apply_melo_to_model(
     else:
         editor = model
     tokens = tokenizer(requests[0], tok,device)
-    editor.to(device)
+    base_model = getattr(editor, "model", model)
+    base_model = getattr(base_model, "model", base_model)
+    if getattr(base_model, "hf_device_map", None) is None:
+        editor.to(device)
     editor.edit(tokens)
     return editor,weights_copy

@@ -95,5 +95,5 @@ def flatten_masked_batch(data, mask):
     Flattens feature data, ignoring items that are masked out of attention.
     """
     flat_data = data.view(-1, data.size(-1))
-    attended_tokens = mask.view(-1).nonzero()[:, 0]
+    attended_tokens = mask.to(data.device).view(-1).nonzero()[:, 0]
     return flat_data[attended_tokens]

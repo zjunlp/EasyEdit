@@ -11,11 +11,16 @@ import logging
 import numpy as np
 import random
 from ..util.globals import *
-from ..evaluate import compute_concept_edit_quality
+from ..evaluate import (
+    attach_metric_meta,
+    build_locality_metric_meta,
+    compute_concept_edit_quality,
+)
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
 from ..util.device import copy_to_param, normalize_device
+from .utils import normalize_ground_truths
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -156,13 +161,7 @@ class ConceptEditor:
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
 
-        if ground_truth is not None:
-            if isinstance(ground_truth, str):
-                ground_truth = [ground_truth,]
-            else:
-                assert len(ground_truth) == len(prompts)
-        else: # Default ground truth is <|endoftext|>
-            ground_truth = ['<|endoftext|>' for _ in range(len(prompts))]
+        ground_truth = normalize_ground_truths(ground_truth, prompts)
             
         if "requests" in kwargs.keys():
             requests = kwargs["requests"]
@@ -233,6 +232,11 @@ class ConceptEditor:
                     for ans,label in zip(all_metrics[i]['post']['locality'][f'{locality_key}_output'],all_metrics[i]['pre']['locality'][f'{locality_key}_output']):
                         locality_result.append(np.mean(np.equal(ans, label)))
                     all_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
+                    attach_metric_meta(
+                        all_metrics[i]['post'],
+                        f"locality.{locality_key}",
+                        build_locality_metric_meta(locality_key, self.hparams, self.model_name),
+                    )
                     all_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
                 all_metrics[i]['pre'].pop('locality')
 

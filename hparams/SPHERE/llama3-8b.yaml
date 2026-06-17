@@ -29,4 +29,4 @@ mom2_dtype: "float32"
 nullspace_threshold: 2e-2
 L2: 1
 cumulative_ratio: 0.5
-suppression strength: 0.5
+suppression_strength: 0.5

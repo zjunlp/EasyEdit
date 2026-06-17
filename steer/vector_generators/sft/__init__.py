@@ -1,3 +1,7 @@
-from .generate_sft_hparams import *
-from .generate_sft import *
-from .utils import *
+"""
+SFT vector generator subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

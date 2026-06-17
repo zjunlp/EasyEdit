@@ -1,2 +1,7 @@
-from .apply_merge_vector_hparam import *
-from .apply_merge_vector import *
+"""
+Merge-vector applier subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

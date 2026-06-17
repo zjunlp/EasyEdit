@@ -14,6 +14,16 @@ from ...util.generate import generate_fast
 from itertools import combinations
 
 
+def get_required_ground_truth_for_context(request: Dict, context_type: str):
+    ground_truth = request.get("ground_truth")
+    if ground_truth is None:
+        raise ValueError(
+            f"CORE context `{context_type}` uses `ground_truth`, "
+            "but no `ground_truth` was provided. Please pass it explicitly."
+        )
+    return ground_truth
+
+
 
 def compute_z(
     model: AutoModelForCausalLM,
@@ -280,14 +290,14 @@ def get_context_templates(model, tok, request, context_type='all', n_gen=5, max_
 
     # 2) Prompt setup and calculation of n_gen_per_prompt (ensure at least 1)
     if context_type == 'all':
-        ground_truth = request["ground_truth"]
+        ground_truth = get_required_ground_truth_for_context(request, context_type)
         subject      = request["subject"]
         target_new   = request["target_new"]
         all_prompts  = [ground_truth, subject, target_new]
         n_gen_per_prompt = max(n_gen // len(all_prompts), 1)
 
     elif context_type == 'target_true_n_subject':
-        ground_truth = request["ground_truth"]
+        ground_truth = get_required_ground_truth_for_context(request, context_type)
         subject      = request["subject"]
         all_prompts  = [ground_truth, subject]
         n_gen_per_prompt = max(n_gen // len(all_prompts), 1)
@@ -298,7 +308,10 @@ def get_context_templates(model, tok, request, context_type='all', n_gen=5, max_
             'target_new' : 'target_new',
             'subject'    : 'subject'
         }
-        target = request[prompt_key[context_type]]
+        if context_type == 'target_true':
+            target = get_required_ground_truth_for_context(request, context_type)
+        else:
+            target = request[prompt_key[context_type]]
         all_prompts = [target]
         n_gen_per_prompt = n_gen
 
