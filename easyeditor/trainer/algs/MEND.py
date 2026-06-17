@@ -1,6 +1,7 @@
 import copy
 import logging
 from collections import defaultdict
+from contextlib import contextmanager
 
 import higher
 import torch
@@ -25,6 +26,97 @@ from .hooks import hook_model
 from ..utils import _inner_params, _logits
 
 LOG = logging.getLogger(__name__)
+
+
+def _get_parent_module(model: nn.Module, param_name: str):
+    parent_name, child_name = param_name.rsplit(".", 1)
+    if hasattr(model, "get_submodule"):
+        return model.get_submodule(parent_name), child_name
+
+    parent = model
+    for comp in parent_name.split("."):
+        parent = getattr(parent, comp)
+    return parent, child_name
+
+
+def _model_forward(model: nn.Module, config, *inputs, **kwargs):
+    if 'minigpt4' in config.model_name.lower() or 'blip' in config.model_name.lower():
+        outputs = model(*inputs, **kwargs)
+    elif "llava-onevision" in config.model_name.lower() or "qwen2-vl" in config.model_name.lower():
+        multimodal_inputs = inputs[0]
+        outputs = model(**multimodal_inputs)
+    elif 'gpt' in config.model_name.lower():
+        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+    elif 'llama' in config.model_name.lower():
+        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+    elif 'chatglm2' in config.model_name.lower():
+        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+    elif 'internlm' in config.model_name.lower():
+        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+    elif 'qwen' in config.model_name.lower():
+        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+    elif 'mistral' in config.model_name.lower():
+        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
+    else:
+        outputs = _logits(model(**kwargs))
+    return outputs
+
+
+class EditedParameterModel(nn.Module):
+    """Run a model with differentiable parameter replacements.
+
+    The custom higher monkeypatch path does not affect dispatched Qwen forwards
+    reliably. This wrapper swaps only the edited tensors into the original model
+    for the duration of each forward pass, then restores the original params.
+    """
+
+    def __init__(self, model: nn.Module, edited_params):
+        super().__init__()
+        self.model = model
+        self.edited_params = edited_params
+
+    def __getattr__(self, name):
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.model, name)
+
+    @contextmanager
+    def use_edited_params(self):
+        originals = []
+        for name, edited_param in self.edited_params.items():
+            parent, child_name = _get_parent_module(self.model, name)
+            originals.append((parent, child_name, parent._parameters[child_name]))
+            parent._parameters[child_name] = edited_param
+        try:
+            yield
+        finally:
+            for parent, child_name, original_param in reversed(originals):
+                parent._parameters[child_name] = original_param
+
+    def forward(self, *args, **kwargs):
+        with self.use_edited_params():
+            return self.model(*args, **kwargs)
+
+    def state_dict(self, *args, **kwargs):
+        state_dict = self.model.state_dict(*args, **kwargs)
+        keep_vars = kwargs.get("keep_vars", False)
+        for name, edited_param in self.edited_params.items():
+            state_dict[name] = edited_param if keep_vars else edited_param.detach()
+        return state_dict
+
+
+class EditedMEND(nn.Module):
+    def __init__(self, source: "MEND", edited_model: nn.Module):
+        super().__init__()
+        self.model = edited_model
+        self.config = source.config
+        self.model_constructor = source.model_constructor
+        self.edit_loss_fn = source.edit_loss_fn
+        self.loc_loss_fn = source.loc_loss_fn
+
+    def forward(self, *inputs, **kwargs):
+        return _model_forward(self.model, self.config, *inputs, **kwargs)
 
 
 def update_counter(x, m, s, k):
@@ -259,32 +351,7 @@ class MEND(EditableModel):
         return res
 
     def forward(self, *inputs, **kwargs):
-        if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
-            outputs = self.model(*inputs, **kwargs)
-        elif "llava-onevision" in self.config.model_name.lower() or "qwen2-vl" in self.config.model_name.lower():
-            multimodal_inputs = inputs[0]
-            outputs = self.model(**multimodal_inputs)
-        elif 'gpt' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'llama' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'chatglm2' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'internlm' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'qwen' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'mistral' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        else:
-            outputs = _logits(self.model(**kwargs))
-        return outputs
+        return _model_forward(self.model, self.config, *inputs, **kwargs)
     
     def outer_parameters(self):
         return list(self.mend.parameters()) + [self.edit_lrs]
@@ -400,6 +467,21 @@ class MEND(EditableModel):
 
         assert len(self.edit_lrs) == len(list(mean_grads.items()))
         updates = {n: lr * g for lr, (n, g) in zip(self.edit_lrs, mean_grads.items())}
+
+        use_parameter_replacement = (
+            self.config.model_parallel or 'qwen' in self.config.model_name.lower()
+        )
+        if use_parameter_replacement:
+            edited_params = {
+                n: p + updates[n].to(p.dtype)
+                for n, p in _inner_params(
+                    self.model.named_parameters(), self.config.inner_params
+                )
+            }
+            return EditedMEND(
+                self,
+                EditedParameterModel(self.model, edited_params),
+            ), info_dict
 
         edited_model = self.model
         if not isinstance(edited_model, higher.patch._MonkeyPatchBase):
