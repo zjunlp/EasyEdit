@@ -11,12 +11,19 @@ from transformers import LlamaTokenizer,PreTrainedTokenizerFast, LlamaTokenizerF
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
-from .utils import _chunks, _prepare_requests, summary_metrics
+from .utils import _chunks, _prepare_requests, normalize_ground_truths, restore_after_edit, summary_metrics
 from .batch_editor import BatchEditor
-from ..evaluate import compute_edit_quality, compute_icl_edit_quality, compute_sent_metric
+from ..evaluate import (
+    attach_metric_meta,
+    build_locality_metric_meta,
+    compute_edit_quality,
+    compute_icl_edit_quality,
+    compute_sent_metric,
+)
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
+from ..util.device import copy_to_param, move_to_device, normalize_device
 from ..evaluate.evaluate_utils import test_generation_quality
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -137,10 +144,9 @@ class BaseEditor:
         else:
             self.model, self.tok = self.model_name
 
-        if hparams.model_parallel: 
-            hparams.device = str(self.model.device).split(":")[1]
-        if not hparams.model_parallel and hasattr(hparams, 'device') and hparams.alg_name != 'QLoRA':
-            self.model.to(f'cuda:{hparams.device}')
+        self.device = normalize_device(getattr(hparams, "device", None))
+        if self.model is not None and not hparams.model_parallel and hparams.alg_name != 'QLoRA':
+            self.model.to(self.device)
 
         self.hparams = hparams
 
@@ -174,10 +180,7 @@ class BaseEditor:
         if hasattr(self.hparams, 'batch_size') and not BatchEditor.is_batchable_method(self.alg_name):  # For Singleton Editing, bs=1
             assert self.hparams.batch_size == 1, 'Single Editing: batch_size should be set to 1'
 
-        if ground_truth is not None:
-            ground_truth = [ground_truth,] if isinstance(ground_truth, str) else ground_truth
-        else:# Default ground truth is <|endoftext|>
-            ground_truth = ['<|endoftext|>'] * (len(prompts))
+        ground_truth = normalize_ground_truths(ground_truth, prompts)
 
         if "requests" in kwargs.keys():
             requests = kwargs["requests"]
@@ -206,13 +209,7 @@ class BaseEditor:
         """
         assert len(prompts) == len(target_new)
         test_generation = kwargs['test_generation'] if 'test_generation' in kwargs.keys() else False
-        if ground_truth is not None:
-            if isinstance(ground_truth, str):
-                ground_truth = [ground_truth,]
-            else:
-                assert len(ground_truth) == len(prompts)
-        else: # Default ground truth is <|endoftext|>
-            ground_truth = ['<|endoftext|>' for _ in range(len(prompts))]
+        ground_truth = normalize_ground_truths(ground_truth, prompts)
 
 
         assert BatchEditor.is_batchable_method(self.alg_name), f'The Method {self.alg_name} can not batch edit examples.'
@@ -252,18 +249,7 @@ class BaseEditor:
             if sequential_edit:
                 self.model = edited_model
             else:
-                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
-                    with torch.no_grad():
-                        weights_copy()
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    edited_model.unload()
-                    del self.model.peft_config
-                elif self.alg_name == 'MELO':
-                    self.model = edited_model
-                else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                restore_after_edit(self, edited_model, weights_copy)
 
             for i, request in enumerate(record_chunks):
                 if 'locality' in chunk_metrics[i]['post'].keys():
@@ -275,6 +261,11 @@ class BaseEditor:
                             for ans, label in zip(chunk_metrics[i]['post']['locality'][f'{locality_key}_output'], chunk_metrics[i]['pre']['locality'][f'{locality_key}_output']):
                                 locality_result.append(np.mean(np.equal(ans, label)))
                         chunk_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
+                        attach_metric_meta(
+                            chunk_metrics[i]['post'],
+                            f"locality.{locality_key}",
+                            build_locality_metric_meta(locality_key, self.hparams, self.model_name),
+                        )
                         chunk_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
                     chunk_metrics[i]['pre'].pop('locality')
 
@@ -374,6 +365,11 @@ class BaseEditor:
                             for ans, label in zip(all_metrics[idx]['post']['locality'][f'{locality_key}_output'], all_metrics[idx]['pre']['locality'][f'{locality_key}_output']):
                                 locality_result.append(np.mean(np.equal(ans, label)))
                         all_metrics[idx]['post']['locality'][f'{locality_key}_acc'] = locality_result
+                        attach_metric_meta(
+                            all_metrics[idx]['post'],
+                            f"locality.{locality_key}",
+                            build_locality_metric_meta(locality_key, self.hparams, self.model_name),
+                        )
                         all_metrics[idx]['post']['locality'].pop(f'{locality_key}_output')
                     all_metrics[idx]['pre'].pop('locality')
 
@@ -384,29 +380,17 @@ class BaseEditor:
         if sequential_edit:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
+                edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
             if self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
                 self.model = edited_model
             if self.alg_name == 'WISE' and hasattr(self.hparams, 'save_path') and self.hparams.save_path:
                 print("Start saving the WISE model!")
                 edited_model.save(self.hparams.save_path)
-            for i, request in enumerate(requests):
-                edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
         else:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
                 edit_evaluation(all_metrics, request, edited_model, i, test_generation, icl_examples, **kwargs)
-                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
-                    with torch.no_grad():
-                        weights_copy()
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    edited_model.unload()
-                    del self.model.peft_config
-                elif self.alg_name == 'MELO':
-                    self.model = edited_model
-                else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                restore_after_edit(self, edited_model, weights_copy)
 
 
         if isinstance(edited_model, LORA):
@@ -429,7 +413,7 @@ class BaseEditor:
             the ground truth / expected output
         """
         assert len(prompts) == len(target_new)
-        ground_truth = ['<|endoftext|>' for _ in range(len(prompts))]
+        ground_truth = normalize_ground_truths(None, prompts)
 
 
         assert BatchEditor.is_batchable_method(self.alg_name), f'The Method {self.alg_name} can not batch edit examples.'
@@ -458,7 +442,7 @@ class BaseEditor:
 
         with torch.no_grad():
             for k, v in weights_copy.items():
-                nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                copy_to_param(nethook.get_parameter(self.model, k), v)
 
         return None, edited_model, weights_copy
     
@@ -478,10 +462,15 @@ class BaseEditor:
         eval_metric= kwargs['eval_metric'] if 'eval_metric' in kwargs.keys() else 'exact match'
         test_generation = kwargs.pop('test_generation', False)
 
-        assert len(prompts) == len(target_new)
+        if isinstance(prompts, List):
+            assert len(prompts) == len(target_new)
+        else:
+            prompts, target_new = [prompts,], [target_new,]
 
         if hasattr(self.hparams, 'batch_size'):
             assert self.hparams.batch_size == 1, 'Single Editing: batch_size should be set to 1'
+
+        ground_truth = normalize_ground_truths(ground_truth, prompts)
         
         if "requests" in kwargs.keys():
             requests = kwargs["requests"]
@@ -507,7 +496,7 @@ class BaseEditor:
                 tokenize=False,
                 add_generation_prompt=True,
             )
-            model_inputs = tok.encode(text, return_tensors="pt").to(f"cuda:{device}")
+            model_inputs = move_to_device(tok.encode(text, return_tensors="pt"), device)
             template_length = len(model_inputs[0])
             generated_ids = model.generate(
                 input_ids=model_inputs,
@@ -602,26 +591,12 @@ class BaseEditor:
         if sequential_edit:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
-            for i, request in enumerate(requests):
                 post_edit_results(all_results, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
         else:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 edited_model, weights_copy, icl_examples = edit_func(request)
                 post_edit_results(all_results, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
-                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
-                    with torch.no_grad():
-                        weights_copy()
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    edited_model.unload()
-                    del self.model.peft_config
-                elif self.alg_name == 'MELO':
-                    self.model = edited_model
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    self.model = edited_model
-                else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                restore_after_edit(self, edited_model, weights_copy)
 
         if isinstance(edited_model, LORA):
             edited_model = edited_model.model
@@ -636,4 +611,3 @@ class BaseEditor:
     ):
         metrics = self.apply_algo(datasets, self.hparams)
         return metrics
-

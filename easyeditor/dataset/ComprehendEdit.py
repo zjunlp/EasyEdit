@@ -135,8 +135,6 @@ class ComprehendEditDataset(BaseDataset):
                 data.append(item)
             # torch.save(data, path)
 
-        if not hasattr(self.config, 'alg'):
-            self.config.alg = self.config.alg_name
         if self.mode != 'train' and self.topk != -1:
             self.test_ = True
         else:

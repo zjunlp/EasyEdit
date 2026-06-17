@@ -30,7 +30,6 @@ inner_params:
 # - transformer.h.26.mlp.fc_out
 
 # Method
-alg: UltraEdit
 dropout: 0.0
 no_grad_layers: null
 

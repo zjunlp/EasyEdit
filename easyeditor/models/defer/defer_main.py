@@ -6,6 +6,7 @@ from .DEFER import DEFER
 from .defer_hparams import DeferHyperParams
 from .utils import tokenize
 from ...util import nethook
+from ...util.device import normalize_device
 
 
 def apply_defer_to_model(
@@ -21,7 +22,7 @@ def apply_defer_to_model(
     request = requests[0]
     if copy:
         model = deepcopy(model)
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     # print(model)
     if not isinstance(model, DEFER):
         editor = DEFER(model=model, config=hparams)

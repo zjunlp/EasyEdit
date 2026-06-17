@@ -36,9 +36,14 @@ def apply_caa(hparams: ApplyCAAHyperParams,pipline=None, vector=None):
             print("Steering vector path: ",vector_path)
         # print(f"Multiplier {multiplier}")
 
-        model.set_add_activations(
-            layer, multiplier * steering_vector, method_name="caa"
+        from ...models.interventions import ActivationAddition
+
+        intervention = ActivationAddition(
+            steering_vector=steering_vector,
+            multiplier=multiplier,
         )
+        intervention = intervention.to(device)
+        model.set_intervention(layer, intervention, "caa")
     return model
 
 # def eval_caa(hparams: ApplyCAAHyperParams):

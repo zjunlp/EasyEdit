@@ -9,6 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome.layer_stats import layer_stats
 from ...util import nethook
+from ...util.device import copy_to_param, get_module_device, normalize_device
 from ...util.generate import generate_fast
 from ...util.globals import *
 
@@ -49,14 +50,13 @@ def apply_pmet_to_model(
 
     with torch.no_grad():
         for w_name, upd_matrix in deltas.items(): #w_name, adj_k, resid
-            upd_matrix = upd_matrix.to("cuda")
             w = nethook.get_parameter(model, w_name)
             upd_matrix = upd_matrix_match_shape(upd_matrix, w.shape)
 
             if return_orig_weights and w_name not in weights_copy:
                 weights_copy[w_name] = w.detach().clone()
 
-            w[...] += upd_matrix.float() #w[...]高级索引，表示对w中每个元素进行操作
+            w[...] += upd_matrix.to(device=w.device, dtype=w.dtype) #w[...]高级索引，表示对w中每个元素进行操作
 
     print(f"\nNew weights successfully inserted into {list(deltas.keys())}")
 
@@ -76,6 +76,7 @@ def execute_pmet(
     """
 
     deltas = {}
+    device = normalize_device(getattr(hparams, "device", None))
 
     # Update target and print info
     requests = deepcopy(requests)
@@ -117,6 +118,10 @@ def execute_pmet(
         # Retrieve k/v pair if already stored in cache
         for rewrite_module_name in rewrite_module_names:
             block_name = "attn" if "attn" in rewrite_module_name else "mlp"
+            rewrite_device = get_module_device(
+                nethook.get_module(model, rewrite_module_name.format(z_layer)),
+                device,
+            )
             cache_fname = (
                 Path(
                     str(cache_template).format(
@@ -133,7 +138,7 @@ def execute_pmet(
             ):
                 try:
                     data = np.load(cache_fname)
-                    z_list[rewrite_module_name].append(torch.from_numpy(data["v_star"]).to("cuda"))
+                    z_list[rewrite_module_name].append(torch.from_numpy(data["v_star"]).to(rewrite_device))
                     data_loaded = True
                 except Exception as e:
                     print(f"Error reading cache file due to {e}. Recomputing...")
@@ -231,17 +236,15 @@ def execute_pmet(
                 module_template=rewrite_module_name,
                 fact_token_strategy=hparams.fact_token,
             )[1].T
-            targets = z_list[rewrite_module_name]  - cur_zs #z_i - h_i^L
-            try:
-                layer_ks, targets = (
-                    layers_ks[rewrite_module_name].T.double(),
-                    targets.double()
-                )
-            except:
-                layer_ks, targets = (
-                    layers_ks[rewrite_module_name].T.double().to("cuda:1"),
-                    targets.double().to("cuda:1")
-                )
+            cur_zs = cur_zs.to(
+                device=z_list[rewrite_module_name].device,
+                dtype=z_list[rewrite_module_name].dtype,
+            )
+            targets = z_list[rewrite_module_name] - cur_zs #z_i - h_i^L
+            layer_ks, targets = (
+                layers_ks[rewrite_module_name].T.double().to(device),
+                targets.double().to(device)
+            )
             # Load covariance matrix
             force_recompute = False
             # force_recompute = layer != hparams.layers[0]
@@ -270,7 +273,8 @@ def execute_pmet(
 
             # Update model weights and record desired changes in `delta` variable
             with torch.no_grad():
-                weights[weight_name][...] = weights_copy[weight_name] + upd_matrix.float().to("cuda:0")
+                updated_weight = weights_copy[weight_name].to(device=upd_matrix.device, dtype=upd_matrix.dtype) + upd_matrix
+                copy_to_param(weights[weight_name], updated_weight)
                 deltas[weight_name] = upd_matrix
 
             # Clear GPU memory
@@ -283,7 +287,7 @@ def execute_pmet(
     # Restore state of original model
     with torch.no_grad():
         for k, _ in weights.items():
-            nethook.get_parameter(model, k)[...] = weights_copy[k]
+            copy_to_param(nethook.get_parameter(model, k), weights_copy[k])
 
     print(f"Deltas successfully computed for {list(weights.keys())}")
 
@@ -340,14 +344,8 @@ def get_cov(
         )
         COV_CACHE[key] = stat.mom2.moment().float().to("cpu")
 
-    try:
-        return (
-            torch.inverse(COV_CACHE[key].to("cuda:0")) if inv else COV_CACHE[key].to("cuda:0")
-        )
-    except:
-        return (
-            torch.inverse(COV_CACHE[key].to("cuda:1")) if inv else COV_CACHE[key].to("cuda:1")
-        )
+    cov = COV_CACHE[key].to(normalize_device(getattr(hparams, "device", None)))
+    return torch.inverse(cov) if inv else cov
 def get_context_templates(model, tok):
     global CONTEXT_TEMPLATES_CACHE
 

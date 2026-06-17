@@ -7,6 +7,7 @@ from .utils import (
     TracerDict,
 )
 import torch
+from ...util.device import normalize_device
 
 class SimIE:
     def __init__(self, lamHyper: float, init: bool, solver: str="LU"):
@@ -15,10 +16,15 @@ class SimIE:
         self.solver = solver
 
     def initialization(self, model_name, init_weights, device, fast=True):
-        self.device = f"cuda:{device}"
+        self.device = str(normalize_device(device))
         self.init_weights_copy = {n: p.clone().cpu() for n, p in init_weights.items()}
         self.weights_copy = {n: p.clone().cpu() for n, p in init_weights.items()}
-        if "llama" in model_name.lower() or "gpt-j-6b" in model_name.lower() or "mistral" in model_name.lower():
+        if (
+            "llama" in model_name.lower()
+            or "gpt-j-6b" in model_name.lower()
+            or "mistral" in model_name.lower()
+            or "qwen" in model_name.lower()
+        ):
             self.matrix_P = {n: self.lamHyper * torch.eye(p.shape[1]).to(dtype=p.dtype) for n, p in init_weights.items()}
             self.transpose = False
         elif "gpt2-xl" in model_name.lower():
@@ -42,6 +48,10 @@ class SimIE:
 
     @staticmethod
     def solve_eqn(A, B, solver="LU", rcond=None):
+        out_dtype = B.dtype
+        if A.dtype in (torch.float16, torch.bfloat16) or B.dtype in (torch.float16, torch.bfloat16):
+            A = A.float()
+            B = B.float()
 
         def solve_with_lu(A, B):
             return torch.linalg.solve(A.T, B.T).T
@@ -66,7 +76,7 @@ class SimIE:
                 result = solve_with_lu(A, B)
         else:
             raise ValueError("Invalid solver")
-        return result
+        return result.to(out_dtype)
 
     def reset_parameter(self, model):
         return set_parameter(model, self.init_weights_copy, self.device)
@@ -109,7 +119,7 @@ class SimIE:
                 attention_mask=sent_tok["attention_mask"],
                 labels=target_tok['input_ids'],
             )
-            
+
             batchs.append(edit_inner)
 
         # cache keys
@@ -124,18 +134,18 @@ class SimIE:
                     _ = model(input_ids=t['input_ids'], attention_mask=t['attention_mask'])
 
                 for module_idx, module_name in enumerate(self.config["inner_params"]):
-                    keys = tr[module_name].keys.to(torch.float32).to(self.device).clone() 
+                    keys = tr[module_name].keys.to(torch.float32).to(self.device).clone()
                     keys_cache.setdefault(module_name+".weight", {}).update({idx: {'keys': keys}})
         return keys_cache
-    
+
     def update(self, edited_model, keys_cache):
 
         for module_name, batch_data in keys_cache.items():
             keys_list = []
-            
+
             for idx, data in batch_data.items():
                 keys_list.append(data['keys'])
-            
+
             # combine keys
             key_all = torch.cat(keys_list, dim=0)
             if self.fast:
@@ -143,14 +153,16 @@ class SimIE:
             else:
                 self.matrix_P[module_name] += (key_all.T @ key_all).cpu()
             with torch.no_grad():
-                weights_copy_gpu = self.weights_copy[module_name].to(self.device)
                 param = get_parameter(edited_model, module_name)
+                param_device = param.device
+                weights_copy_gpu = self.weights_copy[module_name].to(param_device)
+                key_all = key_all.to(device=param_device, dtype=param.dtype)
                 if self.transpose:
                     mat = (param - weights_copy_gpu).T @ key_all.T @ key_all
-                    delta_par = SimIE.solve_eqn(self.matrix_P[module_name].to(self.device), mat, self.solver).T
+                    delta_par = SimIE.solve_eqn(self.matrix_P[module_name].to(param_device), mat, self.solver).T
                 elif not self.transpose:
                     mat = (param - weights_copy_gpu) @ key_all.T @ key_all
-                    delta_par = SimIE.solve_eqn(self.matrix_P[module_name].to(self.device), mat, self.solver)
+                    delta_par = SimIE.solve_eqn(self.matrix_P[module_name].to(param_device), mat, self.solver)
                 weights_copy_gpu += delta_par
                 param[...] = weights_copy_gpu
                 if self.fast:
@@ -160,7 +172,7 @@ class SimIE:
             # del key_all, weights_copy_gpu, mat, delta_par
 
         return edited_model
-    
+
     def ideal_editor(self, edited_model, keys_cache, run=None):
         if not hasattr(self, 'KKT'):
             if self.transpose:
@@ -171,7 +183,7 @@ class SimIE:
                 self.BKT = {n: torch.zeros(p.shape[0],p.shape[1]).to(dtype=p.dtype) for n, p in self.init_weights_copy.items()}
 
         for module_name, batch_data in keys_cache.items():
-            keys_list = []   
+            keys_list = []
             for idx, data in batch_data.items():
                 keys_list.append(data['keys'])
             # combine keys
@@ -182,13 +194,10 @@ class SimIE:
                 self.BKT[module_name] += (parameter_diff.T @ key_all.T @ key_all).cpu()
             else:
                 self.BKT[module_name] += (parameter_diff @ key_all.T @ key_all).cpu()
-        
+
         if run is not None:
             ideal = {
                 "KKT": self.KKT,
                 "BKT": self.BKT
             }
             torch.save(ideal, f"outputs/{run.config.data_type}_{run.config.model_name}_{run.config.editing_method}_ideal_editor.pth")
-
-
-    

@@ -1,3 +1,7 @@
-from .generate_merge_vectors import *
-from .generate_merge_vector_hparams import *
-from .merge_helpers import *
+"""
+Merge-vector generator subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

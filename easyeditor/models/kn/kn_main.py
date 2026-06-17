@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from ...util.device import normalize_device
 from .kn_hparams import KNHyperParams
 from .knowledge_neurons.knowledge_neurons import KnowledgeNeurons, model_type
 
@@ -25,11 +26,16 @@ def apply_kn_to_model(
         model,
         tok,
         model_type=model_type(hparams.model_name),
-        device=f"cuda:{hparams.device}",
+        device=str(normalize_device(getattr(hparams, "device", None))),
     )
     request_rewrite = deepcopy(request)
     text = [request_rewrite["prompt"]]
-    ground_truth = request_rewrite["ground_truth"]
+    ground_truth = request_rewrite.get("ground_truth")
+    if ground_truth is None:
+        raise ValueError(
+            "KN requires `ground_truth` as the original target, "
+            "but it was not provided. Please pass `ground_truth` explicitly."
+        )
     target = request_rewrite["target_new"]
 
     # kn.model = kn.model.to(kn.device)

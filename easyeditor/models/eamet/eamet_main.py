@@ -13,10 +13,11 @@ from tqdm import *
 from torch.utils.data import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from rome.layer_stats import layer_stats
-from util import nethook
-from util.generate import generate_fast, generate_standard
-from util.globals import *
+from ..rome.layer_stats import layer_stats
+from ...util import nethook
+from ...util.device import copy_to_param, get_module_device, normalize_device
+from ...util.generate import generate_fast, generate_standard
+from ...util.globals import *
 
 from .compute_ks import compute_ks
 from .compute_z import compute_z, get_module_input_output_at_words, find_fact_lookup_idx
@@ -66,8 +67,9 @@ def apply_eamet_to_model(
                             duplicate_subjects=duplicate_subjects)
 
     with torch.no_grad():
+        device = normalize_device(getattr(hparams, "device", None))
         for w_name, (key_mat, val_mat) in deltas.items():
-            key_mat, val_mat = key_mat.to("cuda"), val_mat.to("cuda")
+            key_mat, val_mat = key_mat.to(device), val_mat.to(device)
             upd_matrix = key_mat @ val_mat.T
             w = nethook.get_parameter(model, w_name)
             upd_matrix = upd_matrix_match_shape(upd_matrix, w.shape)
@@ -75,7 +77,7 @@ def apply_eamet_to_model(
             if return_orig_weights and w_name not in weights_copy:
                 weights_copy[w_name] = w.detach().clone()
 
-            w[...] += upd_matrix.float()
+            w[...] += upd_matrix.to(device=w.device, dtype=w.dtype)
 
     print(f"New weights successfully inserted into {list(deltas.keys())}")
 
@@ -98,6 +100,7 @@ def execute_eamet(
     Invariant: model at beginning of function == model at end of function
     """
     deltas = {}
+    device = normalize_device(getattr(hparams, "device", None))
 
     requests = deepcopy(requests)
 
@@ -118,6 +121,8 @@ def execute_eamet(
     # Compute z for final layer
 
     z_layer = hparams.layers[-1]
+    z_module_name = hparams.layer_module_tmp.format(z_layer)
+    z_device = get_module_device(nethook.get_module(model, z_module_name), device)
     z_list = []
     delta_list = []
     context_templates = get_context_templates(model, tok)
@@ -168,8 +173,8 @@ def execute_eamet(
         ):
             try:
                 data = np.load(cache_fname)
-                z_list.append(torch.from_numpy(data["v_star"]).to("cuda"))
-                delta_list.append(torch.from_numpy(data["delta"]).to("cuda"))
+                z_list.append(torch.from_numpy(data["v_star"]).to(z_device))
+                delta_list.append(torch.from_numpy(data["delta"]).to(z_device))
                 data_loaded = True
             except Exception as e:
                 print(f"Error reading cache file due to {e}. Recomputing...")
@@ -189,8 +194,8 @@ def execute_eamet(
                 layer_ks_norm=layer_ks_norm[re_id]
             )
 
-            z_list.append(opt_zs.to("cuda"))
-            delta_list.append(delta.to("cuda"))
+            z_list.append(opt_zs.to(z_device))
+            delta_list.append(delta.to(z_device))
             if cache_fname is not None:
                 try:
                     cache_fname.parent.mkdir(exist_ok=True, parents=True)
@@ -235,6 +240,7 @@ def execute_eamet(
         )[1].T #0 for the module input before layer_module, 1 for the output after layer_module
         cur_zs_list.append(cur_zs)
         cur_zs=torch.cat(cur_zs_list,dim=1)
+        cur_zs = cur_zs.to(device=zs.device, dtype=zs.dtype)
         targets = zs - cur_zs # targets to be distributed across layers
 
         # after transpose, layer_ks.size(1) and targets.size(1) means the number
@@ -253,28 +259,18 @@ def execute_eamet(
             else hparams.mom2_n_samples // 10,
             hparams.mom2_dtype,
             force_recompute=force_recompute,
+            hparams=hparams,
         )
 
         # Compute update in double precision
-        if torch.cuda.device_count() == 1:
-            layer_ks, targets = (
-                layer_ks.double(),
-                targets.double(),
-            )
-        else:
-            layer_ks, targets = (
-                layer_ks.double().to("cuda:1"),
-                targets.double().to("cuda:1"),
-            )
+        layer_ks, targets = (
+            layer_ks.double().to(device),
+            targets.double().to(device),
+        )
 
         cov_mat = hparams.mom2_update_weight[i] * cov.double() + (layer_ks @ layer_ks.T)
         start_time = time.time()
-        if torch.cuda.device_count() == 1:
-            adj_k = torch.inverse(cov_mat.to("cpu")).to("cuda") \
-                @ layer_ks
-        else:
-            adj_k = torch.inverse(cov_mat.to("cuda:1")).to("cuda:1") \
-                @ layer_ks
+        adj_k = torch.inverse(cov_mat.to(device)) @ layer_ks
         print(f"computing inverse takes:{time.time()-start_time}")
         norm_of_inv= torch.norm(torch.inverse(cov_mat.to("cpu")))
         print(f"norm of inv:{norm_of_inv}")
@@ -298,11 +294,8 @@ def execute_eamet(
 
         # Update model weights and record desired changes in `delta` variable
         with torch.no_grad():
-            if torch.cuda.device_count() == 1:
-                weights[weight_name][...] = weights_copy[weight_name] + upd_matrix.float()
-            else:
-                weights[weight_name][...] = weights_copy[weight_name] + upd_matrix.float().to("cuda:0")
-            #weights[weight_name][...] = weights_copy[weight_name] + upd_matrix.float()
+            updated_weight = weights_copy[weight_name].to(device=upd_matrix.device, dtype=upd_matrix.dtype) + upd_matrix
+            copy_to_param(weights[weight_name], updated_weight)
             deltas[weight_name] = (
                 adj_k.detach().cpu(),
                 resid.detach().cpu(),
@@ -318,7 +311,7 @@ def execute_eamet(
     # Restore state of original model
     with torch.no_grad():
         for k, _ in weights.items():
-            nethook.get_parameter(model, k)[...] = weights_copy[k]
+            copy_to_param(nethook.get_parameter(model, k), weights_copy[k])
 
     # with torch.no_grad():
     #     for k, v in weights.items():
@@ -338,6 +331,7 @@ def get_cov(
     mom2_dtype: str,
     inv: bool = False,
     force_recompute: bool = False,
+    hparams: Optional[EAMETHyperParams] = None,
 ) -> torch.Tensor:
     """
     Retrieves covariance statistics, then computes the algebraic inverse.
@@ -360,19 +354,8 @@ def get_cov(
         )
         COV_CACHE[key] = stat.mom2.moment().float().to("cpu")
 
-    if torch.cuda.device_count() == 1:  
-        return (
-            torch.inverse(COV_CACHE[key].to("cuda")) if inv else COV_CACHE[key].to("cuda")
-        )
-    else:
-        try:
-            return (
-                torch.inverse(COV_CACHE[key].to("cuda:1")) if inv else COV_CACHE[key].to("cuda:1")
-            )
-        except:
-            return (
-                torch.inverse(COV_CACHE[key].to("cuda:0")) if inv else COV_CACHE[key].to("cuda:0")
-            )
+    cov = COV_CACHE[key].to(normalize_device(getattr(hparams, "device", None)))
+    return torch.inverse(cov) if inv else cov
 
 
 def upd_matrix_match_shape(matrix: torch.Tensor, shape: torch.Size) -> torch.Tensor:

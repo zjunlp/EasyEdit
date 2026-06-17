@@ -17,6 +17,7 @@ from higher.patch import (
     make_functional,
 )
 from .patch import monkeypatch as _make_functional
+from ...util.device import normalize_device
 
 from . import local_nn
 from .editable_model import EditableModel
@@ -174,8 +175,7 @@ class MEND(EditableModel):
     def __init__(self, model, config, model_constructor, mend=None, edit_lrs=None):
         super().__init__(model, config, model_constructor)
 
-        if not str(self.config.device).startswith('cuda'):
-            self.config.device = f'cuda:{self.config.device}'
+        self.config.device = str(normalize_device(getattr(self.config, "device", None)))
 
         for n, p in model.named_parameters():
             if n not in self.config.inner_params:
@@ -454,12 +454,13 @@ if __name__ == "__main__":
     config.n_hidden = 1
     config = config.__dict__
 
-    mend = MEND(model, config, lambda: copy.deepcopy(model)).cuda()
+    device = normalize_device(None)
+    mend = MEND(model, config, lambda: copy.deepcopy(model)).to(device)
     import pdb
 
     pdb.set_trace()
     mend.load_state_dict(torch.load("test_state.pt"))
-    x = torch.arange(20).view(1, 20).cuda() + 1000
+    x = torch.arange(20, device=device).view(1, 20) + 1000
     orig_logits = mend(x)
     edited = mend.edit(x, masks=torch.ones_like(x), labels=x)
     post_logits = mend(x)

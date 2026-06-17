@@ -1,3 +1,7 @@
-from .generate_reps_hparams import *
-from .generate_reps import *
-from .utils import *
+"""
+RePS vector generator subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

@@ -7,6 +7,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome import repr_tools
 from ...util import nethook
+from ...util.device import get_module_device, normalize_device
 
 from .rome_hparams import ROMEHyperParams
 
@@ -26,9 +27,12 @@ def compute_v(
     """
 
     print("Computing right vector (v)")
+    device = normalize_device(getattr(hparams, "device", None))
+    rewrite_module_name = hparams.mlp_module_tmp.format(layer)
+    rewrite_device = get_module_device(nethook.get_module(model, rewrite_module_name), device)
 
     # Tokenize target into list of int token IDs
-    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(f"cuda:{hparams.device}")[0]
+    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(device)[0]
 
     # if target_ids[0] == tok.bos_token_id or target_ids[0] == tok.unk_token_id:
     #     target_ids = target_ids[1:]
@@ -43,10 +47,10 @@ def compute_v(
         [prompt.format(request["subject"]) for prompt in all_prompts],
         return_tensors="pt",
         padding=True,
-    ).to(f"cuda:{hparams.device}")
+    ).to(device)
 
     # Compute rewriting targets
-    rewriting_targets = torch.tensor(-100, device=f"cuda:{hparams.device}").repeat(
+    rewriting_targets = torch.tensor(-100, device=device).repeat(
         len(rewriting_prompts), *input_tok["input_ids"].shape[1:]
     )
     for i in range(len(rewriting_prompts)):
@@ -74,16 +78,17 @@ def compute_v(
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
     if hasattr(model.config, 'n_embd'):
-        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=f"cuda:{hparams.device}")
+        delta = torch.zeros((model.config.n_embd,), requires_grad=True, device=rewrite_device)
     else:
-        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=f"cuda:{hparams.device}")
+        delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device=rewrite_device)
     target_init, kl_distr_init = None, None
 
     # Inserts new "delta" variable at the appropriate part of the computation
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init
-        if cur_layer == hparams.mlp_module_tmp.format(layer):
+        if cur_layer == rewrite_module_name:
             hidden_state = nethook.get_hidden_state(cur_out)
+            delta_for_hidden = delta.to(device=hidden_state.device, dtype=hidden_state.dtype)
             # Store initial value of the vector of interest
             if target_init is None:
                 print("Recording initial value of v*")
@@ -92,9 +97,9 @@ def compute_v(
                 
             for i, idx in enumerate(lookup_idxs):
                 if len(lookup_idxs)!=len(hidden_state):
-                    hidden_state[idx, i, :] += delta
+                    hidden_state[idx, i, :] += delta_for_hidden
                 else:
-                    hidden_state[i, idx, :] += delta
+                    hidden_state[i, idx, :] += delta_for_hidden
 
             return nethook.replace_hidden_state(cur_out, hidden_state)
 
@@ -153,7 +158,7 @@ def compute_v(
             torch.norm(delta) / torch.norm(target_init) ** 2
         )
         # weight_decay = hparams.v_weight_decay * torch.norm(delta) ** 2
-        loss = nll_loss + kl_loss + weight_decay
+        loss = nll_loss + kl_loss + weight_decay.to(nll_loss.device)
         print(
             f"loss {np.round(loss.item(), 3)} = {np.round(nll_loss.item(), 3)} + {np.round(kl_loss.item(), 3)} + {np.round(weight_decay.item(), 3)} "
             f"avg prob of [{request['target_new']}] "
@@ -175,7 +180,7 @@ def compute_v(
             with torch.no_grad():
                 delta[...] = delta * max_norm / delta.norm()
 
-    target = target_init + delta.to(target_init.dtype)
+    target = target_init + delta.to(device=target_init.device, dtype=target_init.dtype)
 
     # Retrieve cur_input, the current input to the 2nd MLP layer, and
     # cur_output, the original output of the 2nd MLP layer.
@@ -190,6 +195,8 @@ def compute_v(
     )
 
     # Solving the linear system to compute the right vector
+    left_vector = left_vector.to(device=cur_input.device, dtype=cur_input.dtype)
+    target = target.to(device=cur_output.device, dtype=cur_output.dtype)
     right_vector = (target - cur_output) / torch.dot(cur_input, left_vector)
     print(f"Delta norm: {(target - cur_output).norm().item()}")
     print(

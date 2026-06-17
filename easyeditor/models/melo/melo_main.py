@@ -6,6 +6,7 @@ from .melo_hparams import MELOHyperParams
 from .util import get_tokenizer
 from .melo import LORA
 from ...util import nethook
+from ...util.device import normalize_device
 
 
 def apply_melo_to_model(
@@ -22,13 +23,16 @@ def apply_melo_to_model(
     if keep_original_weight:
         model=deepcopy(model)
     weights_copy = {}
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     tokenizer = get_tokenizer(hparams)
     if not isinstance(model, LORA):
         editor = LORA(model, hparams,tokenizer)
     else:
         editor = model
     tokens = tokenizer(requests[0], tok,device)
-    editor.to(device)
+    base_model = getattr(editor, "model", model)
+    base_model = getattr(base_model, "model", base_model)
+    if getattr(base_model, "hf_device_map", None) is None:
+        editor.to(device)
     editor.edit(tokens)
     return editor,weights_copy

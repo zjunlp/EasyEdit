@@ -9,6 +9,7 @@ from collections import deque
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
+from ...util.device import normalize_device
 from ...trainer import MEND
 from .mend_hparams import MENDHyperParams
 from .mend_multimodal_hparams import MENDMultimodalHparams
@@ -42,9 +43,6 @@ class MendRewriteExecutor:
         )
         # if params.model_parallel:
         self.alg.mend.to(deque(self.alg.model.parameters(), maxlen=1)[0].device)
-        # else:
-        #     self.alg.to(torch.device(f'cuda:{params.device}'))
-
         # Disable unneeded gradients
         for n, p in self.model.named_parameters():
             if n not in params.inner_params:
@@ -95,12 +93,9 @@ class MendRewriteExecutor:
         ]
 
         # Tokenize
-        sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
-            f"cuda:{hparams.device}"
-        )
-        target_tok = self.tokenizer(targets, padding=True, return_tensors="pt").to(
-            f"cuda:{hparams.device}"
-        )
+        device = normalize_device(getattr(hparams, "device", None))
+        sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(device)
+        target_tok = self.tokenizer(targets, padding=True, return_tensors="pt").to(device)
 
         # Define labels
         label_tok = deepcopy(sent_tok["input_ids"])
@@ -146,8 +141,8 @@ class MendRewriteExecutor:
                         p.copy_(edited_model.model.state_dict()[n])
 
         return model, weights_copy
-    
-    
+
+
 class MendMultimodalRewriteExecutor(MendRewriteExecutor):
     def __init__(self):
         super().__init__()
@@ -169,12 +164,13 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
 
         # Load the trained MEND model
         self.alg = MEND(self.model, params, lambda: deepcopy(self.model))
-        d = torch.load(params.archive)
+        device = normalize_device(getattr(params, "device", None))
+        d = torch.load(params.archive, map_location=device)
 
         self.alg.load_state_dict(
             {k.replace("gtn.", "mend."): v for k, v in d["model"].items()}
         )
-        self.alg.to(torch.device(f'cuda:{params.device}'))
+        self.alg.to(device)
 
         # Disable unneeded gradients
         for n, p in self.model.named_parameters():
@@ -261,7 +257,7 @@ class MendMultimodalRewriteExecutor(MendRewriteExecutor):
 class MendPerRewriteExecutor(MendRewriteExecutor):
     def __init__(self):
         super().__init__()
-        
+
     def apply_to_model(
         self,
         request,
@@ -274,7 +270,7 @@ class MendPerRewriteExecutor(MendRewriteExecutor):
         keep_original_weight=False,
         **kwargs
     ):
-        
+
         if not self.is_init:
             self.init_model(model, tok, hparams)
 
@@ -283,6 +279,6 @@ class MendPerRewriteExecutor(MendRewriteExecutor):
 
         self.alg.eval()
         edited_model, model_info = self.alg.edit(request["cond"], personality=True, return_factors=True)
-        
+
         return edited_model, weights_copy
-        
+

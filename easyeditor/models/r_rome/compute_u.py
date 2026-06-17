@@ -6,6 +6,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..rome import repr_tools
+from ...util.device import normalize_device
 from ...util.globals import *
 
 from .layer_stats import layer_stats
@@ -51,7 +52,7 @@ def get_inv_cov(
             hparams=hparams,
         )
         inv_mom2_cache[key] = torch.inverse(
-            stat.mom2.moment().to(f"cuda:{hparams.device}")
+            stat.mom2.moment().to(normalize_device(getattr(hparams, "device", None)))
         ).float()  # Cast back to float32
 
     return inv_mom2_cache[key]

@@ -7,6 +7,7 @@ from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
+from ...util.device import normalize_device
 from ...util.nethook import Trace, set_requires_grad
 from ...util.runningstats import CombinedStat, Mean, NormMean, SecondMoment, tally
 
@@ -36,7 +37,7 @@ def main():
         parser.add_argument(*args, **kwargs)
 
     aa("--model_name", default="gpt2-xl", choices=["gpt2-xl", "EleutherAI/gpt-j-6B"])
-    aa("--dataset", default="wikipedia", choices=["wikitext", "wikipedia"])
+    aa("--dataset", default="wikipedia", choices=["wikitext", "wikitext2", "wikipedia"])
     aa("--layers", default=[17], type=lambda x: list(map(int, x.split(","))))
     aa("--to_collect", default=["mom2"], type=lambda x: x.split(","))
     aa("--sample_size", default=100000, type=lambda x: None if x == "all" else int(x))
@@ -46,8 +47,9 @@ def main():
     aa("--download", default=1, type=int, choices=[0, 1])
     args = parser.parse_args()
 
+    device = normalize_device(None)
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
-    model = AutoModelForCausalLM.from_pretrained(args.model_name).eval().cuda()
+    model = AutoModelForCausalLM.from_pretrained(args.model_name).eval().to(device)
     set_requires_grad(False, model)
 
     for layer_num in args.layers:
@@ -99,10 +101,13 @@ def layer_stats(
         # from datasets import Dataset
         # raw_ds = Dataset.from_file('XXX/XXX/wikipedia-train.arrow')
         # raw_ds = {'train': raw_ds}
-        raw_ds = load_dataset(
-            ds_name,
-            dict(wikitext="wikitext-103-raw-v1", wikipedia="20200501.en")[ds_name]
-        )
+        dataset_map = {
+            "wikitext": ("Salesforce/wikitext", "wikitext-103-raw-v1"),
+            "wikitext2": ("Salesforce/wikitext", "wikitext-2-raw-v1"),
+            "wikipedia": ("wikimedia/wikipedia", "20231101.en"),
+        }
+        dataset_name, dataset_config = dataset_map[ds_name]
+        raw_ds = load_dataset(dataset_name, dataset_config)
         if hasattr(model.config, 'n_positions'):
             maxlen = model.config.n_positions
         elif hasattr(model.config, 'max_sequence_length'):
@@ -186,7 +191,7 @@ def layer_stats(
     with torch.no_grad():
         for batch_group in progress(loader, total=batch_count):
             for batch in batch_group:
-                batch = dict_to_(batch, f"cuda:{hparams.device}")
+                batch = dict_to_(batch, normalize_device(getattr(hparams, "device", None)))
                 with Trace(
                     model, layer_name, retain_input=True, retain_output=False, stop=True
                 ) as tr:

@@ -14,6 +14,8 @@ from ..evaluate import compute_safety_edit_quality
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
+from ..util.device import copy_to_param, move_to_device, normalize_device
+from .utils import normalize_ground_truths
 
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -87,10 +89,9 @@ class SafetyEditor:
         else:
             self.model, self.tok = self.model_name
 
-        if hparams.model_parallel:
-            hparams.device = str(self.model.device).split(":")[1]
+        self.device = normalize_device(getattr(hparams, "device", None))
         if not hparams.model_parallel and hasattr(hparams, 'device'):
-            self.model.to(f'cuda:{hparams.device}')
+            self.model.to(self.device)
 
         self.hparams = hparams
 
@@ -101,7 +102,13 @@ class SafetyEditor:
         # else:
         #     tokenizer.padding_side = 'left'
         toxic_layer = []
-        input = tokenizer([value for pair in requests for value in [pair["target_new"], pair["ground_truth"]]], return_tensors="pt", padding=True, truncation=True).to(f"cuda:{self.hparams.device}") 
+        for request in requests:
+            if request.get("ground_truth") is None:
+                raise ValueError(
+                    "Safety layer localization requires `ground_truth`, "
+                    "but it was not provided. Please pass `ground_truth` explicitly."
+                )
+        input = move_to_device(tokenizer([value for pair in requests for value in [pair["target_new"], pair["ground_truth"]]], return_tensors="pt", padding=True, truncation=True), self.hparams.device)
         with torch.no_grad():
             outputs = model(**input)
         hidden_states = outputs.hidden_states
@@ -148,13 +155,7 @@ class SafetyEditor:
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
 
-        if ground_truth is not None:
-            if isinstance(ground_truth, str):
-                ground_truth = [ground_truth,]
-            else:
-                assert len(ground_truth) == len(prompts)
-        else: # Default ground truth is <|endoftext|>
-            ground_truth = ['<|endoftext|>' for _ in range(len(prompts))]
+        ground_truth = normalize_ground_truths(ground_truth, prompts)
 
         if "requests" in kwargs.keys():
             requests = kwargs["requests"]
@@ -210,7 +211,7 @@ class SafetyEditor:
                 
                 with torch.no_grad():
                     for k, v in weights_copy.items():
-                        nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                        copy_to_param(nethook.get_parameter(self.model, k), v)
                 
 
                 LOG.info(f"Evaluation took {time() - start}")
@@ -245,7 +246,7 @@ class SafetyEditor:
                 
                 with torch.no_grad():
                     for k, v in weights_copy.items():
-                        nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                        copy_to_param(nethook.get_parameter(self.model, k), v)
                 
 
                 LOG.info(f"Evaluation took {time() - start}")

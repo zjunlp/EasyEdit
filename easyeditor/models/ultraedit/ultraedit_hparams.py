@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from ...util.hparams import HyperParams
+from ...util.hparams import HyperParams, load_hparams_config, normalize_alg_name
 from typing import Optional, Any, List
-import yaml
 
 
 @dataclass
@@ -17,7 +16,6 @@ class UltraEditHyperParams(HyperParams):
     device: int
 
     # Method
-    alg: str
     dropout: float
     no_grad_layers: Any
     batch_size: int
@@ -38,14 +36,19 @@ class UltraEditHyperParams(HyperParams):
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
 
-        if '.yaml' not in hparams_name_or_path:
-            hparams_name_or_path = hparams_name_or_path + '.yaml'
-
-        with open(hparams_name_or_path, "r") as stream:
-            config = yaml.safe_load(stream)
-            config = super().construct_float_from_scientific_notation(config)
-
-        assert (config and config['alg_name'] == 'ULTRAEDIT') or print(f'ULTRAEDITTrainingHyperParams can not load from {hparams_name_or_path}, '
-                                                f'alg_name is {config["alg_name"]} ')
+        config = load_hparams_config(hparams_name_or_path)
+        config = normalize_alg_name(
+            config,
+            "ULTRAEDIT",
+            aliases={"UltraEdit": "ULTRAEDIT"},
+        )
+        class_name = config.pop("class_name", None)
+        if class_name is not None:
+            if "model_class" not in config:
+                config["model_class"] = class_name
+            elif config["model_class"] != class_name:
+                raise ValueError(
+                    "ULTRAEDIT hparams define conflicting model_class and class_name."
+                )
         return cls(**config)
     

@@ -7,6 +7,7 @@ from torch.nn import CrossEntropyLoss
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util import nethook
+from ...util.device import normalize_device
 from .ft_uns_hparams import FT_uns_HyperParams
 
 
@@ -56,7 +57,7 @@ def execute_ft_uns(
     Executes the FT update algorithm for the specified update at the specified layer
     Invariant: model at beginning of function == model at end of function
     """
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     batch_data = deepcopy(batch_data)
     texts = [data["question"] for data in batch_data]
     targets = [data["answer"] for data in batch_data]

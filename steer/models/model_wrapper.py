@@ -246,7 +246,9 @@ class BlockOutputWrapper(t.nn.Module):
                             kwargs['args'] = args[0]
                             assert kwargs['args'] is not None, "Block input activations are None"
                     # call the forward method of the intervention class
-                    intervention_result = intervention.forward(augmented_output, **kwargs)
+                    intervention_result = intervention.forward(
+                        augmented_output, from_pos=self.from_position, **kwargs
+                    )
                     # handle different types of return values
                     if hasattr(intervention_result, 'output'):
                         # for the case that the intervention class returns InterventionOutput
@@ -299,16 +301,11 @@ class BlockOutputWrapper(t.nn.Module):
         if method_name == "all":
             self.add_activations_dict.clear()
             self.intervention_dict.clear()
-        elif method_name == "reps" or method_name == "sft" or method_name == "spilt":
-            # RePS uses the new intervention class
+        else:
+            if method_name in self.add_activations_dict:
+                del self.add_activations_dict[method_name]
             if method_name in self.intervention_dict:
                 del self.intervention_dict[method_name]
-            if method_name in self.add_activations_dict:
-                del self.add_activations_dict[method_name]
-        else:
-
-            if method_name in self.add_activations_dict:
-                del self.add_activations_dict[method_name]
         
         self.activations = None
         # self.block.self_attn.activations = None

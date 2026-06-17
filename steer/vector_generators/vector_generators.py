@@ -20,7 +20,7 @@ class BaseVectorGenerator:
     def generate_vectors(self, datasets = None,):
         
         from ..utils.seed import set_seed
-        from ..utils.alg_dict import METHODS_CLASS_DICT,VLLM_SUPPORTED_METHODS
+        from ..utils.alg_dict import get_method_fn, VLLM_SUPPORTED_METHODS
         # generate_steering_vector(self.hparams_dict,dataset)
         assert datasets is not None, "Please provide datasets!"
         generated_vectors = {}
@@ -28,7 +28,8 @@ class BaseVectorGenerator:
             generated_vectors[ dataset_name ] = {}
             for key, hparams in self.hparams_dict.items():
                 alg_name = hparams.alg_name
-                if alg_name in METHODS_CLASS_DICT:
+                train_fn = get_method_fn(alg_name, "train")
+                if train_fn is not None:
                     set_seed(hparams.seed)
                     #build vector save path
                     steer_vector_output_dir = hparams.steer_vector_output_dir
@@ -42,9 +43,9 @@ class BaseVectorGenerator:
                     if alg_name in REQUIRED_DATASET_METHODS:
                         if alg_name not in VLLM_SUPPORTED_METHODS:
                             hparams.vllm_enable = False
-                        vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams, datasets[dataset_name], dataset_name=dataset_name)
+                        vectors = train_fn(hparams, datasets[dataset_name], dataset_name=dataset_name)
                     else:
-                        vectors = METHODS_CLASS_DICT[alg_name]['train'](hparams)
+                        vectors = train_fn(hparams)
                     generated_vectors[dataset_name][key] = vectors
                     if hparams.save_vectors:
                         print(f"Saving vectors to {now_path} ...")

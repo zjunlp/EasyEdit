@@ -24,12 +24,18 @@ from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration, 
 
 from ..util.globals import *
 from .batch_editor import BatchEditor
-from ..evaluate import (compute_icl_multimodal_edit_quality, 
-                        compute_multimodal_edit_results,
-                        compute_multimodal_hf_edit_results)
+from .utils import restore_after_edit
+from ..evaluate import (
+    attach_metric_meta,
+    build_multimodal_locality_metric_meta,
+    compute_icl_multimodal_edit_quality,
+    compute_multimodal_edit_results,
+    compute_multimodal_hf_edit_results,
+)
 from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
+from ..util.device import copy_to_param, normalize_device
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -162,7 +168,8 @@ class MultimodalEditor:
         else:
             self.model, self.tok = self.model_name
             
-        self.model.to(f'cuda:{hparams.device}')
+        self.device = normalize_device(getattr(hparams, "device", None))
+        self.model.to(self.device)
         self.hparams = hparams
 
     def edit(self,
@@ -191,9 +198,6 @@ class MultimodalEditor:
             assert len(prompts) == len(targets) == len(image)
         else:
             prompts, targets, image = [prompts,], [targets,], [image,]
-
-        if file_type is None:
-            file_type = [None for _ in range(len(prompts))]
 
         if hasattr(self.hparams, 'batch_size'):  # For Singleton Editing, bs=1
             self.hparams.batch_size = 1
@@ -228,6 +232,7 @@ class MultimodalEditor:
                                                                 request, self.hparams.device)
                 pre_edit_cache.append(pre_result)
 
+            all_metrics = []
             start = time()
             for i, request in enumerate(tqdm(requests, total=len(requests))):
                 if self.alg_name == 'IKE' and self.hparams.k == 0:
@@ -244,13 +249,7 @@ class MultimodalEditor:
                         keep_original_weight=keep_original_weight,
                         train_ds=None
                 )
-            exec_time = time() - start
-            if self.alg_name == 'WISE' and hasattr(self.hparams, 'save_path') and self.hparams.save_path:
-                print("Start saving the WISE model!")
-                edited_model.save(self.hparams.save_path)
-
-            all_metrics = []
-            for i, request in enumerate(tqdm(requests, total=len(requests), desc='Evaluating post-edit metrics')):
+                exec_time = time() - start
                 if self.alg_name == 'IKE':
                     if self.hparams.k != 0:
                         metrics = {
@@ -299,6 +298,16 @@ class MultimodalEditor:
                     base_logits = torch.tensor(metrics['pre']['locality_output']).to(torch.float32)
                     post_logits = torch.tensor(metrics['post']['locality_output']).to(torch.float32)
                     metrics['post']['locality_acc'] = sum(post_logits.view(-1) == base_logits.view(-1))/base_logits.view(-1).shape[0]
+                    attach_metric_meta(
+                        metrics['post'],
+                        "locality.text",
+                        build_multimodal_locality_metric_meta(
+                            result_key="locality_acc",
+                            protocol="pre_post_full_logits_exact_match",
+                            scorer="logits_exact_match",
+                            comparable_group="locality.multimodal.full_logits_exact_match",
+                        ),
+                    )
                     metrics['post'].pop('locality_output')
                     metrics['pre'].pop('locality_output')
                     
@@ -308,11 +317,25 @@ class MultimodalEditor:
                     base_image_logits = torch.tensor(metrics['pre']['multimodal_locality_output']).to(torch.float32)
                     post_image_logits = torch.tensor(metrics['post']['multimodal_locality_output']).to(torch.float32)
                     metrics['post']['multimodal_locality_acc'] = sum(post_image_logits.view(-1) == base_image_logits.view(-1))/post_image_logits.view(-1).shape[0]
+                    attach_metric_meta(
+                        metrics['post'],
+                        "locality.image",
+                        build_multimodal_locality_metric_meta(
+                            result_key="multimodal_locality_acc",
+                            protocol="pre_post_full_logits_exact_match",
+                            scorer="logits_exact_match",
+                            comparable_group="locality.multimodal.full_logits_exact_match",
+                        ),
+                    )
                     metrics['post'].pop('multimodal_locality_output')
                     metrics['pre'].pop('multimodal_locality_output')
 
                 LOG.info(f"Evaluation took {time() - start}")
                 all_metrics.append(metrics)
+
+            if self.alg_name == 'WISE' and hasattr(self.hparams, 'save_path') and self.hparams.save_path:
+                print("Start saving the WISE model!")
+                edited_model.save(self.hparams.save_path)
         
         # single editing
         else:
@@ -403,6 +426,16 @@ class MultimodalEditor:
                     base_logits = torch.tensor(metrics['pre']['locality_output']).to(torch.float32)
                     post_logits = torch.tensor(metrics['post']['locality_output']).to(torch.float32)
                     metrics['post']['locality_acc'] = sum(post_logits.view(-1) == base_logits.view(-1))/base_logits.view(-1).shape[0]
+                    attach_metric_meta(
+                        metrics['post'],
+                        "locality.text",
+                        build_multimodal_locality_metric_meta(
+                            result_key="locality_acc",
+                            protocol="pre_post_full_logits_exact_match",
+                            scorer="logits_exact_match",
+                            comparable_group="locality.multimodal.full_logits_exact_match",
+                        ),
+                    )
                     metrics['post'].pop('locality_output')
                     metrics['pre'].pop('locality_output')
                     
@@ -412,6 +445,16 @@ class MultimodalEditor:
                     base_image_logits = torch.tensor(metrics['pre']['multimodal_locality_output']).to(torch.float32)
                     post_image_logits = torch.tensor(metrics['post']['multimodal_locality_output']).to(torch.float32)
                     metrics['post']['multimodal_locality_acc'] = sum(post_image_logits.view(-1) == base_image_logits.view(-1))/post_image_logits.view(-1).shape[0]
+                    attach_metric_meta(
+                        metrics['post'],
+                        "locality.image",
+                        build_multimodal_locality_metric_meta(
+                            result_key="multimodal_locality_acc",
+                            protocol="pre_post_full_logits_exact_match",
+                            scorer="logits_exact_match",
+                            comparable_group="locality.multimodal.full_logits_exact_match",
+                        ),
+                    )
                     metrics['post'].pop('multimodal_locality_output')
                     metrics['pre'].pop('multimodal_locality_output')
 
@@ -424,20 +467,7 @@ class MultimodalEditor:
                     )
 
                 # reset layer
-                if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE': 
-                    with torch.no_grad():
-                        weights_copy()
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    edited_model.unload()
-                    del self.model.peft_config
-                elif self.alg_name == 'MELO':
-                    self.model = edited_model
-                elif self.alg_name == 'LoRA' or self.alg_name == 'QLoRA' or self.alg_name == 'DPO':
-                    self.model = edited_model
-                else:
-                    with torch.no_grad():
-                        for k, v in weights_copy.items():
-                            nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
+                restore_after_edit(self, edited_model, weights_copy)
 
                 all_metrics.append(metrics)
 
@@ -467,7 +497,8 @@ class MultimodalEditor:
                 request['prompt'] = kwargs['template'].format(request['prompt'])
 
             if self.alg_name == 'IKE':
-                assert 'train_ds' in kwargs.keys() or print('IKE need train_ds (For getting In-Context prompt)')
+                if 'train_ds' not in kwargs:
+                    raise ValueError("IKE editing requires train_ds for in-context prompt construction.")
                 edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
                     self.model,
                     self.tok,
@@ -547,6 +578,16 @@ class MultimodalEditor:
                 base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=1, dim=-1).indices
                 post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=1, dim=-1).indices
                 metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
+                attach_metric_meta(
+                    metrics['post'],
+                    "locality.text",
+                    build_multimodal_locality_metric_meta(
+                        result_key="locality_acc",
+                        protocol="pre_post_top1_token_match",
+                        scorer="top1_token_match",
+                        comparable_group="locality.multimodal.pre_post_top1_token_match",
+                    ),
+                )
                 metrics['post'].pop('locality_output')
                 metrics['pre'].pop('locality_output')
                 
@@ -563,6 +604,16 @@ class MultimodalEditor:
                 base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
                 post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
                 metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
+                attach_metric_meta(
+                    metrics['post'],
+                    "locality.image",
+                    build_multimodal_locality_metric_meta(
+                        result_key="multimodal_locality_acc",
+                        protocol="pre_post_top10_token_match",
+                        scorer="top10_token_match",
+                        comparable_group="locality.multimodal.pre_post_top10_token_match",
+                    ),
+                )
                 metrics['post'].pop('multimodal_locality_output')
                 metrics['pre'].pop('multimodal_locality_output')
 
@@ -573,7 +624,7 @@ class MultimodalEditor:
                     f"{i} editing: {request['prompt']} -> {request['target']}  \n {metrics}"
                 )
 
-                all_metrics.append(metrics)
+            all_metrics.append(metrics)
 
         return all_metrics, edited_model, weights_copy
 
@@ -617,11 +668,18 @@ class MultimodalEditor:
                           file_type: Union[str, List[str]] = None,
                           **kwargs
                           ):
+        if isinstance(image, str):
+            image = [image, ]
+        if file_type is None:
+            file_type = ["image" for _ in range(len(prompts))]
+        elif isinstance(file_type, str):
+            file_type = [file_type for _ in range(len(prompts))]
+        if locality_inputs is None:
+            locality_inputs = {}
+
         if isinstance(file_type, List):
             assert len(file_type) == len(image) == len(prompts) == len(targets)
         
-        if isinstance(image, str):
-            image = [image, ]
         # image_path = [os.path.join(self.vis_root, image_) for image_ in image]
         # image = [Image.open(ip).convert("RGB") for ip in image_path]
         # image = [self.vis_tok(i).to(self.hparams.device) for i in image]

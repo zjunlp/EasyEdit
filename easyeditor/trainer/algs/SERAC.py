@@ -7,6 +7,7 @@ from ..utils import scr, set_dropout, _logits, add_padding, add_sep
 from .editable_model import EditableModel
 from ..models import BertClassifier
 from transformers import GPT2Tokenizer, GPT2TokenizerFast
+from ...util.device import normalize_device
 
 LOG = logging.getLogger(__name__)
 
@@ -23,8 +24,7 @@ class SERAC(EditableModel):
                  scale=None):
         super().__init__(model, config, model_constructor)
 
-        if not str(self.config.device).startswith('cuda'):
-            self.config.device = f'cuda:{self.config.device}'
+        self.config.device = str(normalize_device(getattr(self.config, "device", None)))
         if classifier is None:
             if config.cross_attend and not config.cls_class.endswith("ForSequenceClassification"):
                 LOG.warn(f"Switching {config.cls_class} to {config.cls_class}ForSequenceClassification for cross-attend")
@@ -931,11 +931,12 @@ if __name__ == '__main__':
     config.gtn.n_hidden = 1
     config.gtn = config.gtn.__dict__
 
-    gtn = SERAC(model, config, lambda: copy.deepcopy(model)).cuda()
+    device = normalize_device(None)
+    gtn = SERAC(model, config, lambda: copy.deepcopy(model)).to(device)
     # torch.save(gtn.state_dict(), "test_state.pt")
     import pdb; pdb.set_trace()
     gtn.load_state_dict(torch.load("test_state.pt"))
-    x = torch.arange(20).view(1, 20).cuda() + 1000
+    x = torch.arange(20, device=device).view(1, 20) + 1000
     orig_logits = gtn(x)
     edited = gtn.edit(x, masks=torch.ones_like(x), labels=x)
     post_logits = gtn(x)

@@ -4,6 +4,7 @@ from peft import get_peft_model, AdaLoraConfig, TaskType, get_peft_model_state_d
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoProcessor
 
+from ...util.device import normalize_device
 from .lora_uns_hparams import LoRA_uns_HyperParams
 
 def apply_lora_uns_to_model(
@@ -72,7 +73,7 @@ def execute_lora_uns(
         peft_model.print_trainable_parameters()
     batch_data = deepcopy(batch_data)
     
-    device = torch.device(f'cuda:{hparams.device}')
+    device = normalize_device(getattr(hparams, "device", None))
     # Define inputs
     texts = [data["question"] for data in batch_data]
     targets = [data["answer"] for data in batch_data]

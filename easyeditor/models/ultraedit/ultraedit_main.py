@@ -8,6 +8,7 @@ from collections import deque
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ...util.globals import *
+from ...util.device import normalize_device
 
 from .ULTRAEDIT import ULTRAEDIT
 from .ultraedit_hparams import UltraEditHyperParams
@@ -26,7 +27,7 @@ class UltraEditRewriteExecutor:
         if params.model_parallel:
             self.alg.lifelong_normalizer.to(deque(self.alg.model.parameters(), maxlen=1)[0].device)
         else:
-            self.alg.to(torch.device(f'cuda:{params.device}'))
+            self.alg.to(normalize_device(getattr(params, "device", None)))
 
 
     def reset_model(self):
@@ -77,12 +78,9 @@ class UltraEditRewriteExecutor:
             ]
 
             # Tokenize
-            sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(
-                f"cuda:{hparams.device}"
-            )
-            target_tok = self.tokenizer(targets, padding=True, return_tensors="pt").to(
-                f"cuda:{hparams.device}"
-            )
+            device = normalize_device(getattr(hparams, "device", None))
+            sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(device)
+            target_tok = self.tokenizer(targets, padding=True, return_tensors="pt").to(device)
 
             # Define labels
             label_tok = deepcopy(sent_tok["input_ids"])
@@ -106,7 +104,7 @@ class UltraEditRewriteExecutor:
             batchs,
             key=lambda x: torch.sum(x['attention_mask']).item(),
             reverse=True
-        )        
+        )
         module_kv_map = self.alg.cache(batchs)
         param_shifts = self.alg.predict_param_shifts(module_kv_map)
         with torch.no_grad():
@@ -117,4 +115,4 @@ class UltraEditRewriteExecutor:
         self.alg.edit_model(param_shifts, False)
 
         return self.alg.model, weights_copy
- 
+

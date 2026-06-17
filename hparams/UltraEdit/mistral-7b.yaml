@@ -12,7 +12,6 @@ inner_params:
 - model.layers.30.mlp.down_proj
 
 # Method
-alg: UltraEdit
 dropout: 0.0
 no_grad_layers: null
 

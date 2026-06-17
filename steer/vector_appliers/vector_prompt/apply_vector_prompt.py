@@ -38,9 +38,14 @@ def apply_vector_prompt(hparams: ApplyVectorPromptHyperParams,pipline=None,vecto
         print("Steering vector: ",steering_vector)
         print(f"Multiplier {multiplier}")
 
-        model.set_add_activations(
-            layer, multiplier * steering_vector, method_name="vector_prompt"
+        from ...models.interventions import ActivationAddition
+
+        intervention = ActivationAddition(
+            steering_vector=steering_vector,
+            multiplier=multiplier,
         )
+        intervention = intervention.to(device)
+        model.set_intervention(layer, intervention, "vector_prompt")
     return model
 
 # def eval_caa(hparams: ApplyCAAHyperParams):
