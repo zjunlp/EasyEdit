@@ -40,26 +40,32 @@ def _get_parent_module(model: nn.Module, param_name: str):
 
 
 def _model_forward(model: nn.Module, config, *inputs, **kwargs):
-    if 'minigpt4' in config.model_name.lower() or 'blip' in config.model_name.lower():
-        outputs = model(*inputs, **kwargs)
-    elif "llava-onevision" in config.model_name.lower() or "qwen2-vl" in config.model_name.lower():
+    model_name = config.model_name.lower()
+    text_model_families = (
+        "gpt",
+        "llama",
+        "chatglm2",
+        "internlm",
+        "qwen",
+        "mistral",
+    )
+
+    if "minigpt4" in model_name or "blip" in model_name:
+        return model(*inputs, **kwargs)
+
+    if "llava-onevision" in model_name or "qwen2-vl" in model_name:
         multimodal_inputs = inputs[0]
-        outputs = model(**multimodal_inputs)
-    elif 'gpt' in config.model_name.lower():
-        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-    elif 'llama' in config.model_name.lower():
-        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-    elif 'chatglm2' in config.model_name.lower():
-        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-    elif 'internlm' in config.model_name.lower():
-        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-    elif 'qwen' in config.model_name.lower():
-        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-    elif 'mistral' in config.model_name.lower():
-        outputs = _logits(model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-    else:
-        outputs = _logits(model(**kwargs))
-    return outputs
+        return model(**multimodal_inputs)
+
+    if any(family in model_name for family in text_model_families):
+        return _logits(
+            model(
+                input_ids=kwargs["input_ids"],
+                attention_mask=kwargs["attention_mask"],
+            )
+        )
+
+    return _logits(model(**kwargs))
 
 
 class EditedParameterModel(nn.Module):
