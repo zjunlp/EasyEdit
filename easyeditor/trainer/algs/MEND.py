@@ -1,9 +1,7 @@
 import copy
 import logging
 from collections import defaultdict
-from contextlib import contextmanager
 
-import higher
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -39,6 +37,77 @@ def _get_parent_module(model: nn.Module, param_name: str):
     return parent, child_name
 
 
+def _shallow_clone_module(module: nn.Module, clean_forward_attrs: bool = True):
+    cloned = copy.copy(module)
+    cloned._modules = copy.copy(module._modules)
+    if clean_forward_attrs:
+        _clean_accelerate_forward_attrs(cloned)
+    return cloned
+
+
+def _clone_module_path(root: nn.Module, path: str, cloned_modules: dict):
+    if path in cloned_modules:
+        return cloned_modules[path]
+
+    if "." in path:
+        parent_path, child_name = path.rsplit(".", 1)
+        parent_clone = _clone_module_path(root, parent_path, cloned_modules)
+    else:
+        parent_path, child_name = "", path
+        parent_clone = cloned_modules[""]
+
+    original_child = root.get_submodule(path)
+    child_clone = _shallow_clone_module(original_child)
+    parent_clone._modules[child_name] = child_clone
+    cloned_modules[path] = child_clone
+    return child_clone
+
+
+def _clean_accelerate_forward_attrs(module: nn.Module):
+    for attr in ("forward", "_old_forward", "_hf_hook"):
+        if attr in module.__dict__:
+            del module.__dict__[attr]
+
+
+def _make_child_functional_model(model: nn.Module, updates, config):
+    edited_model = _shallow_clone_module(model)
+    cloned_modules = {"": edited_model}
+    module_updates = defaultdict(dict)
+    patcher = (
+        _make_functional
+        if "minigpt4" in config.model_name.lower() or "blip" in config.model_name.lower()
+        else monkeypatch
+    )
+
+    for n, p in _inner_params(model.named_parameters(), config.inner_params):
+        module_name, param_name = n.rsplit(".", 1)
+        module_updates[module_name][param_name] = (p, updates[n])
+
+    for module_name, param_updates in module_updates.items():
+        if "." in module_name:
+            parent_path, child_name = module_name.rsplit(".", 1)
+            parent = _clone_module_path(model, parent_path, cloned_modules)
+        else:
+            parent, child_name = edited_model, module_name
+
+        original_child = model.get_submodule(module_name)
+        first_param = next(iter(param_updates.values()))[0]
+        patched_child = patcher(original_child, device=first_param.device, in_place=False)
+        _clean_accelerate_forward_attrs(patched_child)
+
+        new_params = []
+        for local_name, child_param in patched_child.named_parameters():
+            if local_name in param_updates:
+                p, update = param_updates[local_name]
+                new_params.append(p + update.to(p.dtype))
+            else:
+                new_params.append(child_param)
+        patched_child.update_params(new_params)
+        parent._modules[child_name] = patched_child
+
+    return edited_model
+
+
 def _model_forward(model: nn.Module, config, *inputs, **kwargs):
     model_name = config.model_name.lower()
     text_model_families = (
@@ -58,71 +127,15 @@ def _model_forward(model: nn.Module, config, *inputs, **kwargs):
         return model(**multimodal_inputs)
 
     if any(family in model_name for family in text_model_families):
-        return _logits(
+        logits = _logits(
             model(
                 input_ids=kwargs["input_ids"],
                 attention_mask=kwargs["attention_mask"],
             )
         )
+        return logits.to(kwargs["input_ids"].device)
 
     return _logits(model(**kwargs))
-
-
-class EditedParameterModel(nn.Module):
-    """Run a model with differentiable parameter replacements.
-
-    The custom higher monkeypatch path does not affect dispatched Qwen forwards
-    reliably. This wrapper swaps only the edited tensors into the original model
-    for the duration of each forward pass, then restores the original params.
-    """
-
-    def __init__(self, model: nn.Module, edited_params):
-        super().__init__()
-        self.model = model
-        self.edited_params = edited_params
-
-    def __getattr__(self, name):
-        try:
-            return super().__getattr__(name)
-        except AttributeError:
-            return getattr(self.model, name)
-
-    @contextmanager
-    def use_edited_params(self):
-        originals = []
-        for name, edited_param in self.edited_params.items():
-            parent, child_name = _get_parent_module(self.model, name)
-            originals.append((parent, child_name, parent._parameters[child_name]))
-            parent._parameters[child_name] = edited_param
-        try:
-            yield
-        finally:
-            for parent, child_name, original_param in reversed(originals):
-                parent._parameters[child_name] = original_param
-
-    def forward(self, *args, **kwargs):
-        with self.use_edited_params():
-            return self.model(*args, **kwargs)
-
-    def state_dict(self, *args, **kwargs):
-        state_dict = self.model.state_dict(*args, **kwargs)
-        keep_vars = kwargs.get("keep_vars", False)
-        for name, edited_param in self.edited_params.items():
-            state_dict[name] = edited_param if keep_vars else edited_param.detach()
-        return state_dict
-
-
-class EditedMEND(nn.Module):
-    def __init__(self, source: "MEND", edited_model: nn.Module):
-        super().__init__()
-        self.model = edited_model
-        self.config = source.config
-        self.model_constructor = source.model_constructor
-        self.edit_loss_fn = source.edit_loss_fn
-        self.loc_loss_fn = source.loc_loss_fn
-
-    def forward(self, *inputs, **kwargs):
-        return _model_forward(self.model, self.config, *inputs, **kwargs)
 
 
 def update_counter(x, m, s, k):
@@ -474,36 +487,7 @@ class MEND(EditableModel):
         assert len(self.edit_lrs) == len(list(mean_grads.items()))
         updates = {n: lr * g for lr, (n, g) in zip(self.edit_lrs, mean_grads.items())}
 
-        use_parameter_replacement = (
-            self.config.model_parallel or 'qwen' in self.config.model_name.lower()
-        )
-        if use_parameter_replacement:
-            edited_params = {
-                n: p + updates[n].to(p.dtype)
-                for n, p in _inner_params(
-                    self.model.named_parameters(), self.config.inner_params
-                )
-            }
-            return EditedMEND(
-                self,
-                EditedParameterModel(self.model, edited_params),
-            ), info_dict
-
-        edited_model = self.model
-        if not isinstance(edited_model, higher.patch._MonkeyPatchBase):
-            if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
-                edited_model = _make_functional(edited_model, in_place=True)
-            else:
-                edited_model = monkeypatch(edited_model, in_place=True)
-
-        new_params = []
-        for n, p in edited_model.named_parameters():
-            if n in pset:
-                new_params.append(p + updates[n].to(p.dtype))
-            else:
-                new_params.append(p)
-
-        edited_model.update_params(new_params)
+        edited_model = _make_child_functional_model(self.model, updates, self.config)
 
         if detach_history:
             new_model = self.model_constructor()
