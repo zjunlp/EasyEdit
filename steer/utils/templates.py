@@ -1,8 +1,15 @@
 from typing import Optional, List, Dict
 from transformers import AutoTokenizer, AutoProcessor
 
-# Models that do not support system prompts
+# Models that do not support a dedicated system role in their chat template (the system text
+# must be folded into the first user turn instead). Kept for build_multimodal_model_input;
+# the text path uses safe_apply_chat_template (try/except) which is robust to local paths.
 NO_SYSTEM_PROMPT_MODELS = {'gemma', 'gemma-2', 'codegemma'}
+
+# Track (tokenizer/processor) names we've already warned about, so the no-template fallback
+# warning is emitted once per model rather than per example.
+_WARNED_NO_TEMPLATE = set()
+
 
 def model_supports_system_prompt(model_name_or_path: str) -> bool:
     """Check if the model supports system prompts"""
@@ -12,6 +19,54 @@ def model_supports_system_prompt(model_name_or_path: str) -> bool:
             return False
     return True
 
+
+def get_bos_offset(tokenizer) -> int:
+    """Return 1 if this tokenizer prepends a BOS token under ``add_special_tokens=True``, else 0.
+
+    Robust across models that have no BOS (e.g. Qwen): rather than assuming "1 BOS for every
+    model", we actually tokenize a probe string and check whether the first id is the BOS id.
+    """
+    bos_id = getattr(tokenizer, "bos_token_id", None)
+    if bos_id is None:
+        return 0
+    try:
+        ids = tokenizer("x", add_special_tokens=True).input_ids
+    except Exception:
+        return 0
+    return 1 if (len(ids) > 0 and ids[0] == bos_id) else 0
+
+
+def _has_chat_template(obj) -> bool:
+    return getattr(obj, "chat_template", None) is not None
+
+
+def _warn_no_template_once(obj):
+    name = getattr(obj, "name_or_path", None) or str(type(obj))
+    if name not in _WARNED_NO_TEMPLATE:
+        _WARNED_NO_TEMPLATE.add(name)
+        print(
+            f"[WARNING] use_chat_template=True but '{name}' has no chat_template; "
+            f"falling back to raw text concatenation (base-model style)."
+        )
+
+
+def safe_apply_chat_template(tokenizer, messages, system_prompt=None, **kw):
+    """Apply a chat template with an optional system prompt, robustly.
+    Still, gemma may lack of a system role in the template, so we fold the system prompt into the first user turn if needed. 
+    """
+    if system_prompt:
+        try:
+            return tokenizer.apply_chat_template(
+                [{"role": "system", "content": system_prompt}, *messages], **kw
+            )
+        except Exception:
+            pass  # template has no system role -> fold into the first user turn below
+    msgs = [dict(m) for m in messages]
+    if system_prompt and msgs and msgs[0].get("role") == "user":
+        msgs[0]["content"] = f"{system_prompt} {msgs[0]['content']}"
+    return tokenizer.apply_chat_template(msgs, **kw)
+
+
 def build_model_input(
     user_input: str,
     tokenizer: AutoTokenizer|AutoProcessor,
@@ -19,8 +74,8 @@ def build_model_input(
     use_chat_template: bool = None,
     model_output: Optional[str] = None,
     suffix: Optional[str] = None,
+    enable_thinking: Optional[bool] = None,
 ) -> str:
-   
 
     user_input = user_input.strip()
     if model_output:
@@ -28,9 +83,14 @@ def build_model_input(
     if suffix:
         suffix = suffix.strip()
 
-    if use_chat_template == False:  
+    # Use the chat template only when requested AND actually available. A base model with no
+    # template degrades to plain-text concatenation (that is how base models are prompted),
+    # instead of asserting/raising.
+    if not use_chat_template or not _has_chat_template(tokenizer):
+        if use_chat_template and not _has_chat_template(tokenizer):
+            _warn_no_template_once(tokenizer)
         user_content = ''
-        if system_prompt:  
+        if system_prompt:
             user_content = f"{system_prompt} "
         user_content += f"{user_input}"
         if suffix:
@@ -39,28 +99,21 @@ def build_model_input(
             user_content += f" {model_output}"
         return user_content
     else:
-        assert tokenizer.chat_template is not None, "Tokenizer does not support apply_chat_template"
-        messages = []
-
-        input_content = ''
-        if system_prompt and system_prompt != '' and model_supports_system_prompt(tokenizer.name_or_path):  
-            messages.append({"role": "system", "content": system_prompt})
-        else:
-            if system_prompt:
-                input_content += f"{system_prompt} "
-        input_content += f"{user_input}"
+        input_content = f"{user_input}"
         if suffix:
             input_content += f" {suffix}"
 
-        messages.append({"role": "user", "content": input_content})
+        messages = [{"role": "user", "content": input_content}]
         if model_output is not None:
             messages.append({"role": "assistant", "content": model_output})
 
-        return tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
+        chat_kwargs = {"tokenize": False, "add_generation_prompt": True}
+        if enable_thinking is not None:
+            chat_kwargs["enable_thinking"] = enable_thinking
+        return safe_apply_chat_template(
+            tokenizer, messages, system_prompt=system_prompt, **chat_kwargs
         )
+
 
 def build_multimodal_model_input(
     messages: List[Dict],
@@ -69,6 +122,7 @@ def build_multimodal_model_input(
     use_chat_template: bool = None,
     model_output: Optional[str] = None,
     suffix: Optional[str] = None,
+    enable_thinking: Optional[bool] = None,
 ) -> str:
     """
     Build a multimodal model input
@@ -84,8 +138,11 @@ def build_multimodal_model_input(
     Returns:
         The processed text
     """
-    
-    if use_chat_template == False:
+
+    # As with the text path: no template (or not requested) -> plain-text concatenation.
+    if not use_chat_template or not _has_chat_template(processor):
+        if use_chat_template and not _has_chat_template(processor):
+            _warn_no_template_once(processor)
         # If you do not use a chat template, directly concatenate text
         user_content = ''
         if system_prompt:
@@ -105,15 +162,13 @@ def build_multimodal_model_input(
                 else:
                     user_content += str(content)
                 break
-        
+
         if suffix:
             user_content += f" {suffix}"
         if model_output:
             user_content += f" {model_output}"
         return user_content
     else:
-        assert processor.chat_template is not None, "Processor does not support apply_chat_template"
-
         # Build the message list
         final_messages = []
 
@@ -136,20 +191,19 @@ def build_multimodal_model_input(
             if last_user_msg:
                 content = last_user_msg['content']
                 if isinstance(content, list):
-                    # For multimodal content, add a suffix to the text portion 
+                    # For multimodal content, add a suffix to the text portion
                     for item in content:
                         if item['type'] == 'text':
                             item['text'] += f" {suffix}"
                             break
                 else:
                     last_user_msg['content'] = f"{content} {suffix}"
-        
+
         # Adding Model Output
         if model_output is not None:
             final_messages.append({"role": "assistant", "content": model_output})
 
-        return processor.apply_chat_template(
-            final_messages,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
+        chat_kwargs = {"tokenize": False, "add_generation_prompt": True}
+        if enable_thinking is not None:
+            chat_kwargs["enable_thinking"] = enable_thinking
+        return processor.apply_chat_template(final_messages, **chat_kwargs)

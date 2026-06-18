@@ -7,7 +7,7 @@ from ...utils import HyperParams
 @dataclass
 class ApplyMergeVectorHyperParams(HyperParams):
     # Model related
-    alg_name: str='merge'
+    alg_name: str='merge_vector'
     layers: List[int]=field(default_factory=lambda: [24])
     multipliers: List[float]=field(default_factory=lambda: [1.0]) 
     steer_vector_load_dir: str=None

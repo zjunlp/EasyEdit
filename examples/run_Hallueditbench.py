@@ -468,7 +468,7 @@ def halluedit_standard_edit_and_evaluate(
     print("Loading evaluation model...")
     model_eval = AutoModelForCausalLM.from_pretrained(
         eval_model_id, 
-        torch_dtype=torch.float32,
+        dtype=torch.float32,
         device_map="auto",
         trust_remote_code=True,
         low_cpu_mem_usage=True,

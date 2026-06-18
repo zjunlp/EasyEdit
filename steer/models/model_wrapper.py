@@ -12,7 +12,8 @@ from steer.vector_generators.lm_steer.generate_lm_steer_hparam import LmSteerHyp
 from steer.utils.hparams import HyperParams
 from steer.vector_generators.lm_steer.lm_steer_helper import Hack_no_grad, Projected_Adaptor
 
-os.environ['VLLM_USE_V1'] = '0'
+# New vLLM will implicitly enable multiprocessing for speed, but steering requires in-process execution.
+os.environ.setdefault('VLLM_ENABLE_V1_MULTIPROCESSING', '0')
 
 try:
     from vllm import LLM
@@ -81,7 +82,35 @@ class MLPWrapper(t.nn.Module):
             output = self.mlp(*args, **kwargs)
         self.activations = output[0] if isinstance(output, tuple) else output
         
-        self.mid_activations = self.mlp.act_fn(self.mlp.gate_proj(args[0])) * self.mlp.up_proj(args[0])
+        hidden = args[0]
+
+        # This block detects the projection block in the model. 
+        # Different models have different MLP implementations, so we maintain a if-else block to support future models.
+        if hasattr(self.mlp, 'gate_proj') and hasattr(self.mlp, 'up_proj'):
+            self.mid_activations = self.mlp.act_fn(self.mlp.gate_proj(hidden)) * self.mlp.up_proj(hidden)
+
+        elif hasattr(self.mlp, 'gate_up_proj'):
+            # For Qwen3 family, vllm combines the gate and up projection into one matrix,
+            # so we need to split the activations into two parts and apply the activation function to the gate part.
+            gate_up = self.mlp.gate_up_proj(hidden)
+            if isinstance(gate_up, tuple):
+                gate_up = gate_up[0]
+            self.mid_activations = self.mlp.act_fn(gate_up)
+
+        elif hasattr(self.mlp, 'c_fc'):
+            self.mid_activations = self.mlp.c_fc(hidden)
+
+        elif hasattr(self.mlp, 'dense_h_to_4h'):
+            self.mid_activations = self.mlp.dense_h_to_4h(hidden)
+
+        elif hasattr(self.mlp, 'fc1'):
+            self.mid_activations = self.mlp.fc1(hidden)
+
+        elif hasattr(self.mlp, 'up_proj') and not hasattr(self.mlp, 'gate_proj'):
+            self.mid_activations = self.mlp.up_proj(hidden)
+
+        else:
+            self.mid_activations = None
         return output
 
     def add(self, activations):
@@ -102,6 +131,9 @@ class BlockOutputWrapper(t.nn.Module):
         # self.model_type=model_name_or_path.lower()
         if 'gpt' in model_name_or_path.lower():
             self.model_type = 'gpt'
+        elif 'llava' in model_name_or_path.lower():
+            # Checked before llama/qwen so VL names like "llava-onevision-qwen2" classify as llava.
+            self.model_type = 'llava'
         elif 'llama' in model_name_or_path.lower():
             self.model_type = 'llama'
         elif 'gemma' in model_name_or_path.lower():
@@ -110,12 +142,15 @@ class BlockOutputWrapper(t.nn.Module):
             self.model_type = 'qwen'
         elif 'qwq' in model_name_or_path.lower():
             self.model_type = 'qwq'
- 
+        else:
+            self.model_type = 'gpt' if (hasattr(self.block, 'attn') and not hasattr(self.block, 'self_attn')) else 'llama'
+            print(f"Warning: model type for {model_name_or_path} not explicitly recognized, inferring {self.model_type} based on block attributes. This may be incorrect; if so, please report this model to the developers for an explicit match.")
+
         if self.model_type in ['gpt']:
             self.block.attn = AttnWrapper(self.block.attn)
             self.block.mlp = MLPWrapper(self.block.mlp)
             self.post_attention_layernorm=self.block.ln_2
-        elif self.model_type in ['llama', 'gemma', 'qwen', 'qwq']:
+        elif self.model_type in ['llama', 'gemma', 'qwen', 'qwq', 'llava']:
             self.block.self_attn = AttnWrapper(self.block.self_attn)
             self.block.mlp = MLPWrapper(self.block.mlp)
             self.post_attention_layernorm=self.block.post_attention_layernorm
@@ -204,7 +239,7 @@ class BlockOutputWrapper(t.nn.Module):
                         elif intervention.intervention_components == "attn":
                             if self.model_type in ['gpt']:
                                 kwargs['args'] = self.block.attn.input_activations
-                            elif self.model_type in ['llama', 'gemma', 'qwen', 'qwq']:
+                            elif self.model_type in ['llama', 'gemma', 'qwen', 'qwq', 'llava']:
                                 kwargs['args'] = self.block.self_attn.input_activations
                             assert kwargs['args'] is not None, "Attention input activations are None"
                         elif intervention.intervention_components == "block":
@@ -232,7 +267,7 @@ class BlockOutputWrapper(t.nn.Module):
         # Self-attention unembedded
         if self.model_type in ['gpt']:
             attn_output = self.block.attn.activations
-        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq']:
+        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq', 'llava']:
             attn_output = self.block.self_attn.activations
         
         self.attn_out_unembedded = self.unembed_matrix(self.norm(attn_output))
@@ -242,7 +277,7 @@ class BlockOutputWrapper(t.nn.Module):
         self.intermediate_resid_unembedded = self.unembed_matrix(self.norm(attn_output))
 
         # MLP unembedded
-        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq', 'gpt'] :
+        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq', 'gpt', 'llava'] :
             mlp_output = self.block.mlp(self.post_attention_layernorm(attn_output))
         self.mlp_out_unembedded = self.unembed_matrix(self.norm(mlp_output))
 
@@ -276,7 +311,7 @@ class BlockOutputWrapper(t.nn.Module):
         # self.block.self_attn.activations = None
         if self.model_type in ['gpt']:
             self.block.attn.activations = None
-        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq']:
+        if self.model_type in ['llama', 'gemma', 'qwen', 'qwq', 'llava']:
             self.block.self_attn.activations = None
         self.from_position = None
         self.calc_dot_product_with = None
@@ -288,7 +323,7 @@ class BlockOutputWrapper(t.nn.Module):
 class BaseModelWrapper:
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -302,18 +337,28 @@ class BaseModelWrapper:
         self.hparams = hparams    #initialize hyperparams
         self.use_chat = use_chat
         self.device = device
-        self.torch_dtype = DTYPES_DICT.get(torch_dtype, t.float32)
+        self.dtype = DTYPES_DICT.get(dtype, t.float32)
         self.use_cache = use_cache
         self.model_name_or_path = model_name_or_path
-        
+        self.processor = None  # text models have no image processor; multimodal subclasses set this
+
         if hparams.vllm_enable and VLLM_AVAILABLE:
-            self.VLLM_model = LLM(
+            # Force in-process execution so the layer wrappers we install below actually run
+            # during generation (see the module-level note next to VLLM_ENABLE_V1_MULTIPROCESSING).
+            os.environ['VLLM_ENABLE_V1_MULTIPROCESSING'] = '0'
+            llm_kwargs = dict(
                 model=self.model_name_or_path,
-                #enable_steer_vector=True,
+                # enforce_eager=True disables CUDA-graph capture. This is required: steering
+                # mutates per-layer state between calls, which a captured graph would not pick up.
                 enforce_eager=True,
                 tensor_parallel_size=1,
-                dtype=self.torch_dtype,
+                dtype=self.dtype,
+                gpu_memory_utilization=getattr(hparams, 'vllm_gpu_memory_utilization', 0.9),
             )
+            _max_len = getattr(hparams, 'vllm_max_model_len', None)
+            if _max_len:
+                llm_kwargs['max_model_len'] = _max_len
+            self.VLLM_model = LLM(**llm_kwargs)
             self.tokenizer = self.VLLM_model.get_tokenizer()
             self.model = self.extract_vllm_model()
         else:
@@ -322,117 +367,173 @@ class BaseModelWrapper:
                 self.model_name_or_path,
                     padding_side="right" if "gemma" in self.model_name_or_path else "left",
                 )
-            # self.tokenizer.pad_token = self.tokenizer.eos_token
-            # self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
-            self.model = AutoModelForCausalLM.from_pretrained(
-                self.model_name_or_path,
-                torch_dtype=self.torch_dtype,
-                device_map=self.device,
-                use_cache=self.use_cache
-            )
+            if self.tokenizer.pad_token is None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+                self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+            self.model = self._load_hf_model()
         if override_model_weights_path is not None:
-            self.model.load_state_dict(t.load(override_model_weights_path), device=self.device)
+            self.model.load_state_dict(
+                t.load(override_model_weights_path, map_location=self.device),
+                strict=False,
+            )
 
         ### Customize layers and outputs for specific models
         self._adapt_model_layers()
+
+    def _load_hf_model(self):
+        return AutoModelForCausalLM.from_pretrained(
+            self.model_name_or_path,
+            dtype=self.dtype,
+            device_map=self.device,
+            use_cache=self.use_cache,
+        )
     
     def extract_vllm_model(self):
-        """Extract PyTorch model from vLLM LLM instance"""
-        try:
-            # Try vLLM v1 structure first
-            if hasattr(self.VLLM_model, 'llm_engine') and hasattr(self.VLLM_model.llm_engine, 'model_executor'):
-                model_executor = self.VLLM_model.llm_engine.model_executor
-                if hasattr(model_executor, 'driver_worker'):
-                    model = model_executor.driver_worker.model_runner.model
-                else:
-                    model = getattr(model_executor, 'model', None)
+        """
+        In vLLM v1, the old method fails since multiprocessing and distributive method is enforced.
+        So we write this new method to extract the model from the vLLM instance to steer.
+        """
+        if hasattr(self.VLLM_model, 'apply_model'):
+            try:
+                result = self.VLLM_model.apply_model(lambda model: model)
+                model = result[0] if isinstance(result, (list, tuple)) else result
                 if model is not None:
                     return model
-            # Try direct model access
-            if hasattr(self.VLLM_model, 'model'):
-                return self.VLLM_model.model, None
-            raise ValueError("Could not extract model from vLLM instance")
-        except Exception as e:
-            raise RuntimeError(f"Failed to extract model from vLLM instance: {str(e)}")
+            except Exception as e:
+                print(f"[vLLM] apply_model failed ({e}); falling back to attribute traversal.")
+
+        candidate_paths = [
+            ("llm_engine", "engine_core", "engine_core", "model_executor", "driver_worker", "worker", "model_runner", "model"),
+            ("llm_engine", "engine_core", "engine_core", "model_executor", "driver_worker", "model_runner", "model"),
+            ("llm_engine", "engine_core", "model_executor", "driver_worker", "worker", "model_runner", "model"),
+            ("llm_engine", "model_executor", "driver_worker", "model_runner", "model"),
+        ]
+        for path in candidate_paths:
+            obj = self.VLLM_model
+            for attr in path:
+                obj = getattr(obj, attr, None)
+                if obj is None:
+                    break
+            if obj is not None:
+                return obj
+
+        raise RuntimeError(
+            "Could not extract the model from the vLLM instance. The installed vLLM "
+            "exposes neither LLM.apply_model nor a known engine attribute chain; the "
+            "vLLM steering path needs updating for this version."
+        )
+
+    def _base_model(self):
+        """
+        This method locates the "base model" that contains the decoder layers 
+        under a consistent .layers attribute, regardless of how many wrapper modules nest it. 
+        For standard CausalLM-based architectures this is exactly self.model.model.layers, 
+        but for more complex layouts it detects at most 4 layers of nesting under .model or .language_model, 
+        unwrapping any Hack_no_grad wrappers along the way, and returns the first one that has a .layers attribute.
+        """
+        def _unwrap(m):
+            return m.module if isinstance(m, Hack_no_grad) else m
+
+        base = _unwrap(self.model)
+        for _ in range(4):  # depth guard; real layouts nest at most ~3 deep
+            if hasattr(base, "layers"):
+                return base
+            nxt = None
+            for attr in ("model", "language_model"):
+                child = getattr(base, attr, None)
+                if child is not None:
+                    nxt = _unwrap(child)
+                    break
+            if nxt is None or nxt is base:
+                break
+            base = nxt
+
+        if hasattr(base, "layers"):
+            return base
+        raise AttributeError(
+            f"Could not locate the decoder '.layers' under {type(self.model).__name__}; "
+            f"_base_model() descended model/language_model but found none. The steering "
+            f"path needs an explicit layout for this architecture."
+        )
+
+    def _decoder_layers(self):
+        """The transformer decoder layers (ModuleList). Override for non-CausalLM layouts.
+        For text models this is exactly self.model.model.layers — identical to before."""
+        return self._base_model().layers
+
+    def _lm_head(self):
+        """The output projection. Override if a subclass nests it elsewhere."""
+        return self.model.lm_head
+
+    def _final_norm(self):
+        """The final norm feeding the lm_head. Override for non-CausalLM layouts."""
+        return self._base_model().norm
 
     def _adapt_model_layers(self):
         """Override this method in subclasses for model-specific layer adaptations."""
-        if self.VLLM_model is not None and VLLM_AVAILABLE:
-            for i, layer in enumerate(self.model.model.layers):
-                self.model.model.layers[i] = BlockOutputWrapper(
-                    layer, None, self.model.model.norm, self.tokenizer, i, self.model_name_or_path
-                )
-        else:
-            for i, layer in enumerate(self.model.model.layers):
-                self.model.model.layers[i] = BlockOutputWrapper(
-                    layer, self.model.lm_head, self.model.model.norm, self.tokenizer, i, self.model_name_or_path
-                )
+        layers = self._decoder_layers()
+        norm = self._final_norm()
+        unembed = None if (self.VLLM_model is not None and VLLM_AVAILABLE) else self._lm_head()
+        for i, layer in enumerate(layers):
+            layers[i] = BlockOutputWrapper(
+                layer, unembed, norm, self.tokenizer, i, self.model_name_or_path
+            )
         self.set_save_activations(self.hparams.save_activations)
 
     def replace_final_layer(self, hparams):
         
-        embed_dim = self.model.lm_head.weight.shape[1]
-        vocab_size = self.model.lm_head.weight.shape[0]  
+        lm_head = self._lm_head()
+        embed_dim = lm_head.weight.shape[1]
+        vocab_size = lm_head.weight.shape[0]
         for _param in self.model.parameters():
             _param.requires_grad_(False)  # froze params
 
         if hparams.adapted_component == "final_layer" and hasattr(self.model, 'model'):  # default
             self.model.model = Hack_no_grad(self.model.model)  # Freeze the model layers
             self.steer = Projected_Adaptor(  #
-                self.model.lm_head, hparams.adaptor_class, hparams.num_steers, embed_dim,
+                lm_head, hparams.adaptor_class, hparams.num_steers, embed_dim,
                 vocab_size, hparams.rank, hparams.epsilon, hparams.init_var, "output")
             if hparams.adaptor_class == "multiply":
-                self.steer.projector1 = t.nn.Parameter(self.steer.projector1.to(self.torch_dtype))
-                self.steer.projector2 = t.nn.Parameter(self.steer.projector2.to(self.torch_dtype))
+                self.steer.projector1 = t.nn.Parameter(self.steer.projector1.to(self.dtype))
+                self.steer.projector2 = t.nn.Parameter(self.steer.projector2.to(self.dtype))
             elif hparams.adaptor_class == "add":
-                self.steer.add_vec = t.nn.Parameter(self.steer.add_vec.to(self.torch_dtype))
+                self.steer.add_vec = t.nn.Parameter(self.steer.add_vec.to(self.dtype))
             elif hparams.adaptor_class == "offset":
-                self.steer.offset_vec = t.nn.Parameter(self.steer.offset_vec.to(self.torch_dtype))
+                self.steer.offset_vec = t.nn.Parameter(self.steer.offset_vec.to(self.dtype))
             self.model.set_output_embeddings(self.steer)  
         else:
             raise ValueError('Mismatched adapted component or model structure')
         
     def set_save_internal_decodings(self, value: bool):
-        for layer in self.model.model.layers:
+        for layer in self._decoder_layers():
             layer.save_internal_decodings = value
 
     def set_from_positions(self, pos: int):
-        for layer in self.model.model.layers:
+        for layer in self._decoder_layers():
             layer.from_position = pos
 
     def get_last_activations(self, layer):
-        return self.model.model.layers[layer].activations
+        return self._decoder_layers()[layer].activations
 
     def set_add_activations(self, layer, activations, method_name="default"):
-        """设置传统的激活添加（用于 caa、vector_prompt 等）"""
-        if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):  #if the model is wrapped by Hack_no_grad, then the layers are in the module
-            self.model.model.module.layers[layer].add(activations, method_name)
-        else:
-            self.model.model.layers[layer].add(activations, method_name)
-    
-    def set_intervention(self, layer, intervention, method_name):
+        """Set activations to be added for activation addition methods. Supports storing separate activations for different methods via method_name."""
+        self._decoder_layers()[layer].add(activations, method_name)
 
-        if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):
-            self.model.model.module.layers[layer].set_intervention(intervention, method_name)
-        else:
-            self.model.model.layers[layer].set_intervention(intervention, method_name)
+    def set_intervention(self, layer, intervention, method_name):
+        self._decoder_layers()[layer].set_intervention(intervention, method_name)
 
     def set_calc_dot_product_with(self, layer, vector):
-        self.model.model.layers[layer].calc_dot_product_with = vector
+        self._decoder_layers()[layer].calc_dot_product_with = vector
 
     def set_save_activations(self, value: bool):
-        for layer in self.model.model.layers:
+        for layer in self._decoder_layers():
             layer.save_activations = value
 
     def get_dot_products(self, layer):
-        return self.model.model.layers[layer].dot_products
+        return self._decoder_layers()[layer].dot_products
 
     def reset_all(self):
-        if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):  #if the model is wrapped by Hack_no_grad, then the layers are in the module
-            model_layers = self.model.model.module.layers
-        else:
-            model_layers = self.model.model.layers
-        for layer in model_layers:
+        for layer in self._decoder_layers():
             layer.reset(method_name="all")
         if hasattr(self, 'prompt'):
             delattr(self, 'prompt')
@@ -453,11 +554,7 @@ class BaseModelWrapper:
     def reset(self, method_name):
         method_name = method_name.lower()
         if method_name in ['caa', 'vector_prompt','sae_feature','sta', 'reps', 'sft', 'spilt']:
-            if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):  #if the model is wrapped by Hack_no_grad, then the layers are in the module
-                model_layers = self.model.model.module.layers
-            else:
-                model_layers = self.model.model.layers
-            for layer in model_layers:
+            for layer in self._decoder_layers():
                 layer.reset(method_name=method_name)
         elif method_name in ['lm_steer']:
             self.reset_lm_steer()    
@@ -478,10 +575,13 @@ class BaseModelWrapper:
         tokens = self.tokenizer.batch_decode(indices.unsqueeze(-1))
         return list(zip(tokens, probs_percent)), list(zip(tokens, values.tolist()))
 
-    def get_logits(self,tokens):
+    def get_logits(self, tokens):
         if self.VLLM_model is not None:
             from vllm import SamplingParams
-            logits = self.VLLM_model.generate(prompt_token_ids=tokens.tolist(), sampling_params=SamplingParams(max_tokens=1))
+            logits = self.VLLM_model.generate(
+                {"prompt_token_ids": tokens.flatten().tolist()},
+                sampling_params=SamplingParams(max_tokens=1),
+            )
         else:
             logits = self.model(tokens).logits
         return logits
@@ -489,11 +589,8 @@ class BaseModelWrapper:
     def ori_generate(self, input_ids, **kwargs):
         # Save activation dictionaries
         saved_activations = {}
-        if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):
-            model_layers = self.model.model.module.layers
-        else:
-            model_layers = self.model.model.layers
-            
+        model_layers = self._decoder_layers()
+
         for i, layer in enumerate(model_layers):
             if hasattr(layer, 'add_activations_dict') and layer.add_activations_dict:
                 saved_dict = {}
@@ -535,11 +632,8 @@ class BaseModelWrapper:
     def ori_vllm_generate(self, input_batch, vllm_sampling_params):
         # Save activation dictionaries
         saved_activations = {}
-        if hasattr(self.model, 'model') and isinstance(self.model.model, Hack_no_grad):
-            model_layers = self.model.model.module.layers
-        else:
-            model_layers = self.model.model.layers
-            
+        model_layers = self._decoder_layers()
+
         for i, layer in enumerate(model_layers):
             if hasattr(layer, 'add_activations_dict') and layer.add_activations_dict:
                 saved_dict = {}
@@ -582,7 +676,7 @@ class BaseModelWrapper:
 class LlamaWrapper(BaseModelWrapper):
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -591,7 +685,7 @@ class LlamaWrapper(BaseModelWrapper):
         hparams:HyperParams=None,
     ):
         super().__init__(
-            torch_dtype, 
+            dtype, 
             use_chat, 
             device,
             model_name_or_path,
@@ -603,7 +697,7 @@ class LlamaWrapper(BaseModelWrapper):
 class GemmaWrapper(BaseModelWrapper):
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -613,7 +707,7 @@ class GemmaWrapper(BaseModelWrapper):
     ):
 
         super().__init__(
-            torch_dtype, 
+            dtype, 
             use_chat, 
             device,
             model_name_or_path,
@@ -625,7 +719,7 @@ class GemmaWrapper(BaseModelWrapper):
 class QwenWrapper(BaseModelWrapper):
     def __init__(
         self,
-        torch_dtype=t.float32,
+        dtype=t.float32,
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -634,7 +728,7 @@ class QwenWrapper(BaseModelWrapper):
         hparams:HyperParams=None,
     ):
         super().__init__(
-            torch_dtype, 
+            dtype, 
             use_chat, 
             device,
             model_name_or_path,
@@ -646,7 +740,7 @@ class QwenWrapper(BaseModelWrapper):
 class GPTWrapper(BaseModelWrapper):
     def __init__(
         self,
-        torch_dtype = t.float32,   #change to float16
+        dtype = t.float32,   #change to float16
         use_chat: bool = False,
         device: str = "cuda" if t.cuda.is_available() else "cpu",
         model_name_or_path: Optional[str] = None,
@@ -655,15 +749,29 @@ class GPTWrapper(BaseModelWrapper):
         hparams:HyperParams=None,
     ):
         super().__init__(
-            torch_dtype, 
+            dtype, 
             use_chat,
             device,
             model_name_or_path,
             use_cache,
-            override_model_weights_path, 
+            override_model_weights_path,
             hparams,
             )
 
+    # GPT-2/GPT-J/GPT-Neo nest the decoder stack under .transformer.h (not .model.layers),
+    # so override the shared accessors. This keeps _decoder_layers() valid for GPT, which lets
+    # the generic, architecture-agnostic reset helpers iterate it just like every other model.
+    def _base_model(self):
+        base = self.model.transformer
+        if isinstance(base, Hack_no_grad):
+            base = base.module
+        return base
+
+    def _decoder_layers(self):
+        return self._base_model().h
+
+    def _final_norm(self):
+        return self._base_model().ln_f
 
     def _adapt_model_layers(self):
         if self.VLLM_model is not None:
@@ -689,12 +797,12 @@ class GPTWrapper(BaseModelWrapper):
                 self.model.lm_head, hparams.adaptor_class, hparams.num_steers, embed_dim,
                 vocab_size, hparams.rank, hparams.epsilon, hparams.init_var, "output")
             if hparams.adaptor_class == "multiply":
-                self.steer.projector1 = t.nn.Parameter(self.steer.projector1.to(self.torch_dtype))
-                self.steer.projector2 = t.nn.Parameter(self.steer.projector2.to(self.torch_dtype))
+                self.steer.projector1 = t.nn.Parameter(self.steer.projector1.to(self.dtype))
+                self.steer.projector2 = t.nn.Parameter(self.steer.projector2.to(self.dtype))
             elif hparams.adaptor_class == "add":
-                self.steer.add_vec = t.nn.Parameter(self.steer.add_vec.to(self.torch_dtype))
+                self.steer.add_vec = t.nn.Parameter(self.steer.add_vec.to(self.dtype))
             elif hparams.adaptor_class == "offset":
-                self.steer.offset_vec = t.nn.Parameter(self.steer.offset_vec.to(self.torch_dtype))
+                self.steer.offset_vec = t.nn.Parameter(self.steer.offset_vec.to(self.dtype))
             self.model.set_output_embeddings(self.steer) 
 
     def set_save_internal_decodings(self, value: bool):

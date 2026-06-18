@@ -21,6 +21,7 @@ class SFTTrainer(SFTModelTrainer):
         
         intervention_method = kwargs.get("intervention_method", "vector")
         intervention_type = kwargs.get("intervention_type", "addition") # addition
+        model_config = self.model.model.config.text_config if hasattr(self.model.model.config, "text_config") else self.model.model.config
         if intervention_type == "addition":
             if intervention_method == "vector":
             # create a preference vector intervention object
@@ -29,7 +30,7 @@ class SFTTrainer(SFTModelTrainer):
                     steer_vector = kwargs.get("init_vector")
                 else:
                     steer_vector = VectorIntervention(
-                    embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
+                    embed_dim=kwargs.get("embed_dim", model_config.hidden_size), # set the embedding dimension
                     low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
                     dropout=kwargs.get("dropout", 0.0),
                     intervention_positions_dropout=kwargs.get("intervention_positions_dropout", 0.0) # set the dropout rate of the intervention positions
@@ -40,8 +41,8 @@ class SFTTrainer(SFTModelTrainer):
                     steer_vector = kwargs.get("init_vector")
                 else:
                     steer_vector = LocalWeightIntervention(
-                        input_dim=kwargs.get("input_dim", self.model.model.config.hidden_size), # set the input dimension
-                        embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
+                        input_dim=kwargs.get("input_dim", model_config.hidden_size), # set the input dimension
+                        embed_dim=kwargs.get("embed_dim", model_config.hidden_size), # set the embedding dimension
                         low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
                         dropout=kwargs.get("dropout", 0.0),
                         intervention_components=kwargs.get("intervention_components", "mlp"),                                # set the dropout rate
@@ -53,8 +54,8 @@ class SFTTrainer(SFTModelTrainer):
                     steer_vector = kwargs.get("init_vector")
                 else:
                     steer_vector = LoraIntervention(
-                        input_dim=kwargs.get("input_dim", self.model.model.config.hidden_size), # set the input dimension
-                        embed_dim=kwargs.get("embed_dim", self.model.model.config.hidden_size), # set the embedding dimension
+                        input_dim=kwargs.get("input_dim", model_config.hidden_size), # set the input dimension
+                        embed_dim=kwargs.get("embed_dim", model_config.hidden_size), # set the embedding dimension
                         low_rank_dimension=kwargs.get("low_rank_dimension", 1),            # set the low rank dimension, 4
                         dropout=kwargs.get("dropout", 0.0),
                         intervention_components=kwargs.get("intervention_components", "mlp"),                                # set the dropout rate
@@ -66,7 +67,7 @@ class SFTTrainer(SFTModelTrainer):
             raise ValueError(f"Intervention type {intervention_type} not supported")
 
         self.intervention_type = intervention_type
-        self.model.steer_vector = steer_vector.to(self.model.device, dtype=self.model.torch_dtype)
+        self.model.steer_vector = steer_vector.to(self.model.device, dtype=self.model.dtype)
         self.model.steer_vector.train()
         
         self.preference_pairs = kwargs.get("preference_pairs", ["orig_add"])

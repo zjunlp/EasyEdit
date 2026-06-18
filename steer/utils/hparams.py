@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from dataclasses import asdict
+from typing import Optional
 
 
 @dataclass
@@ -10,14 +11,18 @@ class HyperParams:
     """
     use_chat_template: bool=False
     system_prompt: str=''
-    torch_dtype: str='fp32'
+    dtype: str='fp32'
     seed: int=42
     model_name_or_path: str='your_own_path'
     device: str='cpu'
     use_cache: bool=True
     generate_orig_output: bool = False
     vllm_enable: bool = False
+    # Updates for new vLLM kwargs; these are ignored by non-vLLM wrappers, so they can be set unconditionally.
+    vllm_gpu_memory_utilization: float = 0.9
+    vllm_max_model_len: Optional[int] = None
     save_activations: bool = True
+    enable_thinking: Optional[bool] = None
     @classmethod
     def from_json(cls, fpath):
         with open(fpath, "r") as f:

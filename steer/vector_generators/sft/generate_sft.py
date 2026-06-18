@@ -5,6 +5,7 @@ import json
 from tqdm import tqdm
 from .generate_sft_hparams import SFTHyperParams
 from .utils import get_prefix_length, load_state, prepare_groups, save_state
+from steer.utils.templates import get_bos_offset
 from steer.trainer.SFTTrainer import SFTTrainer
 
 
@@ -55,7 +56,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
 
     
     # Load model instance onto device
-    if model.torch_dtype == torch.bfloat16:
+    if model.dtype == torch.bfloat16:
         print(f"[WARNING] Using bfloat16 for model {args.model_name_or_path}")
         
     model.tokenizer.padding_side = "right"
@@ -80,10 +81,12 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
 
     all_vectors = {}
     for layer in args.layers:
-        prefix_length = 1 # prefix is default to 1 for all models due to theBOS token.
-        if args.use_chat_template:
+        # BOS-aware prefix: 1 only if the tokenizer actually prepends a BOS (Qwen adds none).
+        if args.use_chat_template and getattr(tokenizer, "chat_template", None) is not None:
             prefix_length = get_prefix_length(tokenizer)
             print(f"[WARNING] Chat model prefix length: {prefix_length}")
+        else:
+            prefix_length = get_bos_offset(tokenizer)
         
         output_dir = os.path.join(
             args.steer_vector_output_dir, 
@@ -174,7 +177,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                     low_rank_dimension=lora_state["r"],
                     alpha=lora_state["alpha"],
                     intervention_components=lora_state["intervention_components"],
-                    torch_dtype=lora_A.dtype,
+                    dtype=lora_A.dtype,
                     ablation_vector=ablation_vector if args.ablation_vector_path else None
                 )
                 with torch.no_grad():
@@ -201,7 +204,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                     input_dim=input_dim,
                     embed_dim=embed_dim,
                     intervention_components=weight_state["intervention_components"],
-                    torch_dtype=delta_weight.dtype,
+                    dtype=delta_weight.dtype,
                     ablation_vector=ablation_vector if args.ablation_vector_path else None
                 )
                 with torch.no_grad():
@@ -211,12 +214,13 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 print("Use Weight to init vector: ", init_vector)
 
             # incorporate the intervention to the model
+            model_config = model.model.config.text_config if hasattr(model.model.config, "text_config") else model.model.config
             benchmark_model.make_model(
                 mode="train",
-                input_dim=model.model.config.hidden_size if args.intervention_components != "mlp_mid" else model.model.config.intermediate_size,
-                embed_dim=model.model.config.hidden_size,
+                input_dim=model_config.hidden_size if args.intervention_components != "mlp_mid" else model_config.intermediate_size,
+                embed_dim=model_config.hidden_size,
                 low_rank_dimension=low_rank_dimension,
-                dtype=model.torch_dtype,
+                dtype=model.dtype,
                 intervention_type=args.intervention_type, 
                 intervention_components=args.intervention_components,
                 intervention_method=args.intervention_method,
@@ -229,7 +233,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 init_vector=init_vector,
             )
 
-            benchmark_model.model.steer_vector.to(model.torch_dtype)
+            benchmark_model.model.steer_vector.to(model.dtype)
             
             # prepare the training parameters
             training_kwargs = {
@@ -247,6 +251,7 @@ def generate_sft(args: SFTHyperParams, dataset, model = None, dataset_name = Non
                 model.tokenizer, 
                 use_chat_template=args.use_chat_template,
                 model_name_or_path=args.model_name_or_path,
+                system_prompt=args.system_prompt,
                 max_num_of_examples=args.max_num_of_examples,
                 steering_prompt_type=args.steering_prompt_type,
                 is_select_category=is_multi_concept

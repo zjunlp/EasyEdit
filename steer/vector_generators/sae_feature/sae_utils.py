@@ -1,33 +1,44 @@
-import tempfile
 from typing import Any, Dict, Optional, Tuple
 import os, sys
 import torch
-from sae_lens import SAE
 from pathlib import Path
-import json
-import shutil
 import numpy as np
-from sae_lens.toolkit.pretrained_sae_loaders import (
-    gemma_2_sae_loader,
-    get_gemma_2_config,
+from sae_lens import SAE
+from sae_lens.loading.pretrained_sae_loaders import (
+    get_gemma_2_config_from_hf,
+    handle_config_defaulting,
 )
-from sae_lens import SAE, SAEConfig, LanguageModelSAERunnerConfig, SAETrainingRunner
 from safetensors import safe_open
-
+"""To support the new sae_lens, we almost rewrite the whole loading logic for SAEs,
+and for different formats of SAEs (sae-lens directory, Gemma-Scope npz, Qwen-Scope per-layer pt), we have separate loading functions.
+The main entry point is `load_sae`, which dispatches by on-disk format, not by model name, so it can be used for any model as long as the SAE is in a recognised format.
+"""
 sys.path.append("../")
-import pdb
 
-def load_sae_from_dir(sae_dir: Path | str, device: str = "cpu") -> SAE:
+
+def _sae_cfg_dict(sae) -> Dict[str, Any]:
+    """Return a plain, mutable dict for an SAE's config metadata.
+
+    Downstream code both reads (``sae_cfg.get("neuronpedia_id")``) and writes
+    (``sae_cfg["neuronpedia_id"] = ...``) this, so we always hand back a real dict regardless
+    of whether ``sae.cfg.metadata`` is a Mapping, a dataclass, or absent.
     """
-    Due to a bug (https://github.com/jbloomAus/SAELens/issues/168) in the SAE save implementation for SAE Lens we need to make
-    a specialized workaround.
+    md = getattr(getattr(sae, "cfg", None), "metadata", None)
+    if md is None:
+        return {}
+    try:
+        return dict(md)
+    except (TypeError, ValueError):
+        try:
+            return dict(vars(md))
+        except TypeError:
+            return {}
 
-    WARNING this will be creating a directory where the files are LINKED with the exception of "cfg.json" which is copied. This is NOT efficient
-    and you should not be calling it many times!
 
-    This wraps: https://github.com/jbloomAus/SAELens/blob/main/sae_lens/sae.py#L284.
-
-    SPECIFICALLY fix cfg.json.
+def load_sae_from_dir(sae_dir: Path | str, device: str = "cpu") -> Tuple[SAE, Dict[str, Any], Optional[torch.Tensor]]:
+    """
+    Load an SAE saved to a directory (``cfg.json`` + ``sae_weights.safetensors``) together
+    with its log-sparsity tensor. Returns ``(sae, sae_cfg, log_sparsity)``.
     """
     sae_dir = Path(sae_dir)
     # print(f"Loading SAE from {sae_dir}")
@@ -37,71 +48,21 @@ def load_sae_from_dir(sae_dir: Path | str, device: str = "cpu") -> SAE:
             "Not all files are present in the directory! Only files allowed for loading SAE Directory."
         )
 
-    # https://github.com/jbloomAus/SAELens/blob/9dacd4a9672c138b7c900ddd9a28d1b3b3a0870c/sae_lens/config.py#L188
-    # Load ourselves instead of from_json because there are some __dir__ elements that are not in the JSON
-    # They should ALL be enumerated in `derivatives`
-    ##### BEGIN #####
-    cfg_f = sae_dir / "cfg.json"
-    with open(cfg_f, "r") as f:
-        cfg = json.load(f)
-    derivatives = [
-        "tokens_per_buffer",
-        "finetuning_scaling_factor",
-    ]
-    cfg["activation_fn"] = cfg.pop("activation_fn_str")
-    derivative_values = []
-    to_remove = []
-    for x in derivatives:
-        if x not in cfg:
-            to_remove.append(x)
-        else:
-            derivative_values.append(cfg[x])
-            del cfg[x]
-    for x in to_remove:
-        derivatives.remove(x)
-
-    runner_config = LanguageModelSAERunnerConfig(**cfg)
-    base_cfg = runner_config.get_base_sae_cfg_dict()
-
-    for d, dv in zip(derivatives, derivative_values):
-        assert d in base_cfg and base_cfg[d] == dv, f"Mismatch in {d}: expected {dv}, got {base_cfg.get(d)}"
-    del derivative_values
-    del derivatives
-    del base_cfg
-    ##### END #####
-
-    # Load the SAE
-    sae_config = runner_config.get_training_sae_cfg_dict()
-    sae_config["d_sae"] = cfg["d_sae"]
-    sae = None
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir = Path(temp_dir)
-
-        # Copy in the CFG
-        sae_config_f = temp_dir / "cfg.json"
-        with open(sae_config_f, "w") as f:
-            json.dump(sae_config, f)
-        # Copy all the other files
-        for name_f in sae_dir.iterdir():
-            if name_f.name == "cfg.json":
-                continue
-            else:
-                shutil.copy(name_f, temp_dir / name_f.name)
-        # Load SAE
-        sae = SAE.load_from_pretrained(temp_dir, device=device)
+    sae = SAE.load_from_pretrained(sae_dir, device=device)
     assert sae is not None and isinstance(sae, SAE)
 
     with safe_open(os.path.join(sae_dir, "sparsity.safetensors"), framework="pt", device=device) as f:  # type: ignore
         log_sparsity = f.get_tensor("sparsity")
 
-    return sae, sae_config, log_sparsity
+    return sae, _sae_cfg_dict(sae), log_sparsity
 
 
 def clear_gpu_cache(cache):
     del cache
     torch.cuda.empty_cache()
 
-def load_gemma_2_sae(
+
+def load_npz_sae(
     sae_path: str,
     device: str = "cpu",
     repo_id: str = "gemma-scope-9b-it-res",
@@ -109,12 +70,15 @@ def load_gemma_2_sae(
     cfg_overrides: Optional[Dict[str, Any]] = None,
     d_sae_override: Optional[int] = None,
     layer_override: Optional[int] = None,
-) -> Tuple[Dict[str, Any], Dict[str, torch.Tensor], Optional[torch.Tensor]]:
+) -> Tuple[SAE, Dict[str, Any], Optional[torch.Tensor]]:
+    """Loader for a gemma-like SAE in the original npz format (``params.npz`` + HF repo config). Returns ``(sae, sae_cfg, log_sparsity)``.
     """
-    Custom loader for Gemma 2 SAEs.
-    """
-    cfg_dict = get_gemma_2_config(repo_id, sae_path, d_sae_override, layer_override)
+    # NOTE: get_gemma_2_config_from_hf is the sae_lens (>=6.x) name; confirm its signature on a
+    # box with sae_lens installed if the release layout changes.
+    cfg_dict = get_gemma_2_config_from_hf(repo_id, sae_path, d_sae_override, layer_override)
     cfg_dict["device"] = device
+    if d_sae_override is not None:
+        cfg_dict["d_sae"] = d_sae_override
 
     # Apply overrides if provided
     if cfg_overrides is not None:
@@ -143,8 +107,11 @@ def load_gemma_2_sae(
             state_dict["finetuning_scaling_factor"] = state_dict.pop("scaling_factor")
     else:
         cfg_dict["finetuning_scaling_factor"] = False
-    sae_cfg = SAEConfig.from_dict(cfg_dict)
-    sae = SAE(sae_cfg)
+
+    # Upgrade the flat config dict to the 6.x schema then build the architecture-specific
+    # SAE (jumprelu for Gemma Scope). Replaces the removed SAEConfig.from_dict + SAE(cfg).
+    cfg_dict = handle_config_defaulting(cfg_dict)
+    sae = SAE.from_dict(cfg_dict)
     sae.load_state_dict(state_dict)
 
     # No sparsity tensor for Gemma 2 SAEs
@@ -153,9 +120,119 @@ def load_gemma_2_sae(
     return sae, cfg_dict, log_sparsity
 
 
+class QwenScopeTopKSAE:
+    """Loader for a Qwen-like SAE in the per-layer pt format (``layer{n}.sae.pt`` + optional ``config.json``). Returns ``(sae, sae_cfg, None)``.
+    """
+
+    def __init__(self, state: Dict[str, torch.Tensor], cfg: Dict[str, Any], device: str = "cpu"):
+        self.cfg_dict = dict(cfg)
+        self.device = device
+        self.k = int(cfg.get("k", 100))
+        # Keep everything in float32 (the released checkpoints are float32) for numerically stable
+        # encode/decode regardless of the model's runtime dtype.
+        self.W_enc = state["W_enc"].to(device=device, dtype=torch.float32)   # (d_sae, d_model)
+        self.b_enc = state["b_enc"].to(device=device, dtype=torch.float32)   # (d_sae,)
+        self.b_dec = state["b_dec"].to(device=device, dtype=torch.float32)   # (d_model,)
+        self.W_dec = state["W_dec"].t().contiguous().to(device=device, dtype=torch.float32)  # (d_sae, d_model)
+        self.d_sae, self.d_model = self.W_dec.shape
+
+    def to(self, device):
+        self.device = device
+        for name in ("W_enc", "b_enc", "b_dec", "W_dec"):
+            setattr(self, name, getattr(self, name).to(device))
+        return self
+
+    @torch.no_grad()
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        """Residual activations ``(..., d_model)`` -> sparse TopK feature acts ``(..., d_sae)``."""
+        x = x.to(device=self.W_enc.device, dtype=self.W_enc.dtype)
+        pre_acts = x @ self.W_enc.t() + self.b_enc
+        vals, idx = pre_acts.topk(self.k, dim=-1)
+        acts = torch.zeros_like(pre_acts)
+        acts.scatter_(-1, idx, vals)
+        return acts
+
+    @torch.no_grad()
+    def decode(self, acts: torch.Tensor) -> torch.Tensor:
+        acts = acts.to(device=self.W_dec.device, dtype=self.W_dec.dtype)
+        return acts @ self.W_dec + self.b_dec
+
+
+def load_qwen_scope_sae(
+    sae_path: str | Path,
+    device: str = "cpu",
+) -> Tuple[QwenScopeTopKSAE, Dict[str, Any], None]:
+    """Load a single Qwen-Scope ``layer{n}.sae.pt`` checkpoint into a :class:`QwenScopeTopKSAE`.
+
+    ``sae_path`` points at the per-layer ``.sae.pt`` file; the sibling ``config.json`` (if present)
+    supplies ``k``/``d_sae``/``d_model``. Returns ``(sae, sae_cfg, log_sparsity=None)`` to match the
+    signature of the other loaders.
+    """
+    import json
+
+    sae_file = Path(sae_path)
+    if not sae_file.is_file():
+        raise FileNotFoundError(f"Qwen-Scope SAE file not found: {sae_file}")
+
+    cfg: Dict[str, Any] = {}
+    cfg_path = sae_file.parent / "config.json"
+    if cfg_path.exists():
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+
+    state = torch.load(sae_file, map_location=device)
+    required = {"W_enc", "W_dec", "b_enc", "b_dec"}
+    if not required.issubset(state):
+        raise ValueError(
+            f"Qwen-Scope SAE at '{sae_file}' is missing keys {required - set(state)}; "
+            f"got {sorted(state)}."
+        )
+
+    sae = QwenScopeTopKSAE(state, cfg, device=device)
+    sae_cfg: Dict[str, Any] = {
+        "model_type": cfg.get("model_type", "topk_sae"),
+        "d_sae": sae.d_sae,
+        "d_model": sae.d_model,
+        "k": sae.k,
+        "hook_point": cfg.get("hook_point"),
+        "base_model": cfg.get("base_model"),
+    }
+    return sae, sae_cfg, None
+
+
+def load_sae(
+    sae_path: str | Path,
+    device: str = "cpu",
+    release: Optional[str] = None,
+) -> Tuple[SAE, Dict[str, Any], Optional[torch.Tensor]]:
+    """Format-dispatching local SAE loader (model-agnostic). Returns ``(sae, sae_cfg, log_sparsity)``.
+
+    Dispatch is by on-disk FORMAT, not by model name -- this answers "do other models need
+    their own loader?": no. New families are handled either by the standard sae-lens directory
+    layout below, or (for HF-hosted SAEs) by ``SAE.from_pretrained`` in the callers.
+      - ``<path>/layer{n}.sae.pt`` -> Qwen-Scope TopK format (load_qwen_scope_sae)
+      - ``<path>/params.npz``      -> Gemma-Scope npz format (load_npz_sae)
+      - ``<path>/cfg.json``        -> standard sae-lens directory (load_sae_from_dir)
+    """
+    sae_dir = Path(sae_path)
+    # Qwen-Scope: callers pass the per-layer file path directly (so the layer number appears in the
+    # path, satisfying STA's `str(layer) in sae_paths[i]` assertion).
+    if str(sae_path).endswith(".sae.pt") or (sae_dir.is_file() and sae_dir.suffix == ".pt"):
+        return load_qwen_scope_sae(sae_path, device=device)
+    if (sae_dir / "params.npz").exists():
+        repo_id = release or "gemma-scope-9b-it-res"
+        return load_npz_sae(str(sae_path), device=device, repo_id=repo_id)
+    if (sae_dir / "cfg.json").exists():
+        return load_sae_from_dir(sae_dir, device=device)
+    raise ValueError(
+        f"Unrecognized SAE format at '{sae_path}': expected layer*.sae.pt (Qwen-Scope), "
+        f"params.npz (Gemma-Scope) or cfg.json (sae-lens directory)."
+    )
+
+
 if __name__ == "__main__":
 
     sae_path = "/mnt/20t/msy/models/gemma-scope-9b-it-res/layer_20/width_131k/average_l0_24"
-    sae, _ = load_gemma_2_sae(sae_path=sae_path, device="cuda:5")
-    llama_sae, _ = load_sae_from_dir("/mnt/20t/msy/shae/exp/llama-3.1-jumprelu-resid_post/layer_20/ef16")
+    sae, _, _ = load_npz_sae(sae_path=sae_path, device="cuda:5")
+    llama_sae, _, _ = load_sae_from_dir("/mnt/20t/msy/shae/exp/llama-3.1-jumprelu-resid_post/layer_20/ef16")
     import pdb;pdb.set_trace()

@@ -1,24 +1,13 @@
 import os
 import torch
-from ...vector_generators.lm_steer import Hack_no_grad
 from .apply_caa_hparam import ApplyCAAHyperParams
          
 def reset_caa_layers(model, layers):
-    """Reset only the CAA activations for specified layers"""
-    model=model.model
+    # We replace hardcoded hack_no_grad layer with a more flexible detection of the decoder layers, which is more robust to model and vLLM version changes.
+    # All reset_*_layers() are now the same implementation with detection. 
+    decoder_layers = model._decoder_layers()
     for layer in layers:
-        if hasattr(model, 'model') and (hasattr(model.model, 'layers') or (hasattr(model.model, 'module') and hasattr(model.model.module, 'layers'))):
-            if isinstance(model.model, Hack_no_grad):
-                model.model.module.layers[layer].reset(method_name="caa")
-            else:
-                model.model.layers[layer].reset(method_name="caa")
-        elif hasattr(model,'transformer') and hasattr(model.transformer, 'h') or (hasattr(model.transformer, 'module') and hasattr(model.transformer.module, 'h')):  # for GPT models
-            if isinstance(model.transformer, Hack_no_grad):
-                model.transformer.module.h[layer].reset(method_name="caa")
-            else:
-                model.transformer.h[layer].reset(method_name="caa")
-        else:
-            raise NotImplementedError("Failed to reset CAA activations")
+        decoder_layers[layer].reset(method_name="caa")
 
 def apply_caa(hparams: ApplyCAAHyperParams,pipline=None, vector=None):
     from ...models.get_model import get_model

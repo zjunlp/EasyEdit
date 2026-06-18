@@ -1,7 +1,2 @@
-"""
-STA vector generator subpackage.
-
-Keep this __init__ lightweight; import concrete implementations from modules.
-"""
-
-__all__ = []
+from .generate_sta_hparam import *
+from .generate_sta_vectors import *

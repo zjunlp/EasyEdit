@@ -35,17 +35,28 @@ def generate_merge_vector(hparams: MergeVectorHyperParams):
     """
     from ...utils.alg_dict import DTYPES_DICT
     # load the vectors
+    if not hparams.vector_paths:
+        raise ValueError("merge: hparams.vector_paths is empty; nothing to merge.")
     vectors = []
     for vector_path in hparams.vector_paths:
         assert os.path.exists(vector_path), f"Vector path {vector_path} does not exist"
         vector = torch.load(vector_path, map_location=hparams.device)
         vectors.append(vector)
-        
+
     weights = hparams.weights
     densities = hparams.densities
-    mask_dtype = DTYPES_DICT.get(hparams.torch_dtype, torch.float32)
-    kwargs = method_dict.get(hparams.method, {})
-    
+    if weights is not None and len(weights) != len(vectors):
+        raise ValueError(
+            f"merge: len(weights)={len(weights)} != number of vectors={len(vectors)}."
+        )
+    if densities is not None and len(densities) != len(vectors):
+        raise ValueError(
+            f"merge: len(densities)={len(densities)} != number of vectors={len(vectors)}."
+        )
+    mask_dtype = DTYPES_DICT.get(hparams.dtype, torch.float32)
+    # Copy so we never mutate the shared module-level method_dict across calls.
+    kwargs = dict(method_dict.get(hparams.method, {}))
+
     if "normalize" in kwargs:
         kwargs["normalize"] = hparams.normalize
 

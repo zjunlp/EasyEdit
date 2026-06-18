@@ -1,6 +1,6 @@
 # General 
 model_name_or_path: ../models/gemma-2-9b-base
-torch_dtype: bfloat16
+dtype: bfloat16
 device: cuda:2
 seed: 42
 use_chat_template: false
