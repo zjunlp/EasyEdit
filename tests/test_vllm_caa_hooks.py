@@ -291,4 +291,3 @@ def test_old_single_gpu_and_vllm_hook_style_add_same_vector():
     )
 
     assert fake_generate(model_a, hidden) == fake_generate(model_b, hidden)
-
