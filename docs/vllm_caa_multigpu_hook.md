@@ -1,7 +1,7 @@
 <!--
 Intent: Document the small PR surface for multi-GPU vLLM CAA steering hooks.
-Updated: 2026-06-18
-Commit: pending
+Updated: 2026-06-19
+Commit: df6f2cc
 -->
 
 # vLLM CAA Multi-GPU Hook
