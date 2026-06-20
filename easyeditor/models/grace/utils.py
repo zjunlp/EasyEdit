@@ -6,6 +6,7 @@ import datetime
 import struct
 from torch.nn.utils.rnn import pad_sequence
 import torch.nn.functional as F
+from ...util.multimodal import build_target_labels, count_media_items, get_batch_file_type
 
 def get_inner_params(named_parameters, inner_names):
     param_dict = dict(named_parameters)
@@ -89,7 +90,7 @@ def multimodal_tokenize(batch, processor, device, hparams):
     prompts = [item['prompt'] for item in batch]
     input_images = [item['image'] for item in batch]
     labels = [item['target'] for item in batch]
-    file_type = batch[0]['file_type']
+    file_type = get_batch_file_type(batch)
     mask_token = -100 # ignore_index of CrossEntropyLoss
     if file_type == "video":
         temp_prompt = [processor.apply_chat_template([
@@ -106,12 +107,10 @@ def multimodal_tokenize(batch, processor, device, hparams):
                                             tokenize=False) + l
                         for p, l in zip(prompts, labels)] 
     elif file_type in ["image", "single-image", "multi-image"]:
-        if file_type == "multi-image":
-            num_images = len(input_images[0])
-        else:
-            num_images = 1
-        
-        temp_prompt = [processor.apply_chat_template([
+        temp_prompt = []
+        for p, l, img in zip(prompts, labels, input_images):
+            num_images = count_media_items(img, file_type)
+            temp_prompt.append(processor.apply_chat_template([
                                 {
 
                                     "role": "user",
@@ -119,8 +118,7 @@ def multimodal_tokenize(batch, processor, device, hparams):
                                 },
                             ],
                                             add_generation_prompt=True,
-                                            tokenize=False)  + l
-                        for p, l in zip(prompts, labels)]
+                                            tokenize=False) + l)
     else:
         raise AssertionError("Not support file type: {}".format(file_type))
     
@@ -128,16 +126,11 @@ def multimodal_tokenize(batch, processor, device, hparams):
     if file_type in ["image", "single-image", "multi-image"]:
         multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
     elif file_type == "video":
-        multimodal_inputs = processor(videos=input_images[0], text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+        multimodal_inputs = processor(videos=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
         
     
     tokens = multimodal_inputs
     
-    targets = processor.tokenizer(labels[0], add_special_tokens=False,
-                    return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
-
-    labels_ids = torch.full_like(multimodal_inputs["input_ids"], -100)
-    labels_ids[:, -targets.size(1):] = targets
-    tokens["labels"] = labels_ids
+    tokens["labels"] = build_target_labels(multimodal_inputs["input_ids"], processor.tokenizer, labels)
     tokens = tokens.to(device)
     return tokens

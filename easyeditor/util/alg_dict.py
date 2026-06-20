@@ -54,6 +54,19 @@ ALG_DICT = {
     "SimIE": apply_simie_to_model
 }
 
+MULTIMODAL_EDIT_ALGS = {
+    'MEND',
+    'SERAC',
+    'SERAC_MULTI',
+    'IKE',
+    'LoRA',
+    'WISE',
+    'GRACE',
+}
+
+# Multimodal edit entry points. This is intentionally broader than the
+# multimodal training registry in alg_train_dict.py: several methods support
+# applying edits/evaluation only, but do not expose a trainer implementation.
 ALG_MULTIMODAL_DICT = {
     'MEND': MendMultimodalRewriteExecutor().apply_to_model,
     'SERAC': SeracMultimodalRewriteExecutor().apply_to_model,

@@ -5,6 +5,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoProcessor
 
 from ...util.device import normalize_device
+from ...util.multimodal import build_target_labels, count_media_items, get_batch_file_type
 from .lora_hparams import LoRAHyperParams
 from .lora_multimodal_hparams import LoRAMultimodalHyperParams
 
@@ -260,7 +261,7 @@ def execute_multimodal_lora(
     # Define inputs
     prompts = [r["prompt"] for r in requests]
     labels = [r["target"] for r in requests]
-    file_type = requests[0]['file_type']
+    file_type = get_batch_file_type(requests)
     input_images = [r['image'] for r in requests]
     loss_meter = AverageMeter()
     
@@ -270,8 +271,10 @@ def execute_multimodal_lora(
         print(20 * "=")
         loss_meter.reset()
 
-        for txt, tgt in zip(
-                chunks(prompts, hparams.batch_size), chunks(labels, hparams.batch_size)
+        for txt, tgt, imgs in zip(
+                chunks(prompts, hparams.batch_size),
+                chunks(labels, hparams.batch_size),
+                chunks(input_images, hparams.batch_size),
         ):
             mask_token = -100
             opt.zero_grad()
@@ -290,15 +293,13 @@ def execute_multimodal_lora(
                                         ],
                                                         add_generation_prompt=True,
                                                         tokenize=False) + l
-                                    for p, l in zip(prompts, labels)]
+                                    for p, l in zip(txt, tgt)]
                     
                 elif file_type in ["image", "single-image", "multi-image"]:
-                    if file_type == "multi-image":
-                        num_images = len(input_images[0])
-                    else:
-                        num_images = 1
-                    
-                    temp_prompt = [processor.apply_chat_template([
+                    temp_prompt = []
+                    for p, l, img in zip(txt, tgt, imgs):
+                        num_images = count_media_items(img, file_type)
+                        temp_prompt.append(processor.apply_chat_template([
                                             {
 
                                                 "role": "user",
@@ -306,25 +307,19 @@ def execute_multimodal_lora(
                                             },
                                         ],
                                                         add_generation_prompt=True,
-                                                        tokenize=False)  + l
-                                    for p, l in zip(prompts, labels)]              
+                                                        tokenize=False) + l)
                 else:
                     raise AssertionError("Not support file type: {}".format(file_type))
                 
                 full_prompt = temp_prompt
                 if file_type in ["image", "single-image", "multi-image"]:
-                    multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+                    multimodal_inputs = processor(images=imgs, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
                 elif file_type == "video":
-                    multimodal_inputs = processor(videos=input_images[0], text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+                    multimodal_inputs = processor(videos=imgs, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
                     
                 tokens = multimodal_inputs
-                            
-            targets = processor.tokenizer(labels[0], add_special_tokens=False,
-                     return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
-    
-            labels_ids = torch.full_like(multimodal_inputs["input_ids"], -100)
-            labels_ids[:, -targets.size(1):] = targets
-            tokens["labels"] = labels_ids
+
+            tokens["labels"] = build_target_labels(multimodal_inputs["input_ids"], processor.tokenizer, tgt)
             
             tokens = tokens.to(device)
             pred = peft_model(**tokens)
