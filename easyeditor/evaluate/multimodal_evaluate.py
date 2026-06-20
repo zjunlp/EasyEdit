@@ -28,6 +28,40 @@ from .evaluate_utils import (
 from .metric_meta import attach_metric_meta, build_multimodal_metric_meta
 
 
+def _move_tensor_to_device(value, device):
+    if torch.is_tensor(value):
+        return value if value.is_cuda else value.to(device)
+    return value
+
+
+def _is_hf_multimodal_model(model_name):
+    name = (model_name or "").lower()
+    return "llava-onevision" in name or "qwen2-vl" in name or "qwen3-vl" in name or "qwen3.5" in name or "qwen3_5" in name or "qwen3-5" in name
+
+
+def _build_hf_target_labels(input_ids, tokenizer, targets):
+    target_tokens = tokenizer(
+        list(targets),
+        add_special_tokens=False,
+        return_tensors="pt",
+        padding=True,
+    )
+    target_ids = target_tokens["input_ids"].to(input_ids.device)
+    target_mask = target_tokens.get("attention_mask")
+    if target_mask is None:
+        target_mask = torch.ones_like(target_ids)
+    target_mask = target_mask.to(input_ids.device).bool()
+
+    labels = torch.full_like(input_ids, -100)
+    for row_idx in range(input_ids.size(0)):
+        valid_target = target_ids[row_idx][target_mask[row_idx]]
+        if valid_target.numel() == 0:
+            continue
+        valid_target = valid_target[-input_ids.size(1):]
+        labels[row_idx, -valid_target.numel():] = valid_target
+    return labels
+
+
 
 def compute_icl_multimodal_edit_quality(
         model,
@@ -58,17 +92,18 @@ def compute_icl_multimodal_edit_quality(
     # First, unpack rewrite evaluation record.
     target = record["target"]
     prompt = record["prompt"]
-    image = record["image"] if record["image"].is_cuda else record["image"].to(target_device)
+    file_type = record.get("file_type", "image")
+    image = _move_tensor_to_device(record["image"], target_device)
     rephrase = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
     rephrase_image = record["image_rephrase"] if 'image_rephrase' in record.keys() else None
     if rephrase_image is not None:
-        rephrase_image = rephrase_image if rephrase_image.is_cuda else rephrase_image.to(target_device)
+        rephrase_image = _move_tensor_to_device(rephrase_image, target_device)
 
     if "locality_prompt" in record.keys():
         loc_q = record["locality_prompt"]
         loc_a = record["locality_ground_truth"]
     if "multimodal_locality_image" in record.keys():
-        m_loc_image = record["multimodal_locality_image"] if record["multimodal_locality_image"].is_cuda else record["multimodal_locality_image"].to(target_device)
+        m_loc_image = _move_tensor_to_device(record["multimodal_locality_image"], target_device)
         m_loc_q = record["multimodal_locality_prompt"]
         m_loc_a = record["multimodal_locality_ground_truth"]
 
@@ -76,10 +111,10 @@ def compute_icl_multimodal_edit_quality(
 
     if pre_edit:
         edit_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                             target, prompt, image)
+                                             target, prompt, image, file_type=file_type)
     else:
         edit_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                             target, new_fact, image)
+                                             target, new_fact, image, file_type=file_type)
     ret = {
         f"rewrite_acc": edit_acc
     }
@@ -100,7 +135,7 @@ def compute_icl_multimodal_edit_quality(
     )
     if rephrase is not None:
         rephrase_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                                 target, f'New Fact: {prompt} {target}\nPrompt: {rephrase}', image)
+                                                 target, f'New Fact: {prompt} {target}\nPrompt: {rephrase}', image, file_type=file_type)
         ret['rephrase_acc'] = rephrase_acc
         attach_metric_meta(
             ret,
@@ -119,7 +154,7 @@ def compute_icl_multimodal_edit_quality(
 
     if "image_rephrase" in record.keys():
         rephrase_image_acc, _ = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                                       target, new_fact, rephrase_image)
+                                                       target, new_fact, rephrase_image, file_type=file_type)
         ret['rephrase_image_acc'] = rephrase_image_acc
         attach_metric_meta(
             ret,
@@ -139,19 +174,19 @@ def compute_icl_multimodal_edit_quality(
     if "locality_prompt" in record.keys():
         if pre_edit:
             _, _, locality_output = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                                           loc_a, loc_q, None, is_loc=True)
+                                                           loc_a, loc_q, None, is_loc=True, file_type="text")
         else:
             _, _, locality_output = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                                           loc_a, f'New Fact: {prompt} {target}\nPrompt: {loc_q}', None, is_loc=True)
+                                                           loc_a, f'New Fact: {prompt} {target}\nPrompt: {loc_q}', None, is_loc=True, file_type="text")
         ret['locality_output'] = locality_output
 
     if "multimodal_locality_image" in record.keys():
         if pre_edit:
             _, _, locality_image_output = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                                                 m_loc_a, m_loc_q, m_loc_image, is_loc=True)
+                                                                 m_loc_a, m_loc_q, m_loc_image, is_loc=True, file_type="image")
         else:
             _, _, locality_image_output = icl_multimodal_lm_eval(model, model_name, hparams, tok, icl_examples,
-                                                                 m_loc_a, f'New Fact: {prompt} {target}\nPrompt: {m_loc_q}', m_loc_image, is_loc=True)
+                                                                 m_loc_a, f'New Fact: {prompt} {target}\nPrompt: {m_loc_q}', m_loc_image, is_loc=True, file_type="image")
         ret['multimodal_locality_output'] = locality_image_output
 
     return ret
@@ -166,10 +201,18 @@ def icl_multimodal_lm_eval(
         x,
         image,
         is_loc=False,
-        neighborhood=False )-> typing.Dict:
+        neighborhood=False,
+        file_type=None )-> typing.Dict:
     device = normalize_device(getattr(hparams, "device", None))
 
-    samples = prepare_multimodal_edit(hparams, tokenizer, target, [''.join(icl_examples) + f'{x}'], image)
+    prompts = [''.join(icl_examples) + f'{x}']
+    if _is_hf_multimodal_model(model_name):
+        resolved_file_type = file_type or ("text" if image is None else "image")
+        samples = prepare_multimodal_hf_edit(hparams, tokenizer, target, prompts, image, resolved_file_type)
+        return compute_multimodal_hf_edit_quality(model, samples, tokenizer, hparams.exact_match) if not is_loc else compute_multimodal_hf_edit_quality_demo(
+            model, samples, tokenizer, hparams.exact_match)
+
+    samples = prepare_multimodal_edit(hparams, tokenizer, target, prompts, image)
 
     # return compute_multimodal_edit_quality(model, samples, hparams.exact_match)
     return compute_multimodal_edit_quality(model, samples,
@@ -277,7 +320,8 @@ def prepare_multimodal_hf_edit(hparams,
                 },
             ], add_generation_prompt=True, tokenize=False)
 
-            if "qwen2-vl" in hparams.model_name.lower() and "|vision_start|" not in chat:
+            model_name = getattr(hparams, "model_name", "").lower()
+            if ("qwen2-vl" in model_name or "qwen3-vl" in model_name or "qwen3.5" in model_name or "qwen3_5" in model_name or "qwen3-5" in model_name) and "|vision_start|" not in chat:
                 image_token = "<|vision_start|><|image_pad|><|vision_end|>"
                 chat = image_token * num_images + chat
 
@@ -287,17 +331,13 @@ def prepare_multimodal_hf_edit(hparams,
     
     device = normalize_device(getattr(hparams, "device", None))
     if file_type in ["image", "single-image", "multi-image"]:
-        multimodal_inputs = processor(images=images_list, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
+        multimodal_inputs = processor(images=images_list, text=text_input, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
     elif file_type == "video":
-        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
+        multimodal_inputs = processor(videos=image, text=text_input, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
     elif file_type == "text":
-        multimodal_inputs = processor(text=text_input, return_tensors="pt").to(device, dtype=hparams.dtype)
-    
-    targets = processor.tokenizer(targets, add_special_tokens=False,
-                     return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
+        multimodal_inputs = processor(text=text_input, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
 
-    labels = torch.full_like(multimodal_inputs["input_ids"], -100)
-    labels[:, -targets.size(1):] = targets
+    labels = _build_hf_target_labels(multimodal_inputs["input_ids"], processor.tokenizer, targets)
     
     ret = {
         'multimodal_inputs': multimodal_inputs,
