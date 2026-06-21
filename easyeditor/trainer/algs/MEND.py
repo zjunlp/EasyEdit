@@ -2,7 +2,6 @@ import copy
 import logging
 from collections import defaultdict
 
-import higher
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -26,6 +25,118 @@ from .hooks import hook_model
 from ..utils import _inner_params, _logits
 
 LOG = logging.getLogger(__name__)
+
+
+def _get_parent_module(model: nn.Module, param_name: str):
+    parent_name, child_name = param_name.rsplit(".", 1)
+    if hasattr(model, "get_submodule"):
+        return model.get_submodule(parent_name), child_name
+
+    parent = model
+    for comp in parent_name.split("."):
+        parent = getattr(parent, comp)
+    return parent, child_name
+
+
+def _shallow_clone_module(module: nn.Module, clean_forward_attrs: bool = True):
+    cloned = copy.copy(module)
+    cloned._modules = copy.copy(module._modules)
+    if clean_forward_attrs:
+        _clean_accelerate_forward_attrs(cloned)
+    return cloned
+
+
+def _clone_module_path(root: nn.Module, path: str, cloned_modules: dict):
+    if path in cloned_modules:
+        return cloned_modules[path]
+
+    if "." in path:
+        parent_path, child_name = path.rsplit(".", 1)
+        parent_clone = _clone_module_path(root, parent_path, cloned_modules)
+    else:
+        parent_path, child_name = "", path
+        parent_clone = cloned_modules[""]
+
+    original_child = root.get_submodule(path)
+    child_clone = _shallow_clone_module(original_child)
+    parent_clone._modules[child_name] = child_clone
+    cloned_modules[path] = child_clone
+    return child_clone
+
+
+def _clean_accelerate_forward_attrs(module: nn.Module):
+    for attr in ("forward", "_old_forward", "_hf_hook"):
+        if attr in module.__dict__:
+            del module.__dict__[attr]
+
+
+def _make_child_functional_model(model: nn.Module, updates, config):
+    edited_model = _shallow_clone_module(model)
+    cloned_modules = {"": edited_model}
+    module_updates = defaultdict(dict)
+    patcher = (
+        _make_functional
+        if "minigpt4" in config.model_name.lower() or "blip" in config.model_name.lower()
+        else monkeypatch
+    )
+
+    for n, p in _inner_params(model.named_parameters(), config.inner_params):
+        module_name, param_name = n.rsplit(".", 1)
+        module_updates[module_name][param_name] = (p, updates[n])
+
+    for module_name, param_updates in module_updates.items():
+        if "." in module_name:
+            parent_path, child_name = module_name.rsplit(".", 1)
+            parent = _clone_module_path(model, parent_path, cloned_modules)
+        else:
+            parent, child_name = edited_model, module_name
+
+        original_child = model.get_submodule(module_name)
+        first_param = next(iter(param_updates.values()))[0]
+        patched_child = patcher(original_child, device=first_param.device, in_place=False)
+        _clean_accelerate_forward_attrs(patched_child)
+
+        new_params = []
+        for local_name, child_param in patched_child.named_parameters():
+            if local_name in param_updates:
+                p, update = param_updates[local_name]
+                new_params.append(p + update.to(p.dtype))
+            else:
+                new_params.append(child_param)
+        patched_child.update_params(new_params)
+        parent._modules[child_name] = patched_child
+
+    return edited_model
+
+
+def _model_forward(model: nn.Module, config, *inputs, **kwargs):
+    model_name = config.model_name.lower()
+    text_model_families = (
+        "gpt",
+        "llama",
+        "chatglm2",
+        "internlm",
+        "qwen",
+        "mistral",
+    )
+
+    if "minigpt4" in model_name or "blip" in model_name:
+        return model(*inputs, **kwargs)
+
+    if "llava-onevision" in model_name or "qwen2-vl" in model_name:
+        multimodal_inputs = inputs[0]
+        return model(**multimodal_inputs)
+
+    if any(family in model_name for family in text_model_families):
+        logits = _logits(
+            model(
+                input_ids=kwargs["input_ids"],
+                attention_mask=kwargs["attention_mask"],
+            )
+        )
+        return logits.to(kwargs["input_ids"].device)
+
+    return _logits(model(**kwargs))
 
 
 def update_counter(x, m, s, k):
@@ -260,32 +371,7 @@ class MEND(EditableModel):
         return res
 
     def forward(self, *inputs, **kwargs):
-        if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
-            outputs = self.model(*inputs, **kwargs)
-        elif is_hf_multimodal_model(self.config.model_name):
-            multimodal_inputs = inputs[0]
-            outputs = self.model(**multimodal_inputs)
-        elif 'gpt' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'llama' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'chatglm2' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'internlm' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'qwen' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        elif 'mistral' in self.config.model_name.lower():
-            outputs = _logits(self.model(input_ids=kwargs['input_ids'], attention_mask=kwargs['attention_mask']))
-            # outputs = outputs[:, -kwargs['labels'].shape[-1]:, :]
-        else:
-            outputs = _logits(self.model(**kwargs))
-        return outputs
+        return _model_forward(self.model, self.config, *inputs, **kwargs)
     
     def outer_parameters(self):
         return list(self.mend.parameters()) + [self.edit_lrs]
@@ -402,21 +488,7 @@ class MEND(EditableModel):
         assert len(self.edit_lrs) == len(list(mean_grads.items()))
         updates = {n: lr * g for lr, (n, g) in zip(self.edit_lrs, mean_grads.items())}
 
-        edited_model = self.model
-        if not isinstance(edited_model, higher.patch._MonkeyPatchBase):
-            if 'minigpt4' in self.config.model_name.lower() or 'blip' in self.config.model_name.lower():
-                edited_model = _make_functional(edited_model, in_place=True)
-            else:
-                edited_model = monkeypatch(edited_model, in_place=True)
-
-        new_params = []
-        for n, p in edited_model.named_parameters():
-            if n in pset:
-                new_params.append(p + updates[n].to(p.dtype))
-            else:
-                new_params.append(p)
-
-        edited_model.update_params(new_params)
+        edited_model = _make_child_functional_model(self.model, updates, self.config)
 
         if detach_history:
             new_model = self.model_constructor()
