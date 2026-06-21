@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import List, Optional
 import yaml
 
@@ -40,6 +40,7 @@ class IKEMultimodalHyperParams(HyperParams):
     # Method
     k: int # K icl examples
     results_dir: str
+    template: str
 
     # Module templates
     device: int
@@ -49,6 +50,8 @@ class IKEMultimodalHyperParams(HyperParams):
     tokenizer_class: str
     tokenizer_name: str
     sentence_model_name: str
+    model_parallel: bool
+    use_chat_template: bool
 
     ## Multimodal
     task_name: str
@@ -58,7 +61,7 @@ class IKEMultimodalHyperParams(HyperParams):
     
     # Image_dir
     coco_image: str
-    rephrase_image: str  
+    rephrase_image: str
     exact_match: bool = False
     pretrained_ckpt: Optional[str] = None  
     
@@ -74,4 +77,32 @@ class IKEMultimodalHyperParams(HyperParams):
 
         assert (config and config['alg_name'] == 'IKE') or print(f'IKEMultimodalHyperParams can not load from {hparams_name_or_path}, '
                                                 f'alg_name is {config["alg_name"]} ')
+        defaults = {
+            "k": 16,
+            "results_dir": "./results",
+            "template": "New Fact: {prompt} {target}\nPrompt: {prompt}\n\n",
+            "device": 0,
+            "name": config.get("model_name", "."),
+            "tokenizer_class": ".",
+            "tokenizer_name": ".",
+            "sentence_model_name": "./hugging_cache/all-MiniLM-L6-v2",
+            "model_parallel": False,
+            "use_chat_template": True,
+            "task_name": "multimodal",
+            "qformer_checkpoint": ".",
+            "qformer_name_or_path": ".",
+            "state_dict_file": ".",
+            "coco_image": ".",
+            "rephrase_image": ".",
+        }
+        for key, value in defaults.items():
+            config.setdefault(key, value)
+
+        allowed_keys = {field.name for field in fields(cls)}
+        unexpected_keys = sorted(set(config) - allowed_keys)
+        if unexpected_keys:
+            raise ValueError(
+                "Unexpected IKEMultimodalHyperParams keys in "
+                f"{hparams_name_or_path}: {unexpected_keys}"
+            )
         return cls(**config)
