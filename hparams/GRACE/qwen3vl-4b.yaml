@@ -1,0 +1,19 @@
+alg_name: "GRACE"
+model_name: "/mnt/20t/xuhaoming/models/Qwen3-VL-4B-Instruct"
+device: 0
+
+inner_params:
+- model.language_model.layers[23].mlp.down_proj.weight
+
+edit_lr: 1.0
+n_iter: 20
+eps: 1.0
+dist_fn: euc
+val_init: cold
+val_train: sgd
+val_reg: None
+reg: early_stop
+replacement: replace_last
+eps_expand: coverage
+num_pert: 8
+dropout: 0.0
