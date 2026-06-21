@@ -37,6 +37,7 @@ from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
 from ..util.device import copy_to_param, normalize_device
+from ..util.multimodal import topk_token_match
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -50,6 +51,50 @@ def make_logs():
     f_h, s_h = get_handler("logs/", log_name='run.log')
     LOG.addHandler(f_h)
     LOG.addHandler(s_h)
+
+
+def attach_topk_locality_metrics(metrics):
+    if 'locality_output' in metrics['post'].keys():
+        assert len(metrics['post']['locality_output']) == \
+                len(metrics['pre']['locality_output'])
+        metrics['post']['locality_acc'] = topk_token_match(
+            metrics['pre']['locality_output'],
+            metrics['post']['locality_output'],
+            k=1,
+        )
+        attach_metric_meta(
+            metrics['post'],
+            "locality.text",
+            build_multimodal_locality_metric_meta(
+                result_key="locality_acc",
+                protocol="pre_post_top1_token_match",
+                scorer="top1_token_match",
+                comparable_group="locality.multimodal.pre_post_top1_token_match",
+            ),
+        )
+        metrics['post'].pop('locality_output')
+        metrics['pre'].pop('locality_output')
+
+    if 'multimodal_locality_output' in metrics['post'].keys():
+        assert len(metrics['post']['multimodal_locality_output']) == \
+                len(metrics['pre']['multimodal_locality_output'])
+        metrics['post']['multimodal_locality_acc'] = topk_token_match(
+            metrics['pre']['multimodal_locality_output'],
+            metrics['post']['multimodal_locality_output'],
+            k=10,
+        )
+        attach_metric_meta(
+            metrics['post'],
+            "locality.image",
+            build_multimodal_locality_metric_meta(
+                result_key="multimodal_locality_acc",
+                protocol="pre_post_top10_token_match",
+                scorer="top10_token_match",
+                comparable_group="locality.multimodal.pre_post_top10_token_match",
+            ),
+        )
+        metrics['post'].pop('multimodal_locality_output')
+        metrics['pre'].pop('multimodal_locality_output')
 
 
 class MultimodalEditor:
@@ -294,43 +339,7 @@ class MultimodalEditor:
                             "pre": pre_edit_cache[i]
                         }
                                 
-                if 'locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['locality_output']) == \
-                            len(metrics['pre']['locality_output'])
-                    base_logits = torch.tensor(metrics['pre']['locality_output']).to(torch.float32)
-                    post_logits = torch.tensor(metrics['post']['locality_output']).to(torch.float32)
-                    metrics['post']['locality_acc'] = sum(post_logits.view(-1) == base_logits.view(-1))/base_logits.view(-1).shape[0]
-                    attach_metric_meta(
-                        metrics['post'],
-                        "locality.text",
-                        build_multimodal_locality_metric_meta(
-                            result_key="locality_acc",
-                            protocol="pre_post_full_logits_exact_match",
-                            scorer="logits_exact_match",
-                            comparable_group="locality.multimodal.full_logits_exact_match",
-                        ),
-                    )
-                    metrics['post'].pop('locality_output')
-                    metrics['pre'].pop('locality_output')
-                    
-                if 'multimodal_locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['multimodal_locality_output']) == \
-                            len(metrics['pre']['multimodal_locality_output'])
-                    base_image_logits = torch.tensor(metrics['pre']['multimodal_locality_output']).to(torch.float32)
-                    post_image_logits = torch.tensor(metrics['post']['multimodal_locality_output']).to(torch.float32)
-                    metrics['post']['multimodal_locality_acc'] = sum(post_image_logits.view(-1) == base_image_logits.view(-1))/post_image_logits.view(-1).shape[0]
-                    attach_metric_meta(
-                        metrics['post'],
-                        "locality.image",
-                        build_multimodal_locality_metric_meta(
-                            result_key="multimodal_locality_acc",
-                            protocol="pre_post_full_logits_exact_match",
-                            scorer="logits_exact_match",
-                            comparable_group="locality.multimodal.full_logits_exact_match",
-                        ),
-                    )
-                    metrics['post'].pop('multimodal_locality_output')
-                    metrics['pre'].pop('multimodal_locality_output')
+                attach_topk_locality_metrics(metrics)
 
                 LOG.info(f"Evaluation took {time() - start}")
                 all_metrics.append(metrics)
@@ -422,43 +431,7 @@ class MultimodalEditor:
                         }   
                      
                     
-                if 'locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['locality_output']) == \
-                            len(metrics['pre']['locality_output'])
-                    base_logits = torch.tensor(metrics['pre']['locality_output']).to(torch.float32)
-                    post_logits = torch.tensor(metrics['post']['locality_output']).to(torch.float32)
-                    metrics['post']['locality_acc'] = sum(post_logits.view(-1) == base_logits.view(-1))/base_logits.view(-1).shape[0]
-                    attach_metric_meta(
-                        metrics['post'],
-                        "locality.text",
-                        build_multimodal_locality_metric_meta(
-                            result_key="locality_acc",
-                            protocol="pre_post_full_logits_exact_match",
-                            scorer="logits_exact_match",
-                            comparable_group="locality.multimodal.full_logits_exact_match",
-                        ),
-                    )
-                    metrics['post'].pop('locality_output')
-                    metrics['pre'].pop('locality_output')
-                    
-                if 'multimodal_locality_output' in metrics['post'].keys():
-                    assert len(metrics['post']['multimodal_locality_output']) == \
-                            len(metrics['pre']['multimodal_locality_output'])
-                    base_image_logits = torch.tensor(metrics['pre']['multimodal_locality_output']).to(torch.float32)
-                    post_image_logits = torch.tensor(metrics['post']['multimodal_locality_output']).to(torch.float32)
-                    metrics['post']['multimodal_locality_acc'] = sum(post_image_logits.view(-1) == base_image_logits.view(-1))/post_image_logits.view(-1).shape[0]
-                    attach_metric_meta(
-                        metrics['post'],
-                        "locality.image",
-                        build_multimodal_locality_metric_meta(
-                            result_key="multimodal_locality_acc",
-                            protocol="pre_post_full_logits_exact_match",
-                            scorer="logits_exact_match",
-                            comparable_group="locality.multimodal.full_logits_exact_match",
-                        ),
-                    )
-                    metrics['post'].pop('multimodal_locality_output')
-                    metrics['pre'].pop('multimodal_locality_output')
+                attach_topk_locality_metrics(metrics)
 
 
                 LOG.info(f"Evaluation took {time() - start}")
@@ -567,57 +540,7 @@ class MultimodalEditor:
                 #     "pre": compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
                 #                                         request, self.hparams.device)
                 # }
-            if 'locality_output' in metrics['post'].keys():
-                assert len(metrics['post']['locality_output']) == \
-                        len(metrics['pre']['locality_output'])
-                base_logits = metrics['pre']['locality_output'].to(torch.float32)
-                post_logits = metrics['post']['locality_output'].to(torch.float32)
-                if post_logits.shape[1] > base_logits.shape[1]:
-                    post_logits = post_logits[:, -base_logits.shape[1]:, :]
-                else:
-                    base_logits = base_logits[:, -post_logits.shape[1]:, :]
-
-                base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_logits, dim=-1), k=1, dim=-1).indices
-                post_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_logits, dim=-1), k=1, dim=-1).indices
-                metrics['post']['locality_acc'] = sum(post_base_logits_softmax_top_k.view(-1) == base_logits_softmax_top_k.view(-1))/post_base_logits_softmax_top_k.view(-1).shape[0]
-                attach_metric_meta(
-                    metrics['post'],
-                    "locality.text",
-                    build_multimodal_locality_metric_meta(
-                        result_key="locality_acc",
-                        protocol="pre_post_top1_token_match",
-                        scorer="top1_token_match",
-                        comparable_group="locality.multimodal.pre_post_top1_token_match",
-                    ),
-                )
-                metrics['post'].pop('locality_output')
-                metrics['pre'].pop('locality_output')
-                
-            if 'multimodal_locality_output' in metrics['post'].keys():
-                assert len(metrics['post']['multimodal_locality_output']) == \
-                        len(metrics['pre']['multimodal_locality_output'])
-                base_image_logits = metrics['pre']['multimodal_locality_output'].to(torch.float32)
-                post_image_logits = metrics['post']['multimodal_locality_output'].to(torch.float32)
-                if post_image_logits.shape[1] > base_image_logits.shape[1]:
-                    post_image_logits = post_image_logits[:, -base_image_logits.shape[1]:, :]
-                else:
-                    base_image_logits = base_image_logits[:, -post_image_logits.shape[1]:, :]
-
-                base_image_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(base_image_logits, dim=-1), k=10, dim=-1).indices
-                post_image_base_logits_softmax_top_k = torch.topk(torch.nn.functional.softmax(post_image_logits, dim=-1), k=10, dim=-1).indices
-                metrics['post']['multimodal_locality_acc'] = sum(post_image_base_logits_softmax_top_k.view(-1) == base_image_logits_softmax_top_k.view(-1))/post_image_base_logits_softmax_top_k.view(-1).shape[0]
-                attach_metric_meta(
-                    metrics['post'],
-                    "locality.image",
-                    build_multimodal_locality_metric_meta(
-                        result_key="multimodal_locality_acc",
-                        protocol="pre_post_top10_token_match",
-                        scorer="top10_token_match",
-                        comparable_group="locality.multimodal.pre_post_top10_token_match",
-                    ),
-                )
-                metrics['post'].pop('multimodal_locality_output')
-                metrics['pre'].pop('multimodal_locality_output')
+            attach_topk_locality_metrics(metrics)
 
             LOG.info(f"Evaluation took {time() - start}")
 

@@ -12,6 +12,7 @@ import datetime
 import struct
 from torch.nn.utils.rnn import pad_sequence
 import torch.nn.functional as F
+from ...util.multimodal import build_target_labels, count_media_items, get_batch_file_type
 
 def get_inner_params(named_parameters, inner_names):
     param_dict = dict(named_parameters)
@@ -95,7 +96,7 @@ def multimodal_tokenize(batch, processor, device, hparams):
     prompts = [item['prompt'] for item in batch]
     input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
     labels = [item['target'] for item in batch]
-    file_type = batch[0]['file_type']
+    file_type = get_batch_file_type(batch)
     mask_token = -100 # ignore_index of CrossEntropyLoss
     if file_type == "video":
         temp_prompt = [processor.apply_chat_template([

@@ -7,6 +7,7 @@ from ...util.vl_utils import (
 import torch
 import os
 import struct
+from ...util.multimodal import build_target_labels, count_media_items, get_batch_file_type
 
 CONTEXT_TEMPLATES_CACHE = None
 
@@ -150,7 +151,7 @@ def blip2_multimodal_tokenize(batch, processor, device, context_templates=None, 
     prompts = [item['prompt'] for item in batch]   # src
     input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
     labels = [item['target'] for item in batch]    # trg
-    file_type = batch[0]['file_type']
+    file_type = get_batch_file_type(batch)
     loc_prompts = [item['locality_prompt'] for item in batch]
     loc_prompts_labels = [item['locality_ground_truth'] for item in batch]
 
@@ -248,7 +249,7 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
     prompts = [item['prompt'] for item in batch]
     input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
     labels = [item['target'] for item in batch]
-    file_type = batch[0]['file_type']
+    file_type = get_batch_file_type(batch)
     loc_prompts = [item['locality_prompt'] for item in batch]
     loc_prompts_labels = [item['locality_ground_truth'] for item in batch]
 
@@ -319,17 +320,19 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
         prompt_ids = processor.tokenizer([f"{templ.format(p)}" for templ in context_templates for p in prompts], return_tensors="pt", padding=True, truncation=True)["input_ids"]
     
     full_prompt = temp_prompt + chat_loc_prompts
-    num_prompt_toks = [len(i) for i in prompt_ids]
-    tokens = processor(text=full_prompt, return_tensors="pt", padding=True, truncation=True)
-    tokens["labels"] = tokens["input_ids"].clone()
 
-    # Mask the tokens based on hparams.objective_optimization
-    if hparams.objective_optimization == 'only_label':
-        for i in range(len(num_prompt_toks)):
-            tokens["labels"][i][:num_prompt_toks[i]] = mask_token
-    
-    # print(tokens["input_ids"])
-    # print(tokens["labels"])
+    if file_type in ["image", "single-image", "multi-image"]:
+        multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
+    elif file_type == "video":
+        multimodal_inputs = processor(videos=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
+
+    tokens = {
+        key: val
+        for key, val in multimodal_inputs.items()
+        if torch.is_tensor(val)
+    }
+    tokens["labels"] = build_target_labels(tokens["input_ids"], processor.tokenizer, labels + loc_prompts_labels)
+
     act_masks = []
     deact_masks = []
     # Iterate through each batch entry and compute act_mask, deact_mask
@@ -345,9 +348,10 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
                 if start_idx is None:
                     start_idx = find_sublist_start_index(token.detach().cpu().numpy().tolist(), subject_token1)
                     subject_length = len(subject_token1)
-                act_mask[j][start_idx: start_idx + subject_length] = 1
-                deact_mask[j][:start_idx] = 1
-                deact_mask[j][start_idx + subject_length:] = 1
+                if start_idx is not None:
+                    act_mask[j][start_idx: start_idx + subject_length] = 1
+                    deact_mask[j][:start_idx] = 1
+                    deact_mask[j][start_idx + subject_length:] = 1
         else:  # General Editing
             act_mask = None
             deact_mask = None
@@ -446,4 +450,3 @@ def get_context_templates(model, tok, length_params, device):
         # print(f"Cached context templates {CONTEXT_TEMPLATES_CACHE}")
 
     return CONTEXT_TEMPLATES_CACHE
-

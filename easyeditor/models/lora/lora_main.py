@@ -266,7 +266,7 @@ def execute_multimodal_lora(
     # Define inputs
     prompts = [r["prompt"] for r in requests]
     labels = [r["target"] for r in requests]
-    file_type = requests[0]['file_type']
+    file_type = get_batch_file_type(requests)
     input_images = [r['image'] for r in requests]
     loss_meter = AverageMeter()
 
