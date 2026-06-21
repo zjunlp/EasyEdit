@@ -20,7 +20,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
-from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration, Qwen2VLForConditionalGeneration
+from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration
+from ..util.vl_utils import get_qwen_vl_model_class, is_hf_multimodal_model, is_qwen_vl_model, qwen_vl_model_family
 
 from ..util.globals import *
 from .batch_editor import BatchEditor
@@ -198,17 +199,18 @@ class MultimodalEditor:
                 self.tok = AutoProcessor.from_pretrained(hparams.model_name)
                 self.model_name = "llava-onevision"
 
-            elif "qwen2-vl" in hparams.model_name.lower():
+            elif is_qwen_vl_model(hparams.model_name):
                 if not hasattr(hparams, 'dtype'):
                     hparams.dtype = torch.float32
-                self.model = Qwen2VLForConditionalGeneration.from_pretrained(
-                    hparams.model_name, 
+                ModelClass = get_qwen_vl_model_class(hparams.model_name)
+                self.model = ModelClass.from_pretrained(
+                    hparams.model_name,
                     torch_dtype=hparams.dtype,
                     # attn_implementation="flash_attention_2"
                 )
                 self.vis_tok = Qwen2VLProcessor()
                 self.tok = AutoProcessor.from_pretrained(hparams.model_name)
-                self.model_name = "qwen2-vl"
+                self.model_name = qwen_vl_model_family(hparams.model_name)
                 
         else:
             self.model, self.tok = self.model_name
@@ -272,7 +274,7 @@ class MultimodalEditor:
                     if self.model_name in ['minigpt4', 'blip2']:
                         pre_result = compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
                                                                 request, self.hparams.device)
-                    elif self.model_name in ['llava-onevision', 'qwen2-vl']:
+                    elif is_hf_multimodal_model(self.model_name):
                         pre_result = compute_multimodal_hf_edit_results(self.model, self.model_name, self.hparams, self.tok,
                                                                 request, self.hparams.device)
                 pre_edit_cache.append(pre_result)
@@ -328,7 +330,7 @@ class MultimodalEditor:
                                                                 request, self.hparams.device),
                             "pre": pre_edit_cache[i]
                         }
-                    elif self.model_name in ['llava-onevision', 'qwen2-vl']:
+                    elif is_hf_multimodal_model(self.model_name):
                         metrics = {
                             'case_nums': i,
                             "time": exec_time,
@@ -417,7 +419,7 @@ class MultimodalEditor:
                             "pre": compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
                                                                 request, self.hparams.device)
                         }
-                    elif self.model_name in ['llava-onevision', 'qwen2-vl']:
+                    elif is_hf_multimodal_model(self.model_name):
                         metrics = {
                             'case_id': i,
                             # "requested_rewrite": request,
@@ -486,7 +488,7 @@ class MultimodalEditor:
                 if self.model_name in ['minigpt4', 'blip2']:
                     pre_res = compute_multimodal_edit_results(self.model, self.model_name, self.hparams, self.tok,
                                                             request, self.hparams.device)
-                elif self.model_name in ['llava-onevision', 'qwen2-vl']:
+                elif is_hf_multimodal_model(self.model_name):
                     pre_res = compute_multimodal_hf_edit_results(self.model, self.model_name, self.hparams, self.tok,
                                                             request, self.hparams.device)
                 edited_model, weights_copy = self.apply_algo(
@@ -520,7 +522,7 @@ class MultimodalEditor:
                                                             request, self.hparams.device),
                         "pre": pre_res
                     }
-                elif self.model_name in ['llava-onevision', 'qwen2-vl']:
+                elif is_hf_multimodal_model(self.model_name):
                     metrics = {
                         'case_id': i,
                         # "requested_rewrite": request,
@@ -625,7 +627,7 @@ class MultimodalEditor:
                 locality_prompts = [locality_prompts, ]
             if isinstance(locality_ground_truth, str):
                 locality_ground_truth = [locality_ground_truth, ]
-            assert len(locality_inputs['text']['prompt']) == len(locality_inputs['text']['ground_truth']) \
+            assert len(locality_prompts) == len(locality_ground_truth) \
                 == len(requests) or print('One Edit instance needs one locality input.....')
         if "vision" in locality_inputs.keys():
             multimodal_locality_prompts = locality_inputs['vision']['prompt']
@@ -637,8 +639,10 @@ class MultimodalEditor:
                 multimodal_locality_ground_truth = [multimodal_locality_ground_truth, ]
             if isinstance(multimodal_locality_image, str):
                 multimodal_locality_image = [multimodal_locality_image, ]
-            assert len(locality_inputs['vision']['prompt']) == len(locality_inputs['vision']['ground_truth']) \
-                == len(locality_inputs['vision']['image']) == len(requests) or print('One Edit instance needs one locality input.....')
+            elif not isinstance(multimodal_locality_image, list):
+                multimodal_locality_image = [multimodal_locality_image, ]
+            assert len(multimodal_locality_prompts) == len(multimodal_locality_ground_truth) \
+                == len(multimodal_locality_image) == len(requests) or print('One Edit instance needs one locality input.....')
 
         if rephrase_prompts is not None:
             if isinstance(rephrase_prompts, str):
@@ -652,6 +656,8 @@ class MultimodalEditor:
                 )
         if rephrase_image is not None:
             if isinstance(rephrase_image, str):
+                rephrase_image = [rephrase_image, ]
+            elif not isinstance(rephrase_image, list):
                 rephrase_image = [rephrase_image, ]
             # rephrase_image_path = [os.path.join(self.rephrase_root, rephrase_image_) for rephrase_image_ in rephrase_image]
             # rephrase_image = [Image.open(ip).convert("RGB") for ip in rephrase_image_path]

@@ -19,6 +19,7 @@ import typing
 import torch
 import transformers
 from transformers import AutoProcessor
+from ..util.vl_utils import is_hf_multimodal_model, is_qwen_vl_model, prepend_qwen_vl_image_tokens_if_missing
 
 class CaptionDataset(BaseDataset):
     def __init__(self, data_dir: str, size:  typing.Optional[int] = None, config=None, *args, **kwargs):
@@ -43,7 +44,7 @@ class CaptionDataset(BaseDataset):
         elif "llava-onevision" in config.model_name.lower():  
             vis_processor = LLaVAOneVisionProcessor()
             tokenizer = AutoProcessor.from_pretrained(config.name)
-        elif "qwen2-vl" in config.model_name.lower():
+        elif is_qwen_vl_model(config.model_name):
             vis_processor = Qwen2VLProcessor()
             tokenizer = AutoProcessor.from_pretrained(config.name)
         elif (config is not None and hasattr(config, 'tokenizer_name')):
@@ -136,7 +137,7 @@ class CaptionDataset(BaseDataset):
         m_loc_a = [" " + b['multimodal_locality_ground_truth'] for b in batch]
         
         model_name = self.config.model_name.lower()
-        is_hf_multimodal = ("llava-onevision" in model_name) or ("qwen2-vl" in model_name)
+        is_hf_multimodal = is_hf_multimodal_model(model_name)
 
         def _build_hf_multimodal_batch(prompts, targets, images, file_type):
             # prompts/targets are list[str], images is list of vision inputs or None
@@ -162,8 +163,7 @@ class CaptionDataset(BaseDataset):
                         add_generation_prompt=True,
                         tokenize=False,
                     )
-                    if "qwen2-vl" in model_name and "|vision_start|" not in chat:
-                        chat = "<|vision_start|><|image_pad|><|vision_end|>" + chat
+                    chat = prepend_qwen_vl_image_tokens_if_missing(model_name, chat, num_images)
                     text_inputs.append(chat + t)
                 else:
                     raise AssertionError(f"Not support file type: {file_type}")

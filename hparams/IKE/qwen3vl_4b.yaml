@@ -1,0 +1,8 @@
+alg_name: "IKE"
+model_name: "/mnt/20t/xuhaoming/models/Qwen3-VL-4B-Instruct"
+sentence_model_name: "./hugging_cache/all-MiniLM-L6-v2"
+device: 0
+results_dir: "./results"
+
+k: 0
+model_parallel: false

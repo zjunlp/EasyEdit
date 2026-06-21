@@ -1,4 +1,9 @@
 import transformers
+from ...util.vl_utils import (
+    count_media_items,
+    normalize_multimodal_batch,
+    prepend_qwen_vl_image_tokens_if_missing,
+)
 import torch
 import os
 import struct
@@ -144,7 +149,7 @@ def blip2_multimodal_tokenize(batch, processor, device, context_templates=None, 
     """
     len_temp = 1
     prompts = [item['prompt'] for item in batch]   # src
-    input_images = [item['image'] for item in batch]
+    input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
     labels = [item['target'] for item in batch]    # trg
     file_type = get_batch_file_type(batch)
     loc_prompts = [item['locality_prompt'] for item in batch]
@@ -242,11 +247,12 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
     # TODO: locality_prompt(Unrelated Knowledge) is not equal to loc_prompt(Subject phrase)!
     len_temp = 1
     prompts = [item['prompt'] for item in batch]
-    input_images = [item['image'] for item in batch]
+    input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
     labels = [item['target'] for item in batch]
     file_type = get_batch_file_type(batch)
     loc_prompts = [item['locality_prompt'] for item in batch]
     loc_prompts_labels = [item['locality_ground_truth'] for item in batch]
+
 
     mask_token = -100  # ignore_index of CrossEntropyLoss
     if hasattr(hparams, 'use_chat_template') and hparams.use_chat_template:
@@ -280,35 +286,20 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
 
             
         elif file_type in ["image", "single-image", "multi-image"]:
-            if "qwen2-vl" in hparams.model_name.lower():
-                image_token = "<|vision_start|><|image_pad|><|vision_end|>"
-                chats = [
-                    image_token * count_media_items(img, file_type) + p
-                    for p, img in zip(prompts, input_images)
-                ]
-                temp_prompt = [chat + " " + l for chat, l in zip(chats, labels)]
-                # 事实上此处prompt_ids仅作为计算答案长度用
-                prompt_ids = processor.tokenizer(chats, return_tensors="pt", padding=True, truncation=True)["input_ids"]
-                # print("temp_prompt: ", temp_prompt)
-                # print("prompt_ids", prompt_ids)
-
-
-            else:
-                chats = []
-                for p, img in zip(prompts, input_images):
-                    num_images = count_media_items(img, file_type)
-                    chats.append(processor.apply_chat_template([
-                                        {
-
-                                            "role": "user",
-                                            "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
-                                        },
-                                    ],
-                                                    add_generation_prompt=True,
-                                                    tokenize=False))
-                temp_prompt = [chat + l for chat, l in zip(chats, labels)]
-                
-                prompt_ids = processor.tokenizer(chats, return_tensors="pt", padding=True, truncation=True)["input_ids"]
+            chats = []
+            for p, media_item in zip(prompts, input_images):
+                num_images = count_media_items(media_item, file_type)
+                chat = processor.apply_chat_template([
+                            {
+                                "role": "user",
+                                "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
+                            },
+                        ],
+                        add_generation_prompt=True,
+                        tokenize=False)
+                chats.append(prepend_qwen_vl_image_tokens_if_missing(hparams.model_name, chat, num_images))
+            temp_prompt = [chat + l for chat, l in zip(chats, labels)]
+            prompt_ids = processor.tokenizer(chats, return_tensors="pt", padding=True, truncation=True)["input_ids"]
         else:
             raise AssertionError("Not support file type: {}".format(file_type))
         
@@ -375,11 +366,14 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
 
     tokens = {key: val.to(device) for key, val in tokens.items()}
 
-    target_tokens = processor.tokenizer(labels, add_special_tokens=False, return_tensors="pt", padding=True)
-    target_mask = target_tokens.get("attention_mask")
-    if target_mask is None:
-        target_mask = torch.ones_like(target_tokens["input_ids"])
-    ans_token_len = target_mask.sum(dim=-1).max().to(device)
+    if file_type in ["image", "single-image", "multi-image"]:
+        multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
+    elif file_type == "video":
+        multimodal_inputs = processor(videos=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
+        
+    last_prompt_token_loc = (tokens["labels"] == -100).sum(dim=-1)
+    last_ans_token_loc = (tokens["labels"] == processor.tokenizer.pad_token_id).sum(dim=-1)
+    ans_token_len = (tokens["labels"].size(1) - last_prompt_token_loc - last_ans_token_loc).max()
     # print(last_prompt_token_loc, last_ans_token_loc, ans_token_len)
     
     return multimodal_inputs, tokens, ans_token_len, act_masks, deact_masks

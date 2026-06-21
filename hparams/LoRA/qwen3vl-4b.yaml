@@ -1,0 +1,25 @@
+alg_name: "LoRA"
+model_name: "/mnt/20t/xuhaoming/models/Qwen3-VL-4B-Instruct"
+device: 0
+
+# LoRA settings
+lora_type: "lora"
+layers: []
+kl_factor: 0
+norm_constraint: false
+rank: 8
+lora_alpha: 32
+lora_dropout: 0.1
+target_modules: ["q_proj", "v_proj"]
+# Training settings
+num_steps: 5
+batch_size: 1
+max_length: 30
+lr: 1e-1
+sh_lr: 0.9
+weight_decay: 0.0
+
+# Additional settings
+model_parallel: True
+
+use_chat_template: True

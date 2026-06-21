@@ -1,4 +1,10 @@
 import transformers
+from ...util.vl_utils import (
+    build_target_labels,
+    count_media_items,
+    normalize_multimodal_batch,
+    prepend_qwen_vl_image_tokens_if_missing,
+)
 import torch
 import os
 import numpy as np
@@ -88,7 +94,7 @@ def tokenize(batch, tokenizer, device, test=False):
 
 def multimodal_tokenize(batch, processor, device, hparams):
     prompts = [item['prompt'] for item in batch]
-    input_images = [item['image'] for item in batch]
+    input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
     labels = [item['target'] for item in batch]
     file_type = get_batch_file_type(batch)
     mask_token = -100 # ignore_index of CrossEntropyLoss
@@ -107,18 +113,19 @@ def multimodal_tokenize(batch, processor, device, hparams):
                                             tokenize=False) + l
                         for p, l in zip(prompts, labels)] 
     elif file_type in ["image", "single-image", "multi-image"]:
-        temp_prompt = []
-        for p, l, img in zip(prompts, labels, input_images):
-            num_images = count_media_items(img, file_type)
-            temp_prompt.append(processor.apply_chat_template([
+        chats = []
+        for p, media_item in zip(prompts, input_images):
+            num_images = count_media_items(media_item, file_type)
+            chat = processor.apply_chat_template([
                                 {
-
                                     "role": "user",
                                     "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
                                 },
                             ],
                                             add_generation_prompt=True,
-                                            tokenize=False) + l)
+                                            tokenize=False)
+            chats.append(prepend_qwen_vl_image_tokens_if_missing(hparams.model_name, chat, num_images))
+        temp_prompt = [chat + l for chat, l in zip(chats, labels)]
     else:
         raise AssertionError("Not support file type: {}".format(file_type))
     

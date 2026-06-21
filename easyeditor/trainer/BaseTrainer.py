@@ -13,6 +13,7 @@ from omegaconf import OmegaConf
 from .models import *
 from torch.utils.data import Dataset, DataLoader
 from ..util.alg_train_dict import ALG_TRAIN_DICT
+from ..util.vl_utils import is_hf_multimodal_model, is_qwen_vl_model
 import importlib
 from .utils import (
     EarlyStopper,
@@ -30,7 +31,7 @@ class BaseTrainer:
     def __init__(self, config, train_set: Dataset, val_set: Dataset):
         LOG.info(f'Config: {config}')
         model_ = get_model(config)
-        if 'qwen2' in config.model_name.lower():
+        if is_qwen_vl_model(config.model_name) or 'qwen2' in config.model_name.lower():
             model_.bfloat16()
         self.alg_module = ALG_TRAIN_DICT[config.alg.upper()]
         LOG.info(f"Loading class {config.alg.upper()} from module {self.alg_module}")
@@ -55,7 +56,7 @@ class BaseTrainer:
 
         if 'minigpt4' in self.config.model_name.lower() or 'blip2' in self.config.model_name.lower():
             collate_fn = train_set.collate_fn
-        elif "llava-onevision" in self.config.model_name.lower() or "qwen2-vl" in self.config.model_name.lower():
+        elif is_hf_multimodal_model(self.config.model_name):
             collate_fn = train_set.collate_fn
         elif 't5' in self.config.model_class.lower():
             collate_fn = train_set.collate_fn
