@@ -3,26 +3,12 @@ import json
 import torch
 from tqdm import tqdm
 
-from ...vector_generators.lm_steer import Hack_no_grad
-
 from .apply_sta_hparam import ApplySTAHyperParams
-         
+
 def reset_sta_layers(model, layers):
-    """Reset only the STA activations for specified layers"""
-    model=model.model
+    decoder_layers = model._decoder_layers()
     for layer in layers:
-        if hasattr(model, 'model') and (hasattr(model.model, 'layers') or (hasattr(model.model, 'module') and hasattr(model.model.module, 'layers'))):
-            if isinstance(model.model, Hack_no_grad):
-                model.model.module.layers[layer].reset(method_name="sta")
-            else:
-                model.model.layers[layer].reset(method_name="sta")
-        elif hasattr(model,'transformer') and hasattr(model.transformer, 'h') or (hasattr(model.transformer, 'module') and hasattr(model.transformer.module, 'h')):  # for GPT models
-            if isinstance(model.transformer, Hack_no_grad):
-                model.transformer.module.h[layer].reset(method_name="sta")
-            else:
-                model.transformer.h[layer].reset(method_name="sta")
-        else:
-            raise NotImplementedError("Failed to reset STA activations")
+        decoder_layers[layer].reset(method_name="sta")
 
 def apply_sta(hparams: ApplySTAHyperParams,pipline=None,vector=None):
     from ...models.get_model import get_model
@@ -53,7 +39,12 @@ def apply_sta(hparams: ApplySTAHyperParams,pipline=None,vector=None):
         print("Steering vector: ",steering_vector)
         print(f"Multiplier {multiplier}")
 
-        model.set_add_activations(
-            layer, multiplier * steering_vector, method_name="sta"
+        from ...models.interventions import ActivationAddition
+
+        intervention = ActivationAddition(
+            steering_vector=steering_vector,
+            multiplier=multiplier,
         )
+        intervention = intervention.to(device)
+        model.set_intervention(layer, intervention, "sta")
     return model

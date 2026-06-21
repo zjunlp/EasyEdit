@@ -1,3 +1,7 @@
-from .generate_vector_prompt_hparam import *
-from .generate_vector_prompt_vectors import *
-from .utils import *
+"""
+Vector-prompt generator subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

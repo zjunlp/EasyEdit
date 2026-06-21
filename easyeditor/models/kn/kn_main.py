@@ -30,7 +30,12 @@ def apply_kn_to_model(
     )
     request_rewrite = deepcopy(request)
     text = [request_rewrite["prompt"]]
-    ground_truth = request_rewrite["ground_truth"]
+    ground_truth = request_rewrite.get("ground_truth")
+    if ground_truth is None:
+        raise ValueError(
+            "KN requires `ground_truth` as the original target, "
+            "but it was not provided. Please pass `ground_truth` explicitly."
+        )
     target = request_rewrite["target_new"]
 
     # kn.model = kn.model.to(kn.device)

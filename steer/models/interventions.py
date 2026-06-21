@@ -71,8 +71,19 @@ class ActivationAddition(BaseIntervention):
         self.multiplier = multiplier
     
     def forward(self, base, **kwargs):
-        steering_addition = self.multiplier * self.steering_vector.unsqueeze(0).unsqueeze(0)
-        return base + steering_addition
+        from steer.models.utils import add_vector_from_position
+
+        steering_addition = self.multiplier * self.steering_vector
+        position_ids = kwargs.get("position_ids", None)
+        from_pos = kwargs.get("from_pos", None)
+        if position_ids is not None or from_pos is not None:
+            return add_vector_from_position(
+                matrix=base,
+                vector=steering_addition,
+                position_ids=position_ids,
+                from_pos=from_pos,
+            )
+        return base + steering_addition.unsqueeze(0).unsqueeze(0)
     
     def to(self, device):
         super().to(device)
@@ -280,8 +291,8 @@ class LoraIntervention(BaseIntervention, torch.nn.Module):
         # initialize A the same way as the default for nn.Linear and B to zero
         torch.nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
         torch.nn.init.zeros_(self.lora_B)
-        self.lora_A = torch.nn.Parameter(self.lora_A.to(kwargs.get("torch_dtype", torch.float32)))
-        self.lora_B = torch.nn.Parameter(self.lora_B.to(kwargs.get("torch_dtype", torch.float32)))
+        self.lora_A = torch.nn.Parameter(self.lora_A.to(kwargs.get("dtype", torch.float32)))
+        self.lora_B = torch.nn.Parameter(self.lora_B.to(kwargs.get("dtype", torch.float32)))
 
     def forward(
         self, base, source=None, **kwargs
@@ -330,8 +341,8 @@ class LocalWeightIntervention(BaseIntervention, torch.nn.Module):
         self.delta_bias = torch.nn.Parameter(torch.zeros(self.embed_dim))
         torch.nn.init.zeros_(self.delta_weight)
         torch.nn.init.zeros_(self.delta_bias)
-        self.delta_weight = torch.nn.Parameter(self.delta_weight.to(kwargs.get("torch_dtype", torch.float32)))
-        self.delta_bias = torch.nn.Parameter(self.delta_bias.to(kwargs.get("torch_dtype", torch.float32)))
+        self.delta_weight = torch.nn.Parameter(self.delta_weight.to(kwargs.get("dtype", torch.float32)))
+        self.delta_bias = torch.nn.Parameter(self.delta_bias.to(kwargs.get("dtype", torch.float32)))
 
     def forward(
         self, base, source=None, **kwargs

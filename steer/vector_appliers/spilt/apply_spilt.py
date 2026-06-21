@@ -1,24 +1,11 @@
 import os
 import torch
-from ...vector_generators.lm_steer import Hack_no_grad
 from .apply_spilt_hparam import ApplySpiltHyperParams
-         
+
 def reset_spilt_layers(model, layers):
-    """Reset only the spilt activations for specified layers"""
-    model = model.model
+    decoder_layers = model._decoder_layers()
     for layer in layers:
-        if hasattr(model, 'model') and (hasattr(model.model, 'layers') or (hasattr(model.model, 'module') and hasattr(model.model.module, 'layers'))):
-            if isinstance(model.model, Hack_no_grad):
-                model.model.module.layers[layer].reset(method_name="spilt")
-            else:
-                model.model.layers[layer].reset(method_name="spilt")
-        elif hasattr(model,'transformer') and hasattr(model.transformer, 'h') or (hasattr(model.transformer, 'module') and hasattr(model.transformer.module, 'h')):  # for GPT models
-            if isinstance(model.transformer, Hack_no_grad):
-                model.transformer.module.h[layer].reset(method_name="spilt")
-            else:
-                model.transformer.h[layer].reset(method_name="spilt")
-        else:
-            raise NotImplementedError("Failed to reset spilt activations")
+        decoder_layers[layer].reset(method_name="spilt")
 
 def apply_spilt(hparams: ApplySpiltHyperParams, pipline=None, vector=None):
     from ...models.get_model import get_model
@@ -57,10 +44,10 @@ def apply_spilt(hparams: ApplySpiltHyperParams, pipline=None, vector=None):
                 steering_vector = data_states.to(device)
             else:
                 raise ValueError(f"Concept ID {concept_id} exceeds the number of vectors available: {steering_vector.shape[0]}")
-            
+            model_config = model.model.config.text_config if hasattr(model.model.config, "text_config") else model.model.config
             intervention = VectorIntervention(
                 multiplier=multiplier,
-                embed_dim=model.model.config.hidden_size, # set the embedding dimension
+                embed_dim=model_config.hidden_size, # set the embedding dimension
                 low_rank_dimension=1,            # set the low rank dimension
                 init_vector=steering_vector,
             )
@@ -86,7 +73,7 @@ def apply_spilt(hparams: ApplySpiltHyperParams, pipline=None, vector=None):
                 low_rank_dimension=data_state["r"],
                 alpha=data_state["alpha"],
                 intervention_components=data_state["intervention_components"],
-                torch_dtype=lora_A.dtype,
+                dtype=lora_A.dtype,
                 multiplier=multiplier,
             ) 
             with torch.no_grad():
@@ -111,7 +98,7 @@ def apply_spilt(hparams: ApplySpiltHyperParams, pipline=None, vector=None):
                 input_dim=input_dim,
                 embed_dim=embed_dim,
                 intervention_components=data_state["intervention_components"],
-                torch_dtype=delta_weight.dtype,
+                dtype=delta_weight.dtype,
                 multiplier=multiplier,
             )     
             with torch.no_grad():

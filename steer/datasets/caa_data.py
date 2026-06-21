@@ -110,32 +110,45 @@ def get_tokens_for_caa(dataset, tokenizer, hparams):
     pos_tokens_list, neg_tokens_list = [], []
     ques = ''
     for i in range(len(dataset)):
+        # Use .get for matching/not_matching too (a missing field should not raise KeyError);
+        # pd.isna(None) is True so a missing/NaN answer becomes "".
+        matching = dataset[i].get('matching')
+        not_matching = dataset[i].get('not_matching')
         if hparams.multiple_choice == True:
             ques = dataset[i].get('question', '')
-            chosen = "\nAnswer: " + str("" if pd.isna(dataset[i]['matching']) else dataset[i]['matching'])
-            rejected = "\nAnswer: " + str("" if pd.isna(dataset[i]['not_matching'] ) else dataset[i]['not_matching'] )
+            chosen = "\nAnswer: " + str("" if pd.isna(matching) else matching)
+            rejected = "\nAnswer: " + str("" if pd.isna(not_matching) else not_matching)
         else:
             ques = dataset[i].get('question', '')
-            chosen = " " + str("" if pd.isna(dataset[i]['matching']) else dataset[i]['matching'])
-            rejected = " " + str("" if pd.isna(dataset[i]['not_matching'] ) else dataset[i]['not_matching'] )
-    
+            chosen = " " + str("" if pd.isna(matching) else matching)
+            rejected = " " + str("" if pd.isna(not_matching) else not_matching)
+
         ques = build_model_input(ques, tokenizer, hparams.system_prompt, hparams.use_chat_template)
         add_special_tokens = False if hparams.use_chat_template else True
-            
+
         ques_tokens = tokenizer.encode(ques, return_tensors="pt",add_special_tokens=add_special_tokens)
         pos_tokens = tokenizer.encode(ques + chosen, return_tensors="pt", add_special_tokens=add_special_tokens)
         neg_tokens = tokenizer.encode(ques + rejected, return_tensors="pt", add_special_tokens=add_special_tokens)
-    
+
+        pos_answer_len = pos_tokens.shape[1] - ques_tokens.shape[1]
+        neg_answer_len = neg_tokens.shape[1] - ques_tokens.shape[1]
+        # An empty answer region -> mean over 0 tokens = NaN, which poisons the whole layer
+        # vector. Skip such rows instead (e.g. empty/NaN matching or not_matching).
+        if pos_answer_len <= 0 or neg_answer_len <= 0:
+            print(f"[WARNING] caa: skipping row {i}: empty matching/not_matching answer region "
+                  f"(pos_answer_len={pos_answer_len}, neg_answer_len={neg_answer_len}).")
+            continue
+
         pos_tokens_list.append({
             "pos_tokens": pos_tokens.to(hparams.device),
             "ques_tokens_len": ques_tokens.shape[1],
-            "pos_answer_len": pos_tokens.shape[1] - ques_tokens.shape[1],
+            "pos_answer_len": pos_answer_len,
         })
-        
+
         neg_tokens_list.append({
             "neg_tokens": neg_tokens.to(hparams.device),
             "ques_tokens_len": ques_tokens.shape[1],
-            "neg_answer_len": neg_tokens.shape[1] - ques_tokens.shape[1],
+            "neg_answer_len": neg_answer_len,
         })
 
     return pos_tokens_list, neg_tokens_list

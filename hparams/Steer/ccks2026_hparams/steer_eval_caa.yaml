@@ -4,7 +4,7 @@
 
 # General
 model_name_or_path: hf_models/Qwen3-4B-Instruct-2507
-torch_dtype: bfloat16
+dtype: bfloat16
 device: cuda:0
 seed: 42
 use_chat_template: true

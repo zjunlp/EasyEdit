@@ -1,72 +1,125 @@
 import os
 from omegaconf import OmegaConf
-from .alg_dict import HYPERPARAMS_CLASS_DICT, METHODS_CLASS_DICT
+from .alg_dict import HYPERPARAMS_CLASS_DICT
+
+
+def _oc_to_dict(cfg):
+    """Convert OmegaConf/DictConfig (or plain dict) to a plain python dict."""
+    if cfg is None:
+        return {}
+    try:
+        return OmegaConf.to_container(cfg, resolve=True)  # type: ignore[arg-type]
+    except Exception:
+        return dict(cfg)
+
+
+def _resolve_phase_hparams(method_hparams, phase: str) -> dict:
+    """
+    Resolve a single method hyperparam file into a flat dict for the given phase.
+
+    Two supported file layouts:
+
+    1) Merged file (recommended): shared fields at top level, plus `generate:` /
+       `apply:` sections that only contain phase-specific fields.
+
+           alg_name: caa
+           layers: [20]
+           generate:
+             multiple_choice: false
+           apply:
+             multipliers: [1.0]
+
+       For phase="generate" we merge: shared + generate section.
+       For phase="apply"    we merge: shared + apply section.
+       (phase section overrides shared on key conflicts)
+
+    2) Flat file (legacy): no `generate:` / `apply:` sections, every field is at
+       the top level. Returned as-is. This keeps all existing yaml files working.
+    """
+    method_hparams = _oc_to_dict(method_hparams)
+    has_phase_sections = ("generate" in method_hparams) or ("apply" in method_hparams)
+    if not has_phase_sections:
+        return method_hparams
+
+    shared = {k: v for k, v in method_hparams.items() if k not in ("generate", "apply")}
+    phase_cfg = method_hparams.get(phase, {}) or {}
+    if not isinstance(phase_cfg, dict):
+        raise TypeError(f"'{phase}' section in hparam file must be a mapping, got {type(phase_cfg)}")
+    return {**shared, **phase_cfg}
 
 
 def load_generate_vector_hparams(top_cfg):
+    """
+    Load generate (train) hyperparams from the path list `steer_train_hparam_paths`.
+
+    Each path may point to a merged method file (with `generate:` / `apply:`
+    sections) or a legacy flat file; both are handled transparently.
+    """
     hparams_dict = {}
-    if isinstance(top_cfg.steer_vector_output_dirs, str):
+
+    # Allow generate-only / apply-only configs without crashing.
+    if not getattr(top_cfg, "steer_train_hparam_paths", None):
+        return hparams_dict
+
+    if isinstance(getattr(top_cfg, "steer_vector_output_dirs", None), str):
         top_cfg.steer_vector_output_dirs = [top_cfg.steer_vector_output_dirs]
+    output_dirs = top_cfg.steer_vector_output_dirs
+
     for i, hparam_path in enumerate(top_cfg.steer_train_hparam_paths):
         assert os.path.exists(hparam_path), f"Hparam path {hparam_path} does not exist !"
-        method_hparams = OmegaConf.load(hparam_path)
+        raw = OmegaConf.load(hparam_path)
+        method_hparams = _resolve_phase_hparams(raw, phase="generate")
         print(hparam_path)
-        alg_name = method_hparams['alg_name']
+
+        alg_name = method_hparams["alg_name"]
         hparams_dict_key = f"{alg_name}"
-        # hparams_dict_key = f"{alg_name}_{i}"
-        combined_hparams = {**method_hparams, **top_cfg}
-        selected_hparams_class = HYPERPARAMS_CLASS_DICT[alg_name]['train']
+        combined_hparams = {**method_hparams, **_oc_to_dict(top_cfg)}
+        selected_hparams_class = HYPERPARAMS_CLASS_DICT[alg_name]["train"]
         intersect_keys = set(selected_hparams_class.__dataclass_fields__) & set(combined_hparams.keys())
         # remove extra fields
         hparams = selected_hparams_class(**{k: combined_hparams[k] for k in intersect_keys})
         print(f"Loading {alg_name} hparams from {hparam_path} ...")
-        hparams.steer_vector_output_dir = top_cfg.steer_vector_output_dirs[i] if i < len(top_cfg.steer_vector_output_dirs) else top_cfg.steer_vector_output_dirs[0]
+
+        hparams.steer_vector_output_dir = (
+            output_dirs[i] if i < len(output_dirs) else output_dirs[0]
+        )
         hparams.steer_train_dataset = top_cfg.steer_train_dataset
         hparams_dict[hparams_dict_key] = hparams
+
     return hparams_dict
 
 
 def load_apply_vector_hparams(top_cfg):
+    """
+    Load apply hyperparams from the path list `apply_steer_hparam_paths`.
+
+    Each path may point to a merged method file (with `generate:` / `apply:`
+    sections) or a legacy flat file; both are handled transparently.
+    """
     hparams_dict = {}
-    
+
     # if apply_steer_hparam_paths is not set, return empty dict
-    if not hasattr(top_cfg, 'apply_steer_hparam_paths') or not top_cfg.apply_steer_hparam_paths:
+    if not getattr(top_cfg, "apply_steer_hparam_paths", None):
         return hparams_dict
-        
+
+    load_dirs = getattr(top_cfg, "steer_vector_load_dir", None)
+    if isinstance(load_dirs, str):
+        load_dirs = [load_dirs]
+
     for i, hparam_path in enumerate(top_cfg.apply_steer_hparam_paths):
         assert os.path.exists(hparam_path), f"Hparam path {hparam_path} does not exist !"
-        # assert os.path.exists(top_cfg.steer_vector_load_dir[i]), f"Steer vector load path {top_cfg.steer_vector_load_dir[i]} does not exist !"
-        method_hparams = OmegaConf.load(hparam_path)
-        alg_name = method_hparams['alg_name']
-        combined_hparams = {**method_hparams, **top_cfg}
-        selected_hparams_class = HYPERPARAMS_CLASS_DICT[alg_name]['apply']
+        raw = OmegaConf.load(hparam_path)
+        method_hparams = _resolve_phase_hparams(raw, phase="apply")
+
+        alg_name = method_hparams["alg_name"]
+        combined_hparams = {**method_hparams, **_oc_to_dict(top_cfg)}
+        selected_hparams_class = HYPERPARAMS_CLASS_DICT[alg_name]["apply"]
         intersect_keys = set(selected_hparams_class.__dataclass_fields__) & set(combined_hparams.keys())
         # remove extra fields
         hparams = selected_hparams_class(**{k: combined_hparams[k] for k in intersect_keys})
-        hparams.steer_vector_load_dir = top_cfg.steer_vector_load_dir[i]
+
+        if load_dirs is not None:
+            hparams.steer_vector_load_dir = load_dirs[i] if i < len(load_dirs) else load_dirs[0]
         hparams_dict[alg_name] = hparams
 
     return hparams_dict
-
-# def apply_steering(hparams_dict, model=None):
-#     for alg_name in hparams_dict.keys():
-#         if alg_name in METHODS_CLASS_DICT:
-#             print(f"Applying {alg_name} vectors to model ...")
-#             model = METHODS_CLASS_DICT[alg_name]['apply'](hparams_dict[alg_name], model)
-#         else:
-#             return NotImplementedError(f"Method {alg_name} not implemented !")
-#     return model
-
-# def generate_steering_vector(hparams_dict, dataset):
-
-#     from ..datasets import DatasetLoader
-#     loader= DatasetLoader()
-
-#     for alg_name, hparams in hparams_dict.items():
-#         if alg_name in METHODS_CLASS_DICT:
-#             print(f"Generating {alg_name} vectors ...")
-#             if dataset is None:
-#                 dataset = loader.load_file(hparams.steer_train_dataset)
-#             METHODS_CLASS_DICT[alg_name]['train'](hparams, dataset)
-#         else:
-#             return NotImplementedError(f"Method {alg_name} not implemented !")

@@ -1,4 +1,7 @@
-from .apply_reps import apply_reps, reset_reps_layers
-from .apply_reps_hparam import ApplyRepsHyperParams
+"""
+RePS vector applier subpackage.
 
-__all__ = ['apply_reps', 'reset_reps_layers', 'ApplyRepsHyperParams']
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []

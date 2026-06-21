@@ -17,6 +17,7 @@ from higher.patch import (
 )
 from .patch import monkeypatch as _make_functional
 from ...util.device import normalize_device
+from ...util.vl_utils import is_hf_multimodal_model
 
 from . import local_nn
 from .editable_model import EditableModel
@@ -384,7 +385,7 @@ class MEND(EditableModel):
             else:
                 batch_labels = batch['labels']
             loss = self.edit_loss_fn(self.config, outputs, batch_labels, multimodal=True)["nll"]          
-        elif "llava-onevision" in self.config.model_name.lower() or "qwen2-vl" in self.config.model_name.lower():
+        elif is_hf_multimodal_model(self.config.model_name):
             outputs = self.model(**batch)
             loss = outputs.loss
             outputs = outputs.logits

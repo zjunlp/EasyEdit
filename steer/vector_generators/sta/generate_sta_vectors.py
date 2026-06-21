@@ -11,8 +11,7 @@ from typing import List
 
 from ..sae_feature.sae_utils import (
     clear_gpu_cache,
-    load_sae_from_dir,
-    load_gemma_2_sae,
+    load_sae,
 )
 load_dotenv()
 
@@ -30,8 +29,9 @@ def signed_min_max_normalize(tensor):
     abs_tensor = tensor.abs()
     min_val = abs_tensor.min()
     max_val = abs_tensor.max()
-    normalized = (abs_tensor - min_val) / (max_val - min_val)
-    return tensor.sign() * normalized  
+    # Guard against a constant tensor (max == min, e.g. all-zero) -> avoid 0/0 = NaN.
+    normalized = (abs_tensor - min_val) / (max_val - min_val + 1e-8)
+    return tensor.sign() * normalized
 
 def act_and_fre(act_data,
                 pos_data,
@@ -57,12 +57,15 @@ def act_and_fre(act_data,
     scores = torch.zeros_like(norm_diff)  
     scores[mask] = (norm_diff[mask]) 
 
-    threshold_fre = torch.sort(torch.abs(scores), descending=True, stable=True).values[int(pec * len(scores))]
+    # Clamp the percentile index to a valid range: pec==1 (trim==0) would index len(...) -> OOB.
+    fre_idx = min(int(pec * len(scores)), len(scores) - 1)
+    threshold_fre = torch.sort(torch.abs(scores), descending=True, stable=True).values[fre_idx]
     print(f'frequency threshold: {threshold_fre}')
     freq_mask = torch.abs(scores) >= threshold_fre
     print("freq_mask:",freq_mask.sum())
 
-    threshold = torch.sort(torch.abs(act_data_init), descending=True, stable=True).values[int(pec * len(act_data_init))]
+    act_idx = min(int(pec * len(act_data_init)), len(act_data_init) - 1)
+    threshold = torch.sort(torch.abs(act_data_init), descending=True, stable=True).values[act_idx]
     print(f'threshold: {threshold}')
     act_top_mask = torch.abs(act_data_init) >= threshold
     print("act_top_mask:",act_top_mask.sum())
@@ -121,10 +124,8 @@ def generate_sta_vectors(hparams:STAHyperParams, dataset, model = None, dataset_
     saes = dict([(layer, []) for layer in args.layers])
     for i,layer in enumerate(args.layers):
         assert os.path.exists(args.sae_paths[i]), f"{args.sae_paths[i]} does not exist!!!"
-        if "gemma" in args.model_name_or_path.lower():
-            saes[layer], _, _ = load_gemma_2_sae(sae_path=args.sae_paths[i], device=device)
-        else:
-            saes[layer], _, _ = load_sae_from_dir(args.sae_paths[i], device=device)
+        # Dispatch by on-disk format (npz vs cfg.json), not by model name.
+        saes[layer], _, _ = load_sae(args.sae_paths[i], device=device)
     
     need_train_layers = []
     vectors = {}
@@ -156,7 +157,9 @@ def generate_sta_vectors(hparams:STAHyperParams, dataset, model = None, dataset_
                                     )
                 caa_vector = caa_vector.to(device)
                 sta_vec = sta_vec.to(device)
-                multiplier = torch.norm(caa_vector, p=2) / torch.norm(sta_vec, p=2)
+                sta_norm = torch.norm(sta_vec, p=2)
+                # Guard against an all-zero sta_vec (empty mask) -> avoid inf/NaN multiplier.
+                multiplier = (torch.norm(caa_vector, p=2) / sta_norm) if sta_norm > 1e-8 else torch.zeros_like(sta_norm)
                 print(f"caa_norm:{caa_vector.norm()}  sta_norm:{(multiplier * sta_vec).norm()}")
                 if args.save_vectors:
                     torch.save(
@@ -287,7 +290,9 @@ def generate_sta_vectors(hparams:STAHyperParams, dataset, model = None, dataset_
                                     )
                 caa_vector = caa_vector.to(device)
                 sta_vec = sta_vec.to(device)
-                multiplier = torch.norm(caa_vector, p=2) / torch.norm(sta_vec, p=2)
+                sta_norm = torch.norm(sta_vec, p=2)
+                # Guard against an all-zero sta_vec (empty mask) -> avoid inf/NaN multiplier.
+                multiplier = (torch.norm(caa_vector, p=2) / sta_norm) if sta_norm > 1e-8 else torch.zeros_like(sta_norm)
                 print(f"caa_norm:{caa_vector.norm()}  sta_norm:{(multiplier * sta_vec).norm()}")
                 if args.save_vectors is True:
                     torch.save(

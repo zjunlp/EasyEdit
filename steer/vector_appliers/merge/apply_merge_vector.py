@@ -1,24 +1,11 @@
 import os
 import torch
-from ...vector_generators.lm_steer import Hack_no_grad
 from .apply_merge_vector_hparam import ApplyMergeVectorHyperParams
-         
+
 def reset_merge_vector_layers(model, layers):
-    """Reset only the MergeVector activations for specified layers"""
-    model=model.model
+    decoder_layers = model._decoder_layers()
     for layer in layers:
-        if hasattr(model, 'model') and (hasattr(model.model, 'layers') or (hasattr(model.model, 'module') and hasattr(model.model.module, 'layers'))):
-            if isinstance(model.model, Hack_no_grad):
-                model.model.module.layers[layer].reset(method_name="merge_vector")
-            else:
-                model.model.layers[layer].reset(method_name="merge_vector")
-        elif hasattr(model,'transformer') and hasattr(model.transformer, 'h') or (hasattr(model.transformer, 'module') and hasattr(model.transformer.module, 'h')):  # for GPT models
-            if isinstance(model.transformer, Hack_no_grad):
-                model.transformer.module.h[layer].reset(method_name="merge_vector")
-            else:
-                model.transformer.h[layer].reset(method_name="merge_vector")
-        else:
-            raise NotImplementedError("Failed to reset MergeVector activations")
+        decoder_layers[layer].reset(method_name="merge_vector")
 
 def apply_merge_vector(hparams: ApplyMergeVectorHyperParams,pipline=None, vector=None):
     from ...models.get_model import get_model
@@ -48,9 +35,14 @@ def apply_merge_vector(hparams: ApplyMergeVectorHyperParams,pipline=None, vector
         print("Steering vector: ",steering_vector)
         print(f"Multiplier {multiplier}")
 
-        model.set_add_activations(
-            layer, multiplier * steering_vector, method_name="merge_vector"
+        from ...models.interventions import ActivationAddition
+
+        intervention = ActivationAddition(
+            steering_vector=steering_vector,
+            multiplier=multiplier,
         )
+        intervention = intervention.to(device)
+        model.set_intervention(layer, intervention, "merge_vector")
     return model
 
 # def eval_merge_vector(hparams: ApplyMergeVectorHyperParams):

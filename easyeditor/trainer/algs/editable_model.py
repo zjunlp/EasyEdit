@@ -2,6 +2,7 @@ import torch.nn as nn
 from copy import deepcopy
 
 from ..losses import masked_log_probs
+from ...util.vl_utils import is_hf_multimodal_model
 from ..utils import _logits, shift_targets
 
 
@@ -16,7 +17,7 @@ class EditableModel(nn.Module):
         def _edit_loss_fn(config, pred, targ, **kwargs):
             if 'minigpt4' in config.model_name.lower() or 'blip' in self.config.model_name.lower():
                 return masked_log_probs(config, pred, targ, exact_match=self.config.exact_match, shift=True, **kwargs)
-            elif 'qwen2-vl' in config.model_name.lower() or 'llava' in config.model_name.lower():
+            elif is_hf_multimodal_model(config.model_name) or 'llava' in config.model_name.lower():
                 return masked_log_probs(config, pred, targ, shift=False, **kwargs)
             elif 't5' in config.model_class.lower():
                 return masked_log_probs(config, pred, targ,)

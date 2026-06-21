@@ -241,7 +241,7 @@ After specifying general parameters, configure the vector generation settings be
 ```yaml
 # General 
 model_name_or_path: ../DeepSeek-R1-Distill-Llama-8B
-torch_dtype: bfloat16
+dtype: bfloat16
 device: cuda:0
 use_chat_template: false
 system_prompt: 'You are a helpful assistant.'  

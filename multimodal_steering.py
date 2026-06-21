@@ -66,19 +66,19 @@ def main(top_cfg: DictConfig):
 
     # Generate Steering Vectors
     vector_generator = BaseVectorGenerator(top_cfg)
-    vectors = vector_generator.multimodal_generate_vectors(train_datasets)
+    vectors = vector_generator.generate_vectors(train_datasets)
 
     # Apply Vectors to Model 
     vector_applier = BaseVectorApplier(top_cfg)
     print(vectors)
     for dataset in vectors.keys():
         print(f"Applying  {dataset} vectors to model ...")
-        vector_applier.multimodal_apply_vectors(vectors[dataset])
+        vector_applier.apply_vectors(vectors[dataset])
 
     # vector_applier.apply_vectors()
 
     # Result Generation
-    vector_applier.multimodal_generate(generation_datasets)
+    vector_applier.generate(generation_datasets)
 
     # Resets the model to its initial state, clearing any modifications.
     vector_applier.model.reset_all()

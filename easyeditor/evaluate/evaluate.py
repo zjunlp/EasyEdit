@@ -32,6 +32,13 @@ from .evaluate_utils import (
     per_generation,
     F1
 )
+from .metric_meta import (
+    attach_metric_meta,
+    build_icl_metric_meta,
+    build_lm_metric_meta,
+    build_locality_metric_meta,
+    merge_result_with_metric_meta,
+)
 
 def compute_edit_quality(
     model,
@@ -70,10 +77,9 @@ def compute_edit_quality(
     ret['locality'] = {}
     ret['portability'] = {}
     if rephrase_prompts is not None:
-        ret.update(
-            compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
-                                                rephrase_prompts, target_new, device=device, test_rephrase=True, eval_metric=eval_metric)
-        )
+        rephrase_ret = compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
+                                                           rephrase_prompts, target_new, device=device, test_rephrase=True, eval_metric=eval_metric)
+        merge_result_with_metric_meta(ret, rephrase_ret)
 
     if 'locality' in record.keys() and any(record['locality']):
         for locality_key in record['locality'].keys():
@@ -155,6 +161,7 @@ def compute_rewrite_or_rephrase_quality(
             ret = {
                 f"{key}_acc": acc
             }
+    attach_metric_meta(ret, key, build_lm_metric_meta(key, hparams, model_name, eval_metric))
     return ret
 
 def compute_locality_quality(
@@ -251,12 +258,14 @@ def compute_icl_edit_quality(
     ret = {
         f"rewrite_acc": [edit_acc]
     }
+    attach_metric_meta(ret, "rewrite", build_icl_metric_meta("rewrite", hparams, model_name))
     ret['locality'] = {}
     ret['portability'] = {}
     if rephrase is not None:
         rephrase_acc = icl_lm_eval(model, model_name, hparams, tok, icl_examples,
                                    target_new, f'New Fact: {prompt} {target_new}\nPrompt: {rephrase}')
         ret['rephrase_acc'] = rephrase_acc
+        attach_metric_meta(ret, "rephrase", build_icl_metric_meta("rephrase", hparams, model_name))
 
     if 'locality' in record.keys() and any(record['locality']):
         for locality_key in record['locality'].keys():
@@ -300,6 +309,11 @@ def compute_icl_edit_quality(
                 assert len(pre_neighbor) == len(post_neighbor)
 
                 ret['locality'][f'{locality_key}_acc'] = np.mean(np.equal(pre_neighbor, post_neighbor))
+            attach_metric_meta(
+                ret,
+                f"locality.{locality_key}",
+                build_locality_metric_meta(locality_key, hparams, model_name, icl=True),
+            )
     # Form a list of lists of prefixes to test.
     if 'portability' in record.keys() and any(record['portability']):
         for portability_key in record['portability'].keys():
@@ -311,11 +325,14 @@ def compute_icl_edit_quality(
                 x_prefix = f"New Fact: {prompt} {target_new}\nPrompt: "
             if isinstance(record['portability'][portability_key]['ground_truth'], list):
                 portability_acc = []
-                for x_a, x_p in zip(record['portability'][portability_key]['ground_truth'],
-                                    record['portability'][portability_key]['prompt']):
+                portability_ground_truth = record['portability'][portability_key]['ground_truth']
+                portability_prompt = record['portability'][portability_key]['prompt']
+                assert len(portability_ground_truth) == len(portability_prompt), \
+                    "The number of portability prompts and ground truth answers must match."
+                for x_a, x_p in zip(portability_ground_truth, portability_prompt):
                     tmp_portability_acc = icl_lm_eval(model, model_name, hparams, tok, icl_input, x_a,
                                                       f"{x_prefix}{x_p}")
-                portability_acc.append(tmp_portability_acc)
+                    portability_acc.append(tmp_portability_acc)
             else:
                 portability_acc = icl_lm_eval(model, model_name, hparams, tok, icl_input,
                                               record['portability'][portability_key]['ground_truth'],

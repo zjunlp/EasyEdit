@@ -1,4 +1,10 @@
 import transformers
+from ...util.vl_utils import (
+    build_target_labels,
+    count_media_items,
+    normalize_multimodal_batch,
+    prepend_qwen_vl_image_tokens_if_missing,
+)
 import torch
 import os
 import numpy as np
@@ -87,7 +93,7 @@ def tokenize(batch, tokenizer, device, test=False):
 
 def multimodal_tokenize(batch, processor, device, hparams):
     prompts = [item['prompt'] for item in batch]
-    input_images = [item['image'] for item in batch]
+    input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
     labels = [item['target'] for item in batch]
     file_type = batch[0]['file_type']
     mask_token = -100 # ignore_index of CrossEntropyLoss
@@ -106,21 +112,19 @@ def multimodal_tokenize(batch, processor, device, hparams):
                                             tokenize=False) + l
                         for p, l in zip(prompts, labels)] 
     elif file_type in ["image", "single-image", "multi-image"]:
-        if file_type == "multi-image":
-            num_images = len(input_images[0])
-        else:
-            num_images = 1
-        
-        temp_prompt = [processor.apply_chat_template([
+        chats = []
+        for p, media_item in zip(prompts, input_images):
+            num_images = count_media_items(media_item, file_type)
+            chat = processor.apply_chat_template([
                                 {
-
                                     "role": "user",
                                     "content": [{"type": "image"}] * num_images + [{"type": "text", "text": p}],
                                 },
                             ],
                                             add_generation_prompt=True,
-                                            tokenize=False)  + l
-                        for p, l in zip(prompts, labels)]
+                                            tokenize=False)
+            chats.append(prepend_qwen_vl_image_tokens_if_missing(hparams.model_name, chat, num_images))
+        temp_prompt = [chat + l for chat, l in zip(chats, labels)]
     else:
         raise AssertionError("Not support file type: {}".format(file_type))
     
@@ -128,16 +132,11 @@ def multimodal_tokenize(batch, processor, device, hparams):
     if file_type in ["image", "single-image", "multi-image"]:
         multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
     elif file_type == "video":
-        multimodal_inputs = processor(videos=input_images[0], text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
+        multimodal_inputs = processor(videos=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=torch.float32)
         
     
     tokens = multimodal_inputs
     
-    targets = processor.tokenizer(labels[0], add_special_tokens=False,
-                    return_tensors="pt", padding=True, max_length=multimodal_inputs["input_ids"].size(1))["input_ids"]
-
-    labels_ids = torch.full_like(multimodal_inputs["input_ids"], -100)
-    labels_ids[:, -targets.size(1):] = targets
-    tokens["labels"] = labels_ids
+    tokens["labels"] = build_target_labels(multimodal_inputs["input_ids"], processor.tokenizer, labels)
     tokens = tokens.to(device)
     return tokens

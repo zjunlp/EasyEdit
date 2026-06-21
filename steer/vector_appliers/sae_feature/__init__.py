@@ -1,2 +1,7 @@
-from .apply_sae_feature_hparam import *
-from .apply_sae_feature import *
+"""
+SAE-feature applier subpackage.
+
+Keep this __init__ lightweight; import concrete implementations from modules.
+"""
+
+__all__ = []
