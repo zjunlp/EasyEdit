@@ -704,7 +704,7 @@ class MultimodalEditor:
                 locality_prompts = [locality_prompts, ]
             if isinstance(locality_ground_truth, str):
                 locality_ground_truth = [locality_ground_truth, ]
-            assert len(locality_inputs['text']['prompt']) == len(locality_inputs['text']['ground_truth']) \
+            assert len(locality_prompts) == len(locality_ground_truth) \
                 == len(requests) or print('One Edit instance needs one locality input.....')
         if "vision" in locality_inputs.keys():
             multimodal_locality_prompts = locality_inputs['vision']['prompt']
@@ -716,8 +716,10 @@ class MultimodalEditor:
                 multimodal_locality_ground_truth = [multimodal_locality_ground_truth, ]
             if isinstance(multimodal_locality_image, str):
                 multimodal_locality_image = [multimodal_locality_image, ]
-            assert len(locality_inputs['vision']['prompt']) == len(locality_inputs['vision']['ground_truth']) \
-                == len(locality_inputs['vision']['image']) == len(requests) or print('One Edit instance needs one locality input.....')
+            elif not isinstance(multimodal_locality_image, list):
+                multimodal_locality_image = [multimodal_locality_image, ]
+            assert len(multimodal_locality_prompts) == len(multimodal_locality_ground_truth) \
+                == len(multimodal_locality_image) == len(requests) or print('One Edit instance needs one locality input.....')
 
         if rephrase_prompts is not None:
             if isinstance(rephrase_prompts, str):
@@ -731,6 +733,8 @@ class MultimodalEditor:
                 )
         if rephrase_image is not None:
             if isinstance(rephrase_image, str):
+                rephrase_image = [rephrase_image, ]
+            elif not isinstance(rephrase_image, list):
                 rephrase_image = [rephrase_image, ]
             # rephrase_image_path = [os.path.join(self.rephrase_root, rephrase_image_) for rephrase_image_ in rephrase_image]
             # rephrase_image = [Image.open(ip).convert("RGB") for ip in rephrase_image_path]
