@@ -37,7 +37,7 @@ from ..util import nethook
 from ..util.hparams import HyperParams
 from ..util.alg_dict import *
 from ..util.device import copy_to_param, normalize_device
-from ..util.multimodal import topk_token_match
+from ..util.vl_utils import topk_token_match
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
@@ -285,6 +285,21 @@ class MultimodalEditor:
                 if self.alg_name == 'IKE' and self.hparams.k == 0:
                     edited_model = self.model
                     weights_copy = None
+                elif self.alg_name == 'IKE':
+                    if 'train_ds' not in kwargs:
+                        raise ValueError("IKE editing requires train_ds for in-context prompt construction.")
+                    edited_model = self.model
+                    weights_copy = {}
+                    icl_examples = self.apply_algo(
+                        self.model,
+                        self.tok,
+                        request,
+                        self.hparams,
+                        copy=False,
+                        return_orig_weights=True,
+                        keep_original_weight=keep_original_weight,
+                        train_ds=kwargs['train_ds']
+                    )
                 else:
                     edited_model, weights_copy = self.apply_algo(
                         self.model,
@@ -355,7 +370,8 @@ class MultimodalEditor:
                 start = time()
                 if self.alg_name == 'IKE':
                     if self.hparams.k != 0:                    
-                        assert 'train_ds' in kwargs.keys(), 'IKE need train_ds (For getting In-Context prompt)'
+                        if 'train_ds' not in kwargs:
+                            raise ValueError("IKE editing requires train_ds for in-context prompt construction.")
                         edited_model, weights_copy, icl_examples = self.model, {}, self.apply_algo(
                             self.model,
                             self.tok,

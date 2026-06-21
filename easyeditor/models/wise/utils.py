@@ -1,13 +1,14 @@
 import transformers
 from ...util.vl_utils import (
+    build_target_labels,
     count_media_items,
+    get_batch_file_type,
     normalize_multimodal_batch,
     prepend_qwen_vl_image_tokens_if_missing,
 )
 import torch
 import os
 import struct
-from ...util.multimodal import build_target_labels, count_media_items, get_batch_file_type
 
 CONTEXT_TEMPLATES_CACHE = None
 
@@ -149,9 +150,9 @@ def blip2_multimodal_tokenize(batch, processor, device, context_templates=None, 
     """
     len_temp = 1
     prompts = [item['prompt'] for item in batch]   # src
-    input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
-    labels = [item['target'] for item in batch]    # trg
     file_type = get_batch_file_type(batch)
+    input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), file_type)
+    labels = [item['target'] for item in batch]    # trg
     loc_prompts = [item['locality_prompt'] for item in batch]
     loc_prompts_labels = [item['locality_ground_truth'] for item in batch]
 
@@ -247,9 +248,9 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
     # TODO: locality_prompt(Unrelated Knowledge) is not equal to loc_prompt(Subject phrase)!
     len_temp = 1
     prompts = [item['prompt'] for item in batch]
-    input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), batch[0]['file_type'])
-    labels = [item['target'] for item in batch]
     file_type = get_batch_file_type(batch)
+    input_images = normalize_multimodal_batch([item['image'] for item in batch], len(batch), file_type)
+    labels = [item['target'] for item in batch]
     loc_prompts = [item['locality_prompt'] for item in batch]
     loc_prompts_labels = [item['locality_ground_truth'] for item in batch]
 
@@ -366,14 +367,11 @@ def multimodal_tokenize(batch, processor, device, context_templates=None, hparam
 
     tokens = {key: val.to(device) for key, val in tokens.items()}
 
-    if file_type in ["image", "single-image", "multi-image"]:
-        multimodal_inputs = processor(images=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
-    elif file_type == "video":
-        multimodal_inputs = processor(videos=input_images, text=full_prompt, return_tensors="pt", padding=True).to(device, dtype=hparams.dtype)
-        
-    last_prompt_token_loc = (tokens["labels"] == -100).sum(dim=-1)
-    last_ans_token_loc = (tokens["labels"] == processor.tokenizer.pad_token_id).sum(dim=-1)
-    ans_token_len = (tokens["labels"].size(1) - last_prompt_token_loc - last_ans_token_loc).max()
+    target_tokens = processor.tokenizer(labels, add_special_tokens=False, return_tensors="pt", padding=True)
+    target_mask = target_tokens.get("attention_mask")
+    if target_mask is None:
+        target_mask = torch.ones_like(target_tokens["input_ids"])
+    ans_token_len = target_mask.sum(dim=-1).max().to(device)
     # print(last_prompt_token_loc, last_ans_token_loc, ans_token_len)
     
     return multimodal_inputs, tokens, ans_token_len, act_masks, deact_masks

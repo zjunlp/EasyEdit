@@ -8,6 +8,7 @@ from ...util.device import normalize_device
 from ...util.vl_utils import (
     build_target_labels,
     count_media_items,
+    get_batch_file_type,
     normalize_multimodal_batch,
     prepend_qwen_vl_image_tokens_if_missing,
 )
