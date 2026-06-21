@@ -4,35 +4,42 @@ import torch
 import transformers
 
 
+QWEN_VL_FAMILY_ALIASES = {
+    "qwen3.5-vl": ("qwen3.5", "qwen3_5", "qwen3-5", "qwen35"),
+    "qwen3-vl": ("qwen3-vl", "qwen3_vl", "qwen3vl"),
+    "qwen2-vl": ("qwen2-vl", "qwen2_vl", "qwen2vl"),
+}
+
+QWEN_VL_MODEL_CLASSES = {
+    "qwen3.5-vl": ("Qwen3_5ForConditionalGeneration", "AutoModelForMultimodalLM"),
+    "qwen3-vl": ("Qwen3VLForConditionalGeneration", "AutoModelForMultimodalLM"),
+    "qwen2-vl": ("Qwen2VLForConditionalGeneration",),
+}
+
+
 def _lower_name(model_name):
     return str(model_name or "").lower()
 
 
-def _contains_any(name, patterns):
-    return any(pattern in name for pattern in patterns)
-
-
 def _qwen_vl_family(model_name):
     name = _lower_name(model_name)
-    if _contains_any(name, ("qwen3.5", "qwen3_5", "qwen3-5", "qwen35")):
-        return "qwen3.5-vl"
-    if _contains_any(name, ("qwen3-vl", "qwen3_vl", "qwen3vl")):
-        return "qwen3-vl"
-    if _contains_any(name, ("qwen2-vl", "qwen2_vl", "qwen2vl")):
-        return "qwen2-vl"
-    return None
+    return next(
+        (
+            family
+            for family, aliases in QWEN_VL_FAMILY_ALIASES.items()
+            if any(alias in name for alias in aliases)
+        ),
+        None,
+    )
 
 
-def is_qwen35_vl_model(model_name):
-    return _qwen_vl_family(model_name) == "qwen3.5-vl"
-
-
-def is_qwen3_vl_model(model_name):
-    return _qwen_vl_family(model_name) == "qwen3-vl"
-
-
-def is_qwen_vl_model(model_name):
-    return _qwen_vl_family(model_name) is not None
+def is_qwen_vl_model(model_name, family=None):
+    detected_family = _qwen_vl_family(model_name)
+    if family is None:
+        return detected_family is not None
+    if isinstance(family, str):
+        family = (family,)
+    return detected_family in family
 
 
 def is_hf_multimodal_model(model_name):
@@ -153,18 +160,12 @@ def topk_token_match(pre_logits, post_logits, k: int) -> torch.Tensor:
 
 
 def get_qwen_vl_model_class(model_name):
-    if is_qwen35_vl_model(model_name):
-        if hasattr(transformers, "Qwen3_5ForConditionalGeneration"):
-            return transformers.Qwen3_5ForConditionalGeneration
-        if hasattr(transformers, "AutoModelForMultimodalLM"):
-            return transformers.AutoModelForMultimodalLM
-        raise ImportError("Qwen3.5-VL requires a transformers version with Qwen3_5ForConditionalGeneration or AutoModelForMultimodalLM.")
-    if is_qwen3_vl_model(model_name):
-        if hasattr(transformers, "Qwen3VLForConditionalGeneration"):
-            return transformers.Qwen3VLForConditionalGeneration
-        if hasattr(transformers, "AutoModelForMultimodalLM"):
-            return transformers.AutoModelForMultimodalLM
-        raise ImportError("Qwen3-VL requires a transformers version with Qwen3VLForConditionalGeneration or AutoModelForMultimodalLM.")
-    if hasattr(transformers, "Qwen2VLForConditionalGeneration"):
-        return transformers.Qwen2VLForConditionalGeneration
-    raise ImportError("Qwen2-VL requires a transformers version with Qwen2VLForConditionalGeneration.")
+    family = _qwen_vl_family(model_name) or "qwen2-vl"
+    class_names = QWEN_VL_MODEL_CLASSES[family]
+    for class_name in class_names:
+        if hasattr(transformers, class_name):
+            return getattr(transformers, class_name)
+    raise ImportError(
+        f"{family} requires a transformers version with one of: "
+        f"{', '.join(class_names)}."
+    )
