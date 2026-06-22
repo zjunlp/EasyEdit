@@ -38,27 +38,30 @@ class IKEHyperParams(HyperParams):
 @dataclass
 class IKEMultimodalHyperParams(HyperParams):
     # Method
-    k: int # K icl examples
-    results_dir: str
+    k: int = 16 # K icl examples
+    results_dir: str = "./results"
+    template: str = "New Fact: {prompt} {target}\nPrompt: {prompt}\n\n"
 
     # Module templates
-    device: int
-    name: str
-    alg_name: str
-    model_name: str
-    tokenizer_class: str
-    tokenizer_name: str
-    sentence_model_name: str
+    device: int = 0
+    name: str = "."
+    alg_name: str = "IKE"
+    model_name: str = "."
+    tokenizer_class: str = "."
+    tokenizer_name: str = "."
+    sentence_model_name: str = "./hugging_cache/all-MiniLM-L6-v2"
+    model_parallel: bool = False
+    use_chat_template: bool = True
 
     ## Multimodal
-    task_name: str
-    qformer_checkpoint: str
-    qformer_name_or_path: str
-    state_dict_file: str
+    task_name: str = "multimodal"
+    qformer_checkpoint: str = "."
+    qformer_name_or_path: str = "."
+    state_dict_file: str = "."
     
     # Image_dir
-    coco_image: str
-    rephrase_image: str  
+    coco_image: str = "."
+    rephrase_image: str = "."
     exact_match: bool = False
     pretrained_ckpt: Optional[str] = None  
     
