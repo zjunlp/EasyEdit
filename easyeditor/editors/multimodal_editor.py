@@ -53,10 +53,42 @@ def make_logs():
     LOG.addHandler(s_h)
 
 
+def get_aligned_topk_token_ids(pre_logits, post_logits, k):
+    pre_logits = torch.as_tensor(pre_logits)
+    post_logits = torch.as_tensor(post_logits)
+    if pre_logits.dim() != 3 or post_logits.dim() != 3:
+        raise ValueError(
+            "pre_logits and post_logits must be rank-3 tensors shaped "
+            "[batch, sequence, vocab]."
+        )
+    if pre_logits.shape[0] != post_logits.shape[0]:
+        raise ValueError(
+            "pre_logits and post_logits must have the same batch size: "
+            f"{pre_logits.shape[0]} != {post_logits.shape[0]}"
+        )
+
+    if post_logits.shape[1] > pre_logits.shape[1]:
+        post_logits = post_logits[:, -pre_logits.shape[1]:, :]
+    else:
+        pre_logits = pre_logits[:, -post_logits.shape[1]:, :]
+
+    k = min(k, pre_logits.shape[-1], post_logits.shape[-1])
+    pre_topk = torch.topk(pre_logits, k=k, dim=-1).indices.cpu().tolist()
+    post_topk = torch.topk(post_logits, k=k, dim=-1).indices.cpu().tolist()
+    return pre_topk, post_topk
+
+
 def attach_topk_locality_metrics(metrics):
     if 'locality_output' in metrics['post'].keys():
         assert len(metrics['post']['locality_output']) == \
                 len(metrics['pre']['locality_output'])
+        pre_topk, post_topk = get_aligned_topk_token_ids(
+            metrics['pre']['locality_output'],
+            metrics['post']['locality_output'],
+            k=1,
+        )
+        metrics['pre']['locality_topk_tokens'] = pre_topk
+        metrics['post']['locality_topk_tokens'] = post_topk
         metrics['post']['locality_acc'] = topk_token_match(
             metrics['pre']['locality_output'],
             metrics['post']['locality_output'],
@@ -78,6 +110,13 @@ def attach_topk_locality_metrics(metrics):
     if 'multimodal_locality_output' in metrics['post'].keys():
         assert len(metrics['post']['multimodal_locality_output']) == \
                 len(metrics['pre']['multimodal_locality_output'])
+        pre_topk, post_topk = get_aligned_topk_token_ids(
+            metrics['pre']['multimodal_locality_output'],
+            metrics['post']['multimodal_locality_output'],
+            k=10,
+        )
+        metrics['pre']['multimodal_locality_topk_tokens'] = pre_topk
+        metrics['post']['multimodal_locality_topk_tokens'] = post_topk
         metrics['post']['multimodal_locality_acc'] = topk_token_match(
             metrics['pre']['multimodal_locality_output'],
             metrics['post']['multimodal_locality_output'],

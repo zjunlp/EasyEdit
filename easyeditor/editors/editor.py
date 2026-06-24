@@ -94,12 +94,6 @@ def finalize_locality_metrics(metric, request, hparams, model_name):
             f"locality.{locality_key}",
             build_locality_metric_meta(locality_key, hparams, model_name),
         )
-
-        if not uses_generated_text:
-            post_locality.pop(output_key)
-
-    if not uses_generated_text:
-        metric["pre"].pop("locality")
   
 class BaseEditor:
     """Base editor for all methods"""

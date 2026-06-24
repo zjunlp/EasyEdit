@@ -237,8 +237,6 @@ class ConceptEditor:
                         f"locality.{locality_key}",
                         build_locality_metric_meta(locality_key, self.hparams, self.model_name),
                     )
-                    all_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
-                all_metrics[i]['pre'].pop('locality')
 
             LOG.info(f"Evaluation took {time() - start}")
 
