@@ -51,6 +51,55 @@ def seed_everything(seed):
     random.seed(seed)
     
 seed_everything(42)
+
+
+def finalize_locality_metrics(metric, request, hparams, model_name):
+    if not request.get("locality"):
+        return
+
+    pre_locality = metric["pre"]["locality"]
+    post_locality = metric["post"]["locality"]
+    evaluation_type = getattr(hparams, "evaluation_type", None)
+    uses_generated_text = evaluation_type in ["LLM-judge", "generate-text"]
+
+    for locality_key in request["locality"]:
+        if uses_generated_text:
+            output_key = f"{locality_key}_gen_content"
+        else:
+            output_key = f"{locality_key}_output"
+
+        pre_outputs = pre_locality[output_key]
+        post_outputs = post_locality[output_key]
+        if len(pre_outputs) != len(post_outputs):
+            raise ValueError(
+                f"Locality output count mismatch for `{locality_key}`: "
+                f"{len(pre_outputs)} pre-edit outputs and "
+                f"{len(post_outputs)} post-edit outputs."
+            )
+
+        if uses_generated_text:
+            locality_result = [
+                float(pre_output == post_output)
+                for pre_output, post_output in zip(pre_outputs, post_outputs)
+            ]
+        else:
+            locality_result = [
+                float(np.mean(np.equal(pre_output, post_output)))
+                for pre_output, post_output in zip(pre_outputs, post_outputs)
+            ]
+
+        post_locality[f"{locality_key}_acc"] = locality_result
+        attach_metric_meta(
+            metric["post"],
+            f"locality.{locality_key}",
+            build_locality_metric_meta(locality_key, hparams, model_name),
+        )
+
+        if not uses_generated_text:
+            post_locality.pop(output_key)
+
+    if not uses_generated_text:
+        metric["pre"].pop("locality")
   
 class BaseEditor:
     """Base editor for all methods"""
@@ -252,22 +301,12 @@ class BaseEditor:
                 restore_after_edit(self, edited_model, weights_copy)
 
             for i, request in enumerate(record_chunks):
-                if 'locality' in chunk_metrics[i]['post'].keys():
-                    for locality_key in request['locality'].keys():
-                        locality_result = []
-                        if hasattr(self.hparams, 'evaluation_type') and self.hparams.evaluation_type == "LLM-judge":
-                            locality_result.append(float(chunk_metrics[i]['post']['locality'][f'{locality_key}_output']==chunk_metrics[i]['pre']['locality'][f'{locality_key}_output']))
-                        else:
-                            for ans, label in zip(chunk_metrics[i]['post']['locality'][f'{locality_key}_output'], chunk_metrics[i]['pre']['locality'][f'{locality_key}_output']):
-                                locality_result.append(np.mean(np.equal(ans, label)))
-                        chunk_metrics[i]['post']['locality'][f'{locality_key}_acc'] = locality_result
-                        attach_metric_meta(
-                            chunk_metrics[i]['post'],
-                            f"locality.{locality_key}",
-                            build_locality_metric_meta(locality_key, self.hparams, self.model_name),
-                        )
-                        chunk_metrics[i]['post']['locality'].pop(f'{locality_key}_output')
-                    chunk_metrics[i]['pre'].pop('locality')
+                finalize_locality_metrics(
+                    chunk_metrics[i],
+                    request,
+                    self.hparams,
+                    self.model_name,
+                )
 
                 if verbose:
                     LOG.info(
@@ -356,22 +395,12 @@ class BaseEditor:
                 })
                 if "metric_kwargs" in kwargs:
                     all_metrics[idx].update(compute_sent_metric(self.model, edited_model, self.model_name, self.hparams, self.tok,metric_kwargs=kwargs["metric_kwargs"][idx], device=self.hparams.device))
-                if 'locality' in all_metrics[idx]['post'].keys() and not hasattr(self.hparams, 'evaluation_type'):
-                    for locality_key in request['locality'].keys():
-                        locality_result = []
-                        if hasattr(self.hparams, 'evaluation_type'):
-                            locality_result.append(float(all_metrics[idx]['post']['locality'][f'{locality_key}_output']==all_metrics[idx]['pre']['locality'][f'{locality_key}_output']))
-                        else:
-                            for ans, label in zip(all_metrics[idx]['post']['locality'][f'{locality_key}_output'], all_metrics[idx]['pre']['locality'][f'{locality_key}_output']):
-                                locality_result.append(np.mean(np.equal(ans, label)))
-                        all_metrics[idx]['post']['locality'][f'{locality_key}_acc'] = locality_result
-                        attach_metric_meta(
-                            all_metrics[idx]['post'],
-                            f"locality.{locality_key}",
-                            build_locality_metric_meta(locality_key, self.hparams, self.model_name),
-                        )
-                        all_metrics[idx]['post']['locality'].pop(f'{locality_key}_output')
-                    all_metrics[idx]['pre'].pop('locality')
+                finalize_locality_metrics(
+                    all_metrics[idx],
+                    request,
+                    self.hparams,
+                    self.model_name,
+                )
 
             if verbose:
                 LOG.info(f"{idx} editing: {request['prompt']} -> {request['target_new']}  \n\n {all_metrics[idx]}")
@@ -395,8 +424,7 @@ class BaseEditor:
 
         if isinstance(edited_model, LORA):
             edited_model = edited_model.model
-        if not hasattr(self.hparams, 'evaluation_type') or self.hparams.evaluation_type != "generate-text":
-            summary_metrics(all_metrics)
+        summary_metrics(all_metrics)
 
         return all_metrics, edited_model, weights_copy
 

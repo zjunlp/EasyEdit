@@ -101,12 +101,11 @@ Just return the letters "A" or "B", with no text around it.
     time.sleep(1) # avoid high rate of request
     return llm_score
 
-def test_prediction_acc_LLM_judge(model, tok, hparams, prompts, targets, device, locality=False):
-    # generation & truncation
-    all_score = []
-    all_response = []
+def generate_texts(model, tok, hparams, prompts, device):
     if isinstance(prompts, str):
-        prompts, targets = [prompts, ], [targets, ]
+        prompts = [prompts]
+
+    all_response = []
     for prompt in prompts:
         messages = [
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -146,25 +145,32 @@ def test_prediction_acc_LLM_judge(model, tok, hparams, prompts, targets, device,
         gen_content = tok.decode(trunc_gen_tokens)
         suffixes_to_remove = [".", "\n", tok.eos_token]
         for suffix in suffixes_to_remove:
-            if gen_content.endswith(suffix):
+            if suffix and gen_content.endswith(suffix):
                 gen_content = gen_content[:-len(suffix)]
-        # LLM-as-a-Judge
-        if hparams.evaluation_type == "generate-text":
-            all_response.append(gen_content)
-        elif hparams.evaluation_type == "LLM-judge" and hasattr(hparams, 'api_key') and hparams.api_key:
-            LLM_Score = llm_judge(prompts, targets, gen_content, hparams.api_key)
-            all_score.append(LLM_Score)
-            all_response.append(gen_content)
+
+        all_response.append(gen_content)
+
+    return all_response
+
+
+def test_prediction_acc_LLM_judge(model, tok, hparams, prompts, targets, device, locality=False):
+    if isinstance(prompts, str):
+        prompts = [prompts]
+    if isinstance(targets, str):
+        targets = [targets]
+    if len(prompts) != len(targets):
+        raise ValueError("The number of prompts and targets must match.")
+
+    all_response = generate_texts(model, tok, hparams, prompts, device)
+    all_score = []
+    for prompt, target, gen_content in zip(prompts, targets, all_response):
+        if hasattr(hparams, 'api_key') and hparams.api_key:
+            score = llm_judge(prompt, target, gen_content, hparams.api_key)
         else:
-            # the user do not provide api key, using exact match as an alternative
-            EM_Score = float(exact_match_score(gen_content, targets))
-            all_score.append(EM_Score)
-            all_response.append(gen_content)
-    
-    if len(all_score) > 0:
-        return all_score, all_response
-    else:
-        return all_response
+            score = float(exact_match_score(gen_content, target))
+        all_score.append(score)
+
+    return all_score, all_response
 
 def test_batch_prediction_acc(model, tok, hparams, prompts, target, device, locality=False):
     prompt_tok = tok(

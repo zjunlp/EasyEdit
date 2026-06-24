@@ -16,6 +16,7 @@ from transformers import AutoTokenizer
 from ..util import HyperParams
 from ..util.device import normalize_device
 from .evaluate_utils import (
+    generate_texts,
     test_seq2seq_batch_prediction_acc, 
     test_batch_prediction_acc, 
     test_prediction_acc,
@@ -126,7 +127,7 @@ def compute_rewrite_or_rephrase_quality(
             f"{key}_gen_content": gen_content
         }
     elif hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "generate-text":
-        gen_content_model = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, target_new, device, locality=False)
+        gen_content_model = generate_texts(model, tok, hparams, prompt, device)
         ret = {
             f"{key}_gen_content": gen_content_model
         }
@@ -176,8 +177,13 @@ def compute_locality_quality(
 ) -> typing.Dict:
 
     # using real-world evaluation: autoregressive decoding, natural stop criteria, LLM-as-a-Judge
-    if hasattr(hparams, 'evaluation_type'):
-        loc_tokens = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
+    evaluation_type = getattr(hparams, "evaluation_type", None)
+    if evaluation_type in ["LLM-judge", "generate-text"]:
+        return {
+            f"{locality_key}_gen_content": generate_texts(
+                model, tok, hparams, prompt, device
+            )
+        }
     else:  # traditional evaluation 
         if 't5' in model_name.lower():
             loc_tokens = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, locality_ground_truth, device, locality=True)
@@ -202,10 +208,21 @@ def compute_portability_quality(
     device,
 ) -> typing.Dict:
     # using real-world evaluation: autoregressive decoding, natural stop criteria, LLM-as-a-Judge
-    if hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "LLM-judge":
-        portability_correct = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, ground_truth, device, locality=False)
-    elif hasattr(hparams, 'evaluation_type') and hparams.evaluation_type == "generate-text":
-        portability_correct = test_prediction_acc_LLM_judge(model, tok, hparams, prompt, ground_truth, device, locality=False)
+    evaluation_type = getattr(hparams, "evaluation_type", None)
+    if evaluation_type == "LLM-judge":
+        portability_correct, gen_content = test_prediction_acc_LLM_judge(
+            model, tok, hparams, prompt, ground_truth, device, locality=False
+        )
+        return {
+            f"{portability_key}_acc": portability_correct,
+            f"{portability_key}_gen_content": gen_content,
+        }
+    elif evaluation_type == "generate-text":
+        return {
+            f"{portability_key}_gen_content": generate_texts(
+                model, tok, hparams, prompt, device
+            )
+        }
     else:  # traditional evaluation
         if 't5' in model_name.lower():
             portability_correct = test_seq2seq_batch_prediction_acc(model, tok, hparams, prompt, ground_truth, device)
