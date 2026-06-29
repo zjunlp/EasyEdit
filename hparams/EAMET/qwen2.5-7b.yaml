@@ -1,0 +1,33 @@
+alg_name: "EAMET"
+model_name: "./hugging_cache/Qwen2.5-7B"
+stats_dir: "./data/stats"
+device: 0
+layers: [4, 5, 6, 7, 8]
+layer_selection: "all"
+fact_token: "subject_last"
+v_num_grad_steps: 25
+v_lr: 5e-1
+ks_bs: 1
+v_loss_layer: 27
+v_weight_decay: 1e-3
+clamp_norm_factor: 4
+clamp_ks_factor: 1
+kl_factor: 0.0625
+cs_factor: 1
+mse_factor: 1
+tau: 0.07
+norm_factor: 1e-3
+delta_init: "target_init"
+weight_decay_method: "norm"
+mom2_adjustment: true
+mom2_update_weight: [15000, 15000, 15000, 15000, 15000]
+rewrite_module_tmp: "model.layers.{}.mlp.down_proj"
+layer_module_tmp: "model.layers.{}"
+mlp_module_tmp: "model.layers.{}.mlp"
+attn_module_tmp: "model.layers.{}.self_attn"
+ln_f_module: "model.norm"
+lm_head_module: "model.embed_tokens"
+mom2_dataset: "wikipedia"
+mom2_n_samples: 100000
+mom2_dtype: "float32"
+model_parallel: false
