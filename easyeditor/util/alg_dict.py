@@ -17,6 +17,7 @@ from ..models.melo import MELOHyperParams, apply_melo_to_model
 from ..models.wise import WISEHyperParams, apply_wise_to_model, apply_wise_to_multimodal_model
 from ..models.r_rome import R_ROMEHyperParams, apply_r_rome_to_model
 from ..models.emmet import EMMETHyperParams, apply_emmet_to_model
+from ..models.eamet import EAMETHyperParams, apply_eamet_to_model
 from ..models.alphaedit import AlphaEditHyperParams, apply_AlphaEdit_to_model
 from ..models.SPHERE import SPHEREHyperParams, apply_SPHERE_to_model
 from ..models.core import COREHyperParams, apply_core_to_model
@@ -46,6 +47,7 @@ ALG_DICT = {
     'WISE': apply_wise_to_model,
     'R-ROME': apply_r_rome_to_model,
     "EMMET": apply_emmet_to_model,
+    "EAMET": apply_eamet_to_model,
     "AlphaEdit": apply_AlphaEdit_to_model,
     "SPHERE": apply_SPHERE_to_model,
     "ULTRAEDIT": UltraEditRewriteExecutor().apply_to_model,

@@ -15,6 +15,20 @@ import torch.nn.functional as F
 
 # initial_sim_z = None
 
+def get_target_new_str(request: Dict) -> str:
+    target_new = request["target_new"]
+    if isinstance(target_new, dict):
+        return target_new["str"]
+    return target_new
+
+
+def set_target_new_str(request: Dict, value: str) -> None:
+    if isinstance(request["target_new"], dict):
+        request["target_new"]["str"] = value
+    else:
+        request["target_new"] = value
+
+
 def compute_z(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
@@ -71,7 +85,7 @@ def compute_z(
     device = normalize_device(getattr(hparams, "device", None))
     rewrite_module_name = hparams.layer_module_tmp.format(layer)
     rewrite_device = get_module_device(nethook.get_module(model, rewrite_module_name), device)
-    target_ids = tok(request["target_new"]["str"], return_tensors="pt").to(device)["input_ids"][0]
+    target_ids = tok(get_target_new_str(request), return_tensors="pt").to(device)["input_ids"][0]
 
     print(f"DEBUG INFO:target_ids:{target_ids}")
     print(f"DEBUG INFO:tok('English'):{tok('English')}")
@@ -90,7 +104,7 @@ def compute_z(
         opt_target_ids = target_ids
     
     print(f"opt_target_ids:{opt_target_ids}")
-    tgt_str = request["target_new"]["str"]
+    tgt_str = get_target_new_str(request)
     ### tokenizer.decode([]) gives nothing
     
     if "llama-3.1" in str(model.config._name_or_path).lower():
@@ -383,7 +397,8 @@ def get_module_input_output_at_words(
     module_template: str,
     fact_token_strategy: str,
     minus = None,
-    change_padding = False
+    change_padding = False,
+    track = None,
 ) -> Tuple[torch.Tensor]:
     """
     Retrieves detached representations for a word at the input and
@@ -395,7 +410,6 @@ def get_module_input_output_at_words(
         tok=tok,
         layer=layer,
         module_template=module_template,
-        change_padding=change_padding
     )
     if "subject_" in fact_token_strategy and fact_token_strategy.index("subject_") == 0:
         context_info = dict(
@@ -403,8 +417,12 @@ def get_module_input_output_at_words(
             words=words,
         )
         subtoken = fact_token_strategy[len("subject_") :]
+        if track in {"in", "out"}:
+            return repr_tools.get_reprs_at_word_tokens(
+                track=track, subtoken=subtoken, **context_info, **word_repr_args
+            ).detach()
         l_input, l_output = repr_tools.get_reprs_at_word_tokens(
-            track="both", subtoken=subtoken, minus=minus, **context_info, **word_repr_args
+            track="both", subtoken=subtoken, **context_info, **word_repr_args
         )
     elif fact_token_strategy == "last":
         raise Exception("This is definitely bugged, fix it.")
@@ -447,7 +465,6 @@ def find_fact_lookup_idx(
             context_templates=[prompt],
             words=[subject],
             subtoken=fact_token_strategy[len("subject_") :],
-            model_name=model_name
         )[0][0]
     else:
         raise ValueError(f"fact_token={fact_token_strategy} not recognized")

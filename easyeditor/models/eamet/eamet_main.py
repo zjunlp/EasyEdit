@@ -20,7 +20,13 @@ from ...util.generate import generate_fast, generate_standard
 from ...util.globals import *
 
 from .compute_ks import compute_ks
-from .compute_z import compute_z, get_module_input_output_at_words, find_fact_lookup_idx
+from .compute_z import (
+    compute_z,
+    find_fact_lookup_idx,
+    get_module_input_output_at_words,
+    get_target_new_str,
+    set_target_new_str,
+)
 from .hparams import EAMETHyperParams
 
 import torch.nn.functional as F
@@ -40,7 +46,9 @@ def apply_eamet_to_model(
     cache_id: int = 0,
     motivation_exp: bool=False,
     cache_motivation_fname: Optional[str] = None,
-    duplicate_subjects: Optional[Dict[str, List[int]]] = None
+    duplicate_subjects: Optional[Dict[str, List[int]]] = None,
+    keep_original_weight=False,
+    **kwargs
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
     """
     Returns a model with the desired changes.
@@ -105,8 +113,15 @@ def execute_eamet(
     requests = deepcopy(requests)
 
     for i, request in enumerate(requests):
-        if request["target_new"]["str"][0] != " ":
-            requests[i]["target_new"]["str"] = " " + request["target_new"]["str"]
+        target_new = get_target_new_str(request)
+        if target_new[0] != " ":
+            set_target_new_str(requests[i], " " + target_new)
+
+        if '{}' not in request['prompt']:
+            assert request['subject'] in request['prompt'] or \
+                   print(f"Subject:{request['subject']} do not exist in prompt: {request['prompt']}")
+
+            requests[i]['prompt'] = requests[i]['prompt'].replace(requests[i]['subject'], '{}')
 
     weights = {
         f"{hparams.rewrite_module_tmp.format(layer)}.weight": nethook.get_parameter(
@@ -345,11 +360,12 @@ def get_cov(
             model,
             tok,
             layer_name,
-            STATS_DIR,
+            hparams.stats_dir,
             mom2_dataset,
             to_collect=["mom2"],
             sample_size=mom2_n_samples,
             precision=mom2_dtype,
+            hparams=hparams,
             force_recompute=force_recompute,
         )
         COV_CACHE[key] = stat.mom2.moment().float().to("cpu")

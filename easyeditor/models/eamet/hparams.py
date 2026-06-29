@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import List, Literal
+from typing import List, Literal, Union
 
-from ...util.hparams import HyperParams
+from ...util.hparams import HyperParams, load_hparams_config, normalize_alg_name
 
 
 @dataclass
@@ -29,7 +29,7 @@ class EAMETHyperParams(HyperParams):
     weight_decay_method: Literal["norm", "fix_ks"]
 
     mom2_adjustment: bool
-    mom2_update_weight: float
+    mom2_update_weight: List[float]
 
     # Module templates
     rewrite_module_tmp: str
@@ -43,3 +43,22 @@ class EAMETHyperParams(HyperParams):
     mom2_dataset: str
     mom2_n_samples: int
     mom2_dtype: str
+    alg_name: str
+    device: Union[int, str]
+    model_name: str
+    stats_dir: str
+
+    max_length: int = 40
+    batch_size: int = 1
+    model_parallel: bool = False
+
+    @classmethod
+    def from_hparams(cls, hparams_name_or_path: str):
+        config = load_hparams_config(hparams_name_or_path)
+        config = normalize_alg_name(config, "EAMET")
+        if not isinstance(config["mom2_update_weight"], list):
+            config["mom2_update_weight"] = [
+                config["mom2_update_weight"]
+                for _ in config["layers"]
+            ]
+        return cls(**config)
