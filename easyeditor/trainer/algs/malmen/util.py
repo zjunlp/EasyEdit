@@ -125,14 +125,16 @@ class Tracer:
             inputs: Tuple[torch.FloatTensor],
             outputs: Tuple[torch.FloatTensor]
         ):
-            self.keys = inputs[0][cache_indices].detach()
+            layer_cache_indices = tuple(index.to(inputs[0].device) for index in cache_indices)
+            self.keys = inputs[0][layer_cache_indices].detach()
             
         def backward_hook(
             module: nn.Module,
             inputs_grad: Tuple[torch.FloatTensor],
             outputs_grad: Tuple[torch.FloatTensor]
         ):
-            self.values_grad = outputs_grad[0][cache_indices].detach()
+            layer_cache_indices = tuple(index.to(outputs_grad[0].device) for index in cache_indices)
+            self.values_grad = outputs_grad[0][layer_cache_indices].detach()
 
         self.handles = [
             module.register_forward_hook(forward_hook),

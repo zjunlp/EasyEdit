@@ -39,6 +39,7 @@ def euc(query, key, config, act_mask=None, infer=False):
         return topk.values.mean()
 
     if act_mask is not None:
+        act_mask = act_mask.to(device=l2_norm.device, dtype=l2_norm.dtype)
         return torch.sum(l2_norm * act_mask, dim=1) / torch.sum(act_mask, dim=1)
     else:
         return torch.mean(l2_norm, dim=-1)

@@ -53,6 +53,7 @@ class GRACE(torch.nn.Module):
         edit_module = parent_module(self.model, brackets_to_periods(self.layer))
         layer_name = self.layer.rsplit(".", 1)[-1]
         original_layer = getattr(edit_module, layer_name)
+        self.device = original_layer.weight.device
         if type(original_layer) is not GRACEAdapter:
             setattr(edit_module, layer_name, GRACEAdapter(config, original_layer, transpose=transpose).to(self.device))
             self.original_layer = copy.deepcopy(original_layer)
