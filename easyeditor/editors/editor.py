@@ -11,6 +11,7 @@ from transformers import LlamaTokenizer,PreTrainedTokenizerFast, LlamaTokenizerF
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
 from ..util.globals import *
+from ..util.model_loader import is_qwen35_vl_text_model, load_qwen35_language_model
 from .utils import _chunks, _prepare_requests, normalize_ground_truths, restore_after_edit, summary_metrics
 from .batch_editor import BatchEditor
 from ..evaluate import (
@@ -165,6 +166,15 @@ class BaseEditor:
                 self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, **model_kwargs)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.pad_token_id = self.tok.eos_token_id
+            elif is_qwen35_vl_text_model(self.model_name):
+                # Qwen3.8-27B is Qwen3_5ForConditionalGeneration (VL shell +
+                # language_model). Detect via AutoConfig before the qwen2/qwen3
+                # CausalLM branch. Pure-text Qwen3.5-9B does not match.
+                self.model, self.tok = load_qwen35_language_model(
+                    self.model_name,
+                    device=hparams.device,
+                    torch_dtype=torch.bfloat16,
+                )
             elif 'qwen2' in self.model_name.lower() or 'qwen3' in self.model_name.lower():
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch_dtype if hparams.alg_name not in ['MEND'] else torch.bfloat16, device_map=device_map)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name, eos_token='<|endoftext|>', pad_token='<|endoftext|>',unk_token='<|endoftext|>', trust_remote_code=True)
@@ -189,7 +199,9 @@ class BaseEditor:
 
         self.device = normalize_device(getattr(hparams, "device", None))
         if self.model is not None and not hparams.model_parallel and hparams.alg_name != 'QLoRA':
-            self.model.to(self.device)
+            already_mapped = bool(getattr(self.model, "hf_device_map", None))
+            if not already_mapped:
+                self.model.to(self.device)
 
         self.hparams = hparams
 

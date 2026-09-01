@@ -1,0 +1,30 @@
+# FT on Qwen3.8-27B — UNTESTED.
+# Module paths use the language_model prefix of the VL-wrapped LM.
+# Quality unknown. Single-layer MLP only (full 27B FT is too VRAM-heavy).
+# We provide two implementations (objective_optimization):
+#   1. prompt_last: ROME-style NLL on the last input token.
+#   2. target_new: standard autoregressive CE on the target.
+
+alg_name: "FT"
+model_name: "./hugging_cache/Qwen3.8-27B"
+device: 0
+
+layers: [53]
+num_steps: 25
+batch_size: 1
+max_length: 40
+lr: 5e-4
+weight_decay: 0
+kl_factor: 0
+norm_constraint: false
+# In our survey paper(https://arxiv.org/abs/2401.01286)
+# "prompt_last" corresponds to the results of FT-L.
+# "target_new" corresponds to the results of FT-M.
+objective_optimization: "prompt_last"
+rewrite_module_tmp: "model.language_model.layers.{}.mlp.down_proj.weight"
+layer_module_tmp: "model.language_model.layers.{}"
+mlp_module_tmp: "model.language_model.layers.{}.mlp"
+attn_module_tmp: "model.language_model.layers.{}.self_attn"
+ln_f_module: "model.language_model.norm"
+lm_head_module: "lm_head"
+model_parallel: false
