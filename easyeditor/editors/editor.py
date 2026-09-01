@@ -96,6 +96,20 @@ def finalize_locality_metrics(metric, request, hparams, model_name):
             build_locality_metric_meta(locality_key, hparams, model_name),
         )
   
+def _wrap_apply_chat_template_disable_thinking(tok):
+    orig = tok.apply_chat_template
+
+    def _wrapped(*args, **kwargs):
+        kwargs.setdefault("enable_thinking", False)
+        try:
+            return orig(*args, **kwargs)
+        except TypeError:
+            kwargs.pop("enable_thinking", None)
+            return orig(*args, **kwargs)
+
+    tok.apply_chat_template = _wrapped
+
+
 class BaseEditor:
     """Base editor for all methods"""
 
@@ -174,6 +188,8 @@ class BaseEditor:
                     self.model_name,
                     device=hparams.device,
                     torch_dtype=torch.bfloat16,
+                    attn_implementation=getattr(hparams, "attn_implementation", None) or "eager",
+                    language_model_only=True if getattr(hparams, "language_model_only", None) is None else hparams.language_model_only,
                 )
             elif 'qwen2' in self.model_name.lower() or 'qwen3' in self.model_name.lower():
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name,trust_remote_code=True, torch_dtype=torch_dtype if hparams.alg_name not in ['MEND'] else torch.bfloat16, device_map=device_map)
@@ -196,6 +212,14 @@ class BaseEditor:
                 self.tok.padding_side = 'right'
         else:
             self.model, self.tok = self.model_name
+
+        padding_side = getattr(hparams, "padding_side", None)
+        if self.tok is not None and padding_side:
+            LOG.info(f'Set tokenizer padding_side to {padding_side} from hparams...')
+            self.tok.padding_side = padding_side
+        if self.tok is not None and getattr(hparams, "enable_thinking", True) is False:
+            LOG.info('Wrapping apply_chat_template with enable_thinking=False...')
+            _wrap_apply_chat_template_disable_thinking(self.tok)
 
         self.device = normalize_device(getattr(hparams, "device", None))
         if self.model is not None and not hparams.model_parallel and hparams.alg_name != 'QLoRA':

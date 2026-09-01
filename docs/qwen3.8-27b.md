@@ -81,9 +81,7 @@ Results go under `examples/qwen38/results/`. Do not run `01` / `03` / `04` while
 
 **PR-1** (`feat/qwen38-loader`): the model loads through `BaseEditor` / `model_loader.py`, chat generation works, MLP paths are `model.language_model.layers.*.mlp.down_proj`. WISE generation-flip is **not** a PR-1 criterion. `WISE.py` is not modified.
 
-**PR-2** (`feat/wise-ft-loss-padding`): WISE locates the prompt/target cut from the first non-`-100` label (works with right padding), `model.train()` during the edit loop so transformers 5.8 gradient checkpointing actually runs, optional hparams `padding_side` / `enable_thinking` / `attn_implementation` / `language_model_only`. Verified target: chat `"The capital of France is"` → `Shanghai`, Japan locality stays Tokyo. Peak ~53GB.
-
-On PR-1 yaml, WISE still uses the editor default **left** padding and the chat template default **thinking** block. That combination is a known failure mode (see below). After PR-2 the WISE yaml sets `padding_side: right` and `enable_thinking: false`.
+**PR-2** (`feat/wise-ft-loss-padding`): WISE locates the prompt/target cut from the first non-`-100` label (works with right padding), `model.train()` during the edit loop so transformers 5.8 gradient checkpointing actually runs, optional hparams `padding_side` / `enable_thinking` / `attn_implementation` / `language_model_only`. The WISE yaml now sets `padding_side: right` and `enable_thinking: false`. Verified target: chat `"The capital of France is"` → `Shanghai`, Japan locality stays Tokyo. Peak ~53GB.
 
 ## Known failure modes
 

@@ -69,6 +69,7 @@ def load_qwen35_language_model(
     device,
     torch_dtype=None,
     attn_implementation="eager",
+    language_model_only=True,
 ):
     """Load the language backbone of a Qwen3.5 VL-text model.
 
@@ -77,7 +78,7 @@ def load_qwen35_language_model(
     """
     del torch_dtype  # this family is always loaded in bfloat16
     config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-    config.language_model_only = True
+    config.language_model_only = bool(language_model_only)
     model = AutoModelForImageTextToText.from_pretrained(
         model_name,
         config=config,

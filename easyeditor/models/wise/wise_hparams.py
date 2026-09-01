@@ -42,6 +42,12 @@ class WISEHyperParams(HyperParams):
     save_path: str = None
     load_path: str = None
 
+    # Optional Qwen3.8 / hybrid-attention knobs. Defaults keep old yaml working.
+    padding_side: str = None
+    enable_thinking: bool = True
+    attn_implementation: str = None
+    language_model_only: bool = None
+
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):
         if '.yaml' not in hparams_name_or_path:

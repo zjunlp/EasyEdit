@@ -85,9 +85,7 @@ python examples/qwen38/04_layer_scan.py \
 
 **PR-1**（`feat/qwen38-loader`）：能通过 `BaseEditor` / `model_loader.py` 加载，能 chat 生成，MLP 路径是 `model.language_model.layers.*.mlp.down_proj`。WISE 生成翻转 **不是** PR-1 验收项。本 PR **不改** `WISE.py`。
 
-**PR-2**（`feat/wise-ft-loss-padding`）：用「每行第一个非 `-100` label 的位置 - 1」定位 prompt/target 分界（right padding 也能对），编辑循环里 `model.train()`（transformers 5.8 的 GC 只在 training 生效），hparams 增加可选字段 `padding_side` / `enable_thinking` / `attn_implementation` / `language_model_only`。已验证目标：chat「The capital of France is」→ Shanghai，Japan locality 仍 Tokyo。峰值约 53GB。
-
-PR-1 的 WISE yaml 仍走 editor 默认 **left** padding 和模板默认 **thinking**。这是已知失败组合（见下）。PR-2 会把 yaml 改成 `padding_side: right`、`enable_thinking: false`。
+**PR-2**（`feat/wise-ft-loss-padding`）：用「每行第一个非 `-100` label 的位置 - 1」定位 prompt/target 分界（right padding 也能对），编辑循环里 `model.train()`（transformers 5.8 的 GC 只在 training 生效），hparams 增加可选字段 `padding_side` / `enable_thinking` / `attn_implementation` / `language_model_only`。WISE yaml 现已设置 `padding_side: right`、`enable_thinking: false`。已验证目标：chat「The capital of France is」→ Shanghai，Japan locality 仍 Tokyo。峰值约 53GB。
 
 ## 已知失败模式
 

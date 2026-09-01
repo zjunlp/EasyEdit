@@ -44,6 +44,24 @@ def euc(query, key, config, act_mask=None, infer=False):
     else:
         return torch.mean(l2_norm, dim=-1)
 
+
+def prompt_token_loc_from_labels(labels):
+    """Last prompt-token index per row: first non-``-100`` label minus 1.
+
+    Replaces ``(labels == -100).sum(dim=-1) - 1``, which is correct for left
+    padding (``-100`` is a prefix) but counts trailing right-pads as prompt.
+    """
+    if not torch.is_tensor(labels):
+        labels = torch.as_tensor(labels)
+    locs = labels.new_empty(labels.size(0), dtype=torch.long)
+    for i, row in enumerate(labels):
+        nz = (row != -100).nonzero(as_tuple=False)
+        if nz.numel():
+            locs[i] = int(nz[0].item()) - 1
+        else:
+            locs[i] = int(row.size(0)) - 1
+    return locs
+
 class WISE(torch.nn.Module):
     def __init__(self, config, model, device):
         super(WISE, self).__init__()
@@ -143,7 +161,9 @@ class WISE(torch.nn.Module):
         global merge_group_edit_history
         edit_history.append([{f"{k1}" : v1.to('cpu') for k1, v1 in tokens.items()}, False])
         # for retrieve ##
-        last_prompt_token_loc = (tokens["labels"] == -100).sum(dim=-1) - 1
+        last_prompt_token_loc = prompt_token_loc_from_labels(tokens["labels"])
+        # transformers 5.8 GradientCheckpointingLayer only runs when training=True
+        self.model.train()
 
         setattr(eval(f"self.model.{self.layer}"), "training", True)
         setattr(eval(f"self.model.{self.layer}"), "editing", True)
@@ -246,6 +266,7 @@ class WISE(torch.nn.Module):
 
             self.get_adapter_layer().merge_weight()
             print(f'Merge Weight of (New, Original) Matrix... with {self.config.merge_alg}')
+        self.model.eval()
 
     def _norm_constraint(self, norm_constraint):
         new_weight = self.get_adapter_layer().new_weight
@@ -556,7 +577,8 @@ class WISEMultimodal(WISE):
         global edit_history
         global merge_group_edit_history
         edit_history.append([{f"{k1}" : v1.to('cpu') for k1, v1 in text_tokens.items()}, False])
-        last_prompt_token_loc = (text_tokens["labels"] == -100).sum(dim=-1) - 1
+        last_prompt_token_loc = prompt_token_loc_from_labels(text_tokens["labels"])
+        self.model.train()
         
         setattr(eval(f"self.model.{self.layer}"), "training", True)
         setattr(eval(f"self.model.{self.layer}"), "editing", True)
@@ -661,6 +683,7 @@ class WISEMultimodal(WISE):
 
             super().get_adapter_layer().merge_weight()
             print(f'Merge Weight of (New, Original) Matrix... with {self.config.merge_alg}')
+        self.model.eval()
 
     def _cal_ft_loss(self, multimodal_inputs, text_tokens, last_prompt_token_loc, ans_token_len):
         if hasattr(self.model.config, 'batch_size'):
