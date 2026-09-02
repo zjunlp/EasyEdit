@@ -78,6 +78,7 @@ We have also published a blog post titled "[Take Control of What Your LLM Knows 
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- 2026-09-02, 🧩 Added Qwen3.8-27B (`qwen3_5` VL-text) loading for `BaseEditor`, WISE hparams, and WISE padding/thinking fixes. See [docs/qwen3.8-27b.md](docs/qwen3.8-27b.md) and [examples/qwen38](examples/qwen38/README.md).
 - 2026-07-13, 🎉 EasyEdit has been selected for the CCF ODTC open source incentive program.
 - 2026-07-08, 🚀 EasyEdit has received a major upgrade, bringing Transformers 5.x compatibility, new models support, more reliable multi-GPU editing, enhanced multimodal pipelines, a unified EasyEdit2 steering workflow, expanded vLLM support, and faster multi-worker deployment.
 - 2026-03-04, 🎉 [SteerEval](https://github.com/zjunlp/EasyEdit/blob/main/examples/SteerEval.md) is released — a hierarchical benchmark for evaluating LLM controllability across behavioral domains and granularity levels, with an automated data synthesis pipeline.

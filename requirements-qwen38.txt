@@ -1,0 +1,5 @@
+# Extra pins for Qwen3.8-27B (VL-text loader).
+# Do not replace the repo-root requirements.txt (transformers==5.5.4).
+#   pip install -r requirements-qwen38.txt
+torch==2.9.1
+transformers>=5.8.1
