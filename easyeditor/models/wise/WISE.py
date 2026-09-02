@@ -164,7 +164,12 @@ class WISE(torch.nn.Module):
         last_prompt_token_loc = prompt_token_loc_from_labels(tokens["labels"])
         # transformers 5.8 GradientCheckpointingLayer only runs when training=True
         self.model.train()
+        try:
+            self._edit_loop(config, tokens, last_prompt_token_loc, act_mask, deact_mask)
+        finally:
+            self.model.eval()
 
+    def _edit_loop(self, config, tokens, last_prompt_token_loc, act_mask, deact_mask):
         setattr(eval(f"self.model.{self.layer}"), "training", True)
         setattr(eval(f"self.model.{self.layer}"), "editing", True)
         self.get_adapter_layer().set_parameter_tunable()
@@ -266,7 +271,6 @@ class WISE(torch.nn.Module):
 
             self.get_adapter_layer().merge_weight()
             print(f'Merge Weight of (New, Original) Matrix... with {self.config.merge_alg}')
-        self.model.eval()
 
     def _norm_constraint(self, norm_constraint):
         new_weight = self.get_adapter_layer().new_weight
@@ -579,7 +583,14 @@ class WISEMultimodal(WISE):
         edit_history.append([{f"{k1}" : v1.to('cpu') for k1, v1 in text_tokens.items()}, False])
         last_prompt_token_loc = prompt_token_loc_from_labels(text_tokens["labels"])
         self.model.train()
-        
+        try:
+            self._multimodal_edit_loop(
+                config, multimodal_inputs, text_tokens, last_prompt_token_loc, ans_token_len, act_mask, deact_mask
+            )
+        finally:
+            self.model.eval()
+
+    def _multimodal_edit_loop(self, config, multimodal_inputs, text_tokens, last_prompt_token_loc, ans_token_len, act_mask, deact_mask):
         setattr(eval(f"self.model.{self.layer}"), "training", True)
         setattr(eval(f"self.model.{self.layer}"), "editing", True)
         self.get_adapter_layer().set_parameter_tunable()
@@ -683,7 +694,6 @@ class WISEMultimodal(WISE):
 
             super().get_adapter_layer().merge_weight()
             print(f'Merge Weight of (New, Original) Matrix... with {self.config.merge_alg}')
-        self.model.eval()
 
     def _cal_ft_loss(self, multimodal_inputs, text_tokens, last_prompt_token_loc, ans_token_len):
         if hasattr(self.model.config, 'batch_size'):

@@ -180,10 +180,9 @@ class BaseEditor:
                 self.model = AutoModel.from_pretrained(self.model_name,trust_remote_code=True, **model_kwargs)
                 self.tok = AutoTokenizer.from_pretrained(self.model_name,trust_remote_code=True)
                 self.tok.pad_token_id = self.tok.eos_token_id
-            elif is_qwen35_vl_text_model(self.model_name):
-                # Qwen3.8-27B is Qwen3_5ForConditionalGeneration (VL shell +
-                # language_model). Detect via AutoConfig before the qwen2/qwen3
-                # CausalLM branch. Pure-text Qwen3.5-9B does not match.
+            elif 'qwen' in self.model_name.lower() and is_qwen35_vl_text_model(self.model_name):
+                # Cheap name gate first (same style as qwen2/qwen3 below), then
+                # local config.json. Pure-text Qwen3.5-9B does not match.
                 self.model, self.tok = load_qwen35_language_model(
                     self.model_name,
                     device=hparams.device,

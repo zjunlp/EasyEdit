@@ -3,7 +3,7 @@
 # Layer 53 is a GDN / linear_attention layer at ~83% depth (WISE convention).
 # Layer 29 (~45% depth) changes teacher-forcing metrics but not free generation.
 #
-# PR-2: padding_side=right + enable_thinking=false are required for generation-flip
+# padding_side=right + enable_thinking=false are required for generation-flip
 # (left pad + thinking is a known GDN / template failure; see docs/qwen3.8-27b.md).
 alg_name: "WISE"
 model_name: "./hugging_cache/Qwen3.8-27B"
@@ -36,6 +36,8 @@ model_parallel: False
 use_chat_template: True
 padding_side: right
 enable_thinking: false
+attn_implementation: eager
+language_model_only: true
 
 # for save and load
 # save_path: "./wise_checkpoint/wise.pt"

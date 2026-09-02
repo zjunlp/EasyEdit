@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-"""WISE single-fact edit on Qwen3.8-27B via BaseEditor + yaml (no monkeypatch).
+"""WISE single-fact edit on Qwen3.8-27B via BaseEditor + yaml.
 
-PR-2 upstream fixes (right padding loc, enable_thinking, train-mode GC) live in
-EasyEdit itself. This script only: picks a free GPU, loads through BaseEditor,
-optionally shrinks context templates for VRAM, then reports chat/raw generation.
+Right-padding loc, enable_thinking=False, and train-mode GC live in EasyEdit
+itself. This script only: picks a free GPU, loads through BaseEditor,
+optionally shrinks context templates for VRAM, then reports chat/raw generation
+plus vanilla_metrics (teacher-forcing vs generate-match vs substring).
 
 Usage:
-    conda activate EasyEdit-next
     python examples/qwen38/03_wise_edit.py \\
         --hparams hparams/WISE/qwen3.8-27b.yaml \\
-        --model /data/zhangzuhao/models/Qwen3.8-27B
+        --model ./hugging_cache/Qwen3.8-27B
     python examples/qwen38/03_wise_edit.py --small-context --tag mem
 
 Results:
@@ -22,14 +22,18 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import subprocess
 import sys
 import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-RESULTS_DIR = Path(__file__).resolve().parent / "results"
-MIN_FREE_GB = 66.0
+EXAMPLES = Path(__file__).resolve().parent
+RESULTS_DIR = EXAMPLES / "results"
+sys.path.insert(0, str(EXAMPLES))
+sys.path.insert(0, str(ROOT))
+
+from gpu_guard import MIN_FREE_GB, pick_gpu  # noqa: E402
+
 DEFAULT_HPARAMS = ROOT / "hparams" / "WISE" / "qwen3.8-27b.yaml"
 
 
@@ -39,7 +43,7 @@ def parse_args():
     parser.add_argument(
         "--model",
         default=None,
-        help="Override yaml model_name (e.g. /data/zhangzuhao/models/Qwen3.8-27B)",
+        help="Override yaml model_name (e.g. ./hugging_cache/Qwen3.8-27B)",
     )
     parser.add_argument("--layer", type=int, default=None, help="Override yaml inner_params layer")
     parser.add_argument("--act-ratio", type=float, default=None)
@@ -57,27 +61,6 @@ def parse_args():
     )
     parser.add_argument("--min-free-gb", type=float, default=MIN_FREE_GB)
     return parser.parse_args()
-
-
-def pick_gpu(min_free_gb: float):
-    out = subprocess.check_output(
-        ["nvidia-smi", "--query-gpu=index,memory.free", "--format=csv,noheader,nounits"],
-        text=True,
-    )
-    best = None
-    for line in out.strip().splitlines():
-        idx, free_mib = [x.strip() for x in line.split(",")]
-        free_gb = int(free_mib) / 1024
-        if best is None or free_gb > best[1]:
-            best = (int(idx), free_gb)
-    if best is None:
-        raise RuntimeError("nvidia-smi reported no GPUs")
-    if best[1] < min_free_gb:
-        raise RuntimeError(
-            f"largest free GPU{best[0]} has only {best[1]:.1f}GB < {min_free_gb:.1f}GB; "
-            "refusing to run so existing jobs are not disturbed"
-        )
-    return best
 
 
 def ask(tok, gen_model, question: str, max_new: int = 16, chat: bool = True) -> str:
@@ -120,6 +103,19 @@ def unwrap_generate_model(edited):
     return gen_model
 
 
+def contains_token_span(text: str, needle: str) -> bool:
+    return needle.lower() in (text or "").lower()
+
+
+def official_vanilla_acc(model, tok, hparams, prompt, target, device):
+    """EasyEdit GRACE-style generate-then-match (no teacher forcing, no left pad)."""
+    from easyeditor.evaluate.evaluate_utils import test_prediction_acc
+
+    return test_prediction_acc(
+        model, tok, hparams, prompt, target, device, vanilla_generation=True
+    )
+
+
 def maybe_shrink_context_templates():
     import importlib
 
@@ -139,7 +135,6 @@ def main() -> int:
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
     os.environ.setdefault("OMP_NUM_THREADS", "16")
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
-    sys.path.insert(0, str(ROOT))
 
     import torch  # noqa: E402
     from easyeditor import BaseEditor  # noqa: E402
@@ -227,6 +222,28 @@ def main() -> int:
     for question, answer in post_edit_answers.items():
         print(f"  Q: {question}\n  A: {answer}\n")
 
+    chat_rewrite = post_edit_answers[f"[chat] {args.prompt}"]
+    raw_rewrite = post_edit_answers[f"[raw ] {args.prompt}"]
+    chat_loc = post_edit_answers[f"[chat] {args.loc_prompt}"]
+    # Official teacher-forcing rewrite_acc can stay 0 on this model (eval
+    # forces left padding + exact first-token " Shanghai"). Contrast with
+    # vanilla generate-match and free-generation substring checks.
+    try:
+        vanilla_rewrite = official_vanilla_acc(
+            gen_model, tok, hparams, args.prompt, args.target, hparams.device
+        )
+    except Exception as exc:
+        vanilla_rewrite = f"error: {exc}"
+    vanilla_metrics = {
+        "rewrite_acc_teacher_forcing": (m.get("post") or {}).get("rewrite_acc"),
+        "rewrite_acc_vanilla_generation": vanilla_rewrite,
+        "rewrite_contains_target_chat": contains_token_span(chat_rewrite, args.target),
+        "rewrite_contains_target_raw": contains_token_span(raw_rewrite, args.target),
+        "locality_contains_gt_chat": contains_token_span(chat_loc, args.loc_gt),
+    }
+    print("[metrics] ===== vanilla vs teacher-forcing =====")
+    print(json.dumps(vanilla_metrics, indent=2, ensure_ascii=False, default=str))
+
     peak_gb = torch.cuda.max_memory_allocated() / 2**30
     layer = None
     if hparams.inner_params:
@@ -249,6 +266,7 @@ def main() -> int:
             "subject": args.subject,
         },
         "metrics": m,
+        "vanilla_metrics": vanilla_metrics,
         "post_edit_answers": post_edit_answers,
         "edit_seconds": round(edit_seconds, 1),
         "total_seconds": round(time.time() - t_start, 1),

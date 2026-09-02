@@ -21,32 +21,28 @@ hparams yaml → BaseEditor.__init__
 
 加载器会从 `text_config` 补上 `model.config.hidden_act`（WISE 激活距离要用）。**不会**在 loader 里改 `padding_side`，仍由 editor 按算法设置。
 
-仓库内官方 yaml 的 `model_name` 是 `./hugging_cache/Qwen3.8-27B`。本机覆盖：
-
-`--model /data/zhangzuhao/models/Qwen3.8-27B`
+仓库内官方 yaml 的 `model_name` 是 `./hugging_cache/Qwen3.8-27B`。覆盖方式：示例脚本的 `--model /path/to/Qwen3.8-27B`，或改 yaml 里的 `model_name`（不要把本机绝对路径提交进仓库）。
 
 ## 算法能不能用
 
 | 优先级 | 算法 | 结构 | 本轮动作 | 风险 |
 | --- | --- | --- | --- | --- |
-| P0 已验证 | **WISE** | `inner_params` 与 `qwen3vl-4b.yaml` 同前缀 | PR-1 yaml + 冒烟加载；PR-2 修算法后才保证生成翻转 | 默认 left pad + thinking 模板会让 ES 虚高 |
+| P0 已验证 | **WISE** | `inner_params` 与 `qwen3vl-4b.yaml` 同前缀 | yaml + 冒烟加载 + padding/thinking 修复后可生成翻转 | 默认 left pad + thinking 模板会让 ES 虚高 |
 | P1 结构可跑 | **FT** | `rewrite_module_tmp` 加 `language_model` 前缀 | 实验 yaml，**未测质量** | 27B 全层 FT 显存炸；yaml 只改单层 MLP |
 | P1 结构可跑 | **GRACE** | 与 WISE 相同 `inner_params` | 实验 yaml，**未测** | 27B 上没跑过 |
-| P1 | **IKE** | 不改权重 | 加载成功即可试 | 非本周重点 |
+| P1 | **IKE** | 不改权重 | 加载成功即可试 | 非当前目标 |
 | P1 注意模块名 | **LoRA** | 仅 full_attention 层有 `q_proj`/`v_proj` | 文档说明，不提交 yaml | GDN 层没有这两个模块 |
-| P2 需选层 | **ROME / R-ROME / MEMIT / AlphaEdit** | nethook 可用；GDN 上因果追踪/协方差未验证 | PR-3 脚手架 + `04_layer_scan.py` | `attn_module_tmp` 要分 `self_attn` vs `linear_attn`；需要 mom2 |
+| P2 需选层 | **ROME / R-ROME / MEMIT / AlphaEdit** | nethook 可用；GDN 上因果追踪/协方差未验证 | `04_layer_scan.py` + ROME yaml.example | `attn_module_tmp` 要分 `self_attn` vs `linear_attn`；需要 mom2 |
 | 暂不做 | MEND/SERAC/UltraEdit/KN/QLoRA | 要预训练 editor 或架构敏感追踪 | 文档列为后续 | 27B 成本高 |
 
 官方 `editor.py` 默认 dtype 是 **fp32**，27B 必 OOM。这一族加载器强制 **bfloat16**。注意力默认 `eager`（GC 路径下 sdpa 会碰到非连续 4D mask）。
 
 ## 环境
 
-**不要改**仓库根目录 `requirements.txt`（里面是 `transformers==5.5.4`）。用已有 conda：
+**不要改**仓库根目录 `requirements.txt`（里面是 `transformers==5.5.4`）。请使用 `requirements-qwen38.txt`：
 
 ```bash
-conda activate EasyEdit-next
-# torch==2.9.1、transformers>=5.8.1，见 requirements-qwen38.txt
-cd /data/zhangzuhao/ideaTest/EasyEdit
+# transformers>=5.8.1，见 requirements-qwen38.txt
 python examples/qwen38/00_check_env.py
 ```
 
@@ -56,36 +52,35 @@ python examples/qwen38/00_check_env.py
 
 ## 命令（必须等有空闲卡再跑）
 
+完整步骤见 [examples/qwen38/README.md](../examples/qwen38/README.md)。
+
 ```bash
-conda activate EasyEdit-next
-cd /data/zhangzuhao/ideaTest/EasyEdit
+python examples/qwen38/00_check_env.py
+python examples/qwen38/run_cpu_checks.py
 
-# PR-1：加载 + chat 贪心 8 token + 模块路径抽样
-python examples/qwen38/01_smoke_load.py --model /data/zhangzuhao/models/Qwen3.8-27B
-
-# PR-2（feat/wise-ft-loss-padding）之后：France → Shanghai 自由生成翻转
+MODEL=./hugging_cache/Qwen3.8-27B
+python examples/qwen38/01_smoke_load.py --model $MODEL
+python examples/qwen38/02_explore_modules.py --model $MODEL
 python examples/qwen38/03_wise_edit.py \
   --hparams hparams/WISE/qwen3.8-27b.yaml \
-  --model /data/zhangzuhao/models/Qwen3.8-27B
-
-# 仅示例脚本的显存技巧（不要写进默认 WISE）：
-python examples/qwen38/03_wise_edit.py --small-context --model /data/zhangzuhao/models/Qwen3.8-27B
-
-# PR-3 脚手架：扫描 GDN 53 与 full_attention 51/55/59/63（layer 29 自由生成不迁移）
+  --model $MODEL
 python examples/qwen38/04_layer_scan.py \
   --layers 45,49,51,53,55,57,59,61,63 \
-  --model /data/zhangzuhao/models/Qwen3.8-27B
+  --model $MODEL
+python examples/qwen38/05_ft_edit.py --model $MODEL
 ```
 
-结果写到 `examples/qwen38/results/`。两张 A800 都被占时，不要跑 `01` / `03` / `04`。
+结果写到 `examples/qwen38/results/`。GPU 脚本会在空闲最大的卡不足 66GB 时拒绝启动。
 
-覆盖 yaml 路径的方式：所有示例都接受 `--model`；也可以改 yaml 里的 `model_name`（不要把本机绝对路径提交进 PR）。
+覆盖 yaml 路径的方式：所有示例都接受 `--model`；也可以改 yaml 里的 `model_name`（不要把本机绝对路径提交进仓库）。
 
-## PR-1 与 PR-2 验收差异
+## 已验证行为
 
-**PR-1**（`feat/qwen38-loader`）：能通过 `BaseEditor` / `model_loader.py` 加载，能 chat 生成，MLP 路径是 `model.language_model.layers.*.mlp.down_proj`。WISE 生成翻转 **不是** PR-1 验收项。本 PR **不改** `WISE.py`。
+**加载器：** 能通过 `BaseEditor` / `model_loader.py` 加载，能 chat 生成，MLP 路径是 `model.language_model.layers.*.mlp.down_proj`。
 
-**PR-2**（`feat/wise-ft-loss-padding`）：用「每行第一个非 `-100` label 的位置 - 1」定位 prompt/target 分界（right padding 也能对），编辑循环里 `model.train()`（transformers 5.8 的 GC 只在 training 生效），hparams 增加可选字段 `padding_side` / `enable_thinking` / `attn_implementation` / `language_model_only`。WISE yaml 现已设置 `padding_side: right`、`enable_thinking: false`。已验证目标：chat「The capital of France is」→ Shanghai，Japan locality 仍 Tokyo。峰值约 53GB。
+**WISE：** 用「每行第一个非 `-100` label 的位置 - 1」定位 prompt/target 分界（right padding 也能对），编辑循环里 `model.train()`（transformers 5.8 的 GC 只在 training 生效），hparams 增加可选字段 `padding_side` / `enable_thinking` / `attn_implementation` / `language_model_only`。WISE yaml 现已设置 `padding_side: right`、`enable_thinking: false`。已验证目标：chat「The capital of France is」→ Shanghai，Japan locality 仍 Tokyo。峰值约 53GB。
+
+该混合注意力模型上，EasyEdit teacher-forcing `rewrite_acc` 即使自由生成已翻转也可能仍为 0（评估会临时改成 left padding，并要求首 token 是 `Shanghai`）。`examples/qwen38/03_wise_edit.py` 会额外写出 `vanilla_metrics`（官方 `vanilla_generation` token 匹配 + 子串检查）。
 
 ## 已知失败模式
 
@@ -95,7 +90,7 @@ python examples/qwen38/04_layer_scan.py \
 4. **`eval()` 下梯度检查点静默失效。** transformers 5.8 `GradientCheckpointingLayer` 要求 `self.training`。编辑时若 `model.eval()`，GC 被跳过，27B 必 OOM。
 5. **Layer 29。** 约 45% 深度的 GDN 层可以改 teacher-forcing 指标，但不迁移到自由生成。yaml 默认用 **53**。扫描时请同时看 full_attention 的 51/55/59/63。
 
-## PR-3 ROME 脚手架（本周不作为提交目标）
+## ROME 脚手架
 
 - `examples/qwen38/04_layer_scan.py`：WISE 选层扫描，包含 GDN 53 与 full_attention 51/55/59/63。
 - `hparams/ROME/qwen3.8-27b.yaml.example`：路径模板 `model.language_model.layers.{}.mlp.down_proj`，注释了 `self_attn` vs `linear_attn`。**不声称 ROME 已调通。** GDN recurrent state 上因果追踪与 mom2 未知；等扫描出现 rewrite+locality 再提正式 yaml。

@@ -4,10 +4,9 @@
 Prints torch / transformers versions and per-GPU free memory (nvidia-smi).
 Does not load weights and does not set CUDA_VISIBLE_DEVICES.
 
-Requires transformers >= 5.8 (conda env EasyEdit-next).
+Requires transformers >= 5.8 (see requirements-qwen38.txt).
 
 Usage:
-    conda activate EasyEdit-next
     python examples/qwen38/00_check_env.py
 """
 from __future__ import annotations
@@ -69,7 +68,7 @@ def main() -> int:
         import transformers
     except ImportError as exc:
         print(f"[env ] missing import: {exc}")
-        print("[env ] conda activate EasyEdit-next")
+        print("[env ] pip install -r requirements-qwen38.txt")
         return 1
 
     print(f"[env ] torch={torch.__version__}  cuda={torch.version.cuda}")
@@ -80,7 +79,7 @@ def main() -> int:
         print(
             f"[env ] transformers {transformers.__version__} < 5.8; "
             "Qwen3.8-27B needs AutoModelForImageTextToText + language_model_only. "
-            "conda activate EasyEdit-next (see requirements-qwen38.txt)"
+            "pip install -r requirements-qwen38.txt"
         )
         return 1
 

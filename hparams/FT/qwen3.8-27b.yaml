@@ -24,6 +24,8 @@ objective_optimization: "prompt_last"
 rewrite_module_tmp: "model.language_model.layers.{}.mlp.down_proj.weight"
 layer_module_tmp: "model.language_model.layers.{}"
 mlp_module_tmp: "model.language_model.layers.{}.mlp"
+# Layer 53 is GDN (linear_attn). FT only rewrites MLP, so this field is unused.
+# Use self_attn for full_attention layers 3,7,...,63 if you change `layers`.
 attn_module_tmp: "model.language_model.layers.{}.self_attn"
 ln_f_module: "model.language_model.norm"
 lm_head_module: "lm_head"

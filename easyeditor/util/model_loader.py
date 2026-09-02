@@ -4,7 +4,12 @@ Qwen3.8-27B is a VL-wrapped language model (`Qwen3_5ForConditionalGeneration`)
 with a 64-layer hybrid-attention text backbone. The checkpoint path does not
 contain ``vl``, so it must be detected from ``config.json`` rather than
 ``vl_utils`` aliases. Pure-text Qwen3.5-9B stays on the existing CausalLM path.
+
+Detection never hits the Hugging Face Hub: local ``config.json`` only, or a
+strict ``qwen3.8`` path hint. Do not use ``qwen3-8`` as a hint (that matches
+Qwen3-8B).
 """
+from os.path import isfile, join
 
 from transformers import AutoConfig, AutoModelForImageTextToText, AutoTokenizer
 import torch
@@ -15,8 +20,9 @@ QWEN35_VL_TEXT_ARCH = "Qwen3_5ForConditionalGeneration"
 
 
 def _has_qwen38_path_hint(model_name):
+    """True only for the 3.8 series name, never Qwen3-8B."""
     name = str(model_name or "").lower().replace("_", "-")
-    return "qwen3.8" in name or "qwen3-8" in name
+    return "qwen3.8" in name
 
 
 def _config_is_qwen35_vl_text(config):
@@ -36,15 +42,21 @@ def _config_is_qwen35_vl_text(config):
 def is_qwen35_vl_text_model(model_name):
     """Return True for Qwen3.5 VL-text checkpoints such as Qwen3.8-27B.
 
-    Primary signal is ``AutoConfig`` (architectures / nested vision+text
-    configs). A ``qwen3.8`` path substring is only used when config cannot be
-    read, and is never the sole criterion so Qwen3.5-9B is not misclassified.
+    Matches EasyEdit's cheap string-matching style: skip non-qwen names,
+    read a local config when the directory exists (``local_files_only``),
+    otherwise fall back to the ``qwen3.8`` path hint. Never downloads.
     """
-    try:
-        config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-    except Exception:
-        return _has_qwen38_path_hint(model_name)
-    return _config_is_qwen35_vl_text(config)
+    if not isinstance(model_name, str) or "qwen" not in model_name.lower():
+        return False
+    if isfile(join(model_name, "config.json")):
+        try:
+            config = AutoConfig.from_pretrained(
+                model_name, trust_remote_code=True, local_files_only=True
+            )
+        except Exception:
+            return _has_qwen38_path_hint(model_name)
+        return _config_is_qwen35_vl_text(config)
+    return _has_qwen38_path_hint(model_name)
 
 
 def _fill_hidden_act(model):

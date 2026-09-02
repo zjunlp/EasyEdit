@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Optional, Union
 from ...util.hparams import HyperParams
 import yaml
 
@@ -43,10 +43,10 @@ class WISEHyperParams(HyperParams):
     load_path: str = None
 
     # Optional Qwen3.8 / hybrid-attention knobs. Defaults keep old yaml working.
-    padding_side: str = None
+    padding_side: Optional[str] = None
     enable_thinking: bool = True
-    attn_implementation: str = None
-    language_model_only: bool = None
+    attn_implementation: Optional[str] = None
+    language_model_only: Optional[bool] = None
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

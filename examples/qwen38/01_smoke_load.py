@@ -9,8 +9,7 @@ Set CUDA_VISIBLE_DEVICES after the nvidia-smi pick so only the chosen card
 is visible. Override the checkpoint with --model.
 
 Usage:
-    conda activate EasyEdit-next
-    python examples/qwen38/01_smoke_load.py --model /data/zhangzuhao/models/Qwen3.8-27B
+    python examples/qwen38/01_smoke_load.py --model ./hugging_cache/Qwen3.8-27B
 
 Results:
     examples/qwen38/results/01_smoke_load.json
@@ -20,14 +19,18 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import subprocess
 import sys
 import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-RESULTS_DIR = Path(__file__).resolve().parent / "results"
-MIN_FREE_GB = 66.0
+EXAMPLES = Path(__file__).resolve().parent
+RESULTS_DIR = EXAMPLES / "results"
+sys.path.insert(0, str(EXAMPLES))
+sys.path.insert(0, str(ROOT))
+
+from gpu_guard import MIN_FREE_GB, pick_gpu  # noqa: E402
+
 DEFAULT_MODEL = "./hugging_cache/Qwen3.8-27B"
 
 
@@ -47,34 +50,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def pick_gpu(min_free_gb: float):
-    out = subprocess.check_output(
-        ["nvidia-smi", "--query-gpu=index,memory.free", "--format=csv,noheader,nounits"],
-        text=True,
-    )
-    best = None
-    for line in out.strip().splitlines():
-        idx, free_mib = [x.strip() for x in line.split(",")]
-        free_gb = int(free_mib) / 1024
-        if best is None or free_gb > best[1]:
-            best = (int(idx), free_gb)
-    if best is None:
-        raise RuntimeError("nvidia-smi reported no GPUs")
-    if best[1] < min_free_gb:
-        raise RuntimeError(
-            f"largest free GPU{best[0]} has only {best[1]:.1f}GB < {min_free_gb:.1f}GB; "
-            "refusing to run so existing jobs are not disturbed"
-        )
-    return best
-
-
 def main() -> int:
     args = parse_args()
     gpu_idx, gpu_free_gb = pick_gpu(args.min_free_gb)
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
     os.environ.setdefault("OMP_NUM_THREADS", "16")
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
-    sys.path.insert(0, str(ROOT))
 
     import torch  # noqa: E402
     import transformers  # noqa: E402

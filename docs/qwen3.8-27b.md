@@ -21,18 +21,18 @@ hparams yaml → BaseEditor.__init__
 
 The loader fills `model.config.hidden_act` from `text_config` (WISE activation distance needs it). It does **not** set tokenizer `padding_side`; the editor still chooses padding per algorithm.
 
-Official yaml `model_name` is `./hugging_cache/Qwen3.8-27B`. Override on this machine with `--model /data/zhangzuhao/models/Qwen3.8-27B`.
+Official yaml `model_name` is `./hugging_cache/Qwen3.8-27B`. Override with `--model /path/to/Qwen3.8-27B`.
 
 ## Algorithm compatibility
 
 | Priority | Algorithm | Structure | This work | Risk |
 | --- | --- | --- | --- | --- |
-| P0 verified | **WISE** | `inner_params` same prefix as `qwen3vl-4b.yaml` | PR-1 yaml + smoke load; PR-2 algorithm fixes for generation flip | default left pad + thinking template inflate ES without flipping free gen |
+| P0 verified | **WISE** | `inner_params` same prefix as `qwen3vl-4b.yaml` | yaml + smoke load; padding/thinking fixes for generation flip | default left pad + thinking template inflate ES without flipping free gen |
 | P1 runnable | **FT** | `rewrite_module_tmp` with `language_model` prefix | experimental yaml, **untested** | 27B full FT OOM; yaml edits one MLP layer |
 | P1 runnable | **GRACE** | same `inner_params` as WISE | experimental yaml, **untested** | not measured on 27B |
 | P1 | **IKE** | no weight change | load success is enough to try | not a current target |
 | P1 module names | **LoRA** | `q_proj` / `v_proj` only on full_attention layers | documented, no yaml | GDN layers lack those modules |
-| P2 layer pick | **ROME / R-ROME / MEMIT / AlphaEdit** | nethook works; causal trace / mom2 on GDN unverified | PR-3 scaffold + `04_layer_scan.py` | `attn_module_tmp` is `self_attn` vs `linear_attn`; needs mom2 stats |
+| P2 layer pick | **ROME / R-ROME / MEMIT / AlphaEdit** | nethook works; causal trace / mom2 on GDN unverified | `04_layer_scan.py` + ROME yaml.example | `attn_module_tmp` is `self_attn` vs `linear_attn`; needs mom2 stats |
 | Later | MEND / SERAC / UltraEdit / KN / QLoRA | pretrained editor or architecture-sensitive tracing | listed as follow-up | 27B cost |
 
 Default editor dtype is **fp32**; 27B fp32 OOMs. The Qwen3.5 VL-text loader **forces bfloat16**. Attention uses `eager` by default (SDPA + gradient checkpointing hits a non-contiguous 4D mask error).
@@ -42,9 +42,7 @@ Default editor dtype is **fp32**; 27B fp32 OOMs. The Qwen3.5 VL-text loader **fo
 Do **not** change repo-root `requirements.txt` (`transformers==5.5.4`). Use:
 
 ```bash
-conda activate EasyEdit-next
-# torch==2.9.1, transformers>=5.8.1 — see requirements-qwen38.txt
-cd /data/zhangzuhao/ideaTest/EasyEdit
+# transformers>=5.8 — see requirements-qwen38.txt
 python examples/qwen38/00_check_env.py
 ```
 
@@ -54,34 +52,33 @@ VRAM floor for weight-loading scripts: **66GB free** on the chosen GPU (52GB wei
 
 ## Commands (run only when a card is free)
 
+See [examples/qwen38/README.md](../examples/qwen38/README.md) for the full script list.
+
 ```bash
-conda activate EasyEdit-next
-cd /data/zhangzuhao/ideaTest/EasyEdit
+python examples/qwen38/00_check_env.py
+python examples/qwen38/run_cpu_checks.py
 
-# PR-1: load + 8-token greedy chat generate + module-path sample
-python examples/qwen38/01_smoke_load.py --model /data/zhangzuhao/models/Qwen3.8-27B
-
-# PR-2 (feat/wise-ft-loss-padding): France → Shanghai generation flip
+MODEL=./hugging_cache/Qwen3.8-27B
+python examples/qwen38/01_smoke_load.py --model $MODEL
+python examples/qwen38/02_explore_modules.py --model $MODEL
 python examples/qwen38/03_wise_edit.py \
   --hparams hparams/WISE/qwen3.8-27b.yaml \
-  --model /data/zhangzuhao/models/Qwen3.8-27B
-
-# Optional VRAM knobs on the example only (not default WISE):
-python examples/qwen38/03_wise_edit.py --small-context --model /data/zhangzuhao/models/Qwen3.8-27B
-
-# PR-3 scaffold: GDN 53 and full_attention 51/55/59/63 (layer 29 fails free-gen)
+  --model $MODEL
 python examples/qwen38/04_layer_scan.py \
   --layers 45,49,51,53,55,57,59,61,63 \
-  --model /data/zhangzuhao/models/Qwen3.8-27B
+  --model $MODEL
+python examples/qwen38/05_ft_edit.py --model $MODEL
 ```
 
-Results go under `examples/qwen38/results/`. Do not run `01` / `03` / `04` while both A800s are occupied.
+Results go under `examples/qwen38/results/`. GPU scripts refuse to start if the emptiest card has less than 66GB free.
 
-## PR-1 vs PR-2 acceptance
+## Verified behavior
 
-**PR-1** (`feat/qwen38-loader`): the model loads through `BaseEditor` / `model_loader.py`, chat generation works, MLP paths are `model.language_model.layers.*.mlp.down_proj`. WISE generation-flip is **not** a PR-1 criterion. `WISE.py` is not modified.
+**Loader:** the model loads through `BaseEditor` / `model_loader.py`, chat generation works, MLP paths are `model.language_model.layers.*.mlp.down_proj`.
 
-**PR-2** (`feat/wise-ft-loss-padding`): WISE locates the prompt/target cut from the first non-`-100` label (works with right padding), `model.train()` during the edit loop so transformers 5.8 gradient checkpointing actually runs, optional hparams `padding_side` / `enable_thinking` / `attn_implementation` / `language_model_only`. The WISE yaml now sets `padding_side: right` and `enable_thinking: false`. Verified target: chat `"The capital of France is"` → `Shanghai`, Japan locality stays Tokyo. Peak ~53GB.
+**WISE:** locates the prompt/target cut from the first non-`-100` label (works with right padding), `model.train()` during the edit loop so transformers 5.8 gradient checkpointing actually runs, optional hparams `padding_side` / `enable_thinking` / `attn_implementation` / `language_model_only`. The WISE yaml sets `padding_side: right` and `enable_thinking: false`. Verified: chat `"The capital of France is"` → `Shanghai`, Japan locality stays Tokyo. Peak ~53GB.
+
+On this hybrid-attention model, EasyEdit teacher-forcing `rewrite_acc` can stay 0 even when free generation flips (eval temporarily uses left padding and requires the first token to be `Shanghai`). `examples/qwen38/03_wise_edit.py` therefore also writes `vanilla_metrics` (official `vanilla_generation` token match + substring checks).
 
 ## Known failure modes
 
@@ -91,7 +88,7 @@ Results go under `examples/qwen38/results/`. Do not run `01` / `03` / `04` while
 4. **Gradient checkpointing in `eval()`.** transformers 5.8 `GradientCheckpointingLayer` requires `self.training`. Edit-time `model.eval()` silently skips GC → 27B OOM.
 5. **Layer 29.** GDN layer at ~45% depth can move teacher-forcing metrics without transferring to free generation. Prefer layer **53** (yaml default). Scan full_attention 51/55/59/63 as well.
 
-## PR-3 ROME scaffold (not a weekly PR)
+## ROME scaffold
 
 - `examples/qwen38/04_layer_scan.py` — WISE layer scan including GDN 53 and full_attention 51/55/59/63.
 - `hparams/ROME/qwen3.8-27b.yaml.example` — path template `model.language_model.layers.{}.mlp.down_proj`. Comments cover `self_attn` vs `linear_attn`. **Do not claim ROME works.** Causal tracing and mom2 on GDN recurrent state are unknown; promote to a real yaml only after rewrite+locality.

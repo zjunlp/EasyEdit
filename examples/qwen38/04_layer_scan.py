@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Layer scan scaffold for Qwen3.8-27B WISE (PR-3).
+"""Layer scan scaffold for Qwen3.8-27B WISE.
 
 Loads once via BaseEditor + yaml, then edits a few layers independently
 (restore after each edit). Distinguishes GDN / linear_attention (e.g. 53)
@@ -10,10 +10,9 @@ This script loads 27B weights. It picks the emptiest GPU and refuses to
 run below 66GB free. Do not run it while other jobs occupy the cards.
 
 Usage:
-    conda activate EasyEdit-next
     python examples/qwen38/04_layer_scan.py \\
         --hparams hparams/WISE/qwen3.8-27b.yaml \\
-        --model /data/zhangzuhao/models/Qwen3.8-27B
+        --model ./hugging_cache/Qwen3.8-27B
     python examples/qwen38/04_layer_scan.py --layers 51,53,55,59,63 --tag attn
 
 Results:
@@ -26,14 +25,18 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import subprocess
 import sys
 import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-RESULTS_DIR = Path(__file__).resolve().parent / "results"
-MIN_FREE_GB = 66.0
+EXAMPLES = Path(__file__).resolve().parent
+RESULTS_DIR = EXAMPLES / "results"
+sys.path.insert(0, str(EXAMPLES))
+sys.path.insert(0, str(ROOT))
+
+from gpu_guard import MIN_FREE_GB, pick_gpu  # noqa: E402
+
 DEFAULT_HPARAMS = ROOT / "hparams" / "WISE" / "qwen3.8-27b.yaml"
 
 # Mixed-attention map from config.text_config.layer_types (64 layers).
@@ -50,7 +53,7 @@ def parse_args():
     parser.add_argument(
         "--model",
         default=None,
-        help="Override yaml model_name (e.g. /data/zhangzuhao/models/Qwen3.8-27B)",
+        help="Override yaml model_name (e.g. ./hugging_cache/Qwen3.8-27B)",
     )
     parser.add_argument(
         "--layers",
@@ -66,27 +69,6 @@ def parse_args():
     parser.add_argument("--loc-gt", default="Tokyo")
     parser.add_argument("--min-free-gb", type=float, default=MIN_FREE_GB)
     return parser.parse_args()
-
-
-def pick_gpu(min_free_gb: float):
-    out = subprocess.check_output(
-        ["nvidia-smi", "--query-gpu=index,memory.free", "--format=csv,noheader,nounits"],
-        text=True,
-    )
-    best = None
-    for line in out.strip().splitlines():
-        idx, free_mib = [x.strip() for x in line.split(",")]
-        free_gb = int(free_mib) / 1024
-        if best is None or free_gb > best[1]:
-            best = (int(idx), free_gb)
-    if best is None:
-        raise RuntimeError("nvidia-smi reported no GPUs")
-    if best[1] < min_free_gb:
-        raise RuntimeError(
-            f"largest free GPU{best[0]} has only {best[1]:.1f}GB < {min_free_gb:.1f}GB; "
-            "refusing to run so existing jobs are not disturbed"
-        )
-    return best
 
 
 def layer_kind(layer: int) -> str:
@@ -153,7 +135,6 @@ def main() -> int:
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
     os.environ.setdefault("OMP_NUM_THREADS", "16")
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
-    sys.path.insert(0, str(ROOT))
 
     import torch  # noqa: E402
     from easyeditor import BaseEditor  # noqa: E402
@@ -214,7 +195,7 @@ def main() -> int:
                 },
             },
             keep_original_weight=False,
-            sequential_edit=False,
+            sequential_edit=False,  # restore_after_edit between layers
         )
         edit_s = time.time() - t_edit
         m = metrics[0] if metrics else {}
