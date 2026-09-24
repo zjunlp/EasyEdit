@@ -33,7 +33,11 @@ def normalize_answer(s):
     return white_space_fix(remove_articles(remove_punc(lower(s))))
 
 def exact_match_score(prediction, ground_truth):
-    return normalize_answer(prediction) == normalize_answer(ground_truth)
+    normalized_prediction = normalize_answer(prediction)
+    normalized_ground_truth = normalize_answer(ground_truth)
+    if not normalized_prediction or not normalized_ground_truth:
+        return False
+    return normalized_prediction == normalized_ground_truth
 
 def llm_judge(question, ground_truth, prediction, api_key):
     content_template = """
