@@ -226,7 +226,7 @@ class BaseEditor:
         ground_truth = normalize_ground_truths(ground_truth, prompts)
 
         if "requests" in kwargs.keys():
-            requests = kwargs["requests"]
+            requests = kwargs.pop("requests")
         else:
             requests = _prepare_requests(prompts, target_new, ground_truth, target_neg, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
 
