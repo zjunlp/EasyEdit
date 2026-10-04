@@ -69,6 +69,10 @@ def execute_rome(
 
     # Update target and print info
     request = deepcopy(request)
+    if getattr(hparams, 'use_chat_template', False):
+        chat_kwargs = {} if getattr(hparams, 'enable_thinking', None) is None else {'enable_thinking': hparams.enable_thinking}
+        request['prompt'] = tok.apply_chat_template([{'role': 'user', 'content': request['prompt']}],
+                           tokenize=False, add_generation_prompt=True, **chat_kwargs)
     if request["target_new"] != " ":
         # Space required for correct tokenization
         request["target_new"] = " " + request["target_new"]

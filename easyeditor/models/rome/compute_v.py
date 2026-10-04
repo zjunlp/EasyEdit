@@ -32,7 +32,10 @@ def compute_v(
     rewrite_device = get_module_device(nethook.get_module(model, rewrite_module_name), device)
 
     # Tokenize target into list of int token IDs
-    target_ids = tok.encode(request["target_new"], return_tensors="pt", add_special_tokens=False).to(device)[0]
+    target_text = request["target_new"]
+    if getattr(hparams, 'use_chat_template', False) and tok.eos_token is not None:
+        target_text += tok.eos_token
+    target_ids = tok.encode(target_text, return_tensors="pt", add_special_tokens=False).to(device)[0]
 
     # if target_ids[0] == tok.bos_token_id or target_ids[0] == tok.unk_token_id:
     #     target_ids = target_ids[1:]

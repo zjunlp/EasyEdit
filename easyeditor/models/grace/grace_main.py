@@ -24,7 +24,7 @@ def apply_grace_to_model(
         model = deepcopy(model)
     device = normalize_device(getattr(hparams, "device", None))
     editor = GRACE(model=model, config=hparams, device=device)
-    tokens = tokenize(request, tokenizer=tok, device=device)
+    tokens = tokenize(request, tokenizer=tok, device=device, hparams=hparams)
     editor.edit(config=hparams, tokens=tokens,edit_id=request['target_new'])
             
     weights_copy = editor.reset_layer

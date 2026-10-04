@@ -32,6 +32,8 @@ class GraceHyperParams(HyperParams):
     batch_size: int = 1
     max_length: int = 30
     model_parallel: bool = False
+    use_chat_template: bool = False
+    enable_thinking: bool = None
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

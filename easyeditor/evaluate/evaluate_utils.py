@@ -109,6 +109,9 @@ def generate_texts(model, tok, hparams, prompts, device):
     if isinstance(prompts, str):
         prompts = [prompts]
 
+    chat_kwargs = {}
+    if getattr(hparams, 'enable_thinking', None) is not None:
+        chat_kwargs['enable_thinking'] = hparams.enable_thinking
     all_response = []
     for prompt in prompts:
         messages = [
@@ -119,6 +122,7 @@ def generate_texts(model, tok, hparams, prompts, device):
                 messages,
                 tokenize=False,
                 add_generation_prompt=True,
+                **chat_kwargs,
             )
         prompt_tok = tok(
             text,
@@ -271,10 +275,13 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
     if isinstance(prompts, str):
         prompts,targets = [prompts,], [targets,]
     if not locality and hasattr(hparams, 'use_chat_template') and hparams.use_chat_template:
+        chat_kwargs = {}
+        if getattr(hparams, 'enable_thinking', None) is not None:
+            chat_kwargs['enable_thinking'] = hparams.enable_thinking
         prompts = [[{"role":"user", "content":m}] for m in prompts]
         prompts=tok.apply_chat_template(prompts,
                                         add_generation_prompt=True,
-                                        tokenize=False)
+                                        tokenize=False, **chat_kwargs)
     prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]
     max_prompt_len = max([len(tok.encode(_)) for _ in prompt_target]) + 1
     before_padding_side = tok.padding_side

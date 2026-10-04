@@ -143,8 +143,6 @@ class WISE(torch.nn.Module):
         global merge_group_edit_history
         edit_history.append([{f"{k1}" : v1.to('cpu') for k1, v1 in tokens.items()}, False])
         # for retrieve ##
-        last_prompt_token_loc = (tokens["labels"] == -100).sum(dim=-1) - 1
-
         setattr(eval(f"self.model.{self.layer}"), "training", True)
         setattr(eval(f"self.model.{self.layer}"), "editing", True)
         self.get_adapter_layer().set_parameter_tunable()
@@ -159,7 +157,7 @@ class WISE(torch.nn.Module):
                 # --- we only need to create an optimizer for the first iteration (but forward pass instantiates the key, so optimzer is passed after first inference) ---
                 optimizer = torch.optim.SGD([self.get_adapter_layer().new_weight], config.edit_lr, weight_decay=1e-5)
 
-            ft_loss = self._cal_ft_loss(tokens, last_prompt_token_loc)
+            ft_loss = self._cal_ft_loss(tokens)
 
             act_loss = self._cal_activation_loss(self.get_adapter_layer().original_layer_output, self.get_adapter_layer().new_weight_layer_output,
                                                   config=config, act_mask=act_mask, deact_mask=deact_mask)
@@ -255,7 +253,7 @@ class WISE(torch.nn.Module):
                 new_weight, min=original_weight - norm_constraint, max=original_weight + norm_constraint
             )
 
-    def _cal_ft_loss(self, tokens, last_prompt_token_loc):
+    def _cal_ft_loss(self, tokens):
         if hasattr(self.model.config, 'batch_size'):
             k = self.config.batch_size
         else:
@@ -269,12 +267,8 @@ class WISE(torch.nn.Module):
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
         loss = loss.view(bs, -1)
 
-        label_mask = torch.zeros_like(loss, dtype=torch.bool)
-
-        for i, col_index in enumerate(last_prompt_token_loc[:-k]):
-            label_mask[i, col_index - 1:] = True
-
-        ft_loss = ((loss * label_mask).sum(1) / label_mask.sum(1)).mean()
+        label_mask = shift_labels != -100
+        ft_loss = (loss.sum(1) / label_mask.sum(1).clamp_min(1)).mean()
         return ft_loss
 
     def _cal_activation_loss(self, original_layer_output, new_weight_layer_output, config=None, act_mask=None,
