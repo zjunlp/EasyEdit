@@ -1,0 +1,21 @@
+alg_name: "GRACE"
+model_name: "./hugging_cache/Qwen3.8-27B"
+device: 0
+
+inner_params:
+- model.layers[39].mlp.down_proj.weight
+edit_lr: 1.0
+n_iter: 30
+eps: 5.0
+dist_fn: euc
+val_init: warm
+val_train: sgd
+val_reg: None
+reg: early_stop
+replacement: replace_last
+eps_expand: coverage
+num_pert: 8
+dropout: 0.0
+model_parallel: false
+use_chat_template: true
+enable_thinking: false

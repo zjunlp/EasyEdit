@@ -39,6 +39,8 @@ class ROMEHyperParams(HyperParams):
     max_length: int = 40
     model_parallel: bool = False
     fp16: bool = False
+    use_chat_template: bool = False
+    enable_thinking: bool = None
 
     @classmethod
     def from_hparams(cls, hparams_name_or_path: str):

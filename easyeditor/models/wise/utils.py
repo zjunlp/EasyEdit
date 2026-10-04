@@ -87,29 +87,33 @@ def tokenize(batch, tokenizer, device, context_templates=None, hparams=None):
     loc_prompts = [item['loc_prompt'] for item in batch]
 
     mask_token = -100  # ignore_index of CrossEntropyLoss
+    chat_kwargs = {}
+    if getattr(hparams, 'enable_thinking', None) is not None:
+        chat_kwargs['enable_thinking'] = hparams.enable_thinking
     if hasattr(hparams, 'use_chat_template') and hparams.use_chat_template:
         full_prompt = [tokenizer.apply_chat_template([{"role":"user", "content":templ.format(p)}],
                                         add_generation_prompt=True,
-                                        tokenize=False) + ' ' + l
+                                        tokenize=False, **chat_kwargs) + ' ' + l
                         for templ in context_templates for p, l in zip(prompts, labels)]
         prompt_ids = tokenizer([tokenizer.apply_chat_template([{"role":"user", "content":templ.format(p)}],
                                     add_generation_prompt=True,
-                                    tokenize=False) for templ in context_templates for p in prompts], return_tensors="pt", padding=True, truncation=True)["input_ids"]
+                                    tokenize=False, **chat_kwargs) for templ in context_templates for p in prompts], return_tensors="pt", padding=True, truncation=True)
     else:
         full_prompt = [f"{templ.format(p + ' ' + l)}" for templ in context_templates for p, l in zip(prompts, labels)]
-        prompt_ids = tokenizer([f"{templ.format(p)}" for templ in context_templates for p in prompts], return_tensors="pt", padding=True, truncation=True)["input_ids"]
+        prompt_ids = tokenizer([f"{templ.format(p)}" for templ in context_templates for p in prompts], return_tensors="pt", padding=True, truncation=True)
     full_prompt += loc_prompts  # add for subject activation
 
-    num_prompt_toks = [len(i) for i in prompt_ids]
+    num_prompt_toks = prompt_ids['attention_mask'].sum(dim=-1).tolist()
     tokens = tokenizer(full_prompt, return_tensors="pt", padding=True, truncation=True)
     tokens["labels"] = tokens["input_ids"].clone()
 
     # Mask the tokens based on hparams.objective_optimization
     if hparams.objective_optimization == 'only_label':
         for i in range(len(num_prompt_toks)):
-            tokens["labels"][i][:num_prompt_toks[i]] = mask_token
+            left_pad = int((tokens['attention_mask'][i] == 0).sum()) if tokenizer.padding_side == 'left' else 0
+            tokens["labels"][i][:left_pad + num_prompt_toks[i]] = mask_token
 
-    tokens["labels"][tokens["input_ids"] == tokenizer.pad_token_id] = mask_token
+    tokens["labels"][tokens['attention_mask'] == 0] = mask_token
     act_masks = []
     deact_masks = []
     # Iterate through each batch entry and compute act_mask, deact_mask
@@ -431,6 +435,7 @@ def get_context_templates(model, tok, length_params, device):
         prompt_tok = tok(
             ["I", "You", "Because", 'Yes', 'Q: '],
             padding=True,
+            padding_side='left',
             return_tensors="pt"
         ).to(device)
         for length, n_gen in length_params: 

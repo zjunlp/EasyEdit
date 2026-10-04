@@ -187,6 +187,9 @@ class BaseEditor:
         else:
             self.model, self.tok = self.model_name
 
+        if self.tok is not None and getattr(hparams, 'padding_side', None) is not None:
+            self.tok.padding_side = hparams.padding_side
+
         self.device = normalize_device(getattr(hparams, "device", None))
         if self.model is not None and not hparams.model_parallel and hparams.alg_name != 'QLoRA':
             self.model.to(self.device)
@@ -513,10 +516,14 @@ class BaseEditor:
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": query}
             ]
+            chat_kwargs = {}
+            if getattr(hparams, 'enable_thinking', None) is not None:
+                chat_kwargs['enable_thinking'] = hparams.enable_thinking
             text = self.tok.apply_chat_template(
                 messages,
                 tokenize=False,
                 add_generation_prompt=True,
+                **chat_kwargs,
             )
             model_inputs = move_to_device(tok.encode(text, return_tensors="pt"), device)
             template_length = len(model_inputs[0])

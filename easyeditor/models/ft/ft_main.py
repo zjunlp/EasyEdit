@@ -86,6 +86,12 @@ def execute_ft(
     # Define inputs
     texts = [r["prompt"] for r in requests]
     targets = [r["target_new"] for r in requests]
+    if getattr(hparams, 'use_chat_template', False):
+        chat_kwargs = {} if getattr(hparams, 'enable_thinking', None) is None else {'enable_thinking': hparams.enable_thinking}
+        texts = [tok.apply_chat_template([{'role': 'user', 'content': text}],
+                 tokenize=False, add_generation_prompt=True, **chat_kwargs) for text in texts]
+        if hparams.objective_optimization == 'target_new' and tok.eos_token is not None:
+            targets = [target + tok.eos_token for target in targets]
     
     # Configure optimizer / gradients
     opt = torch.optim.Adam(
@@ -120,11 +126,11 @@ def execute_ft(
             elif hparams.objective_optimization == 'target_new':
                 inputs_targets = [txt_ + tgt_ for txt_, tgt_ in zip(txt, tgt)]
                 inputs_targets = tok(inputs_targets, return_tensors="pt", padding=True).to(device)
-                num_prompt_toks = [int((i != tok.pad_token_id).sum()) for i in inputs['input_ids'].cpu()]
-                num_pad_toks = [int((i == tok.pad_token_id).sum()) for i in inputs_targets['input_ids'].cpu()]
-                prompt_len = [x + y for x, y in zip(num_pad_toks, num_prompt_toks)]
-                prompt_target_len = inputs_targets['input_ids'].size(1)
-                label_mask = torch.tensor([[False] * length + [True] * (prompt_target_len - length) for length in prompt_len]).to(device)
+                num_prompt_toks = inputs['attention_mask'].sum(dim=1).tolist()
+                label_mask = inputs_targets['attention_mask'].bool().clone()
+                for i, length in enumerate(num_prompt_toks):
+                    left_pad = int((inputs_targets['attention_mask'][i] == 0).sum()) if tok.padding_side == 'left' else 0
+                    label_mask[i, :left_pad + length] = False
             else:
                 print(f"{hparams.objective_optimization} has not been supported yet.")
                 raise NotImplementedError

@@ -65,28 +65,35 @@ def get_shape(p, model):
 def get_logits(x):
     return x.logits if hasattr(x, "logits") else x
 
-def tokenize(batch, tokenizer, device, test=False):
+def tokenize(batch, tokenizer, device, test=False, hparams=None):
     prompt, label = batch["prompt"], batch["target_new"]
     if not isinstance(prompt, list):
         prompt=[prompt]
     if not isinstance(label, list):
         label=[label]
+    if getattr(hparams, 'use_chat_template', False):
+        chat_kwargs = {} if getattr(hparams, 'enable_thinking', None) is None else {'enable_thinking': hparams.enable_thinking}
+        prompt = [tokenizer.apply_chat_template([{'role': 'user', 'content': text}],
+                  tokenize=False, add_generation_prompt=True, **chat_kwargs) for text in prompt]
+        if tokenizer.eos_token is not None:
+            label = [text + tokenizer.eos_token for text in label]
     mask_token = -100 # ignore_index of CrossEntropyLoss
     if test or not label:
         tokens = tokenizer(list(prompt), return_tensors="pt", padding=True, truncation=True)
         tokens["labels"] = tokens["input_ids"].clone()
-        tokens["labels"][tokens["input_ids"] == tokenizer.pad_token_id] = mask_token
+        tokens["labels"][tokens['attention_mask'] == 0] = mask_token
 
     else:
         full_prompt = [f"{p} {l}" for p, l in zip(prompt, label)]
-        prompt_ids = tokenizer(list(prompt), return_tensors="pt", padding=True, truncation=True)["input_ids"]
-        num_prompt_toks = [int((i != tokenizer.pad_token_id).sum()) for i in prompt_ids]
+        prompt_ids = tokenizer(list(prompt), return_tensors="pt", padding=True, truncation=True)
+        num_prompt_toks = prompt_ids['attention_mask'].sum(dim=1).tolist()
         tokens = tokenizer(full_prompt, return_tensors="pt", padding=True, truncation=True)
         tokens["labels"] = tokens["input_ids"].clone()
         for i in range(len(prompt)):
-            tokens["labels"][i][:num_prompt_toks[i]] = mask_token
+            left_pad = int((tokens['attention_mask'][i] == 0).sum()) if tokenizer.padding_side == 'left' else 0
+            tokens["labels"][i][:left_pad + num_prompt_toks[i]] = mask_token
 
-        tokens["labels"][tokens["input_ids"] == tokenizer.pad_token_id] = mask_token
+        tokens["labels"][tokens['attention_mask'] == 0] = mask_token
     
     tokens = {f"{k1}" : v1.to(device) for k1, v1 in tokens.items()}
     return tokens
