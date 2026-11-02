@@ -73,7 +73,7 @@ frozenlist==1.8.0
 fsspec==2024.6.1
 gguf==0.19.0
 gitdb==4.0.12
-GitPython==3.1.50
+GitPython==3.2.1
 google-api-core==2.30.3
 google-api-python-client==2.184.0
 google-auth==2.53.0
