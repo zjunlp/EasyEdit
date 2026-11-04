@@ -80,22 +80,21 @@ class UltraEditRewriteExecutor:
             # Tokenize
             device = normalize_device(getattr(hparams, "device", None))
             sent_tok = self.tokenizer(sentences, padding=True, return_tensors="pt").to(device)
-            target_tok = self.tokenizer(targets, padding=True, return_tensors="pt").to(device)
+            # The targets continue the sentences, so they get no BOS token
+            target_tok = self.tokenizer(
+                targets, padding=True, add_special_tokens=False, return_tensors="pt"
+            ).to(device)
 
-            # Define labels
-            label_tok = deepcopy(sent_tok["input_ids"])
-            for i in range(label_tok.size(0)):
-                target_len = target_tok["attention_mask"][i].sum()
-                padding_len = (
-                    sent_tok["input_ids"].size(1) - sent_tok["attention_mask"][i].sum()
-                )
-                label_tok[i][: -target_len - padding_len] = -100
-                label_tok[i][label_tok[i] == self.tokenizer.pad_token_id] = -100
+            # Define labels: the target tokens, aligned to the end of the
+            # sentences by cross_entropy, with padding left out of the loss
+            labels = target_tok["input_ids"].masked_fill(
+                target_tok["attention_mask"] == 0, -100
+            )
 
             edit_inner = dict(
                 input_ids=sent_tok["input_ids"],
                 attention_mask=sent_tok["attention_mask"],
-                labels=target_tok['input_ids'],
+                labels=labels,
             )
 
             batchs.append(edit_inner)
