@@ -61,7 +61,10 @@ def act_and_fre(act_data,
     fre_idx = min(int(pec * len(scores)), len(scores) - 1)
     threshold_fre = torch.sort(torch.abs(scores), descending=True, stable=True).values[fre_idx]
     print(f'frequency threshold: {threshold_fre}')
-    freq_mask = torch.abs(scores) >= threshold_fre
+    # Features whose activation and frequency differences disagree in sign keep a zero
+    # score; when fewer than pec * len(scores) scores are nonzero the threshold is 0, so
+    # exclude zero scores explicitly or `>=` would admit every feature.
+    freq_mask = (torch.abs(scores) >= threshold_fre) & (scores != 0)
     print("freq_mask:",freq_mask.sum())
 
     act_idx = min(int(pec * len(act_data_init)), len(act_data_init) - 1)
